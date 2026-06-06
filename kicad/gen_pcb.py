@@ -163,20 +163,56 @@ zone.AddPolygon(chain)
 zone.SetZoneName("antenna keep-out")
 board.Add(zone)
 
-# +5V island on B.Cu in clear space near the USB-C. Present BEFORE routing so the DSN
-# marks +5V as a plane here and Freerouting threads the VBUS pads (and the other +5V
-# pins) to it -- the dense connector escape is the router's job, not a hand-drawn neck.
-# iz = pcbnew.ZONE(board)
-# iz.SetLayer(pcbnew.B_Cu)
-# iz.SetNet(nets["+5V"])
-# iz.SetAssignedPriority(10)              # win over the GND pour where they overlap
-# ich = pcbnew.SHAPE_LINE_CHAIN()
-# for (px, py) in [(7.125, 28.7), (8.75, 28.7), (8.75, 35.3), (7.125, 35.3)]:
-#     ich.Append(vmm(px, py))
-# ich.SetClosed(True)
-# iz.AddPolygon(ich)
-# iz.SetZoneName("+5V island")
-# board.Add(iz)
+# --- +5V bridge: join both VBUS stacks via two vias placed EAST of the NPTH pegs ---
+# The HRO single-row Type-C carries VBUS on two pad-stacks (A4/B9 high, A9/B4 low) that the
+# autorouter can't join: no thru-hole (GND gets that for free via the shield holes; VBUS
+# doesn't), pads flush to the board edge, and an NPTH mounting peg boxing each stack in on
+# the inboard side. So we drop one OFF-PAD via in the open copper just EAST (right) of each
+# peg -- clear of both peg and pads -- route each VBUS pad out to its via on F.Cu (threading
+# past the peg toward board-centre), and connect the two vias to each other on the back
+# layer (layer 2 / B.Cu). The router then only has to reach this +5V island for the rest of
+# the rail. Coordinates derive from the placed pads + pegs, so they track J1's placement.
+v5 = nets["+5V"]
+vbus = {}                                       # dedup co-located A/B pads -> {y: x}
+for p in fps["J1"].Pads():
+    if p.GetNetname() == "+5V":
+        vbus[round(MM(p.GetPosition().y), 2)] = MM(p.GetPosition().x)
+assert len(vbus) == 2, f"expected 2 VBUS stacks on J1, found {sorted(vbus)}"
+pegs = [(MM(p.GetPosition().x), MM(p.GetPosition().y)) for p in fps["J1"].Pads()
+        if p.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH]
+y_mid = sum(vbus) / 2.0                          # centre between the two stacks
+W = 0.2                                          # routing width
+via_xy = []
+for y_pad, x_pad in vbus.items():
+    peg = min(pegs, key=lambda q: abs(q[1] - y_pad))      # peg flanking this stack
+    if y_pad < y_mid:                            # lower stack (A9/B4): the tight one. CC2
+        # runs east just south of it, so thread PAST the peg and tuck the via down near the
+        # peg -- clear of the CC2 channel -- instead of cutting straight across it.
+        thread = (peg[0], peg[1] + 0.71)         # threads the peg/CC2 pinch: >=0.25 hole
+        vxy = (peg[0] + 0.85, peg[1] + 0.50)     # clr to the peg, >=0.2 to CC2's lane above
+        pts = [(x_pad, y_pad), thread, vxy]
+    else:                                        # upper stack (A4/B9): open copper to the north
+        vxy = (peg[0] + 0.60, y_pad - 0.45)
+        pts = [(x_pad, y_pad), vxy]
+    via_xy.append(vxy)
+    for a, b in zip(pts, pts[1:]):               # VBUS pad -> via on F.Cu, past the peg
+        t = pcbnew.PCB_TRACK(board); t.SetLayer(pcbnew.F_Cu)
+        t.SetStart(vmm(*a)); t.SetEnd(vmm(*b)); t.SetWidth(pcbnew.FromMM(W))
+        t.SetNet(v5); board.Add(t)
+    v = pcbnew.PCB_VIA(board); v.SetPosition(vmm(*vxy))
+    v.SetDrill(pcbnew.FromMM(0.3)); v.SetWidth(pcbnew.FromMM(0.5)); v.SetNet(v5); board.Add(v)
+t = pcbnew.PCB_TRACK(board); t.SetLayer(pcbnew.B_Cu)     # join the vias on layer 2
+t.SetStart(vmm(*via_xy[0])); t.SetEnd(vmm(*via_xy[1]))
+t.SetWidth(pcbnew.FromMM(W)); t.SetNet(v5); board.Add(t)
+print(f"  +5V bridge: vias east of pegs at "
+      f"{tuple(round(c,2) for c in via_xy[0])} & {tuple(round(c,2) for c in via_xy[1])}, joined on B.Cu")
+
+# J1 is flush to the left edge, so its default reference text lands off-board (silk-edge
+# clearance warning). Move it to the bottom of the connector, rotated clockwise.
+jl, jr, jt, jb = fext(fps["J1"])
+j1ref = fps["J1"].Reference()
+j1ref.SetPosition(vmm((jl + jr) / 2.0, jb + 1.5))
+j1ref.SetTextAngleDegrees(270)                   # rotate clockwise (vertical)
 
 board.BuildConnectivity()
 out = os.path.join(HERE, "doorbell.kicad_pcb")

@@ -278,6 +278,35 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 > J2 (the spring-cage Wago) is unlikely to be in JLCPCB's assembly library → plan to
 > **hand-solder it** after SMT. Prefer LCSC *Basic* parts elsewhere; give K1/K2 a second source.
 
+### PCB routing — J1 USB-C VBUS bridge
+
+The `USB_C_Receptacle_HRO_TYPE-C-31-M-12` footprint is a single-row 16-pad part: each
+position carries both the A- and B-row contact, so **VBUS lands on two pad-stacks at
+opposite ends of the pin field** (A4/B9 high, A9/B4 low) with the CC/D± pads between them.
+On this 2-layer board, with J1 flush to the left edge, there is no front-copper path across
+that field — and, unlike GND (which the four shield thru-holes bridge front↔back for free),
+VBUS has no thru-hole. So the autorouter connects one stack and strands the other (the
+classic "1 unconnected pad, J1.B4").
+
+**Fix (pre-placed in `kicad/gen_pcb.py` before routing):** drop one **off-pad** via in the
+open copper just **east of each NPTH mounting peg** (pegs at x≈2.4 box the VBUS pads in on
+the inboard side), route each VBUS pad out to its via on F.Cu, and **join the two vias on
+B.Cu (layer 2)**. Freerouting then only has to reach this +5V island for the rest of the
+rail. Trace/bridge width 0.2 mm, vias 0.5 mm; coordinates derive from the placed pads + pegs.
+
+- **No via-in-pad** (design rule): vias are offset into clear copper, never on a pad.
+- The **lower** stack (A9/B4) is pinched between its peg and the **CC2** lane just south of
+  it. Its via is tucked down near the peg and the escape *threads* the gap (≥0.25 mm to the
+  peg hole, ≥0.2 mm under CC2's lane) rather than cutting straight across — otherwise it
+  blocks CC2 (J1.B5→R10). "Move the 5V closer to the NPTH, don't use a direct route."
+- The **data pair** (D+ on A6/B6, D− on A7/B7) has the same interleaved-duplicate-pad
+  problem, but Freerouting bridges it on its own as long as the VBUS bridge stays out of the
+  central back-copper (hence the bridge hugs x≈3.0–3.25, east of the pegs).
+- J1's reference silk is moved to the bottom of the connector (rotated 90° CW); the flush
+  left edge would otherwise clip it.
+
+Result: `./build.sh route` → **0 unconnected pads, 0 DRC violations.**
+
 ### Build / test notes
 
 - **Antenna keep-out:** ESP32-C3-MINI-1 antenna at board edge; no copper/pour under it; no
