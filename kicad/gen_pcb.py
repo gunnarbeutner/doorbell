@@ -31,7 +31,7 @@ PCB_PLACE = {
     "R_led":  (11, 45, 0),
     # === TOP edge: ESP32 (antenna -> top edge) + caps + WAGO (both rotated) ===
     "U1":     (24, 17, 0),    # antenna keep-out (top, pad-free) auto-detected -> top edge
-    "C_3v3":  (14, 17, 90),   # decoupling on U1's left side, pads top/bottom
+    "C_3v3":  (14, 15, 90),   # decoupling on U1's left side, pads top/bottom (nudged up)
     "C_dec":  (34, 17, 90),   # decoupling on U1's right side, pads top/bottom
     "J2":     (56, 11, 180),  # WF26 spring terminal, horizontal on the top edge
     # === relays side-by-side UNDER the WAGO, drivers in a row below; optos kept ===
@@ -40,15 +40,15 @@ PCB_PLACE = {
     "R_g1":   (63, 33, 0),
     "R_pd1":  (67, 33, 0),
     "D1":     (59, 36, 0),
-    "OC1":    (22, 42, 0),    # house bell sense (KEPT)
+    "OC1":    (38, 25, 90),   # house bell sense (left of the relays, rotated 90)
     "K2":     (50, 26, 0),    # chime-suppress relay, under the WAGO (left)
     "Q2":     (46, 33, 0),
     "R_g2":   (50, 33, 0),
     "R_pd2":  (54, 33, 0),
     "D2":     (46, 36, 0),
-    "OC2":    (48, 42, 0),    # apartment bell sense (KEPT)
-    # LDO + passives along the bottom row (U2 is a wide SOT-223 -> needs elbow room)
-    "U2":     (18, 48, 0),
+    "OC2":    (43, 25, 90),   # apartment bell sense (left of the relays, rotated 90)
+    # LDO up underneath U1 (x unchanged); its caps + the rest stay on the bottom row
+    "U2":     (18, 31, 0),
     "C_in":   (11, 48, 0),
     "C_out":  (25, 48, 0),
     "C_bulk": (30, 48, 0),
