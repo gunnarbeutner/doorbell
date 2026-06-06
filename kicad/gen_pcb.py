@@ -33,32 +33,33 @@ PCB_PLACE = {
     "U1":     (24, 17, 0),    # antenna keep-out (top, pad-free) auto-detected -> top edge
     "C_3v3":  (14, 15, 90),   # decoupling at U1's 3V3/GND pins (left side)
     "C_dec":  (14, 11, 90),   # 2nd decoupling, also by the 3V3/GND pins (left side)
-    "J2":     (56, 11, 180),  # WF26 spring terminal, horizontal on the top edge
-    # === relays side-by-side UNDER the WAGO, drivers in a row below; optos kept ===
-    "K1":     (63, 26, 0),    # door-opener relay, under the WAGO (right)
-    "Q1":     (59, 33, 0),
-    "R_g1":   (63, 33, 0),
-    "R_pd1":  (67, 33, 0),
-    "D1":     (59, 36, 0),
-    "OC1":    (42, 23, 270),  # house bell sense (between U1 and K2, rot 180)
-    "K2":     (50, 26, 0),    # chime-suppress relay, under the WAGO (left)
-    "Q2":     (46, 33, 0),
-    "R_g2":   (50, 33, 0),
-    "R_pd2":  (54, 33, 0),
-    "D2":     (46, 36, 0),
-    "OC2":    (37, 23, 270),  # apartment bell sense (between U1 and K2, rot 180)
+    "J2":     (51.5, 11, 180),  # WF26 spring terminal, horizontal on top edge; pulled left toward U1 (keeps ~3mm to the antenna)
+    # === optos pulled left into the space C_out vacated (below U1, right of U2); relays
+    #     + their drivers shifted left to follow, compacting the right side of the board ===
+    "OC2":    (26, 28.5, 270), # apartment bell sense, below U1 (right of U2/C_out)
+    "OC1":    (30, 28.5, 270), # house bell sense, just right of OC2
+    "K2":     (39, 26, 0),    # chime-suppress relay (left), shifted left
+    "Q2":     (35, 33, 0),
+    "R_g2":   (39, 33, 0),
+    "R_pd2":  (43, 33, 0),
+    "D2":     (35, 36, 0),
+    "K1":     (52, 26, 0),    # door-opener relay (right), shifted left (13mm channel pitch)
+    "Q1":     (48, 33, 0),
+    "R_g1":   (52, 33, 0),
+    "R_pd1":  (56, 33, 0),
+    "D1":     (48, 36, 0),
     # LDO up underneath U1 (x unchanged); its caps + the rest stay on the bottom row
     "U2":     (18, 31, 180),
     "C_in":   (14, 39, 270),  # LDO input cap, left of C1, +5V pad up (rot CW)
-    "C_out":  (26, 31, 0),    # LDO output cap, right of U2 (clear of its pads)
+    "C_out":  (21, 35.5, 0),  # LDO output cap, tucked under U2's 3V3 tab
     "C_bulk": (18, 39, 0),    # bulk cap, south of U2
     "R_cc1":  (10.5, 35, 270), # CC1 pulldown, right of J1 (90 CW), vertically aligned
     "R_cc2":  (10.5, 30.43, 90), # CC2 pulldown; CC2 pad aligned to J1 CC2 pad (Y=31.25)
     "R_en":   (3,  13, 0),    # EN resistor, left of the reset button (SW2)
     "C_en":   (3,  16, 180),  # EN cap, left of the reset button (SW2)
     "R_boot": (3,  23, 0),    # to the left of the boot button (SW1)
-    "R_lim":  (47, 19, 0),   # R1 north of K2, close to OK1 (nudged right)
-    "R_em":   (42, 29, 0),   # R2 underneath OK1 (rotated CCW to horizontal)
+    "R_lim":  (26, 34.5, 0), # R1 (shared opto cathode limiter), below the optos
+    "R_em":   (30, 34.5, 0), # R2 (shared opto emitter), below the optos
 }
 MARGIN = 4.0           # board edge margin (mm) on non-flush edges
 
