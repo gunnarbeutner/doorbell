@@ -30,14 +30,16 @@ PCB_PLACE = {
     "LED1":   (4,  9,  0),    # power LED, top-left corner
     "R_led":  (9,  9,  0),
     # === TOP edge: ESP32 (antenna -> top edge) + caps + WAGO (both rotated) ===
-    "U1":     (24, 17, 0),    # antenna keep-out (top, pad-free) auto-detected -> top edge
-    "C_3v3":  (14, 15, 90),   # decoupling at U1's 3V3/GND pins (left side)
-    "C_dec":  (14, 11, 90),   # 2nd decoupling, also by the 3V3/GND pins (left side)
-    "J2":     (51.5, 11, 180),  # WF26 spring terminal, horizontal on top edge; pulled left toward U1 (keeps ~3mm to the antenna)
-    # === optos pulled left into the space C_out vacated (below U1, right of U2); relays
-    #     + their drivers shifted left to follow, compacting the right side of the board ===
-    "OC2":    (26, 28.5, 270), # apartment bell sense, below U1 (right of U2/C_out)
-    "OC1":    (30, 28.5, 270), # house bell sense, just right of OC2
+    "U1":     (24, 34, 180),  # MCU at the BOTTOM, rotated 180° -> antenna faces bottom edge
+    # U1 decoupling on U1's RIGHT side (its +3V3/GND pins are pads 3/1 @ x≈29.9, y=33.7/35.3),
+    # in the clear strip between U1's right edge (x≈30.86) and Q2/D2 (x≈32.5). C_dec (100nF)
+    # straddles the pins: rot 270 lands its 3V3/GND pads on y=33.7/35.3. C_3v3 (10uF) stacks above.
+    "C_dec":  (31.7, 34.5, 270),  # 100nF HF decoupling, right at U1 pins 3(+3V3)/1(GND)
+    "C_3v3":  (31.7, 31.0, 270),  # 10uF, stacked just above C_dec
+    "J2":     (53, 11, 180),   # WF26 6-way screw terminal on top edge (shifted right so the wider 6-pos body clears OC1/R_em)
+    # === optos + LDO moved to the TOP (swapped with the MCU); relays/drivers unchanged ===
+    "OC2":    (26, 13, 270),  # apartment bell sense, top
+    "OC1":    (30, 13, 270),  # house bell sense, top
     "K2":     (39, 26, 0),    # chime-suppress relay (left), shifted left
     "Q2":     (35, 33, 0),
     "R_g2":   (39, 33, 0),
@@ -48,18 +50,21 @@ PCB_PLACE = {
     "R_g1":   (52, 33, 0),
     "R_pd1":  (56, 33, 0),
     "D1":     (48, 36, 0),
-    # LDO up underneath U1 (x unchanged); its caps + the rest stay on the bottom row
-    "U2":     (18, 31, 180),
-    "C_in":   (14, 39, 270),  # LDO input cap, left of C1, +5V pad up (rot CW)
-    "C_out":  (21, 35.5, 0),  # LDO output cap, tucked under U2's 3V3 tab
-    "C_bulk": (18, 39, 0),    # bulk cap, south of U2
-    "R_cc1":  (10.5, 35, 270), # CC1 pulldown, right of J1 (90 CW), vertically aligned
-    "R_cc2":  (10.5, 30.43, 90), # CC2 pulldown; CC2 pad aligned to J1 CC2 pad (Y=31.25)
+    # LDO + its caps at the TOP-left (where the MCU used to be)
+    "U2":     (16, 11, 180),  # LDO, top-left
+    "C_in":   (20, 19, 270),  # LDO input cap (clear of the EN button)
+    "C_out":  (20, 16, 0),    # LDO output cap
+    "C_bulk": (15, 17, 0),    # bulk cap
+    # CC pulldowns flank J1, spread apart vertically to open a corridor for the USB D+/D-
+    # pair (J1 data pads at y≈32.25-33.75) to escape east — and to pull each CC lane
+    # (CC1->J1.A5 @y34.25, CC2->J1.B5 @y31.25) clear of that corridor.
+    "R_cc1":  (10.5, 36, 270),    # CC1 pulldown, moved down (was y=35) -> top edge clears the data pads
+    "R_cc2":  (10.5, 29.93, 90),  # CC2 pulldown, moved up (was y=30.43) -> bottom edge clears the data pads
     "R_en":   (3,  13, 0),    # EN resistor, left of the reset button (SW2)
     "C_en":   (3,  16, 180),  # EN cap, left of the reset button (SW2)
     "R_boot": (3,  23, 0),    # to the left of the boot button (SW1)
-    "R_lim":  (26, 34.5, 0), # R1 (shared opto cathode limiter), below the optos
-    "R_em":   (30, 34.5, 0), # R2 (shared opto emitter), below the optos
+    "R_lim":  (26, 20, 0),   # R1 (shared opto cathode limiter), below the optos (top)
+    "R_em":   (30, 20, 0),   # R2 (shared opto emitter), below the optos (top)
 }
 MARGIN = 4.0           # board edge margin (mm) on non-flush edges
 
@@ -186,15 +191,15 @@ W = 0.2                                          # routing width
 via_xy = []
 for y_pad, x_pad in vbus.items():
     peg = min(pegs, key=lambda q: abs(q[1] - y_pad))      # peg flanking this stack
-    if y_pad < y_mid:                            # lower stack (A9/B4): the tight one. CC2
-        # runs east just south of it, so thread PAST the peg and tuck the via down near the
-        # peg -- clear of the CC2 channel -- instead of cutting straight across it.
-        thread = (peg[0], peg[1] + 0.71)         # threads the peg/CC2 pinch: >=0.25 hole
-        vxy = (peg[0] + 0.85, peg[1] + 0.50)     # clr to the peg, >=0.2 to CC2's lane above
-        pts = [(x_pad, y_pad), thread, vxy]
-    else:                                        # upper stack (A4/B9): open copper to the north
-        vxy = (peg[0] + 0.60, y_pad - 0.45)
-        pts = [(x_pad, y_pad), vxy]
+    # Symmetric escape for both stacks (A9/B4 lower, A4/B9 upper): thread PAST the peg
+    # toward board centre, then tuck the via just beyond it. `s` mirrors the shape about the
+    # centre line, so the two connections are identical reflections. On the lower stack this
+    # also clears the CC2 lane; the upper stack mirrors it past CC1. (>=0.25mm to the peg
+    # hole, >=0.2mm to the CC pad lane.)
+    s = 1 if y_pad < y_mid else -1
+    thread = (peg[0], peg[1] + s * 0.71)         # waypoint just past the peg, centre side
+    vxy = (peg[0] + 0.85, peg[1] + s * 0.50)     # via tucked beyond the peg
+    pts = [(x_pad, y_pad), thread, vxy]
     via_xy.append(vxy)
     for a, b in zip(pts, pts[1:]):               # VBUS pad -> via on F.Cu, past the peg
         t = pcbnew.PCB_TRACK(board); t.SetLayer(pcbnew.F_Cu)

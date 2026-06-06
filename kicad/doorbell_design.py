@@ -20,7 +20,7 @@ COMP = {
     "U1": ("PCM_Espressif", "ESP32-C3-MINI-1", "ESP32-C3-MINI-1"),
     "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "AMS1117-3.3"),
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C"),
-    "J2": ("Connector_Generic", "Conn_01x05", "WF26 (Wago 2604-1105)"),
+    "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
     "K1": ("Relay", "G6K-2", "G6K-2F-Y 5V"),
     "K2": ("Relay", "G6K-2", "G6K-2F-Y 5V"),
     "Q1": ("PCM_JLCPCB-Transistors", "NMOS,2N7002", "2N7002"),
@@ -59,7 +59,7 @@ FOOTPRINT = {
     "U1": "PCM_Espressif:ESP32-C3-MINI-1",
     "U2": "PCM_JLCPCB:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR",
     "J1": "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
-    "J2": "Connector_Wago:Wago_734-135_1x05_P3.50mm_Vertical",
+    "J2": "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical",
     "K1": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
     "K2": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
     "Q1": "PCM_JLCPCB:Q_SOT-23", "Q2": "PCM_JLCPCB:Q_SOT-23",
@@ -102,8 +102,12 @@ NETS = {
     "P1": [("J2","1"),("R_lim","2")],
     "P2": [("J2","2"),("K1","3")],
     "P3": [("J2","3"),("K1","4")],
+    # Line 4 (Türruf) is BROKEN INTO the board for chime suppression: P4 = bus/TV20S side
+    # (-> K2 COM), IN_P4 = WF26-handset side (-> K2 NC, -> OC1 sense, -> J2.6 jumper back to
+    # the WF26's terminal 4). K2 at rest passes P4->IN_P4 (gong rings + OC1 senses); energised
+    # it opens the line (gong silenced). This is the V3 series-break, restored on a 6-pin J2.
     "P4": [("J2","4"),("K2","3")],
-    "IN_P4": [("K2","2"),("OC1","1")],
+    "IN_P4": [("K2","2"),("OC1","1"),("J2","6")],
     "P5": [("J2","5"),("OC2","1")],
     "OC_CATH": [("OC1","2"),("OC2","2"),("R_lim","1")],
     "OC1_OUT": [("OC1","4"),("U1","20")],
@@ -140,7 +144,7 @@ FP_LIB_DIRS = {
     "PCM_Espressif": f"{_DOC}/com_github_espressif_kicad-libraries/Espressif.pretty",
     "Relay_SMD": f"{_STOCK}/Relay_SMD.pretty",
     "Connector_USB": f"{_STOCK}/Connector_USB.pretty",
-    "Connector_Wago": f"{_STOCK}/Connector_Wago.pretty",
+    "TerminalBlock_4Ucon": f"{_STOCK}/TerminalBlock_4Ucon.pretty",
 }
 
 def footprint_path(libname):
@@ -154,5 +158,5 @@ ANTENNA_REF = "U1"          # module whose antenna keep-out must reach a board e
 EDGE_FLUSH = {              # component ref -> board edge its outer face must sit flush on
     "J1": "left",          # USB-C receptacle
     "J2": "top",           # WF26 spring terminal
-    "U1": "top",           # ESP32 antenna edge
+    "U1": "bottom",        # ESP32 antenna edge (U1 rotated 180°, antenna faces down)
 }

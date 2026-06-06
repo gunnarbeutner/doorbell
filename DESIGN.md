@@ -30,39 +30,60 @@ milliamp-level). Small SMD signal relays are sufficient.
 
 ---
 
-## WF26 connector — 5-pin spring-cage pluggable terminal block
+## WF26 connector — 6-way screw terminal (3.5 mm)
 
-**Connector:** 5-way, 3.5mm pitch, spring-cage pluggable
-(e.g. Wago 2604-1105 plug + matching PCB socket).
-Bare stranded wire (26–28 AWG from flat Ethernet cable) inserts directly — no crimping.
+**Connector:** 6-way, 3.5 mm pitch **screw terminal**, THT (hand-soldered after SMT).
+The WF26 bus wires are fine, flimsy stranded (~26–28 AWG flat cable) — *below* the rated
+minimum of Wago picoMAX/221 push-in & lever connectors (0.2 mm² ≈ 24 AWG), and push-in cage
+clamps grip fine bare strands poorly without ferrules. A screw terminal clamps thin stranded
+reliably (tin/fold the ends) and matches what the WF26 uses internally. (The earlier
+Wago 2604-1105 spring-cage spec was wrong on both counts and is dropped.)
+
+Five positions tap the bus (P1–P5); the **6th is IN-P4**, the line-4 return jumpered back
+into the WF26 — see "Why line 4 needs two pins" below.
 
 ### Pin functions (confirmed from TV20/S Verdrahtungsplan)
 
-| Pin | TV20/S line | Signal | Role in our circuit |
+| J2 pin | TV20/S line | Signal | Role in our circuit |
 |-----|-------------|--------|---------------------|
-| P1 | Line 1 | Common reference | Both opto LED cathodes → R2 (5.1kΩ) → P1 |
-| P2 | Line 2 | Audio (Sprechen/Hören) | Relay K1 **COM (MAIN1)** |
-| P3 | Line 3 | Audio + ÖT door-opener trigger | Relay K1 **NO (NO1)** |
-| P4 | Line 4 | Türruf — ~12VDC door bell signal | Relay K2 COM (MAIN2); the NC2 side (IN-P4) → OC1 anode (house bell sense) |
-| P5 | Line 5 | Etagenruf — apartment call signal | → OC2 anode (apartment bell sense) |
+| P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Both opto LED cathodes → R_lim (5.1 kΩ) → P1 |
+| P2 | Line 2 | Speech (Sprechen/Hören); bridged to 3 = ÖT | Relay K1 **COM (MAIN1)** |
+| P3 | Line 3 | Speech; bridged to 2 = ÖT door-opener trigger | Relay K1 **NO (NO1)** |
+| P4 | Line 4 (TV20/S side) | Türruf — ~12 VDC house-door gong, **in** | Relay K2 **COM** |
+| IN-P4 | Line 4 (WF26 side) | Türruf return, **out** to the handset | Relay K2 **NC** → OC1 anode (house-bell sense) **and** jumper → WF26 terminal 4 (gong). K2 opens this to suppress the chime |
+| P5 | Line 5 | Etagenruf — floor/apartment call (tone) | → OC2 anode (apartment bell sense) |
 
 **Relay K1** (P2 on COM/MAIN1, P3 on NO1) simulates pressing the ÖT button: energising
 K1 closes COM1→NO1, **bridging P2+P3** → TV20/S activates the door opener. (The PDF's
 own door-opener test confirms this: *"Klemmen 2 u. 3 brücken"*.) **Relay K2** (P4 on
 COM/MAIN2, IN-P4 on NC2) breaks the Türruf line when energised to suppress the chime.
 
+**Why line 4 needs two pins.** K1 (door opener) *adds* a contact across P2+P3 — a parallel
+closure, fine from a parallel bus tap. K2 (chime suppress) must *break* the Türruf so it
+stops reaching the WF26 gong — a **series** operation, so line 4 is split at the board:
+**P4** = bus/TV20-S side (→ K2 COM), **IN-P4** = WF26-handset side (→ K2 NC, OC1 sense, and
+J2.6 jumper back to WF26 terminal 4). At rest K2 passes P4→IN-P4 (gong rings, OC1 senses);
+energised it opens the line (gong silenced) — this is the proven V3 topology. V4 originally
+collapsed IN-P4 to an internal-only node (no jumper back to the WF26), silently breaking
+chime suppression; restored here on the 6-way J2 (pad 6).
+
 > **Invariant to keep:** `build/netlist.txt` must show `[WF26-P2] … U2.MAIN1` and
 > `[WF26-P3] … U2.NO1`, with U2's NC1 unconnected (it must not appear in any net).
 
 ### Wire colour map (existing flat Ethernet cable, confirmed)
 
-| Colour | WF26 pin |
+| Colour | J2 pin |
 |--------|----------|
 | Orange | P1 |
 | Green | P2 |
 | Blue/white stripe | P3 |
-| Blue | P4 |
+| Blue | P4 (line 4, **in**) |
 | Black | P5 |
+| — (short jumper) | IN-P4 (J2.6) → back into WF26 terminal 4 |
+
+> To wire the series break: move the **blue** (line-4) wire off WF26 terminal 4 onto **J2.P4**,
+> and run a short jumper from **J2.IN-P4 (pad 6)** back to WF26 terminal 4. P1/P2/P3/P5 stay
+> parallel taps on WF26 terminals 1/2/3/5.
 
 ---
 
@@ -145,17 +166,23 @@ From `STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehlersuc
 
 ## WF26 internal circuit (from teardown photos / `m53n9gtxg41f1.png`)
 
-The apartment handset (Sprechstelle **WF26/G**, PCB silk "PCS-Sprechstelle / WF26") is a
-passive unit — no MCU. Its hand-traced internal schematic shows:
+The apartment handset (Sprechstelle **WF26/G**, PCB silk "…WF26") has **no MCU**, but it is
+**not purely passive**: the teardown photo (`IMG_5082.jpg`) shows an **internal signal relay
+(Siemens V23100-…)** plus an RC network and the two switches. We deliberately do **not**
+reverse-engineer it further — the existing V3 board works against the real TV20/S, so V4
+reproduces its proven sense / ÖT-bridge / line-4 series-break topology rather than modelling
+the handset. The hand-traced internal schematic shows:
 
 - **Speaker/Mic** — a single **16 Ω** transducer used for both Türruf/Etagenruf tone
   output and half-duplex speech.
+- **Relay (Siemens V23100-…)** — internal; switched function **not traced** (see note above).
 - **S2** — multi-pole **Sprechen/Hören (Lautsprechertaste)** changeover switch: routes
   the transducer between the tone path and the speech path (talk vs. listen).
 - **S3** — the **Türöffner (ÖT)** / call buttons (momentary), bridging bus lines as above.
 - **R1 ≈ 2.2 kΩ**, **C1 (50 V)** — RC network on the tone/speech path (values read from the
   image; confirm against the board if exact values matter).
-- A **5-pin connector** = the bus tap our board plugs into (pins 1–5 ↔ WF26 P1–P5).
+- A **5-pin terminal block** = the bus interface (terminals 1–5 ↔ lines/P1–P5). Our board's
+  6-way J2 taps P1–P5 here and jumpers IN-P4 back onto terminal 4.
 
 > Takeaway: nothing in the WF26 is "smart" — our board simply emulates its button presses
 > (ÖT = bridge 2+3) and senses the tone-drive lines (4, 5). No firmware handshake exists.
@@ -204,7 +231,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | Assembly | **JLCPCB SMT** (full fab assembly) | No soldering required |
 | Relay | **SMD signal relay, 5 V coil, gold/bifurcated contacts** (e.g. Omron G6K / HF) | Dry, ≤12 VDC, mA-level switching; gold contacts are *more* reliable than the V3 SONGLE's silver at these low "wetting" currents |
 | Relay driver | **Discrete: logic-level NMOS + flyback diode + gate pull-down** | The SONGLE module did this for us; now on-board. Pull-down ⇒ relays default OFF at boot |
-| WF26 connector | **5-pin spring-cage pluggable, 3.5 mm pitch** | Locking, no-tool insertion for bare stranded Ethernet wire |
+| WF26 connector | **6-way screw terminal, 3.5 mm** (THT, hand-soldered) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
 | Power | **USB-C** (5 V) → AMS1117-3.3 | USB-C connector + native-USB flashing/logging on the C3 |
 | Form factor | **Single PCB**, no daughter boards | Eliminates all inter-board jumpers (the V3 failure mode) |
 | Audio | **Out of scope** (evaluated, deferred — see below) | Needs S3+PSRAM + custom analog bridging; not worth the risk to the proven core |
@@ -260,7 +287,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | U1 | ESP32-C3-MINI-1 | module |
 | U2 | AMS1117-3.3 | SOT-223 |
 | J1 | USB-C receptacle, USB 2.0 | SMD 16-pin |
-| J2 | 5-pin spring-cage pluggable, 3.5 mm (Wago 2604-1105 + PCB header) | THT — hand-place |
+| J2 | 6-way screw terminal, 3.5 mm (e.g. 4Ucon / generic KF128-3.5 6P) | THT — hand-solder |
 | K1, K2 | Signal relay, 5 V coil, SPDT, gold contacts | SMD |
 | Q1, Q2 | 2N7002 (logic-level NMOS) | SOT-23 |
 | D1, D2 | 1N4148W (flyback) | SOD-123 |
@@ -275,8 +302,8 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | C_* | 22 µF, 10 µF×2, 100 nF×4 | 0603 |
 | LED_pwr + R | power indicator (+3V3) | 0603 |
 
-> J2 (the spring-cage Wago) is unlikely to be in JLCPCB's assembly library → plan to
-> **hand-solder it** after SMT. Prefer LCSC *Basic* parts elsewhere; give K1/K2 a second source.
+> J2 (the screw terminal) is THT → **hand-solder it** after SMT. Prefer LCSC *Basic* parts
+> elsewhere; give K1/K2 a second source.
 
 ### PCB routing — J1 USB-C VBUS bridge
 

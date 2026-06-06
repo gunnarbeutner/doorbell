@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Regenerate the doorbell design from code. One source of truth: kicad/doorbell_design.py
 #
-#   ./build.sh           schematic + PCB (unrouted) + ERC + schematic PDF   [default]
+#   ./build.sh           schematic + PCB + route + fab   (full run)   [default = all-route]
 #   ./build.sh sch       schematic only (+ ERC + PDF)
 #   ./build.sh pcb       PCB only (placed + netted, unrouted)
 #   ./build.sh route     autoroute the current PCB with Freerouting
 #   ./build.sh fab       export Gerbers/drill/position + BOM to kicad/fab/
+#   ./build.sh all       schematic + PCB (unrouted) + ERC + schematic PDF
 #   ./build.sh all-route schematic + PCB + route + fab   (full run)
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -55,7 +56,7 @@ fab() {
   echo "  -> kicad/fab/doorbell-jlcpcb.zip   (this is the file you upload to JLCPCB)"
 }
 
-case "${1:-all}" in
+case "${1:-all-route}" in
   sch)        sch ;;
   pcb)        pcb ;;
   check)      check ;;
