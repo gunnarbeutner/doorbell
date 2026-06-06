@@ -3,6 +3,7 @@
 Source of truth: `KlingelV4.fzz` (Fritzing schematic), `doorbell.yaml` (ESPHome),
 `STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (intercom system wiring diagram).
 Netlist extracted by `scripts/extract_netlist.py` → `build/netlist.txt`.
+V4 KiCad project scaffold + capture spec (net list, JLCPCB/CDFER part mapping): `kicad/`.
 
 ---
 
@@ -184,19 +185,117 @@ The redesign eliminates this entirely by integrating everything onto one PCB.
 
 ---
 
-## Redesign (V4) — decisions made
+## Redesign (V4) — integrated single board
+
+**Design philosophy: carry the proven V3 analog path over verbatim.** The bell-sense
+front-end (2× PC817, R2 = 5.1 kΩ shared cathode→P1 limiter, R1 = 1 kΩ shared emitter→GND)
+and the relay contact arrangement (K1 COM=P2/NO=P3, K2 COM=P4/NC=IN-P4) are reproduced
+**unchanged** — including how the Türruf AC tone is handled (it is debounced in firmware via
+`delayed_on`/`delayed_off`, not rectified). The only genuinely new work is **integration**:
+an ESP32-C3 MCU, USB-C power, and **discrete relay coil drivers** replacing the SONGLE
+module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engineered.
+
+### Decisions
 
 | Decision | Choice | Reason |
 |----------|--------|--------|
-| MCU | **ESP32-C3-MINI-1** | Smaller, modern, ESPHome-supported, JLCPCB-stocked |
+| MCU | **ESP32-C3-MINI-1** | Modern, ESPHome-supported, JLCPCB-stocked, native USB |
+| Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **JLCPCB SMT** (full fab assembly) | No soldering required |
-| Relay | **SMD signal relay** (e.g. HFD4 or Omron G6K) | Contacts only carry ≤12VDC, milliamps; no need for SONGLE-class parts |
-| WF26 connector | **5-pin spring-cage pluggable, 3.5mm pitch** | Locking, no-tool wire insertion for bare stranded Ethernet wire |
-| Power | USB (to be confirmed) | Matches existing setup |
-| Form factor | Single PCB, no daughter boards | Eliminates all inter-board jumpers |
+| Relay | **SMD signal relay, 5 V coil, gold/bifurcated contacts** (e.g. Omron G6K / HF) | Dry, ≤12 VDC, mA-level switching; gold contacts are *more* reliable than the V3 SONGLE's silver at these low "wetting" currents |
+| Relay driver | **Discrete: logic-level NMOS + flyback diode + gate pull-down** | The SONGLE module did this for us; now on-board. Pull-down ⇒ relays default OFF at boot |
+| WF26 connector | **5-pin spring-cage pluggable, 3.5 mm pitch** | Locking, no-tool insertion for bare stranded Ethernet wire |
+| Power | **USB-C** (5 V) → AMS1117-3.3 | USB-C connector + native-USB flashing/logging on the C3 |
+| Form factor | **Single PCB**, no daughter boards | Eliminates all inter-board jumpers (the V3 failure mode) |
+| Audio | **Out of scope** (evaluated, deferred — see below) | Needs S3+PSRAM + custom analog bridging; not worth the risk to the proven core |
 
-### GPIO remapping for ESP32-C3 (to be finalised in schematic)
-ESP32-C3 has different GPIO numbering. The same 4 signals are needed:
-2× opto inputs (with internal pull-ups), 2× relay drive outputs.
-Avoid: GPIO2 (strapping), GPIO8/9 (boot), GPIO11 (flash on some modules).
-Safe choices include GPIO0, GPIO1, GPIO3, GPIO4, GPIO5, GPIO6, GPIO7, GPIO10.
+### ESP32-C3 GPIO map (final)
+
+| GPIO | Signal | Dir | Notes |
+|------|--------|-----|-------|
+| IO4 | K1 relay driver — front door buzzer / ÖT (bridge P2+P3) | out | gate pull-down ⇒ off at boot |
+| IO5 | K2 relay driver — chime suppress (break P4) | out | gate pull-down ⇒ off at boot ⇒ chime passes |
+| IO6 | OC1 collector — house bell sense (Türruf, P4) | in | internal pull-up (firmware) |
+| IO7 | OC2 collector — apartment bell sense (Etagenruf, P5) | in | internal pull-up (firmware) |
+| IO18 / IO19 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
+| IO9 | BOOT strap | — | 10 kΩ pull-up + button to GND |
+| EN | Reset | — | 10 kΩ pull-up + 100 nF to GND (+ optional button) |
+| IO20 / IO21 | UART0 RX/TX | — | broken out to test pads (optional debug) |
+
+Avoided: IO2 / IO8 / IO9 (strapping), IO11+ (internal flash). IO4–IO7 are all
+non-strapping; relay outputs are deliberately on non-strapping pins.
+
+### Relay driver subcircuit (per channel)
+
+```
+GPIO ──100Ω── gate │ NMOS (2N7002)        coil ── +5V
+              gate ──10kΩ── GND            coil ── drain
+                  source ── GND      flyback D (1N4148W): cathode→+5V, anode→drain
+```
+5 V coils run off the USB rail (keeps the 3V3 LDO unloaded). The 10 kΩ gate pull-down
+holds each relay **off** while the GPIO floats during boot — so the door opener can't
+pulse and the chime can't be silenced by a booting/dead board.
+
+### Power tree
+
+```
+USB-C VBUS (5V) ──┬── 470µF bulk (WiFi current bursts) ──┬── relay coils (+5V)
+                  │                                       └── AMS1117-3.3 ── +3V3 ── ESP32-C3
+CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3: 10µF + 100nF decoupling
+USB D±  ── IO18/IO19 (native USB)             AMS1117: 10µF in / 22µF out
+```
+
+### Galvanic isolation (preserve in layout)
+
+The **bus side** (P1–P5 and IN-P4) is galvanically separate from the **logic side**
+(GND / +3V3 / +5V). The only crossings are *through* the optocouplers (input) and the
+relay coil↔contact air gap (output). **P1 is the bus common, not board GND.** Keep a
+clearance gap / slot between the two domains on the PCB. (Voltages are low — 12 VAC bus —
+so this is about hum/ground-loops more than shock, but it's a property worth keeping.)
+
+### BOM (draft — confirm JLCPCB/LCSC stock at order time)
+
+| Ref | Part | Footprint |
+|-----|------|-----------|
+| U1 | ESP32-C3-MINI-1 | module |
+| U2 | AMS1117-3.3 | SOT-223 |
+| J1 | USB-C receptacle, USB 2.0 | SMD 16-pin |
+| J2 | 5-pin spring-cage pluggable, 3.5 mm (Wago 2604-1105 + PCB header) | THT — hand-place |
+| K1, K2 | Signal relay, 5 V coil, SPDT, gold contacts | SMD |
+| Q1, Q2 | 2N7002 (logic-level NMOS) | SOT-23 |
+| D1, D2 | 1N4148W (flyback) | SOD-123 |
+| OC1, OC2 | PC817 / EL817S (SMD opto) | SOP-4 |
+| R_lim | 5.1 kΩ (opto LED limiter, shared) | 0603 |
+| R_em | 1 kΩ (opto emitter, shared) | 0603 |
+| R_g1, R_g2 | 100 Ω (gate series) | 0603 |
+| R_pd1, R_pd2 | 10 kΩ (gate pull-down) | 0603 |
+| R_en, R_boot | 10 kΩ | 0603 |
+| R_cc1, R_cc2 | 5.1 kΩ (USB-C CC) | 0603 |
+| C_bulk | 470 µF | electrolytic/SMD |
+| C_* | 22 µF, 10 µF×2, 100 nF×4 | 0603 |
+| LED_pwr + R | power indicator (+3V3) | 0603 |
+
+> J2 (the spring-cage Wago) is unlikely to be in JLCPCB's assembly library → plan to
+> **hand-solder it** after SMT. Prefer LCSC *Basic* parts elsewhere; give K1/K2 a second source.
+
+### Build / test notes
+
+- **Antenna keep-out:** ESP32-C3-MINI-1 antenna at board edge; no copper/pour under it; no
+  metal enclosure over it.
+- **Programming/bring-up:** flash + view logs over the USB-C (native USB-Serial-JTAG); add
+  BOOT + EN buttons (or pads) for recovery.
+- **Test points:** P1–P5, +5 V, +3V3, the 4 GPIOs, UART0 — for bench validation against the
+  real TV20/S (door pulse + chime suppress) before it goes in the wall.
+
+### Audio — evaluated and deferred (2026-06-06)
+
+Two-way intercom audio (press/hold talk + send/receive) was considered and **deliberately
+left out of V4**:
+- ESPHome can do it, but good **full-duplex** intercom (with echo cancellation) needs
+  **ESP32-S3/P4 + PSRAM** (e.g. the community `esphome-intercom` component); core ESPHome
+  is half-duplex and the C3 can't run the full-duplex stack.
+- The analog bridging is fully **custom and unproven on this TV20/S**: tap/inject on the
+  lines 2/3 speech pair (12 VAC-referenced → *Netzbrummgefahr*, likely needs an audio
+  isolation transformer) and emulate the WF26's multi-pole S2 talk switch.
+- If ever pursued, do it as a **separate ESP32-S3 daughterboard** tapping lines 2/3 — so the
+  proven C3 core is never put at risk. The core board intentionally carries **no audio hooks**.

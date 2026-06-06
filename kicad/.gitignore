@@ -1,0 +1,13 @@
+# generated intermediates / outputs
+doorbell.dsn
+doorbell.ses
+fab/
+# KiCad per-user / transient
+*.kicad_prl
+*.lck
+~*.kicad_*
+.history/
+__pycache__/
+*.pyc
+*-backups/
+*.kicad_pcb-bak
