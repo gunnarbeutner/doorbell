@@ -42,10 +42,17 @@ route() {
 fab() {
   echo "▶ fab outputs -> kicad/fab/"
   mkdir -p kicad/fab
-  kicad-cli pcb export gerbers "$PCB" -o kicad/fab/ 2>&1 | q | tail -1
-  kicad-cli pcb export drill   "$PCB" -o kicad/fab/ 2>&1 | q | tail -1
-  kicad-cli pcb export pos     "$PCB" -o kicad/fab/doorbell-pos.csv --format csv --units mm 2>&1 | q | tail -1
-  kicad-cli sch export bom     "$SCH" -o kicad/fab/doorbell-bom.csv 2>&1 | q | tail -1
+  rm -f kicad/fab/*.gtl kicad/fab/*.gbl kicad/fab/*.gts kicad/fab/*.gbs \
+        kicad/fab/*.gto kicad/fab/*.gbo kicad/fab/*.gtp kicad/fab/*.gbp \
+        kicad/fab/*.gm1 kicad/fab/*.gbr kicad/fab/*.gbrjob kicad/fab/*.drl
+  kicad-cli pcb export gerbers "$PCB" -o kicad/fab/ \
+    --layers F.Cu,B.Cu,F.Mask,B.Mask,F.Silkscreen,B.Silkscreen,F.Paste,B.Paste,Edge.Cuts 2>&1 | q | tail -1
+  kicad-cli pcb export drill "$PCB" -o kicad/fab/ 2>&1 | q | tail -1
+  kicad-cli pcb export pos   "$PCB" -o kicad/fab/doorbell-pos.csv --format csv --units mm 2>&1 | q | tail -1
+  kicad-cli sch export bom   "$SCH" -o kicad/fab/doorbell-bom.csv 2>&1 | q | tail -1
+  ( cd kicad/fab && rm -f doorbell-jlcpcb.zip &&
+    zip -q doorbell-jlcpcb.zip *.gtl *.gbl *.gts *.gbs *.gto *.gbo *.gtp *.gbp *.gm1 *.drl )
+  echo "  -> kicad/fab/doorbell-jlcpcb.zip   (this is the file you upload to JLCPCB)"
 }
 
 case "${1:-all}" in

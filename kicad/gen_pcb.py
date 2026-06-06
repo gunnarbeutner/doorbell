@@ -27,12 +27,12 @@ PCB_PLACE = {
     "SW_en":  (8,  14, 0),
     "SW_boot":(8,  23, 0),
     "J1":     (5,  33, 90),   # USB-C on the left edge
-    "LED1":   (7,  45, 0),    # power LED
-    "R_led":  (11, 45, 0),
+    "LED1":   (4,  9,  0),    # power LED, top-left corner
+    "R_led":  (9,  9,  0),
     # === TOP edge: ESP32 (antenna -> top edge) + caps + WAGO (both rotated) ===
     "U1":     (24, 17, 0),    # antenna keep-out (top, pad-free) auto-detected -> top edge
-    "C_3v3":  (14, 15, 90),   # decoupling on U1's left side, pads top/bottom (nudged up)
-    "C_dec":  (34, 17, 90),   # decoupling on U1's right side, pads top/bottom
+    "C_3v3":  (14, 15, 90),   # decoupling at U1's 3V3/GND pins (left side)
+    "C_dec":  (14, 11, 90),   # 2nd decoupling, also by the 3V3/GND pins (left side)
     "J2":     (56, 11, 180),  # WF26 spring terminal, horizontal on the top edge
     # === relays side-by-side UNDER the WAGO, drivers in a row below; optos kept ===
     "K1":     (63, 26, 0),    # door-opener relay, under the WAGO (right)
@@ -40,15 +40,15 @@ PCB_PLACE = {
     "R_g1":   (63, 33, 0),
     "R_pd1":  (67, 33, 0),
     "D1":     (59, 36, 0),
-    "OC1":    (38, 25, 90),   # house bell sense (left of the relays, rotated 90)
+    "OC1":    (27, 31, 90),   # house bell sense (right of U2, with clearance)
     "K2":     (50, 26, 0),    # chime-suppress relay, under the WAGO (left)
     "Q2":     (46, 33, 0),
     "R_g2":   (50, 33, 0),
     "R_pd2":  (54, 33, 0),
     "D2":     (46, 36, 0),
-    "OC2":    (43, 25, 90),   # apartment bell sense (left of the relays, rotated 90)
+    "OC2":    (32, 31, 90),   # apartment bell sense (right of U2)
     # LDO up underneath U1 (x unchanged); its caps + the rest stay on the bottom row
-    "U2":     (18, 31, 0),
+    "U2":     (18, 31, 180),
     "C_in":   (11, 48, 0),
     "C_out":  (25, 48, 0),
     "C_bulk": (30, 48, 0),
