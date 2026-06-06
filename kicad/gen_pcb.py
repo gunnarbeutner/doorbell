@@ -40,25 +40,25 @@ PCB_PLACE = {
     "R_g1":   (63, 33, 0),
     "R_pd1":  (67, 33, 0),
     "D1":     (59, 36, 0),
-    "OC1":    (27, 31, 90),   # house bell sense (right of U2, with clearance)
+    "OC1":    (42, 23, 270),  # house bell sense (between U1 and K2, rot 180)
     "K2":     (50, 26, 0),    # chime-suppress relay, under the WAGO (left)
     "Q2":     (46, 33, 0),
     "R_g2":   (50, 33, 0),
     "R_pd2":  (54, 33, 0),
     "D2":     (46, 36, 0),
-    "OC2":    (32, 31, 90),   # apartment bell sense (right of U2)
+    "OC2":    (37, 23, 270),  # apartment bell sense (between U1 and K2, rot 180)
     # LDO up underneath U1 (x unchanged); its caps + the rest stay on the bottom row
     "U2":     (18, 31, 180),
-    "C_in":   (11, 48, 0),
-    "C_out":  (25, 48, 0),
-    "C_bulk": (30, 48, 0),
-    "R_cc1":  (35, 48, 0),
-    "R_cc2":  (38, 48, 0),
-    "R_en":   (43, 48, 0),
-    "C_en":   (46, 48, 0),
-    "R_boot": (50, 48, 0),
-    "R_lim":  (55, 48, 90),
-    "R_em":   (57, 48, 90),
+    "C_in":   (14, 39, 270),  # LDO input cap, left of C1, +5V pad up (rot CW)
+    "C_out":  (26, 31, 0),    # LDO output cap, right of U2 (clear of its pads)
+    "C_bulk": (18, 39, 0),    # bulk cap, south of U2
+    "R_cc1":  (10.5, 35, 270), # CC1 pulldown, right of J1 (90 CW), vertically aligned
+    "R_cc2":  (10.5, 30.43, 90), # CC2 pulldown; CC2 pad aligned to J1 CC2 pad (Y=31.25)
+    "R_en":   (3,  13, 0),    # EN resistor, left of the reset button (SW2)
+    "C_en":   (3,  16, 180),  # EN cap, left of the reset button (SW2)
+    "R_boot": (3,  23, 0),    # to the left of the boot button (SW1)
+    "R_lim":  (47, 19, 0),   # R1 north of K2, close to OK1 (nudged right)
+    "R_em":   (42, 29, 0),   # R2 underneath OK1 (rotated CCW to horizontal)
 }
 MARGIN = 4.0           # board edge margin (mm) on non-flush edges
 
@@ -162,6 +162,21 @@ chain.SetClosed(True)
 zone.AddPolygon(chain)
 zone.SetZoneName("antenna keep-out")
 board.Add(zone)
+
+# +5V island on B.Cu in clear space near the USB-C. Present BEFORE routing so the DSN
+# marks +5V as a plane here and Freerouting threads the VBUS pads (and the other +5V
+# pins) to it -- the dense connector escape is the router's job, not a hand-drawn neck.
+# iz = pcbnew.ZONE(board)
+# iz.SetLayer(pcbnew.B_Cu)
+# iz.SetNet(nets["+5V"])
+# iz.SetAssignedPriority(10)              # win over the GND pour where they overlap
+# ich = pcbnew.SHAPE_LINE_CHAIN()
+# for (px, py) in [(7.125, 28.7), (8.75, 28.7), (8.75, 35.3), (7.125, 35.3)]:
+#     ich.Append(vmm(px, py))
+# ich.SetClosed(True)
+# iz.AddPolygon(ich)
+# iz.SetZoneName("+5V island")
+# board.Add(iz)
 
 board.BuildConnectivity()
 out = os.path.join(HERE, "doorbell.kicad_pcb")

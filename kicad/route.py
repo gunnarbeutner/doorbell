@@ -44,19 +44,32 @@ for d in edges[1:]:
     bb.Merge(d.GetBoundingBox())
 BL, BR, BT, BB = MM(bb.GetLeft()), MM(bb.GetRight()), MM(bb.GetTop()), MM(bb.GetBottom())
 
+GND_FILL = False                        # TEST: set True for the GND pour + stitching vias
 # GND zones on both copper layers
 ins = 0.3
 corners = [(BL+ins, BT+ins), (BR-ins, BT+ins), (BR-ins, BB-ins), (BL+ins, BB-ins)]
-for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+for layer in ((pcbnew.F_Cu, pcbnew.B_Cu) if GND_FILL else ()):
     z = pcbnew.ZONE(board); z.SetLayer(layer); z.SetNet(gnd)
     ch = pcbnew.SHAPE_LINE_CHAIN()
     for (cx, cy) in corners:
         ch.Append(Vmm(cx, cy))
     ch.SetClosed(True); z.AddPolygon(ch); board.Add(z)
 
+# The +5V island (B.Cu) is created in gen_pcb.py so it's a plane during routing and
+# Freerouting threads the VBUS pads to it. Here we just keep GND stitching vias out of it.
+IX0 = IY0 = IX1 = IY1 = None
+v5zones = [z for z in board.Zones() if z.GetNetname() == "+5V"]
+if v5zones:
+    zb = v5zones[0].GetBoundingBox()
+    IX0, IY0, IX1, IY1 = MM(zb.GetLeft()), MM(zb.GetTop()), MM(zb.GetRight()), MM(zb.GetBottom())
+
 # obstacles (avoid all pads; keep clear of NON-GND tracks/vias, keep-out, board edge)
 pads = [(MM(p.GetPosition().x), MM(p.GetPosition().y), MM(max(p.GetSize().x, p.GetSize().y))/2.0)
         for f in board.GetFootprints() for p in f.Pads()]
+fpboxes = []
+for _f in board.GetFootprints():
+    _bb = _f.GetBoundingBox(False, False)
+    fpboxes.append((MM(_bb.GetLeft()), MM(_bb.GetRight()), MM(_bb.GetTop()), MM(_bb.GetBottom())))
 segs, ovias = [], []
 for t in board.GetTracks():
     if t.GetNetname() == "GND":
@@ -78,11 +91,16 @@ def dseg(px, py, ax, ay, bx, by):
     t = max(0.0, min(1.0, ((px-ax)*dx + (py-ay)*dy) / (dx*dx + dy*dy)))
     return math.hypot(px-(ax+t*dx), py-(ay+t*dy))
 
-VIA_R, CLR, PITCH, EDGE = 0.3, 0.4, 5.0, 1.5
+VIA_R, CLR, PITCH, EDGE = 0.3, 0.6, 8.0, 1.5
 def clear(px, py):
     if not (BL+EDGE < px < BR-EDGE and BT+EDGE < py < BB-EDGE):
         return False
     if KX0 < px < KX1 and KY0 < py < KY1:
+        return False
+    for (l, r, t, bo) in fpboxes:           # keep vias off component footprints
+        if l-0.3 < px < r+0.3 and t-0.3 < py < bo+0.3:
+            return False
+    if IX0 is not None and IX0 - CLR < px < IX1 + CLR and IY0 - CLR < py < IY1 + CLR:
         return False
     for (x, y, r) in pads:
         if math.hypot(px-x, py-y) < VIA_R + r + CLR:
@@ -97,7 +115,7 @@ def clear(px, py):
 
 nvia = 0
 yy = BT + EDGE + 1.0
-while yy < BB - EDGE:
+while GND_FILL and yy < BB - EDGE:
     xx = BL + EDGE + 1.0
     while xx < BR - EDGE:
         if clear(xx, yy):
