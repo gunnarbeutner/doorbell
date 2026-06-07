@@ -25,39 +25,40 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32-C3 + its power / boot / LED support clustered just ABOVE it ===
     "U1":     (8, 50, 90),    # MCU rot 90° CW, lower-left; antenna overhangs the left edge
-    "SW_boot":(5,  24, 0),    # BOOT button
-    "SW_en":  (12, 24, 0),    # EN / reset button
-    "R_boot": (5,  28, 0),
-    "R_en":   (12, 28, 0),
-    "C_en":   (16, 28, 180),
+    "SW_boot":(26, 44, 90),   # BOOT button, right of C1 (rotated CCW)
+    "SW_en":  (32.5, 44, 90), # EN / reset button, right of C1 (rotated CCW)
+    "R_boot": (26, 48, 0),    # BOOT pullup, under SW_boot
+    "R_en":   (31, 48, 0),    # EN pullup, under SW_en
+    "C_en":   (34, 48, 180),  # EN cap, under SW_en
     "U2":     (18, 55, 0),    # AMS1117 LDO, in the gap between U1 and J1 (rotated CCW again -> 0°)
     "C_bulk": (18, 44.5, 0),  # 5V bulk cap, above U2
     "C_in":   (15, 48.5, 90), # LDO input cap, above U2
     "C_out":  (21, 48.5, 90), # LDO output cap, above U2
-    "LED1":   (5,  38, 0),    # power LED
-    "R_led":  (10, 38, 0),
+    "LED1":   (8.5, 59, 0),   # power LED, right of C3 (row south of U1)
+    "R_led":  (11.7, 59, 0),  # LED series resistor, right of LED1
     "C_dec":  (2.5, 59, 270), # U1 100nF decoupling, south of U1 (vertical)
     "C_3v3":  (6, 59, 270),   # U1 10uF decoupling, south of U1 (vertical)
     # === BOTTOM edge: USB-C (centred) + CC pulldowns above its CC pads ===
     "J1":     (30, 53, 0),    # USB-C (USB4085 THT), middle of bottom edge; mouth overhangs down. x re-centred below
     "R_cc1":  (29, 51, 90),   # CC1 pulldown, above J1.A5
-    "R_cc2":  (37, 57.5, 270),# CC2 pulldown, right of J1 (rotated 180°)
-    # === RIGHT / TOP: BUS interface (WF26 terminal, optos, bell-sense R, relays + drivers) ===
-    "J2":     (53, 11, 180),  # WF26 6-way screw terminal, top edge
-    "OC2":    (26, 13, 270),  # apartment bell sense
-    "OC1":    (30, 13, 270),  # house bell sense
-    "R_lim":  (26, 20, 0),    # shared opto cathode limiter
-    "R_em":   (30, 20, 0),    # shared opto emitter
-    "K2":     (39, 26, 0),    # chime-suppress relay
-    "Q2":     (35, 33, 0),
-    "R_g2":   (39, 33, 0),
-    "R_pd2":  (43, 33, 0),
-    "D2":     (35, 36, 0),
-    "K1":     (52, 26, 0),    # door-opener relay
-    "Q1":     (48, 33, 0),
-    "R_g1":   (52, 33, 0),
-    "R_pd1":  (56, 33, 0),
-    "D1":     (48, 36, 0),
+    "R_cc2":  (35, 51, 270),  # CC2 pulldown, above J1 (next to R_cc1)
+    # === TOP edge: WF26 terminal, centred above the bus interface ===
+    "J2":     (28, 11, 180),  # WF26 6-way screw terminal, top edge
+    # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
+    "OC2":    (4,  26, 270),  # apartment bell sense (left)
+    "OC1":    (8,  26, 270),  # house bell sense (left)
+    "R_lim":  (4,  33, 0),    # shared opto cathode limiter
+    "R_em":   (8,  33, 0),    # shared opto emitter
+    "K2":     (17, 26, 0),    # chime-suppress relay (right, beside the optos)
+    "Q2":     (13, 33, 0),
+    "R_g2":   (17, 33, 0),
+    "R_pd2":  (21, 33, 0),
+    "D2":     (13, 36, 0),
+    "K1":     (30, 26, 0),    # door-opener relay
+    "Q1":     (26, 33, 0),
+    "R_g1":   (30, 33, 0),
+    "R_pd1":  (34, 33, 0),
+    "D1":     (26, 36, 0),
 }
 MARGIN = 4.0           # board edge margin (mm) on non-flush edges
 
@@ -157,10 +158,10 @@ add_plane(pcbnew.In2_Cu, "+3V3")
 #     we make those connections here so Freerouting only has to route signals on F.Cu/B.Cu.
 #     (THT power/GND pads already pass through the planes, so they're skipped.) ---
 PLANE_OF = {"GND": pcbnew.In1_Cu, "+3V3": pcbnew.In2_Cu}
-def _pc(p):                            # pad centre (mm) + half its larger extent
+def _pc(p):                            # pad centre (mm) + bounding-circle radius (covers corners)
     bb = p.GetBoundingBox()
     return (MM((bb.GetLeft()+bb.GetRight())/2.0), MM((bb.GetTop()+bb.GetBottom())/2.0),
-            max(MM(bb.GetRight()-bb.GetLeft()), MM(bb.GetBottom()-bb.GetTop()))/2.0)
+            (MM(bb.GetRight()-bb.GetLeft())**2 + MM(bb.GetBottom()-bb.GetTop())**2)**0.5/2.0)
 _obs = [_pc(p) for f in board.GetFootprints() for p in f.Pads()]
 _svias, _nstitch = [], 0
 def _clear(vx, vy):                    # via (0.5mm) site clear of all pads, prior stitch vias, edge
@@ -192,12 +193,11 @@ print(f"  plane stitching: {_nstitch} vias")
 # layer, so the old single-row HRO part's "+5V bridge" (off-pad vias east of the NPTH pegs,
 # joined on B.Cu) is no longer needed -- Freerouting joins the +5V holes directly.
 
-# Centre J1 on the bottom edge: shift in x so its BOUNDING BOX (not its origin -- the USB4085
-# footprint puts the origin at pad A1, ~3 mm off the bbox centre) sits centred between the
-# board's left/right edges.
-_jl, _jr, _jt, _jb = fext(fps["J1"])
-_pj = fps["J1"].GetPosition()
-fps["J1"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((x0 + x1) / 2.0 - (_jl + _jr) / 2.0), _pj.y))
+# Centre J2 (WF26 screw terminal) on the top edge: shift in x so its bounding box sits centred
+# between the board's left/right edges. (J1 is placed explicitly, not centred.)
+_jl, _jr, _jt, _jb = fext(fps["J2"])
+_pj = fps["J2"].GetPosition()
+fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((x0 + x1) / 2.0 - (_jl + _jr) / 2.0), _pj.y))
 
 # J1 overhangs the bottom edge, so its default reference text lands off-board. Put it just
 # ABOVE the connector body (inboard) instead.
