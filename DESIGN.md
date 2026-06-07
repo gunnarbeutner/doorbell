@@ -89,12 +89,17 @@ chime suppression; restored here on the 6-way J2 (pad 6).
 
 ## GPIO map (ESPHome ↔ hardware)
 
-| GPIO | ESPHome entity | Direction | Hardware |
-|------|---------------|-----------|----------|
-| 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses P5 / Etagenruf) |
-| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC1 collector (senses P4 / Türruf) |
-| 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K1 (bridges P2+P3 = ÖT door opener) |
-| 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K2 (switches P4 = chime suppress) |
+> ⚠️ **V3 (ESP32 dev board) mapping — kept for reference only.** These pins (25/26/32/33)
+> **do not exist on the ESP32‑C3** and must NOT be used for V4. `doorbell.yaml` still carries
+> these stale pins and `board: esp32dev`; remap it to the C3 pins below before flashing the V4
+> board. See "ESP32‑C3 GPIO map (final)" for the authoritative V4 assignment.
+
+| GPIO (V3) | ESPHome entity | Direction | Hardware | → V4 C3 pin |
+|------|---------------|-----------|----------|----|
+| 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses P5 / Etagenruf) | **IO7** |
+| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC1 collector (senses P4 / Türruf) | **IO6** |
+| 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K1 (bridges P2+P3 = ÖT door opener) | **IO4** |
+| 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K2 (switches P4 = chime suppress) | **IO5** |
 
 ---
 
@@ -234,7 +239,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT, hand-soldered) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
 | USB-C connector | **GCT USB4085** (2-row THT) | The cheap single-row SMD Type-C (HRO) carries interleaved/duplicated D+/D−/CC/VBUS pads that fight routing; USB4085's two TH rows escape cleanly. LCSC C7095263 |
 | Layers | **4-layer** (F.Cu / GND / +3V3 / B.Cu) | Solid GND + power planes; lets the USB D+/D− pair route together and keeps signals off the planes |
-| Power | **USB-C** (5 V) → AMS1117-3.3 | native-USB flashing/logging on the C3; +5V & +3V3 distributed on the planes |
+| Power | **USB-C** (5 V) → **SGM2212-3.3** (low-dropout LDO, LCSC C3294699) via a series SS14 VBUS reverse-protection Schottky | native-USB flashing/logging on the C3; +5V & +3V3 distributed on the planes. Low-dropout part chosen so the ~0.45 V Schottky drop still leaves ~1 V headroom (an AMS1117's 1.3 V dropout would have browned out under WiFi TX) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates all inter-board jumpers (the V3 failure mode) |
 | Audio | **Out of scope** (evaluated, deferred — see below) | Needs S3+PSRAM + custom analog bridging; not worth the risk to the proven core |
 
@@ -249,10 +254,12 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | IO18 / IO19 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
 | IO9 | BOOT strap | — | 10 kΩ pull-up + button to GND |
 | EN | Reset | — | 10 kΩ pull-up + 100 nF to GND (+ optional button) |
-| IO20 / IO21 | UART0 RX/TX | — | broken out to test pads (optional debug) |
+| IO20 / IO21 | UART0 RX/TX | — | currently **No-Connect** (DESIGN intent was test pads — not yet on the board; native USB-Serial-JTAG is the primary log path) |
 
 Avoided: IO2 / IO8 / IO9 (strapping), IO11+ (internal flash). IO4–IO7 are all
-non-strapping; relay outputs are deliberately on non-strapping pins.
+non-strapping; relay outputs are deliberately on non-strapping pins. IO8 carries a 10 kΩ
+pull-up (R12, download-mode robustness); **IO2 is left floating** — Espressif's datasheet
+(Table 3-3 fn 2) recommends a 10 kΩ pull-up there to harden boot against glitches (optional).
 
 ### Relay driver subcircuit (per channel)
 
@@ -268,11 +275,15 @@ pulse and the chime can't be silenced by a booting/dead board.
 ### Power tree
 
 ```
-USB-C VBUS (5V) ──┬── 470µF bulk (WiFi current bursts) ──┬── relay coils (+5V)
-                  │                                       └── AMS1117-3.3 ── +3V3 ── ESP32-C3
-CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3: 10µF + 100nF decoupling
-USB D±  ── IO18/IO19 (native USB)             AMS1117: 10µF in / 22µF out
+USB-C VBUS (5V) ── SS14 (series reverse-protect) ── +5V ──┬── relay coils (+5V)
+                                                          └── SGM2212-3.3 ── +3V3 ── ESP32-C3
+CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3: 10µF (C_out) + 10µF + 100nF decoupling
+USB D±  ── IO18/IO19 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)
 ```
+> No bulk electrolytic: the 470 µF was **removed** — the local LDO actively regulates the
+> ~350 mA WiFi-TX burst (modeled droop ≈ 90 mV across 20 µF of ceramic on +3V3), so a bulk
+> cap buys nothing here. VBUS cable-sag is a dropout-headroom question, covered by the
+> low-dropout SGM2212, not a cap-size one.
 
 ### Galvanic isolation (preserve in layout)
 
@@ -305,8 +316,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | R_pd1, R_pd2 | 10 kΩ (gate pull-down) | 0603 |
 | R_en, R_boot | 10 kΩ | 0603 |
 | R_cc1, R_cc2 | 5.1 kΩ (USB-C CC) | 0603 |
-| C_bulk | 470 µF | electrolytic/SMD |
-| C_* | 22 µF, 10 µF×2, 100 nF×4 | 0603 |
+| C_* | 10 µF×3 (C_in, C_out, C_3v3), 100 nF×2 (C_en, C_dec) | 0603 |
 | LED_pwr + R | power indicator (+3V3) | 0603 |
 
 > J2 (the screw terminal) is THT → **hand-solder it** after SMT. Prefer LCSC *Basic* parts
@@ -374,3 +384,38 @@ left out of V4**:
   isolation transformer) and emulate the WF26's multi-pole S2 talk switch.
 - If ever pursued, do it as a **separate ESP32-S3 daughterboard** tapping lines 2/3 — so the
   proven C3 core is never put at risk. The core board intentionally carries **no audio hooks**.
+
+---
+
+## Design review findings (2026-06-07)
+
+Full adversarial review (datasheet-verified pinouts + routed-board parse). **No Critical/Major
+defect in the PCB.** Automated: ERC 0 err, DRC 0/0, `check_pcb` PASS. Open items:
+
+**Verified CLEAN (datasheet/board-confirmed):** relay contact mapping (G6K-2F-Y coil 1/8,
+COM3/NC2/NO4 — K1 bridges P2+P3, K2 breaks P4); SGM2212 SOT-223 pinout + ~1 V headroom;
+diode polarity (D4 reverse-protect, D1/D2 flyback, pad1=cathode); USB front-end (D+/D− not
+swapped, SRV05-4 low-cap, CC 5.1 kΩ Rd, no UART bridge, internal D+ pull-up); 3V3 decoupling
+adequacy (470 µF unnecessary); 2N7002 gate drive @3.3 V; bell-sense logic levels
+(GPIO LOW ≈0.12–0.27 V); all U1 pads on-board despite the overhang; antenna keep-out; plane
+connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
+
+**To address:**
+1. **[Major — firmware]** `doorbell.yaml` still uses `board: esp32dev` and pins 25/26/32/33
+   (nonexistent on C3). Remap to the C3 GPIO map above (32→IO7, 33→IO6, 26→IO4, 25→IO5),
+   `board: esp32-c3-devkitm-1`, before flashing.
+2. **[Minor]** Relay pickup margin thin: G6K must-operate = 80% (4.0 V); post-Schottky rail
+   ~4.5 V → coil ~4.31 V (86%), goes negative under VBUS sag. Bench-measure coil V under WiFi
+   TX; consider the 4.5 V coil variant (DC4.5, must-operate 3.6 V) or a P-FET ideal-diode for VBUS.
+3. **[Minor]** USB D+/D− run ~85% on B.Cu, which references the **+3V3** plane (In2), not GND;
+   reference flips at the vias. Fine for FS USB; to fix, route on F.Cu or swap inner planes
+   (GND→In2) so B.Cu sees GND.
+4. **[Minor]** GPIO2 floating — add 10 kΩ pull-up (Espressif fn 2), optional.
+5. **[Minor]** Shared opto R1 reverse-biases the idle opto's LED ~10.8 V (>6 V VR) during the
+   other channel's ring; leakage-limited (proven in V3). Optional: anti-parallel diode or
+   per-opto cathode resistor.
+6. **[Minor/process]** Promised UART0/test pads not on the board (GPIO20/21 = NC, 0 TP
+   footprints); THT J1/J2 still in JLCPCB CPL/BOM (`HANDSOLDER=set()`); `ROT_FIX={}` — verify
+   polarized-part rotations at the Confirm-Placement gate; no mounting holes.
+7. **[Nit]** 2 of U1's 9 EPAD thermal cells unstitched (benign, monolithic EPAD); one 0.388 mm
+   bus↔logic clearance (<0.5 mm aspiration, fine for 12 V); U2 comment says "1A" but SGM2212 is ~800 mA.

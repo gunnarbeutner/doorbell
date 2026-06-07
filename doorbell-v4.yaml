@@ -1,0 +1,198 @@
+# Klingel V4 — ESPHome config for the ESP32-C3-MINI-1 board.
+#
+# Ported from the V3 doorbell.yaml (ESP32 WROOM-32 dev board). All automation logic is
+# preserved verbatim; only the things that change with the new MCU/board were touched:
+#
+#   1. board/framework  : esp32dev  ->  esp32-c3-devkitm-1  (the C3-MINI-1 module board)
+#   2. logger           : routed to the native USB-Serial-JTAG (UART0/GPIO20-21 are N/C on
+#                         this board, so default UART logging would go nowhere)
+#   3. GPIO pins remapped to the V4 hardware (the V3 pins 25/26/32/33 do NOT exist on the C3):
+#        House Doorbell    (OC1 / Türruf  sense) : 33 -> GPIO6
+#        Apartment Doorbell(OC2 / Etagenruf sense): 32 -> GPIO7
+#        front_door_buzzer (K1 / ÖT door opener) : 26 -> GPIO4
+#        suppress_sound    (K2 / chime suppress) : 25 -> GPIO5
+#   4. *** relay outputs are NO LONGER inverted ***  (see the big comment by `output:`)
+#
+# The api encryption key, OTA password and static IP are kept identical to V3 so the existing
+# Home Assistant integration keeps working without re-pairing.
+
+esphome:
+  name: doorbell
+
+esp32:
+  board: esp32-c3-devkitm-1     # uses the ESP32-C3-MINI-1 module — matches U1
+  framework:
+    type: esp-idf
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG   # logs over the native USB-C (no UART pins are broken out)
+
+api:
+  encryption:
+    key: "REDACTED_API_KEY"
+
+web_server:
+  port: 80
+  ota: false
+  local: true
+
+ota:
+  platform: esphome
+  password: "REDACTED_OTA_PASSWORD"
+
+network:
+  enable_ipv6: true
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  power_save_mode: "none"
+
+  manual_ip:
+    static_ip: 192.168.3.18
+    gateway: 192.168.3.1
+    subnet: 255.255.255.0
+    dns1: 192.168.3.53
+
+# Optional on the C3 (BLE works, but uses resources on the single core). Remove this and
+# esp32_ble_tracker if you don't use the Bluetooth proxy.
+bluetooth_proxy:
+  active: false
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: False
+
+binary_sensor:
+  - platform: gpio
+    name: "Apartment Doorbell"
+    icon: mdi:doorbell
+    pin:
+      number: GPIO7            # OC2 collector — Etagenruf (P5) sense   [V3: 32]
+      inverted: true           # opto pulls the pin LOW when the bell rings
+      mode:
+        input: true
+        pullup: true           # C3 internal pull-up holds it HIGH at idle
+    filters:
+      - delayed_on: 25ms
+      - delayed_off: 2s
+    on_press:
+      then:
+        - homeassistant.event:
+            event: esphome.doorbell_apartment
+  - platform: gpio
+    name: "House Doorbell"
+    icon: mdi:doorbell
+    pin:
+      number: GPIO6            # OC1 collector — Türruf (P4 / IN-P4) sense   [V3: 33]
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 2s
+    on_press:
+      then:
+        if:
+          condition:
+            binary_sensor.is_on: someone_at_house_door
+          then:
+            - homeassistant.event:
+                event: esphome.doorbell_opened_arrival
+            - delay: 1.75s
+            - button.press: front_door_buzzer
+          else:
+            if:
+              condition:
+                switch.is_on: auto_open_front_door
+              then:
+                - homeassistant.event:
+                    event: esphome.doorbell_opened
+                - delay: 1.75s
+                - button.press: front_door_buzzer
+              else:
+                - homeassistant.event:
+                    event: esphome.doorbell_not_opened
+  - platform: homeassistant
+    id: apartment_occupancy
+    entity_id: binary_sensor.apartment_occupancy
+  - platform: homeassistant
+    id: someone_at_house_door
+    entity_id: binary_sensor.someone_at_house_door
+  - platform: homeassistant
+    id: internet_connection
+    entity_id: binary_sensor.fritz_box_7590_connection
+  - platform: template
+    name: "Doorbell Sound"
+    id: doorbell_sound_state
+    icon: mdi:music-note
+    lambda: |-
+      return !id(internet_connection).state || (id(apartment_occupancy).state && !id(someone_at_house_door).state && id(doorbell_sound).state);
+    on_press:
+      then:
+        - output.turn_off: suppress_doorbell_sound_bin   # let the chime ring
+    on_release:
+      then:
+        - output.turn_on: suppress_doorbell_sound_bin    # energise K2 -> break P4 -> silence
+
+switch:
+  - platform: template
+    name: "Auto-open front door"
+    icon: mdi:gate
+    id: auto_open_front_door
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: template
+    name: "Doorbell Sound"
+    icon: mdi:music-note
+    id: doorbell_sound
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+# *** IMPORTANT — the V4 relay drivers are ACTIVE-HIGH, so these outputs are NOT inverted. ***
+# V3 used a SONGLE relay module that energised on a LOW input, so V3 had `inverted: true`.
+# V4 drives each coil with a discrete low-side N-MOSFET (2N7002): GPIO HIGH -> FET on -> coil
+# energised. So `turn_on` must drive the pin HIGH => no `inverted:` here. Leaving `inverted: true`
+# in by mistake would energise BOTH relays at boot (door opener pulsing + chime force-suppressed)
+# — exactly what the gate pull-downs are there to prevent. The logical meaning is unchanged from
+# V3 (turn_on = relay energised); only the physical polarity flipped.
+output:
+  - platform: gpio
+    pin: GPIO5               # K2 — chime suppress (break P4)            [V3: 25, was inverted]
+    id: suppress_doorbell_sound_bin
+  - platform: gpio
+    pin: GPIO4               # K1 — front-door buzzer / ÖT (bridge P2+P3) [V3: 26, was inverted]
+    id: front_door_buzzer_bin
+
+button:
+  - platform: output
+    name: "Front Door Buzzer"
+    icon: mdi:lock-open-variant
+    id: front_door_buzzer
+    output: front_door_buzzer_bin
+    duration: 1750ms
+  - platform: template
+    name: "Phone Call"
+    icon: mdi:phone
+    id: phone_call
+    on_press:
+      then:
+        - homeassistant.event:
+            event: esphome.doorbell_phone_call
+        - button.press: front_door_buzzer
+  - platform: template
+    name: "Debug Doorbell Opened"
+    icon: mdi:bug
+    id: debug_doorbell_opened
+    entity_category: diagnostic
+    on_press:
+      then:
+        - homeassistant.event:
+            event: esphome.doorbell_opened
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi Signal Strength
+    update_interval: 60s
