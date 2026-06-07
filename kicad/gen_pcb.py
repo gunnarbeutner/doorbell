@@ -203,6 +203,27 @@ _jl, _jr, _jt, _jb = fext(fps["J2"])
 _pj = fps["J2"].GetPosition()
 fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((x1 - 2.0) - _jr), _pj.y))
 
+# J2 (WF26 terminal) per-screw labels on the front silk so the bus lines are unambiguous when
+# wiring in the wall: pad n -> net Pn; pad 6 = IN-P4, the line-4 return to the WF26's terminal 4.
+_J2_LBL = {"1": "P1", "2": "P2", "3": "P3", "4": "P4", "5": "P5", "6": "IN4"}
+for _p in fps["J2"].Pads():
+    _lbl = _J2_LBL.get(_p.GetNumber())
+    if not _lbl:
+        continue
+    _pp = _p.GetPosition()
+    _jt2 = pcbnew.PCB_TEXT(board)
+    _jt2.SetText(_lbl)
+    _jt2.SetLayer(pcbnew.F_SilkS)
+    _jt2.SetPosition(pcbnew.VECTOR2I(_pp.x, _pp.y + pcbnew.FromMM(4.6)))   # in the gap below J2 body silk, above K1
+    _jt2.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
+    _jt2.SetTextThickness(pcbnew.FromMM(0.12))
+    board.Add(_jt2)
+
+# Hide J2's own reference: 30/35 parts already hide their refdes, and J2's "J2" was the one
+# sitting in the pin-label row -- the only refdes exposed once the slots are populated. The
+# P1..P5/IN4 functional labels are what matter at this connector; "J2" still lives in the BOM/CPL.
+fps["J2"].Reference().SetVisible(False)
+
 # J1 overhangs the bottom edge, so its default reference text lands off-board. Put it just
 # ABOVE the connector body (inboard) instead.
 jl, jr, jt, jb = fext(fps["J1"])
@@ -232,13 +253,23 @@ for _sw, _txt in (("SW_boot", "BOOT"), ("SW_en", "RST")):
 
 # Product name on the front silkscreen, in the freed upper-left corner.
 _pn = pcbnew.PCB_TEXT(board)
-_pn.SetText("Klingel V4")
+_pn.SetText("Doorbell Ctrl V4")
 _pn.SetLayer(pcbnew.F_SilkS)
 _pn.SetPosition(vmm(4.4, 19))
 _pn.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
 _pn.SetTextThickness(pcbnew.FromMM(0.15))
 _pn.SetTextAngleDegrees(90)   # rotated CCW (reads bottom-to-top)
 board.Add(_pn)
+
+# Board revision + date, parallel to the product name (also reads bottom-to-top).
+_rd = pcbnew.PCB_TEXT(board)
+_rd.SetText("rev A  2026-06-07")
+_rd.SetLayer(pcbnew.F_SilkS)
+_rd.SetPosition(vmm(6.6, 19))
+_rd.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
+_rd.SetTextThickness(pcbnew.FromMM(0.13))
+_rd.SetTextAngleDegrees(90)
+board.Add(_rd)
 
 # Overhanging parts (EDGE_OVERHANG) run their silkscreen off / across the board edge they
 # overhang (silk_edge_clearance). Drop the silk graphics that extend past that edge; the fab
