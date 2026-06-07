@@ -260,7 +260,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 
 Avoided: IO2 / IO8 / IO9 (strapping), IO11+ (internal flash). IO4–IO7 are all
 non-strapping; relay outputs are deliberately on non-strapping pins. IO8 carries a 10 kΩ
-pull-up (R12, download-mode robustness); **IO2 is left floating** — Espressif's datasheet
+pull-up (R10, download-mode robustness); **IO2 is left floating** — Espressif's datasheet
 (Table 3-3 fn 2) recommends a 10 kΩ pull-up there to harden boot against glitches (optional).
 
 ### Relay driver subcircuit (per channel)
@@ -417,7 +417,7 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 4. **[Minor]** GPIO2 floating — add 10 kΩ pull-up (Espressif fn 2), optional.
 5. **[Resolved — limiters unshared]** The shared 5.1 kΩ opto limiter let a ringing channel
    reverse-bias the idle opto's LED ~10.8 V (>6 V VR). **Fixed:** split into one resistor per
-   opto (R_lim1 = R1, R_lim2 = R13), so each idle cathode stays near P1. R_em (1 kΩ emitter)
+   opto (R_lim1 = R1, R_lim2 = R2), so each idle cathode stays near P1. R_em (1 kΩ emitter)
    stays shared — it carries only µA and is not part of the reverse path.
 6. **[Minor/process]** Promised UART0/test pads not on the board (GPIO20/21 = NC, 0 TP
    footprints); `ROT_FIX={}` — verify polarized-part rotations at the Confirm-Placement gate;

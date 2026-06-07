@@ -80,12 +80,12 @@ whose pins are typed *Unspecified*; harmless.
 | D4 (D_vbus) | SS14 (VBUS reverse-protect) | `PCM_JLCPCB-Diodes:Schottky,SS14` | `PCM_JLCPCB:D_SMA` | C2480 |
 | D5 (D_esd) | SRV05-4 (USB D+/D− ESD) | `PCM_JLCPCB-Diode-Packages:Package, SRV05-4_C7420376` | `PCM_JLCPCB:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1` | C7420376 |
 | OK1, OK2 (OC1/OC2) | LTV-217 (PC817, SMD) | `PCM_JLCPCB-Optocouplers:LTV-217-B-G` ⁵ | `PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm` | C115450 |
-| R1, R13 (R_lim1, R_lim2) | 5.1 kΩ — opto LED limiters (one per opto) | `PCM_JLCPCB-Resistors:0603,5.1kΩ` | `PCM_JLCPCB:R_0603` | C23186 |
-| R2 (R_em) | 1 kΩ — opto emitter | `PCM_JLCPCB-Resistors:0603,1kΩ` | `PCM_JLCPCB:R_0603` | C21190 |
-| R3, R4 (R_g1/2) | 100 Ω — gate series | `PCM_JLCPCB-Resistors:0603,100Ω` | `PCM_JLCPCB:R_0603` | C22775 |
-| R5, R6, R7, R8, R12 (R_pd1/2, R_en, R_boot, R_io8) | 10 kΩ — gate pull-downs, EN/BOOT/GPIO8 pull-ups | `PCM_JLCPCB-Resistors:0603,10kΩ` | `PCM_JLCPCB:R_0603` | C25804 |
-| R9, R10 (R_cc1/2) | 5.1 kΩ — USB-C CC (Rd sink) | `PCM_JLCPCB-Resistors:0603,5.1kΩ` | `PCM_JLCPCB:R_0603` | C23186 |
-| R11 (R_led) | 1 kΩ — power-LED series | `PCM_JLCPCB-Resistors:0603,1kΩ` | `PCM_JLCPCB:R_0603` | C21190 |
+| R1, R2 (R_lim1, R_lim2) | 5.1 kΩ — opto LED limiters (one per opto) | `PCM_JLCPCB-Resistors:0603,5.1kΩ` | `PCM_JLCPCB:R_0603` | C23186 |
+| R3 (R_em) | 1 kΩ — opto emitter (shared) | `PCM_JLCPCB-Resistors:0603,1kΩ` | `PCM_JLCPCB:R_0603` | C21190 |
+| R4, R5 (R_g1/2) | 100 Ω — gate series | `PCM_JLCPCB-Resistors:0603,100Ω` | `PCM_JLCPCB:R_0603` | C22775 |
+| R6, R7, R8, R9, R10 (R_pd1/2, R_en, R_boot, R_io8) | 10 kΩ — gate pull-downs, EN/BOOT/GPIO8 pull-ups | `PCM_JLCPCB-Resistors:0603,10kΩ` | `PCM_JLCPCB:R_0603` | C25804 |
+| R11, R12 (R_cc1/2) | 5.1 kΩ — USB-C CC (Rd sink) | `PCM_JLCPCB-Resistors:0603,5.1kΩ` | `PCM_JLCPCB:R_0603` | C23186 |
+| R13 (R_led) | 1 kΩ — power-LED series | `PCM_JLCPCB-Resistors:0603,1kΩ` | `PCM_JLCPCB:R_0603` | C21190 |
 | C2, C3, C4 (C_in, C_3v3, C_out) | 10 µF — LDO in/out + 3V3 decoupling | `PCM_JLCPCB-Capacitors:0603,10uF` | `PCM_JLCPCB:C_0603` | C19702 |
 | C5, C6 (C_en, C_dec) | 100 nF — EN cap + 3V3 decoupling | `PCM_JLCPCB-Capacitors:0603,100nF` | `PCM_JLCPCB:C_0603` | C14663 |
 | D3 (LED_pwr) | power LED, **red** | `PCM_JLCPCB-Diodes:LED,0603,Red` | `PCM_JLCPCB:D_0603` | C2286 |
@@ -191,8 +191,8 @@ generator uses internal keys `R_lim1`/`C_in`/… mapped to designators R1/R2/C2/
 4. Re-run ERC — invariants that must stay true:
    - K1: P2→COM(3), P3→NO(4), **NC(2) No-Connect**. K2: P4→COM(3), IN_P4→NC(2), **NO(4) No-Connect**.
    - Relay gates have 10 kΩ pull-downs to GND (relays default **off** at boot).
-   - `P1` connects only to J2.1 and R1 — **never to GND** (bus/logic isolation).
-   - Each opto LED returns to `P1` via its own limiter (R1/R13), not GND; R2 is the shared emitter resistor.
+   - `P1` connects only to J2.1 and the two limiters R1/R2 — **never to GND** (bus/logic isolation).
+   - Each opto LED returns to `P1` via its own limiter (R1/R2), not GND; R3 is the shared emitter resistor.
 5. Update PCB from schematic; in layout keep an isolation gap between bus nets (P1–P5, IN_P4)
    and logic (GND/+3V3/+5V), and an antenna keep-out under U1.
 6. Export BOM + CPL for JLCPCB (CDFER fields populate LCSC/rotation). Verify LCSC stock for

@@ -9,10 +9,10 @@ import os
 REF = {
     "U1":"U1","U2":"U2","J1":"J1","J2":"J2","K1":"K1","K2":"K2","Q1":"Q1","Q2":"Q2",
     "D1":"D1","D2":"D2","D_vbus":"D4","D_esd":"D5","OC1":"OK1","OC2":"OK2","LED1":"D3",
-    "R_lim1":"R1","R_em":"R2","R_g1":"R3","R_g2":"R4","R_pd1":"R5","R_pd2":"R6",
-    "R_en":"R7","R_boot":"R8","R_cc1":"R9","R_cc2":"R10","R_led":"R11",
-    "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6","R_io8":"R12",
-    "R_lim2":"R13",
+    # resistors grouped by function (pairs adjacent): opto / relay drivers / MCU straps / USB CC / LED
+    "R_lim1":"R1","R_lim2":"R2","R_em":"R3","R_g1":"R4","R_g2":"R5","R_pd1":"R6","R_pd2":"R7",
+    "R_en":"R8","R_boot":"R9","R_io8":"R10","R_cc1":"R11","R_cc2":"R12","R_led":"R13",
+    "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6",
     "SW_boot":"SW1","SW_en":"SW2","FLAG5":"#FLG1","FLAG3":"#FLG2","FLAGG":"#FLG3",
 }
 
