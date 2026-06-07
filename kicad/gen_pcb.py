@@ -24,43 +24,43 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 # overhangs the left board edge (off-board), so no copper keep-out is needed.
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32-C3 + its power / boot / LED support clustered just ABOVE it ===
-    "U1":     (8, 50, 90),    # MCU rot 90° CW, lower-left; antenna overhangs the left edge
-    "SW_boot":(26, 44, 90),   # BOOT button, right of C1 (rotated CCW)
-    "SW_en":  (32.5, 44, 90), # EN / reset button, right of C1 (rotated CCW)
-    "R_boot": (26, 48, 0),    # BOOT pullup, under SW_boot
-    "R_en":   (31, 48, 0),    # EN pullup, under SW_en
-    "C_en":   (34, 48, 180),  # EN cap, under SW_en
-    "U2":     (18, 55, 0),    # AMS1117 LDO, in the gap between U1 and J1 (rotated CCW again -> 0°)
-    "C_bulk": (18, 44.5, 0),  # 5V bulk cap, above U2
-    "C_in":   (15, 48.5, 90), # LDO input cap, above U2
-    "C_out":  (21, 48.5, 90), # LDO output cap, above U2
-    "LED1":   (8.5, 59, 0),   # power LED, right of C3 (row south of U1)
-    "R_led":  (11.7, 59, 0),  # LED series resistor, right of LED1
-    "C_dec":  (2.5, 59, 270), # U1 100nF decoupling, south of U1 (vertical)
-    "C_3v3":  (6, 59, 270),   # U1 10uF decoupling, south of U1 (vertical)
-    # === BOTTOM edge: USB-C (centred) + CC pulldowns above its CC pads ===
-    "J1":     (30, 53, 0),    # USB-C (USB4085 THT), middle of bottom edge; mouth overhangs down. x re-centred below
-    "R_cc1":  (29, 51, 90),   # CC1 pulldown, above J1.A5
-    "R_cc2":  (35, 51, 270),  # CC2 pulldown, above J1 (next to R_cc1)
+    "U1":     (8, 47, 90),    # MCU rot 90° CW, lower-left; antenna overhangs the left edge
+    "SW_boot":(24, 41, 0),    # BOOT button (moved left)
+    "SW_en":  (30.5, 41, 180),# EN / reset button (moved left)
+    "R_boot": (24, 45, 0),    # BOOT pullup, under SW_boot
+    "R_en":   (29, 45, 0),    # EN pullup, under SW_en
+    "C_en":   (32, 45, 180),  # EN cap, under SW_en
+    "U2":     (18, 52, 0),    # AMS1117 LDO, in the gap between U1 and J1
+    "C_bulk": (16, 40, 0),    # 5V bulk cap, above U2 (nudged up)
+    "C_in":   (15, 45.5, 270),# LDO input cap, above U2 (rotated 180°)
+    "C_out":  (21, 45.5, 90), # LDO output cap, above U2
+    "LED1":   (8.77, 56, 90), # power LED, row south of U1 (equal spacing in the row)
+    "R_led":  (12, 56, 90),   # LED series resistor, right of LED1
+    "C_dec":  (2.5, 56, 270), # U1 100nF decoupling, south of U1 (vertical)
+    "C_3v3":  (5.55, 56, 270),# U1 10uF decoupling, south of U1 (equal spacing in the row)
+    # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
+    "J1":     (25.8, 50, 0),  # USB-C (USB4085 THT) on the bottom edge; moved left to narrow board
+    "R_cc1":  (24.8, 48, 90), # CC1 pulldown, above J1.A5
+    "R_cc2":  (30.8, 48, 90), # CC2 pulldown, above J1 (rotated 180°)
     # === TOP edge: WF26 terminal, centred above the bus interface ===
-    "J2":     (28, 11, 180),  # WF26 6-way screw terminal, top edge
+    "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
-    "OC2":    (4,  26, 270),  # apartment bell sense (left)
-    "OC1":    (8,  26, 270),  # house bell sense (left)
-    "R_lim":  (4,  33, 0),    # shared opto cathode limiter
-    "R_em":   (8,  33, 0),    # shared opto emitter
-    "K2":     (17, 26, 0),    # chime-suppress relay (right, beside the optos)
-    "Q2":     (13, 33, 0),
-    "R_g2":   (17, 33, 0),
-    "R_pd2":  (21, 33, 0),
-    "D2":     (13, 36, 0),
-    "K1":     (30, 26, 0),    # door-opener relay
-    "Q1":     (26, 33, 0),
-    "R_g1":   (30, 33, 0),
-    "R_pd1":  (34, 33, 0),
-    "D1":     (26, 36, 0),
+    "OC2":    (4,  34, 270),  # apartment bell sense (left, moved further down)
+    "OC1":    (8,  34, 270),  # house bell sense (left)
+    "R_lim":  (6,  28, 0),    # R1, on top of the optos (centred)
+    "R_em":   (1,  36.4, 90), # R2, left of OC2 (CCW); OC_EMIT pad aligned with OC2.3
+    "K2":     (15.5, 27, 270),# chime-suppress relay, rotated CW (nudged left)
+    "Q2":     (19.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
+    "R_g2":   (12.32, 36.18, 180), # gate series R (R4), rotated flat (CCW); GATE2 pad kept fixed
+    "R_pd2":  (11.5, 34, 90), # gate pulldown, swapped with Q2 + rotated 180°
+    "D2":     (14.8, 33.6, 0),# flyback, moved north (toward K2 coil)
+    "K1":     (27, 27, 270),  # door-opener relay, rotated CW (moved left)
+    "Q1":     (31, 34, 180),  # NMOS, swapped with R_pd1 + rotated 180°
+    "R_g1":   (23.82, 36.18, 180), # gate series R (R3), rotated flat (CCW); GATE1 pad kept fixed
+    "R_pd1":  (23, 34, 90),   # gate pulldown, swapped with Q1 + rotated 180°
+    "D1":     (26.3, 33.6, 0),# flyback, moved north (toward K1 coil)
 }
-MARGIN = 4.0           # board edge margin (mm) on non-flush edges
+MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
 
 def vmm(x, y): return pcbnew.VECTOR2I(pcbnew.FromMM(x), pcbnew.FromMM(y))
 
@@ -193,11 +193,11 @@ print(f"  plane stitching: {_nstitch} vias")
 # layer, so the old single-row HRO part's "+5V bridge" (off-pad vias east of the NPTH pegs,
 # joined on B.Cu) is no longer needed -- Freerouting joins the +5V holes directly.
 
-# Centre J2 (WF26 screw terminal) on the top edge: shift in x so its bounding box sits centred
-# between the board's left/right edges. (J1 is placed explicitly, not centred.)
+# Place J2 (WF26 screw terminal) toward the RIGHT: align its right edge ~2 mm inside the board's
+# right edge (frees the upper-left corner for the product name). J1 is placed explicitly.
 _jl, _jr, _jt, _jb = fext(fps["J2"])
 _pj = fps["J2"].GetPosition()
-fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((x0 + x1) / 2.0 - (_jl + _jr) / 2.0), _pj.y))
+fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((x1 - 2.0) - _jr), _pj.y))
 
 # J1 overhangs the bottom edge, so its default reference text lands off-board. Put it just
 # ABOVE the connector body (inboard) instead.
@@ -205,6 +205,35 @@ jl, jr, jt, jb = fext(fps["J1"])
 j1ref = fps["J1"].Reference()
 j1ref.SetPosition(vmm((jl + jr) / 2.0, jt - 1.2))
 j1ref.SetTextAngleDegrees(0)
+
+# Relays sit close together; the default side-placed refdes overlaps the neighbour's body
+# silk. Centre each relay's reference on its own body instead.
+for _k in ("K1", "K2"):
+    _kl, _kr, _kt, _kb = fext(fps[_k])
+    _kref = fps[_k].Reference()
+    _kref.SetPosition(vmm((_kl + _kr) / 2.0, (_kt + _kb) / 2.0))
+    _kref.SetTextAngleDegrees(0)
+
+# Silkscreen labels above the user-facing buttons.
+for _sw, _txt in (("SW_boot", "BOOT"), ("SW_en", "RST")):
+    _sl, _sr, _st, _sb = fext(fps[_sw])
+    _lab = pcbnew.PCB_TEXT(board)
+    _lab.SetText(_txt)
+    _lab.SetLayer(pcbnew.F_SilkS)
+    _lab.SetPosition(vmm((_sl + _sr) / 2.0, _st - 1.0))
+    _lab.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
+    _lab.SetTextThickness(pcbnew.FromMM(0.15))
+    board.Add(_lab)
+
+# Product name on the front silkscreen, in the freed upper-left corner.
+_pn = pcbnew.PCB_TEXT(board)
+_pn.SetText("Klingel V4")
+_pn.SetLayer(pcbnew.F_SilkS)
+_pn.SetPosition(vmm(4.4, 19))
+_pn.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
+_pn.SetTextThickness(pcbnew.FromMM(0.15))
+_pn.SetTextAngleDegrees(90)   # rotated CCW (reads bottom-to-top)
+board.Add(_pn)
 
 # Overhanging parts (EDGE_OVERHANG) run their silkscreen off / across the board edge they
 # overhang (silk_edge_clearance). Drop the silk graphics that extend past that edge; the fab
