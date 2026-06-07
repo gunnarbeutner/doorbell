@@ -52,7 +52,7 @@ PCB_PLACE = {
     "OC1":    (8,  34, 270),  # house bell sense (left)
     "R_lim1":  (8,  28, 0),    # R1, OC1's own LED limiter (above OC1) -- unshared
     "R_lim2": (4,  28, 0),    # R13, OC2's own LED limiter (above OC2) -- unshared
-    "R_em":   (1,  36.4, 90), # R2, left of OC2 (CCW); OC_EMIT pad aligned with OC2.3
+    "R_em":   (8,  39.2, 0),  # R3, south of OK1 (rotated CW 90°->0°), in the OK1<->U1 gap
     "K2":     (15.5, 27, 270),# chime-suppress relay, rotated CW (nudged left)
     "Q2":     (19.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
     "R_g2":   (12.32, 36.18, 180), # gate series R (R4), rotated flat (CCW); GATE2 pad kept fixed
