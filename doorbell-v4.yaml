@@ -1,14 +1,14 @@
-# Klingel V4 — ESPHome config for the ESP32-C3-MINI-1 board.
+# Klingel V4 — ESPHome config for the ESP32-C3-WROOM-02 board.
 #
 # Ported from the V3 doorbell.yaml (ESP32 WROOM-32 dev board). All automation logic is
 # preserved verbatim; only the things that change with the new MCU/board were touched:
 #
-#   1. board/framework  : esp32dev  ->  esp32-c3-devkitm-1  (the C3-MINI-1 module board)
+#   1. board/framework  : esp32dev  ->  esp32-c3-devkitm-1  (generic ESP32-C3 board def; fits the WROOM-02)
 #   2. logger           : routed to the native USB-Serial-JTAG (UART0/GPIO20-21 are N/C on
 #                         this board, so default UART logging would go nowhere)
 #   3. GPIO pins remapped to the V4 hardware (the V3 pins 25/26/32/33 do NOT exist on the C3):
-#        House Doorbell    (OC1 / Türruf  sense) : 33 -> GPIO6
-#        Apartment Doorbell(OC2 / Etagenruf sense): 32 -> GPIO7
+#        House Doorbell    (OC1 / Türruf  sense) : 33 -> GPIO10  (north row, faces OC1)
+#        Apartment Doorbell(OC2 / Etagenruf sense): 32 -> GPIO3   (north row, faces OC2)
 #        front_door_buzzer (K1 / ÖT door opener) : 26 -> GPIO4
 #        suppress_sound    (K2 / chime suppress) : 25 -> GPIO5
 #   4. *** relay outputs are NO LONGER inverted ***  (see the big comment by `output:`)
@@ -20,7 +20,7 @@ esphome:
   name: doorbell
 
 esp32:
-  board: esp32-c3-devkitm-1     # uses the ESP32-C3-MINI-1 module — matches U1
+  board: esp32-c3-devkitm-1     # generic ESP32-C3 board def — matches U1 (ESP32-C3-WROOM-02)
   framework:
     type: esp-idf
 
@@ -69,7 +69,7 @@ binary_sensor:
     name: "Apartment Doorbell"
     icon: mdi:doorbell
     pin:
-      number: GPIO7            # OC2 collector — Etagenruf (P5) sense   [V3: 32]
+      number: GPIO3            # OC2 collector — Etagenruf (P5) sense   [V3: 32; was GPIO7]
       inverted: true           # opto pulls the pin LOW when the bell rings
       mode:
         input: true
@@ -85,7 +85,7 @@ binary_sensor:
     name: "House Doorbell"
     icon: mdi:doorbell
     pin:
-      number: GPIO6            # OC1 collector — Türruf (P4 / IN-P4) sense   [V3: 33]
+      number: GPIO10           # OC1 collector — Türruf (P4 / IN-P4) sense   [V3: 33; was GPIO6]
       inverted: true
       mode:
         input: true

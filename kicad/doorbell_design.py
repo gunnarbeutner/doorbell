@@ -91,7 +91,7 @@ NETS = {
             ("U2","3"),("K1","1"),("K2","1"),("D1","1"),("D2","1"),("FLAG5","1")],
     "+3V3": [("U2","2"),("U2","4"),("C_out","1"),("C_3v3","1"),("C_dec","1"),("U1","1"),
              ("R_en","1"),("R_boot","1"),("R_led","1"),("R_io8","2"),("FLAG3","1")],
-    # U1 (ESP32-C3-MINI-1) has 21 GND pins + the EPAD (pad 49) -- ALL must tie to GND, not just pin 1.
+    # U1 (ESP32-C3-WROOM-02) GND: castellated pin 9 + the EPAD (pad 19) -- both must tie to GND.
     "GND": [("J1","A1"),("J1","B1"),("J1","A12"),("J1","B12"),("J1","SH"),
             ("C_in","2"),("C_out","2"),("C_3v3","2"),("C_dec","2"),("U2","1"),
             ("Q1","2"),("Q2","2"),("R_pd1","2"),("R_pd2","2"),("R_em","2"),("C_en","2"),
@@ -126,8 +126,8 @@ NETS = {
     # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
     "OC1_CATH": [("OC1","2"),("R_lim1","1")],
     "OC2_CATH": [("OC2","2"),("R_lim2","1")],
-    "OC1_OUT": [("OC1","4"),("U1","5")],
-    "OC2_OUT": [("OC2","4"),("U1","6")],
+    "OC1_OUT": [("OC1","4"),("U1","10")],   # IO10 (north row, faces OC1 -> short direct route)
+    "OC2_OUT": [("OC2","4"),("U1","15")],   # IO3  (north row, faces OC2 -> short direct route)
     "OC_EMIT": [("OC1","3"),("OC2","3"),("R_em","1")],
     "LED_A": [("R_led","2"),("LED1","2")],
 }
@@ -137,9 +137,9 @@ NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("K2","4"),("K2","5"),("K2","6"),("K2","7"),
           ("J1","A8"),("J1","B8"),
           ("D_esd","4"),("D_esd","6"),   # SRV05-4 unused I/O channels
-          # U1 (WROOM-02): unused GPIOs -- IO10(10), IO20/U0RXD(11), IO21/U0TXD(12),
-          # IO3(15), IO2(16), IO1(17), IO0(18). All other module pins are nets or GND.
-          ("U1","10"),("U1","11"),("U1","12"),("U1","15"),("U1","16"),("U1","17"),("U1","18")]
+          # U1 (WROOM-02): unused GPIOs -- IO6(5), IO7(6), IO20/U0RXD(11), IO21/U0TXD(12),
+          # IO2(16), IO1(17), IO0(18). (OC1/OC2 sense moved to IO10/IO3 on the opto-facing row.)
+          ("U1","5"),("U1","6"),("U1","11"),("U1","12"),("U1","16"),("U1","17"),("U1","18")]
 
 # placement grid (units of 2.54mm), shared cluster layout for schematic + PCB
 GRID = {

@@ -96,8 +96,8 @@ chime suppression; restored here on the 6-way J2 (pad 6).
 
 | GPIO (V3) | ESPHome entity | Direction | Hardware | → V4 C3 pin |
 |------|---------------|-----------|----------|----|
-| 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses P5 / Etagenruf) | **IO7** |
-| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC1 collector (senses P4 / Türruf) | **IO6** |
+| 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses P5 / Etagenruf) | **IO3** |
+| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC1 collector (senses P4 / Türruf) | **IO10** |
 | 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K1 (bridges P2+P3 = ÖT door opener) | **IO4** |
 | 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K2 (switches P4 = chime suppress) | **IO5** |
 
@@ -233,9 +233,9 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 
 | Decision | Choice | Reason |
 |----------|--------|--------|
-| MCU | **ESP32-C3-MINI-1** | Modern, ESPHome-supported, JLCPCB-stocked, native USB |
+| MCU | **ESP32-C3-WROOM-02-N4** (LCSC C2934560) | Same C3 SoC, ESPHome-supported, native USB. Chosen over the ESP32-C3-MINI-1 because the **MINI-1 is Standard-PCBA-only** at JLCPCB (forces the $25/side setup); the **WROOM-02 is Economic-PCBA-eligible**. Larger module (18×20 vs 13×17 mm) but the board had room |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
-| Assembly | **Full JLCPCB assembly** (SMT + THT) | SMT parts reflowed; J1/J2 (USB-C, WF26 terminal) are through-hole but **also assembled by JLCPCB** (THT assembly) — nothing hand-soldered |
+| Assembly | **Full JLCPCB assembly** (SMT + THT), **Economic PCBA** | SMT parts reflowed; J1/J2 (USB-C, WF26 terminal) are through-hole but **also assembled by JLCPCB** — nothing hand-soldered. Every part (the WROOM-02, the G6K relays, the THT connectors) is Economic-eligible, so no $25/side Standard setup is needed |
 | Relay | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts are *more* reliable than the V3 SONGLE's silver at these low "wetting" currents. **4.5 V** (not 5 V) coil so the post-Schottky ~4.5 V rail clears the 3.6 V must-operate with margin (see review finding 2) |
 | Relay driver | **Discrete: logic-level NMOS + flyback diode + gate pull-down** | The SONGLE module did this for us; now on-board. Pull-down ⇒ relays default OFF at boot |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT, JLCPCB-assembled) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
@@ -251,15 +251,20 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 |------|--------|-----|-------|
 | IO4 | K1 relay driver — front door buzzer / ÖT (bridge P2+P3) | out | gate pull-down ⇒ off at boot |
 | IO5 | K2 relay driver — chime suppress (break P4) | out | gate pull-down ⇒ off at boot ⇒ chime passes |
-| IO6 | OC1 collector — house bell sense (Türruf, P4) | in | internal pull-up (firmware) |
-| IO7 | OC2 collector — apartment bell sense (Etagenruf, P5) | in | internal pull-up (firmware) |
+| IO10 | OC1 collector — house bell sense (Türruf, P4) | in | internal pull-up (firmware); on U1's north row facing OC1 (was IO6) |
+| IO3 | OC2 collector — apartment bell sense (Etagenruf, P5) | in | internal pull-up (firmware); on U1's north row facing OC2 (was IO7) |
+| IO6 / IO7 | — (unused) | — | freed when bell sense moved to IO10/IO3; No-Connect |
 | IO18 / IO19 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
 | IO9 | BOOT strap | — | 10 kΩ pull-up + button to GND |
 | EN | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec value) (+ optional button) |
 | IO20 / IO21 | UART0 RX/TX | — | currently **No-Connect** (DESIGN intent was test pads — not yet on the board; native USB-Serial-JTAG is the primary log path) |
 
-Avoided: IO2 / IO8 / IO9 (strapping), IO11+ (internal flash). IO4–IO7 are all
-non-strapping; relay outputs are deliberately on non-strapping pins. IO8 carries a 10 kΩ
+Avoided: IO2 / IO8 / IO9 (strapping), IO11–IO17 (internal flash). The active GPIOs — IO4/IO5
+(relays), IO10/IO3 (bell sense) — are all non-strapping. **Bell sense uses IO10/IO3 because, on the
+WROOM-02 at rot 90 (antenna fixed left), those sit on U1's *north* castellated row directly facing
+the optos** — so OC1/OC2 route ~7 mm straight instead of wrapping ~25 mm around the module (the
+old IO6/IO7 are on the far south row; rotating U1 to fix it isn't an option without moving the
+antenna off the left edge). IO8 carries a 10 kΩ
 pull-up (R10, download-mode robustness); **IO2 is left floating** — Espressif's datasheet
 (Table 3-3 fn 2) recommends a 10 kΩ pull-up there to harden boot against glitches (optional).
 
@@ -304,7 +309,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 
 | Ref | Part | Footprint |
 |-----|------|-----------|
-| U1 | ESP32-C3-MINI-1 | module |
+| U1 | ESP32-C3-WROOM-02-N4 (LCSC C2934560) | module (18×20 mm, castellated + EPAD) |
 | U2 | SGM2212-3.3 (low-dropout LDO, LCSC C3294699) | SOT-223 |
 | J1 | **GCT USB4085** USB-C 2.0 (LCSC C7095263) | THT, 2-row — JLCPCB-assembled |
 | J2 | 6-way screw terminal, 3.5 mm (e.g. 4Ucon / generic KF128-3.5 6P) | THT — JLCPCB-assembled |
@@ -351,15 +356,19 @@ not natively reserve power planes, so:
 Result: signals only on F.Cu/B.Cu, In1/In2 clean solid planes, **D+/D− routed together** on
 B.Cu → **0 unconnected, 0 DRC**.
 
-**Floorplan** (`PCB_PLACE` in `gen_pcb.py`): logic/power in the **lower-left** — the ESP32-C3
-(U1, rot 90°, antenna overhanging the left edge), its LDO (U2) in the U1↔J1 gap, with the
-boot/reset buttons, power LED, decoupling and LDO caps clustered around it; **USB-C (J1) centred
-on the bottom edge**, mouth overhanging downward, CC pulldowns flanking it; **bus interface on
-the right** (WF26 6-way terminal on the top edge, optos, bell-sense R, relays + drivers).
+**Floorplan** (`PCB_PLACE` in `gen_pcb.py`): the **ESP32-C3-WROOM-02 (U1, rot 90°)** sits
+left-of-centre with its antenna overhanging the left edge; the **opto bell-sense block** (OC1/OC2,
+the two 5.1 kΩ limiters, the shared emitter R) is centred in the **upper-left quadrant** just above
+U1; the LDO (U2), boot/reset buttons, power LED and the decoupling/LDO caps cluster around U1
+(caps along the bottom-left, R10 right of C3); **USB-C (J1) centred on the bottom edge**, mouth
+overhanging downward, CC pulldowns flanking it; **bus interface on the right** (WF26 6-way terminal
+on the top edge, relays + drivers). The bell-sense GPIOs (IO10/IO3) are on U1's north row facing
+the optos, so OC1/OC2 route straight up (~7 mm) instead of around the module — see the GPIO map.
 
 **Edge overhang** (`EDGE_OVERHANG` in `doorbell_design.py`): J1 overhangs the bottom edge by
-3.1 mm (the connector shell clears the PCB) and U1 overhangs the left edge by 5.4 mm so its
-**antenna sits off-board** — which is why the old copper antenna keep-out is gone (nothing on
+3.1 mm (the connector shell clears the PCB) and U1 overhangs the left edge by 5.9 mm (< the
+WROOM-02's 7.42 mm antenna depth) so its **antenna sits off-board** while pins 1/18 stay ~1.5 mm
+inside the edge — which is why the old copper antenna keep-out is gone (nothing on
 the board to keep clear). `check_pcb.py` verifies each overhang and that the rest of every
 footprint stays inside the outline.
 
@@ -406,7 +415,7 @@ Five gotchas, all handled in code so DRC stays **0/0**:
 
 ### Build / test notes
 
-- **Antenna:** the ESP32-C3-MINI-1 antenna **overhangs the left board edge** (off-board), so no
+- **Antenna:** the ESP32-C3-WROOM-02 antenna **overhangs the left board edge** (off-board), so no
   on-board copper/keep-out is needed under it — just keep no metal enclosure over it.
 - **Programming/bring-up:** flash + view logs over the USB-C (native USB-Serial-JTAG); add
   BOOT + EN buttons (or pads) for recovery.
@@ -443,7 +452,7 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 
 **To address:**
 1. **[Major — firmware]** `doorbell.yaml` still uses `board: esp32dev` and pins 25/26/32/33
-   (nonexistent on C3). Remap to the C3 GPIO map above (32→IO7, 33→IO6, 26→IO4, 25→IO5),
+   (nonexistent on C3). Remap to the C3 GPIO map above (32→IO3, 33→IO10, 26→IO4, 25→IO5),
    `board: esp32-c3-devkitm-1`, before flashing.
 2. **[Resolved — switched to DC4.5 coil]** With the 5 V coil, must-operate (80% = 4.0 V) sat
    just under the post-Schottky ~4.5 V rail (coil ~4.31 V, 86%) — thin, and negative under VBUS
@@ -465,3 +474,22 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
    assembly, `HANDSOLDER` stays empty; nothing is hand-soldered.)
 7. **[Nit]** 2 of U1's 9 EPAD thermal cells unstitched (benign, monolithic EPAD); one 0.388 mm
    bus↔logic clearance (<0.5 mm aspiration, fine for 12 V); U2 comment says "1A" but SGM2212 is ~800 mA.
+
+---
+
+## Design changes since review (2026-06-08)
+
+- **U1: ESP32-C3-MINI-1 → ESP32-C3-WROOM-02-N4** (LCSC C2934560), to make the **whole BOM
+  Economic-PCBA-eligible** at JLCPCB — the MINI-1 is Standard-PCBA-only (forces the $25/side setup),
+  whereas the WROOM-02, the G6K relays and the THT connectors are all Economic-eligible. Same C3
+  SoC, so the ESPHome config is unchanged. The WROOM-02 is larger (18×20 vs 13×17 mm), so every U1
+  net was remapped to its pad layout and the upper-left was re-floorplanned (opto block centred in
+  the UL quadrant, U1 nudged up to clear the decoupling caps, R10 moved right of C3, product-name
+  silk moved into the strip left of the optos). Antenna overhang retuned to 5.9 mm; board grew to
+  ~40.5 × 47.7 mm. ERC 0 / DRC 0/0 / check_pcb PASS, routes 0 unrouted.
+- **Bell-sense GPIOs IO6/IO7 → IO10/IO3** so they land on U1's *north* castellated row facing the
+  optos: OC1/OC2 now route ~7 mm straight up instead of ~25 mm around the module. `doorbell-v4.yaml`
+  updated to match (House GPIO6→GPIO10, Apartment GPIO7→GPIO3).
+- **Re-verify for the WROOM-02:** review finding 7's "9 EPAD thermal cells" was MINI-1-specific —
+  the WROOM-02 has its own EPAD (pad 19, multi-rect), stitched the same way (one benign
+  plane-stitch warning). All other CLEAN/Resolved items above are unaffected by the swap.
