@@ -18,7 +18,7 @@ REF = {
 
 # component table: internal key -> (symbol-lib nickname, symbol entry, value)
 COMP = {
-    "U1": ("PCM_Espressif", "ESP32-C3-MINI-1", "ESP32-C3-MINI-1"),
+    "U1": ("PCM_Espressif", "ESP32-C3-WROOM-02", "ESP32-C3-WROOM-02-N4"),  # LCSC C2934560 (Economic-eligible)
     "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "SGM2212-3.3"),   # low-dropout; LCSC C3294699 (EXTRA_LCSC)
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4085)"),
     "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
@@ -60,7 +60,7 @@ COMP = {
 
 # footprint per component (lib:name). Power flags carry no footprint.
 FOOTPRINT = {
-    "U1": "PCM_Espressif:ESP32-C3-MINI-1",
+    "U1": "PCM_Espressif:ESP32-C3-WROOM-02",
     "U2": "PCM_JLCPCB:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR",
     "J1": "Connector_USB:USB_C_Receptacle_GCT_USB4085",  # 2-row THT Type-C (LCSC C7095263)
     "J2": "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical",
@@ -89,7 +89,7 @@ NETS = {
     # +5V rail = everything downstream of the reverse-protection Schottky D4 (cathode).
     "+5V": [("D_vbus","1"),("C_in","1"),
             ("U2","3"),("K1","1"),("K2","1"),("D1","1"),("D2","1"),("FLAG5","1")],
-    "+3V3": [("U2","2"),("U2","4"),("C_out","1"),("C_3v3","1"),("C_dec","1"),("U1","3"),
+    "+3V3": [("U2","2"),("U2","4"),("C_out","1"),("C_3v3","1"),("C_dec","1"),("U1","1"),
              ("R_en","1"),("R_boot","1"),("R_led","1"),("R_io8","2"),("FLAG3","1")],
     # U1 (ESP32-C3-MINI-1) has 21 GND pins + the EPAD (pad 49) -- ALL must tie to GND, not just pin 1.
     "GND": [("J1","A1"),("J1","B1"),("J1","A12"),("J1","B12"),("J1","SH"),
@@ -97,19 +97,18 @@ NETS = {
             ("Q1","2"),("Q2","2"),("R_pd1","2"),("R_pd2","2"),("R_em","2"),("C_en","2"),
             ("R_cc1","2"),("R_cc2","2"),("LED1","1"),("SW_boot","2"),("SW_en","2"),
             ("D_esd","2"),("FLAGG","1")]
-           + [("U1", str(_gp)) for _gp in
-              (1,2,11,14,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53)],
-    "USB_DM": [("J1","A7"),("J1","B7"),("U1","26"),("D_esd","3")],
-    "USB_DP": [("J1","A6"),("J1","B6"),("U1","27"),("D_esd","1")],
+           + [("U1","9"),("U1","19")],   # WROOM-02: GND pin 9 + the EPAD (pad 19, multi-rect)
+    "USB_DM": [("J1","A7"),("J1","B7"),("U1","13"),("D_esd","3")],
+    "USB_DP": [("J1","A6"),("J1","B6"),("U1","14"),("D_esd","1")],
     "USB_CC1": [("J1","A5"),("R_cc1","1")],
     "USB_CC2": [("J1","B5"),("R_cc2","1")],
-    "EN": [("U1","8"),("R_en","2"),("C_en","1"),("SW_en","1")],
-    "BOOT": [("U1","23"),("R_boot","2"),("SW_boot","1")],
-    "GPIO8": [("U1","22"),("R_io8","1")],   # strapping pin: 10k pull-up (download-mode robustness)
-    "GATE1_DRV": [("U1","18"),("R_g1","1")],
+    "EN": [("U1","2"),("R_en","2"),("C_en","1"),("SW_en","1")],
+    "BOOT": [("U1","8"),("R_boot","2"),("SW_boot","1")],   # GPIO9 strap
+    "GPIO8": [("U1","7"),("R_io8","1")],   # strapping pin: 10k pull-up (download-mode robustness)
+    "GATE1_DRV": [("U1","3"),("R_g1","1")],
     "GATE1": [("R_g1","2"),("Q1","1"),("R_pd1","1")],
     "K1_DRAIN": [("Q1","3"),("K1","8"),("D1","2")],
-    "GATE2_DRV": [("U1","19"),("R_g2","1")],
+    "GATE2_DRV": [("U1","4"),("R_g2","1")],
     "GATE2": [("R_g2","2"),("Q2","1"),("R_pd2","1")],
     "K2_DRAIN": [("Q2","3"),("K2","8"),("D2","2")],
     "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2")],
@@ -127,8 +126,8 @@ NETS = {
     # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
     "OC1_CATH": [("OC1","2"),("R_lim1","1")],
     "OC2_CATH": [("OC2","2"),("R_lim2","1")],
-    "OC1_OUT": [("OC1","4"),("U1","20")],
-    "OC2_OUT": [("OC2","4"),("U1","21")],
+    "OC1_OUT": [("OC1","4"),("U1","5")],
+    "OC2_OUT": [("OC2","4"),("U1","6")],
     "OC_EMIT": [("OC1","3"),("OC2","3"),("R_em","1")],
     "LED_A": [("R_led","2"),("LED1","2")],
 }
@@ -138,11 +137,9 @@ NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("K2","4"),("K2","5"),("K2","6"),("K2","7"),
           ("J1","A8"),("J1","B8"),
           ("D_esd","4"),("D_esd","6"),   # SRV05-4 unused I/O channels
-          # U1: every pin is now accounted for -- nets, GND, or here. Unused GPIOs:
-          ("U1","5"),("U1","6"),("U1","12"),("U1","13"),("U1","16"),("U1","30"),("U1","31"),
-          # U1 manufacturer NC pins (NC1..NC14):
-          ("U1","4"),("U1","7"),("U1","9"),("U1","10"),("U1","15"),("U1","17"),("U1","24"),
-          ("U1","25"),("U1","28"),("U1","29"),("U1","32"),("U1","33"),("U1","34"),("U1","35")]
+          # U1 (WROOM-02): unused GPIOs -- IO10(10), IO20/U0RXD(11), IO21/U0TXD(12),
+          # IO3(15), IO2(16), IO1(17), IO0(18). All other module pins are nets or GND.
+          ("U1","10"),("U1","11"),("U1","12"),("U1","15"),("U1","16"),("U1","17"),("U1","18")]
 
 # placement grid (units of 2.54mm), shared cluster layout for schematic + PCB
 GRID = {
@@ -186,4 +183,4 @@ EDGE_FLUSH = {              # component ref -> board edge its outer face sits fl
 # component ref -> mm it extends BEYOND its EDGE_FLUSH board edge (THT connector overhang).
 # The board edge stays at the flush line; the part is pushed out past it so e.g. the USB-C
 # shell sticks out and a cable seats fully without the PCB blocking it.
-EDGE_OVERHANG = {"J1": 3.1, "U1": 5.4}   # U1: antenna depth 5.96mm - 0.5mm edge clearance -> pads stay 0.5mm off the edge
+EDGE_OVERHANG = {"J1": 3.1, "U1": 5.9}   # U1: WROOM-02; overhang < antenna depth (7.42mm) -> pins 1/18 sit ~1.5mm inside the edge, only the antenna hangs over

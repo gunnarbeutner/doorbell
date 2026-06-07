@@ -24,20 +24,20 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 # overhangs the left board edge (off-board), so no copper keep-out is needed.
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32-C3 + its power / boot / LED support clustered just ABOVE it ===
-    "U1":     (8, 47, 90),    # MCU rot 90° CW, lower-left; antenna overhangs the left edge
+    "U1":     (8, 42, 90),    # WROOM-02, rot 90° (antenna faces left, overhangs); up 5mm to clear caps
     "SW_boot":(23, 41, 0),    # BOOT button (spread apart from RST)
     "SW_en":  (31, 41, 180),  # EN / reset button (spread apart from BOOT)
     "R_boot": (23, 45, 0),    # BOOT pullup, under SW_boot
     "R_en":   (29, 45, 0),    # EN pullup, under SW_en
     "C_en":   (32, 45, 180),  # EN cap, under SW_en
     "U2":     (16, 49.5, 270),# SGM2212 LDO, rotated 90deg CCW; shifted left toward U1
-    "R_io8": (4, 39.2, 180),  # GPIO8 strapping pull-up, underneath OK2 (rotated 180°)
+    "R_io8": (7.6, 55.5, 270),  # GPIO8 strapping pull-up, right of C3 (rotated CCW 180°->270°); up 0.5mm
     "C_in":   (18, 44, 0),    # LDO input cap (+5V), above U2 toward VIN (right)
     "C_out":  (14, 44, 0),    # LDO output cap (+3V3), above U2 toward VOUT (left)
     "LED1":   (17.5, 41, 90), # power LED, to the left of the BOOT button
     "R_led":  (14.5, 41, 90), # LED series resistor, left of LED1
-    "C_dec":  (2.5, 56, 270), # U1 100nF decoupling, south of U1 (vertical)
-    "C_3v3":  (5.55, 56, 270),# U1 10uF decoupling, south of U1 (equal spacing in the row)
+    "C_dec":  (2.5, 55.5, 270), # U1 100nF decoupling, south of U1 (vertical); up 0.5mm
+    "C_3v3":  (5.55, 55.5, 270),# U1 10uF decoupling, south of U1 (equal spacing in the row); up 0.5mm
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
     "J1":     (25.8, 50, 0),  # USB-C (USB4085 THT) on the bottom edge; moved left to narrow board
     "R_cc1":  (24.5, 50, 90), # CC1 pulldown (manual placement)
@@ -48,11 +48,11 @@ PCB_PLACE = {
     # === TOP edge: WF26 terminal, centred above the bus interface ===
     "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
-    "OC2":    (4,  34, 270),  # apartment bell sense (left, moved further down)
-    "OC1":    (8,  34, 270),  # house bell sense (left)
-    "R_lim1":  (8,  28, 0),    # R1, OC1's own LED limiter (above OC1) -- unshared
-    "R_lim2": (4,  28, 0),    # R13, OC2's own LED limiter (above OC2) -- unshared
-    "R_em":   (8,  39.2, 0),  # R3, south of OK1 (rotated CW 90°->0°), in the OK1<->U1 gap
+    "OC2":    (2.74, 23.85, 270),  # apartment bell sense; opto block centered in UL quadrant
+    "OC1":    (6.74, 23.85, 270),  # house bell sense; opto block centered in UL quadrant
+    "R_lim1": (6.74, 17.85, 0),    # R1, OC1's own LED limiter (above OC1) -- unshared
+    "R_lim2": (2.74, 17.85, 0),    # R2, OC2's own LED limiter (above OC2) -- unshared
+    "R_em":   (6.74, 29.05, 0),  # R3, south of OK1 (rotated CW 90°->0°); with the centered opto block
     "K2":     (15.5, 27, 270),# chime-suppress relay, rotated CW (nudged left)
     "Q2":     (19.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
     "R_g2":   (12.32, 36.18, 180), # gate series R (R4), rotated flat (CCW); GATE2 pad kept fixed
@@ -335,7 +335,7 @@ for _sw, _txt in (("SW_boot", "BOOT"), ("SW_en", "RST")):
 _pn = pcbnew.PCB_TEXT(board)
 _pn.SetText("Doorbell Ctrl V4")
 _pn.SetLayer(pcbnew.F_SilkS)
-_pn.SetPosition(vmm(4.4, 19))
+_pn.SetPosition(vmm(-3.2, 23.5))   # left of the centered opto block, in the left strip
 _pn.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
 _pn.SetTextThickness(pcbnew.FromMM(0.15))
 _pn.SetTextAngleDegrees(90)   # rotated CCW (reads bottom-to-top)
@@ -345,7 +345,7 @@ board.Add(_pn)
 _rd = pcbnew.PCB_TEXT(board)
 _rd.SetText("rev A  2026-06-07")
 _rd.SetLayer(pcbnew.F_SilkS)
-_rd.SetPosition(vmm(6.6, 19))
+_rd.SetPosition(vmm(-1.0, 23.5))   # parallel to the product name, left of the optos
 _rd.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
 _rd.SetTextThickness(pcbnew.FromMM(0.13))
 _rd.SetTextAngleDegrees(90)
