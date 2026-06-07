@@ -22,6 +22,9 @@ FREEROUTING = os.environ.get("FREEROUTING",
 PASSES = os.environ.get("FR_PASSES", "20")
 
 board = pcbnew.LoadBoard(BOARD)
+# Fill the inner planes before export so the pre-stitched plane vias tie together (the GND/+3V3
+# nets are then fully connected via the planes and the autorouter only routes the signals).
+pcbnew.ZONE_FILLER(board).Fill(board.Zones())
 if not pcbnew.ExportSpecctraDSN(board, DSN):
     sys.exit("DSN export failed")
 print(f"exported {DSN}")

@@ -12,7 +12,7 @@ import os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import pcbnew
-from doorbell_design import EDGE_FLUSH, ANTENNA_REF
+from doorbell_design import EDGE_FLUSH, EDGE_OVERHANG
 
 BOARD = os.path.join(HERE, "doorbell.kicad_pcb")
 TOL = 0.15  # mm
@@ -39,29 +39,24 @@ results = []
 def check(name, ok, detail=""):
     results.append((bool(ok), name, detail))
 
-# 1. flush constraints
+# 1. flush / overhang constraints
 for ref, edge in EDGE_FLUSH.items():
     fp = fps.get(ref)
     if fp is None:
         check(f"{ref} present", False, "footprint missing"); continue
     e, be = edge_of(fp, edge), board_edge[edge]
-    check(f"{ref} flush with {edge} board edge", abs(e - be) <= TOL,
-          f"part {e:.2f} mm vs edge {be:.2f} mm")
+    oh = EDGE_OVERHANG.get(ref, 0.0)
+    sign = -1 if edge in ("left", "top") else 1
+    expected = be + sign * oh
+    name = (f"{ref} flush with {edge} board edge" if not oh
+            else f"{ref} overhangs {edge} edge by {oh} mm")
+    check(name, abs(e - expected) <= TOL, f"part {e:.2f} mm vs expected {expected:.2f} mm")
 
-# 2. antenna copper keep-out present and at the board edge
-ko = [z for z in b.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowZoneFills()]
-check(f"{ANTENNA_REF} antenna copper keep-out present", len(ko) >= 1,
-      f"{len(ko)} rule-area keep-out(s)")
-if ko:
-    zb = ko[0].GetBoundingBox()
-    edge_dists = {"top": abs(MM(zb.GetTop()) - BT), "bottom": abs(MM(zb.GetBottom()) - BB),
-                  "left": abs(MM(zb.GetLeft()) - BL), "right": abs(MM(zb.GetRight()) - BR)}
-    check("antenna keep-out reaches a board edge", min(edge_dists.values()) <= TOL,
-          "nearest edge gap %.2f mm" % min(edge_dists.values()))
-
-# 3. every footprint inside the board outline
+# 2. every footprint inside the board outline (antenna keep-out removed: the antenna overhangs)
 outside = []
 for ref, fp in fps.items():
+    if ref in EDGE_OVERHANG:            # connector intentionally overhangs a board edge
+        continue
     l, r, t, bo = fext(fp)
     if l < BL - TOL or r > BR + TOL or t < BT - TOL or bo > BB + TOL:
         outside.append(ref)

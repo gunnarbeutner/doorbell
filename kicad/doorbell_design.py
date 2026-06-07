@@ -19,7 +19,7 @@ REF = {
 COMP = {
     "U1": ("PCM_Espressif", "ESP32-C3-MINI-1", "ESP32-C3-MINI-1"),
     "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "AMS1117-3.3"),
-    "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C"),
+    "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4085)"),
     "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
     "K1": ("Relay", "G6K-2", "G6K-2F-Y 5V"),
     "K2": ("Relay", "G6K-2", "G6K-2F-Y 5V"),
@@ -58,7 +58,7 @@ COMP = {
 FOOTPRINT = {
     "U1": "PCM_Espressif:ESP32-C3-MINI-1",
     "U2": "PCM_JLCPCB:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR",
-    "J1": "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
+    "J1": "Connector_USB:USB_C_Receptacle_GCT_USB4085",  # 2-row THT Type-C (LCSC C7095263)
     "J2": "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical",
     "K1": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
     "K2": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
@@ -155,8 +155,12 @@ def footprint_path(libname):
 
 # --- PCB edge constraints (enforced by gen_pcb.py, verified by check_pcb.py) ---
 ANTENNA_REF = "U1"          # module whose antenna keep-out must reach a board edge
-EDGE_FLUSH = {              # component ref -> board edge its outer face must sit flush on
-    "J1": "left",          # USB-C receptacle
+EDGE_FLUSH = {              # component ref -> board edge its outer face sits flush on (or overhangs)
+    "J1": "bottom",        # USB-C receptacle, middle of bottom edge (overhangs, see EDGE_OVERHANG)
     "J2": "top",           # WF26 spring terminal
-    "U1": "bottom",        # ESP32 antenna edge (U1 rotated 180°, antenna faces down)
+    "U1": "left",          # ESP32 antenna edge (U1 rotated 90° CW -> antenna faces left)
 }
+# component ref -> mm it extends BEYOND its EDGE_FLUSH board edge (THT connector overhang).
+# The board edge stays at the flush line; the part is pushed out past it so e.g. the USB-C
+# shell sticks out and a cable seats fully without the PCB blocking it.
+EDGE_OVERHANG = {"J1": 3.1, "U1": 5.4}   # U1: antenna depth 5.96mm - 0.5mm edge clearance -> pads stay 0.5mm off the edge

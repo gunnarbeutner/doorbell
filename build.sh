@@ -47,7 +47,7 @@ fab() {
         kicad/fab/*.gto kicad/fab/*.gbo kicad/fab/*.gtp kicad/fab/*.gbp \
         kicad/fab/*.gm1 kicad/fab/*.gbr kicad/fab/*.gbrjob kicad/fab/*.drl
   kicad-cli pcb export gerbers "$PCB" -o kicad/fab/ \
-    --layers F.Cu,B.Cu,F.Mask,B.Mask,F.Silkscreen,B.Silkscreen,F.Paste,B.Paste,Edge.Cuts 2>&1 | q | tail -1
+    --layers F.Cu,In1.Cu,In2.Cu,B.Cu,F.Mask,B.Mask,F.Silkscreen,B.Silkscreen,F.Paste,B.Paste,Edge.Cuts 2>&1 | q | tail -1
   kicad-cli pcb export drill "$PCB" -o kicad/fab/ 2>&1 | q | tail -1
   kicad-cli pcb export pos   "$PCB" -o kicad/fab/doorbell-pos.csv --format csv --units mm 2>&1 | q | tail -1
   kicad-cli sch export bom   "$SCH" -o kicad/fab/doorbell-bom.csv 2>&1 | q | tail -1

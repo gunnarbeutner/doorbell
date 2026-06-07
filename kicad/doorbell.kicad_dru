@@ -1,0 +1,31 @@
+(version 1)
+
+# Custom DRC rules grounded in JLCPCB's published manufacturing capabilities.
+# Reference:
+#   https://jlcpcb.com/capabilities/pcb-capabilities
+#   https://jlcpcb.com/capabilities/pcb-assembly-capabilities
+#
+# JLCPCB standard 2-layer, 1 oz FR4 minimums (for reference). The board's net class keeps a
+# more conservative 0.2 mm clearance / 0.2 mm track for routing margin; these are the hard
+# fab limits the design must never cross:
+#   trace width / spacing .......... 0.127 mm (5 mil)
+#   via drill / outer diameter ..... 0.30 mm / 0.60 mm   (annular ring >= 0.15 mm)
+#   via-to-via (hole-to-hole) ...... 0.254 mm
+#   board edge -> copper ........... 0.30 mm   (board enforces 0.5 mm via min_copper_edge_clearance)
+#   silkscreen line / text height .. 0.15 mm / 1.0 mm
+#   solder-mask dam ................ 0.10 mm
+#   min PTH hole ................... 0.15 mm (>= 0.30 mm recommended)
+#
+# The GCT USB4085 USB-C is a fine-pitch part: its own adjacent pads sit 0.15 mm apart -- below
+# the board's 0.2 mm net-class clearance, but ABOVE JLCPCB's 0.127 mm minimum spacing, so it
+# is manufacturable. Relax clearance to JLCPCB's limit, scoped to J1's courtyard only, so the
+# rest of the board keeps its 0.2 mm design margin.
+(rule "USB4085 fine-pitch pads (within JLCPCB 0.127mm min spacing)"
+	(condition "A.intersectsCourtyard('J1') && B.intersectsCourtyard('J1')")
+	(constraint clearance (min 0.127mm)))
+
+# Board-edge copper clearance: relax from the board's conservative 0.5 mm to JLCPCB's published
+# 0.3 mm capability. U1's antenna overhangs the left edge, so its edge-row pins/traces (e.g.
+# BOOT) necessarily run close to that edge -- 0.3 mm is still well within what JLCPCB fabs.
+(rule "board-edge copper clearance (JLCPCB 0.3mm)"
+	(constraint edge_clearance (min 0.3mm)))

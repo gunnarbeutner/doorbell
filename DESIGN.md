@@ -228,11 +228,13 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 |----------|--------|--------|
 | MCU | **ESP32-C3-MINI-1** | Modern, ESPHome-supported, JLCPCB-stocked, native USB |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
-| Assembly | **JLCPCB SMT** (full fab assembly) | No soldering required |
+| Assembly | **JLCPCB SMT** + 2 hand-soldered THT parts (USB-C, WF26 terminal) | Most parts reflowed; J1/J2 are through-hole, hand-placed after SMT |
 | Relay | **SMD signal relay, 5 V coil, gold/bifurcated contacts** (e.g. Omron G6K / HF) | Dry, ≤12 VDC, mA-level switching; gold contacts are *more* reliable than the V3 SONGLE's silver at these low "wetting" currents |
 | Relay driver | **Discrete: logic-level NMOS + flyback diode + gate pull-down** | The SONGLE module did this for us; now on-board. Pull-down ⇒ relays default OFF at boot |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT, hand-soldered) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
-| Power | **USB-C** (5 V) → AMS1117-3.3 | USB-C connector + native-USB flashing/logging on the C3 |
+| USB-C connector | **GCT USB4085** (2-row THT) | The cheap single-row SMD Type-C (HRO) carries interleaved/duplicated D+/D−/CC/VBUS pads that fight routing; USB4085's two TH rows escape cleanly. LCSC C7095263 |
+| Layers | **4-layer** (F.Cu / GND / +3V3 / B.Cu) | Solid GND + power planes; lets the USB D+/D− pair route together and keeps signals off the planes |
+| Power | **USB-C** (5 V) → AMS1117-3.3 | native-USB flashing/logging on the C3; +5V & +3V3 distributed on the planes |
 | Form factor | **Single PCB**, no daughter boards | Eliminates all inter-board jumpers (the V3 failure mode) |
 | Audio | **Out of scope** (evaluated, deferred — see below) | Needs S3+PSRAM + custom analog bridging; not worth the risk to the proven core |
 
@@ -280,13 +282,18 @@ relay coil↔contact air gap (output). **P1 is the bus common, not board GND.** 
 clearance gap / slot between the two domains on the PCB. (Voltages are low — 12 VAC bus —
 so this is about hum/ground-loops more than shock, but it's a property worth keeping.)
 
+> **4-layer caveat:** the GND/+3V3 planes now span the whole board, so the bus-side traces run
+> over logic-plane copper. Isolation is still intact (only the optocouplers and relay air-gap
+> cross the domains — the planes don't bridge them), but the plane-free slot is gone; revisit
+> with plane cut-outs under the bus side if ground-loop/hum coupling proves to matter.
+
 ### BOM (draft — confirm JLCPCB/LCSC stock at order time)
 
 | Ref | Part | Footprint |
 |-----|------|-----------|
 | U1 | ESP32-C3-MINI-1 | module |
 | U2 | AMS1117-3.3 | SOT-223 |
-| J1 | USB-C receptacle, USB 2.0 | SMD 16-pin |
+| J1 | **GCT USB4085** USB-C 2.0 (LCSC C7095263) | THT, 2-row — hand-solder |
 | J2 | 6-way screw terminal, 3.5 mm (e.g. 4Ucon / generic KF128-3.5 6P) | THT — hand-solder |
 | K1, K2 | Signal relay, 5 V coil, SPDT, gold contacts | SMD |
 | Q1, Q2 | 2N7002 (logic-level NMOS) | SOT-23 |
@@ -305,39 +312,51 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 > J2 (the screw terminal) is THT → **hand-solder it** after SMT. Prefer LCSC *Basic* parts
 > elsewhere; give K1/K2 a second source.
 
-### PCB routing — J1 USB-C VBUS bridge
+### PCB — stackup, floorplan & routing
 
-The `USB_C_Receptacle_HRO_TYPE-C-31-M-12` footprint is a single-row 16-pad part: each
-position carries both the A- and B-row contact, so **VBUS lands on two pad-stacks at
-opposite ends of the pin field** (A4/B9 high, A9/B4 low) with the CC/D± pads between them.
-On this 2-layer board, with J1 flush to the left edge, there is no front-copper path across
-that field — and, unlike GND (which the four shield thru-holes bridge front↔back for free),
-VBUS has no thru-hole. So the autorouter connects one stack and strands the other (the
-classic "1 unconnected pad, J1.B4").
+**4-layer stack:** `F.Cu` (signals + parts) / `In1.Cu` = solid **GND** plane / `In2.Cu` = solid
+**+3V3** plane / `B.Cu` (signals). +5V is a short surface trace. Set in `gen_pcb.py`
+(`SetCopperLayerCount(4)`); fab gerbers include the inner layers.
 
-**Fix (pre-placed in `kicad/gen_pcb.py` before routing):** drop one **off-pad** via in the
-open copper just **east of each NPTH mounting peg** (pegs at x≈2.4 box the VBUS pads in on
-the inboard side), route each VBUS pad out to its via on F.Cu, and **join the two vias on
-B.Cu (layer 2)**. Freerouting then only has to reach this +5V island for the rest of the
-rail. Trace/bridge width 0.2 mm, vias 0.5 mm; coordinates derive from the placed pads + pegs.
+**Why 4-layer + the USB4085 connector.** The original single-row Type-C
+(`HRO TYPE-C-31-M-12`) carries D+/D−/CC/VBUS on *interleaved, duplicated* pads in one row — a
+routing nightmare (it needed a hand-placed VBUS bridge, and the autorouter split the D+/D− pair
+around obstacles). Switching J1 to the **GCT USB4085** — a 2-row *through-hole* Type-C (LCSC
+C7095263) — gives clean escapes, and going 4-layer lets the **D+/D− pair route together** on
+B.Cu over the GND plane.
 
-- **No via-in-pad** (design rule): vias are offset into clear copper, never on a pad.
-- The **lower** stack (A9/B4) is pinched between its peg and the **CC2** lane just south of
-  it. Its via is tucked down near the peg and the escape *threads* the gap (≥0.25 mm to the
-  peg hole, ≥0.2 mm under CC2's lane) rather than cutting straight across — otherwise it
-  blocks CC2 (J1.B5→R10). "Move the 5V closer to the NPTH, don't use a direct route."
-- The **data pair** (D+ on A6/B6, D− on A7/B7) has the same interleaved-duplicate-pad
-  problem, but Freerouting bridges it on its own as long as the VBUS bridge stays out of the
-  central back-copper (hence the bridge hugs x≈3.0–3.25, east of the pegs).
-- J1's reference silk is moved to the bottom of the connector (rotated 90° CW); the flush
-  left edge would otherwise clip it.
+**Keeping the planes solid (the codegen recipe).** Freerouting (driven from KiCad's DSN) does
+not natively reserve power planes, so:
+- `In1`/`In2` are marked **`LT_POWER`** → the autorouter keeps all *signals* on F.Cu/B.Cu.
+- It then won't via to the planes, so `gen_pcb.py` **pre-stitches** every surface (SMD) GND/+3V3
+  pad to its plane with an offset via + short F.Cu stub (≈27 vias; **no via-in-pad**). THT
+  power/GND pads already pass through the planes and are skipped.
+- The planes are **filled in `route.py` *before* the DSN export** — not in `gen_pcb.py`, where
+  `ZONE_FILLER` on a freshly-built board segfaults pcbnew — so the stitch vias tie together and
+  GND/+3V3 are complete before routing.
 
-Result: `./build.sh route` → **0 unconnected pads, 0 DRC violations.**
+Result: signals only on F.Cu/B.Cu, In1/In2 clean solid planes, **D+/D− routed together** on
+B.Cu → **0 unconnected, 0 DRC**.
+
+**Floorplan** (`PCB_PLACE` in `gen_pcb.py`): logic/power in the **lower-left** — the ESP32-C3
+(U1, rot 90°, antenna overhanging the left edge), its LDO (U2) in the U1↔J1 gap, with the
+boot/reset buttons, power LED, decoupling and LDO caps clustered around it; **USB-C (J1) centred
+on the bottom edge**, mouth overhanging downward, CC pulldowns flanking it; **bus interface on
+the right** (WF26 6-way terminal on the top edge, optos, bell-sense R, relays + drivers).
+
+**Edge overhang** (`EDGE_OVERHANG` in `doorbell_design.py`): J1 overhangs the bottom edge by
+3.1 mm (the connector shell clears the PCB) and U1 overhangs the left edge by 5.4 mm so its
+**antenna sits off-board** — which is why the old copper antenna keep-out is gone (nothing on
+the board to keep clear). `check_pcb.py` verifies each overhang and that the rest of every
+footprint stays inside the outline.
+
+**DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published 2-layer
+capabilities (e.g. 0.127 mm spacing inside J1's fine-pitch courtyard, 0.3 mm board-edge copper).
 
 ### Build / test notes
 
-- **Antenna keep-out:** ESP32-C3-MINI-1 antenna at board edge; no copper/pour under it; no
-  metal enclosure over it.
+- **Antenna:** the ESP32-C3-MINI-1 antenna **overhangs the left board edge** (off-board), so no
+  on-board copper/keep-out is needed under it — just keep no metal enclosure over it.
 - **Programming/bring-up:** flash + view logs over the USB-C (native USB-Serial-JTAG); add
   BOOT + EN buttons (or pads) for recovery.
 - **Test points:** P1–P5, +5 V, +3V3, the 4 GPIOs, UART0 — for bench validation against the
