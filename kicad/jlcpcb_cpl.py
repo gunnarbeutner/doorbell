@@ -16,7 +16,14 @@ BOARD = os.path.join(HERE, "doorbell.kicad_pcb")
 OUT = os.path.join(HERE, "fab", "doorbell-cpl.csv")
 
 HANDSOLDER = set()        # parts hand-soldered after SMT assembly (excluded from the CPL)
-ROT_FIX = {}              # per-ref rotation offset (deg) to match JLCPCB's part orientation
+# Per-ref rotation offset (deg, CCW+) ADDED to the footprint orientation so the exported CPL
+# matches JLCPCB's library part orientation. All values below were confirmed against JLCPCB's
+# Confirm-Parts-Placement preview. Resistors/caps/buttons are symmetric -> rotation-agnostic.
+ROT_FIX = {
+    "OK1": 180, "OK2": 180,   # LTV-217 SOP-4 optos: JLCPCB pin 1 is 180° off KiCad
+    "Q1": 180,  "Q2": 180,    # 2N7002 SOT-23: classic JLCPCB 180° offset
+    "K1": -90,  "K2": -90,    # G6K relay: 90° clockwise
+}
 
 
 def MM(v):
