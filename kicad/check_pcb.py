@@ -66,8 +66,8 @@ check("all footprints inside the board outline", not outside,
 # 3. every pad is either in a net or explicitly No-Connect. Catches a pin omitted from the
 #    netlist (e.g. a module GND pin left floating) -- which DRC's "unconnected pads" count does
 #    NOT flag, because a pad with NO net assigned generates no ratsnest.
-from doorbell_design import NOCONN
-_nc = {(r, str(p)) for r, p in NOCONN}
+from doorbell_design import NOCONN, REF
+_nc = {(REF.get(k, k), str(p)) for k, p in NOCONN}   # NOCONN uses internal keys; map to refdes
 floating = sorted({f"{ref}.{p.GetNumber()}" for ref, fp in fps.items() for p in fp.Pads()
                    if p.GetNetname() == "" and (ref, p.GetNumber()) not in _nc})
 check("every pad in a net or marked No-Connect", not floating,

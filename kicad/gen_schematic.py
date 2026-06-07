@@ -24,6 +24,7 @@ LIB = {
     "PCM_JLCPCB-Power": f"{P3}/JLCPCB-Power.kicad_sym",
     "PCM_JLCPCB-Transistors": f"{P3}/JLCPCB-Transistors.kicad_sym",
     "PCM_JLCPCB-Diodes": f"{P3}/JLCPCB-Diodes.kicad_sym",
+    "PCM_JLCPCB-Diode-Packages": f"{P3}/JLCPCB-Diode-Packages.kicad_sym",
     "PCM_JLCPCB-Optocouplers": f"{P3}/JLCPCB-Optocouplers.kicad_sym",
     "PCM_JLCPCB-Resistors": f"{P3}/JLCPCB-Resistors.kicad_sym",
     "PCM_JLCPCB-Capacitors": f"{P3}/JLCPCB-Capacitors.kicad_sym",

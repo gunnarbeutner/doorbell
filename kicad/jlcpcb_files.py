@@ -21,7 +21,8 @@ EXTRA_LCSC = {"J1": "C7095263",    # GCT USB4085 USB-C receptacle (THT)
               "J2": "C5290323",    # DORABO DB125-3.5-6P-GN-S screw terminal (THT)
               "K1": "C2982926",    # Omron G6K-2F-Y-5V DPDT signal relay
               "K2": "C2982926",
-              "U1": "C2838502"}    # ESP32-C3-MINI-1-N4 (4MB, PCB antenna)
+              "U1": "C2838502",    # ESP32-C3-MINI-1-N4 (4MB, PCB antenna)
+              "U2": "C3294699"}    # SGM2212-3.3 low-dropout LDO (overrides the AMS1117 symbol's LCSC)
 
 sch = Schematic.from_file(SCH)
 comp = OrderedDict()   # ref -> (value, footprint, lcsc); de-dupes multi-unit symbols

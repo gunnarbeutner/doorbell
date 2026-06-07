@@ -8,7 +8,7 @@ import os
 # internal key -> KiCad reference designator
 REF = {
     "U1":"U1","U2":"U2","J1":"J1","J2":"J2","K1":"K1","K2":"K2","Q1":"Q1","Q2":"Q2",
-    "D1":"D1","D2":"D2","OC1":"OK1","OC2":"OK2","LED1":"D3",
+    "D1":"D1","D2":"D2","D_vbus":"D4","D_esd":"D5","OC1":"OK1","OC2":"OK2","LED1":"D3",
     "R_lim":"R1","R_em":"R2","R_g1":"R3","R_g2":"R4","R_pd1":"R5","R_pd2":"R6",
     "R_en":"R7","R_boot":"R8","R_cc1":"R9","R_cc2":"R10","R_led":"R11",
     "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6","R_io8":"R12",
@@ -18,7 +18,7 @@ REF = {
 # component table: internal key -> (symbol-lib nickname, symbol entry, value)
 COMP = {
     "U1": ("PCM_Espressif", "ESP32-C3-MINI-1", "ESP32-C3-MINI-1"),
-    "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "AMS1117-3.3"),
+    "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "SGM2212-3.3"),   # low-dropout; LCSC C3294699 (EXTRA_LCSC)
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4085)"),
     "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
     "K1": ("Relay", "G6K-2", "G6K-2F-Y 5V"),
@@ -27,6 +27,8 @@ COMP = {
     "Q2": ("PCM_JLCPCB-Transistors", "NMOS,2N7002", "2N7002"),
     "D1": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),
     "D2": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),
+    "D_vbus": ("PCM_JLCPCB-Diodes", "Schottky,SS14", "SS14"),                       # VBUS reverse-protection (LCSC C2480)
+    "D_esd": ("PCM_JLCPCB-Diode-Packages", "Package, SRV05-4_C7420376", "SRV05-4"), # USB D+/D- ESD array (LCSC C7420376)
     "OC1": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
     "OC2": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
     "R_lim": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
@@ -43,7 +45,7 @@ COMP = {
     "R_io8": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "C_in": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_3v3": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
-    "C_out": ("PCM_JLCPCB-Capacitors", "0603,22uF", "22uF"),
+    "C_out": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),    # SGM2212 wants COUT 1-10uF (was 22uF for AMS1117)
     "C_en": ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),
     "C_dec": ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),
     "LED1": ("PCM_JLCPCB-Diodes", "LED,0603,Red", "PWR"),
@@ -64,6 +66,8 @@ FOOTPRINT = {
     "K2": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
     "Q1": "PCM_JLCPCB:Q_SOT-23", "Q2": "PCM_JLCPCB:Q_SOT-23",
     "D1": "PCM_JLCPCB:D_SOD-123", "D2": "PCM_JLCPCB:D_SOD-123",
+    "D_vbus": "PCM_JLCPCB:D_SMA",
+    "D_esd": "PCM_JLCPCB:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1",
     "OC1": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm", "OC2": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm",
     "LED1": "PCM_JLCPCB:D_0603",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
@@ -78,7 +82,10 @@ FP_OVERRIDE = {r: FOOTPRINT[r] for r in ("J1", "J2", "K1", "K2")}
 
 # nets: name -> [(ref, pad), ...]    (G6K-2 relay: coil 1,8 | COM=3 NC=2 NO=4)
 NETS = {
-    "+5V": [("J1","A4"),("J1","B4"),("J1","A9"),("J1","B9"),("C_in","1"),
+    # USB VBUS (raw, pre-Schottky): J1 power pins + Schottky anode + ESD-array clamp rail (VP).
+    "VBUS": [("J1","A4"),("J1","B4"),("J1","A9"),("J1","B9"),("D_vbus","2"),("D_esd","5")],
+    # +5V rail = everything downstream of the reverse-protection Schottky D4 (cathode).
+    "+5V": [("D_vbus","1"),("C_in","1"),
             ("U2","3"),("K1","1"),("K2","1"),("D1","1"),("D2","1"),("FLAG5","1")],
     "+3V3": [("U2","2"),("U2","4"),("C_out","1"),("C_3v3","1"),("C_dec","1"),("U1","3"),
              ("R_en","1"),("R_boot","1"),("R_led","1"),("R_io8","2"),("FLAG3","1")],
@@ -86,11 +93,12 @@ NETS = {
     "GND": [("J1","A1"),("J1","B1"),("J1","A12"),("J1","B12"),("J1","SH"),
             ("C_in","2"),("C_out","2"),("C_3v3","2"),("C_dec","2"),("U2","1"),
             ("Q1","2"),("Q2","2"),("R_pd1","2"),("R_pd2","2"),("R_em","2"),("C_en","2"),
-            ("R_cc1","2"),("R_cc2","2"),("LED1","1"),("SW_boot","2"),("SW_en","2"),("FLAGG","1")]
+            ("R_cc1","2"),("R_cc2","2"),("LED1","1"),("SW_boot","2"),("SW_en","2"),
+            ("D_esd","2"),("FLAGG","1")]
            + [("U1", str(_gp)) for _gp in
               (1,2,11,14,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53)],
-    "USB_DM": [("J1","A7"),("J1","B7"),("U1","26")],
-    "USB_DP": [("J1","A6"),("J1","B6"),("U1","27")],
+    "USB_DM": [("J1","A7"),("J1","B7"),("U1","26"),("D_esd","3")],
+    "USB_DP": [("J1","A6"),("J1","B6"),("U1","27"),("D_esd","1")],
     "USB_CC1": [("J1","A5"),("R_cc1","1")],
     "USB_CC2": [("J1","B5"),("R_cc2","1")],
     "EN": [("U1","8"),("R_en","2"),("C_en","1"),("SW_en","1")],
@@ -123,6 +131,7 @@ NETS = {
 NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("K2","4"),("K2","5"),("K2","6"),("K2","7"),
           ("J1","A8"),("J1","B8"),
+          ("D_esd","4"),("D_esd","6"),   # SRV05-4 unused I/O channels
           # U1: every pin is now accounted for -- nets, GND, or here. Unused GPIOs:
           ("U1","5"),("U1","6"),("U1","12"),("U1","13"),("U1","16"),("U1","30"),("U1","31"),
           # U1 manufacturer NC pins (NC1..NC14):
@@ -132,6 +141,7 @@ NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
 # placement grid (units of 2.54mm), shared cluster layout for schematic + PCB
 GRID = {
     "J1": (16, 20), "R_cc1": (10, 24), "R_cc2": (10, 28), "R_io8": (74, 52),
+    "D_vbus": (24, 16), "D_esd": (10, 16),
     "U2": (36, 20), "C_in": (30, 30), "C_out": (42, 30), "C_3v3": (48, 30), "C_dec": (54, 30),
     "FLAG5": (28, 14), "FLAG3": (48, 16), "FLAGG": (36, 36),
     "U1": (82, 46), "R_en": (60, 28), "C_en": (64, 34), "SW_en": (56, 32),

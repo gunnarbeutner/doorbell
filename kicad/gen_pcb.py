@@ -25,23 +25,26 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32-C3 + its power / boot / LED support clustered just ABOVE it ===
     "U1":     (8, 47, 90),    # MCU rot 90° CW, lower-left; antenna overhangs the left edge
-    "SW_boot":(24, 41, 0),    # BOOT button (moved left)
-    "SW_en":  (30.5, 41, 180),# EN / reset button (moved left)
-    "R_boot": (24, 45, 0),    # BOOT pullup, under SW_boot
+    "SW_boot":(23, 41, 0),    # BOOT button (spread apart from RST)
+    "SW_en":  (31, 41, 180),  # EN / reset button (spread apart from BOOT)
+    "R_boot": (23, 45, 0),    # BOOT pullup, under SW_boot
     "R_en":   (29, 45, 0),    # EN pullup, under SW_en
     "C_en":   (32, 45, 180),  # EN cap, under SW_en
-    "U2":     (18, 52, 0),    # AMS1117 LDO, in the gap between U1 and J1
-    "R_io8": (16, 40, 0),     # GPIO8 strapping pull-up (in the freed C1 spot)
-    "C_in":   (15, 45.5, 270),# LDO input cap, above U2 (rotated 180°)
-    "C_out":  (21, 45.5, 90), # LDO output cap, above U2
-    "LED1":   (8.77, 56, 90), # power LED, row south of U1 (equal spacing in the row)
-    "R_led":  (12, 56, 90),   # LED series resistor, right of LED1
+    "U2":     (16, 49.5, 270),# SGM2212 LDO, rotated 90deg CCW; shifted left toward U1
+    "R_io8": (4, 39.2, 180),  # GPIO8 strapping pull-up, underneath OK2 (rotated 180°)
+    "C_in":   (18, 44, 0),    # LDO input cap (+5V), above U2 toward VIN (right)
+    "C_out":  (14, 44, 0),    # LDO output cap (+3V3), above U2 toward VOUT (left)
+    "LED1":   (17.5, 41, 90), # power LED, to the left of the BOOT button
+    "R_led":  (14.5, 41, 90), # LED series resistor, left of LED1
     "C_dec":  (2.5, 56, 270), # U1 100nF decoupling, south of U1 (vertical)
     "C_3v3":  (5.55, 56, 270),# U1 10uF decoupling, south of U1 (equal spacing in the row)
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
     "J1":     (25.8, 50, 0),  # USB-C (USB4085 THT) on the bottom edge; moved left to narrow board
-    "R_cc1":  (24.8, 48, 90), # CC1 pulldown, above J1.A5
-    "R_cc2":  (30.8, 48, 90), # CC2 pulldown, above J1 (rotated 180°)
+    "R_cc1":  (24.5, 50, 90), # CC1 pulldown (manual placement)
+    "R_cc2":  (33, 50, 90),   # CC2 pulldown (manual placement)
+    # Protection diodes (manual placement): Schottky below U2, ESD array on D+/D- above J1.
+    "D_vbus": (16, 56.5, 0),  # SS14 VBUS reverse-protection Schottky (SMA), below U2
+    "D_esd":  (28.5, 49.5, 0),# SRV05-4 USB D+/D- ESD array
     # === TOP edge: WF26 terminal, centred above the bus interface ===
     "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
@@ -203,7 +206,8 @@ fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((x1 - 2.0) - _jr), _
 # ABOVE the connector body (inboard) instead.
 jl, jr, jt, jb = fext(fps["J1"])
 j1ref = fps["J1"].Reference()
-j1ref.SetPosition(vmm((jl + jr) / 2.0, jt - 1.2))
+# D5 (ESD array) sits above J1; put the J1 label underneath the connector (bottom strip).
+j1ref.SetPosition(vmm(28.8, 58.3))
 j1ref.SetTextAngleDegrees(0)
 
 # Relays sit close together; the default side-placed refdes overlaps the neighbour's body
