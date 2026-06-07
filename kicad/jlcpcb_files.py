@@ -42,19 +42,22 @@ def _key(r):
     return (m.group(1), int(m.group(2))) if m else (r, 0)
 
 
-groups = OrderedDict()
+# Group by LCSC part #: JLCPCB wants ONE row per part number (same part on two rows is rejected).
+# Parts with no LCSC fall back to (value, footprint) so they still de-dupe sensibly.
+groups = OrderedDict()   # key -> [comment, footprint, lcsc, [refs...]]
 for ref in sorted(comp, key=_key):
     val, fp, lcsc = comp[ref]
-    groups.setdefault((val, fp, lcsc), []).append(ref)
+    groups.setdefault(lcsc or (val, fp), [val, fp, lcsc, []])[3].append(ref)
 
-missing = []
+missing, nparts = [], 0
 with open(os.path.join(FAB, "doorbell-bom-jlcpcb.csv"), "w", newline="") as o:
     w = csv.writer(o)
     w.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
-    for (val, fp, lcsc), refs in groups.items():
+    for val, fp, lcsc, refs in groups.values():
         w.writerow([val, ",".join(refs), fp, lcsc])
+        nparts += len(refs)
         if not lcsc:
             missing.append(",".join(refs))
-print(f"  BOM: {len(groups)} lines ({sum(len(r) for r in groups.values())} parts) -> doorbell-bom-jlcpcb.csv")
+print(f"  BOM: {len(groups)} lines ({nparts} parts) -> doorbell-bom-jlcpcb.csv")
 if missing:
     print(f"  WARN: no LCSC part # for: {'; '.join(missing)}")
