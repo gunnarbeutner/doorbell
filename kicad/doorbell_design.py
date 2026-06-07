@@ -48,7 +48,7 @@ COMP = {
     "C_in": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_3v3": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_out": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),    # SGM2212 wants COUT 1-10uF (was 22uF for AMS1117)
-    "C_en": ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),
+    "C_en": ("PCM_JLCPCB-Capacitors", "0603,1uF", "1uF"),   # EN reset RC: Espressif spec value (was 100nF)
     "C_dec": ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),
     "LED1": ("PCM_JLCPCB-Diodes", "LED,0603,Red", "PWR"),
     "SW_boot": ("PCM_JLCPCB-Connectors_Buttons", "Tactile Button, 160gf, 12V, 50mA, 4.0mm", "BOOT"),

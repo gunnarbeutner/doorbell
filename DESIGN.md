@@ -255,7 +255,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | IO7 | OC2 collector — apartment bell sense (Etagenruf, P5) | in | internal pull-up (firmware) |
 | IO18 / IO19 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
 | IO9 | BOOT strap | — | 10 kΩ pull-up + button to GND |
-| EN | Reset | — | 10 kΩ pull-up + 100 nF to GND (+ optional button) |
+| EN | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec value) (+ optional button) |
 | IO20 / IO21 | UART0 RX/TX | — | currently **No-Connect** (DESIGN intent was test pads — not yet on the board; native USB-Serial-JTAG is the primary log path) |
 
 Avoided: IO2 / IO8 / IO9 (strapping), IO11+ (internal flash). IO4–IO7 are all
@@ -305,7 +305,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | Ref | Part | Footprint |
 |-----|------|-----------|
 | U1 | ESP32-C3-MINI-1 | module |
-| U2 | AMS1117-3.3 | SOT-223 |
+| U2 | SGM2212-3.3 (low-dropout LDO, LCSC C3294699) | SOT-223 |
 | J1 | **GCT USB4085** USB-C 2.0 (LCSC C7095263) | THT, 2-row — JLCPCB-assembled |
 | J2 | 6-way screw terminal, 3.5 mm (e.g. 4Ucon / generic KF128-3.5 6P) | THT — JLCPCB-assembled |
 | K1, K2 | Signal relay, **4.5 V coil**, SPDT, gold contacts (G6K-2F-Y-TR DC4.5, C397193) | SMD |
