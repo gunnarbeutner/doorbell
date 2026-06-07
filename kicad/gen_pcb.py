@@ -69,7 +69,7 @@ MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge o
 def vmm(x, y): return pcbnew.VECTOR2I(pcbnew.FromMM(x), pcbnew.FromMM(y))
 
 board = pcbnew.CreateEmptyBoard()
-board.SetCopperLayerCount(4)        # 4-layer stack: F.Cu / In1=GND / In2=+3V3 / B.Cu
+board.SetCopperLayerCount(4)        # 4-layer stack: F.Cu / In1=+3V3 / In2=GND / B.Cu (GND under B.Cu for the USB pair)
 board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_POWER)   # plane layers -> autorouter keeps
 board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_POWER)   # signals on F.Cu / B.Cu only
 
@@ -146,22 +146,23 @@ rect.SetLayer(pcbnew.Edge_Cuts)
 rect.SetWidth(pcbnew.FromMM(0.15))
 board.Add(rect)
 
-# --- 4-layer inner planes: In1.Cu = solid GND, In2.Cu = +3V3. Components reach them through
-#     vias the autorouter places; +5V stays a (short) surface trace. Filled in route.py. ---
+# --- 4-layer inner planes: In1.Cu = solid +3V3, In2.Cu = solid GND. GND is on In2 (adjacent to
+#     B.Cu) so a USB D+/D- pair routed on B.Cu references the GND plane. Components reach the
+#     planes through vias; +5V stays a (short) surface trace. Filled in route.py. ---
 def add_plane(layer, netname):
     z = pcbnew.ZONE(board); z.SetLayer(layer); z.SetNet(nets[netname])
     ch = pcbnew.SHAPE_LINE_CHAIN()
     for (cx, cy) in [(x0+0.3, y0+0.3), (x1-0.3, y0+0.3), (x1-0.3, y1-0.3), (x0+0.3, y1-0.3)]:
         ch.Append(vmm(cx, cy))
     ch.SetClosed(True); z.AddPolygon(ch); board.Add(z)
-add_plane(pcbnew.In1_Cu, "GND")
-add_plane(pcbnew.In2_Cu, "+3V3")
+add_plane(pcbnew.In1_Cu, "+3V3")
+add_plane(pcbnew.In2_Cu, "GND")
 
 # --- pre-stitch every surface (SMD) GND/+3V3 pad to its inner plane with an offset via + a
 #     short F.Cu stub. The planes are LT_POWER, so the autorouter won't via to them itself;
 #     we make those connections here so Freerouting only has to route signals on F.Cu/B.Cu.
 #     (THT power/GND pads already pass through the planes, so they're skipped.) ---
-PLANE_OF = {"GND": pcbnew.In1_Cu, "+3V3": pcbnew.In2_Cu}
+PLANE_OF = {"GND": pcbnew.In2_Cu, "+3V3": pcbnew.In1_Cu}
 def _pc(p):                            # pad centre (mm) + bounding-circle radius (covers corners)
     bb = p.GetBoundingBox()
     return (MM((bb.GetLeft()+bb.GetRight())/2.0), MM((bb.GetTop()+bb.GetBottom())/2.0),

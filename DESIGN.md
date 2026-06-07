@@ -240,7 +240,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | Relay driver | **Discrete: logic-level NMOS + flyback diode + gate pull-down** | The SONGLE module did this for us; now on-board. Pull-down ⇒ relays default OFF at boot |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT, JLCPCB-assembled) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
 | USB-C connector | **GCT USB4085** (2-row THT) | The cheap single-row SMD Type-C (HRO) carries interleaved/duplicated D+/D−/CC/VBUS pads that fight routing; USB4085's two TH rows escape cleanly. LCSC C7095263 |
-| Layers | **4-layer** (F.Cu / GND / +3V3 / B.Cu) | Solid GND + power planes; lets the USB D+/D− pair route together and keeps signals off the planes |
+| Layers | **4-layer** (F.Cu / +3V3 / GND / B.Cu) | Solid GND + power planes; GND on In2 (under B.Cu) so the USB D+/D− pair on B.Cu references GND; keeps signals off the planes |
 | Power | **USB-C** (5 V) → **SGM2212-3.3** (low-dropout LDO, LCSC C3294699) via a series SS14 VBUS reverse-protection Schottky | native-USB flashing/logging on the C3; +5V & +3V3 distributed on the planes. Low-dropout part chosen so the ~0.45 V Schottky drop still leaves ~1 V headroom (an AMS1117's 1.3 V dropout would have browned out under WiFi TX) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates all inter-board jumpers (the V3 failure mode) |
 | Audio | **Out of scope** (evaluated, deferred — see below) | Needs S3+PSRAM + custom analog bridging; not worth the risk to the proven core |
@@ -326,8 +326,9 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 
 ### PCB — stackup, floorplan & routing
 
-**4-layer stack:** `F.Cu` (signals + parts) / `In1.Cu` = solid **GND** plane / `In2.Cu` = solid
-**+3V3** plane / `B.Cu` (signals). +5V is a short surface trace. Set in `gen_pcb.py`
+**4-layer stack:** `F.Cu` (signals + parts) / `In1.Cu` = solid **+3V3** plane / `In2.Cu` = solid
+**GND** plane / `B.Cu` (signals). GND on In2 (under B.Cu) so a USB D+/D− pair routed on B.Cu
+references GND. +5V is a short surface trace. Set in `gen_pcb.py`
 (`SetCopperLayerCount(4)`); fab gerbers include the inner layers.
 
 **Why 4-layer + the USB4085 connector.** The original single-row Type-C
@@ -411,9 +412,10 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
    sag. **Fixed:** K1/K2 are now the **G6K-2F-Y-TR DC4.5** (LCSC C397193, must-operate 3.6 V), so
    the same ~4.5 V rail clears pickup by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%)
    max coil voltage. Same footprint/pinout. Bench-confirm coil V under WiFi TX + long cable if paranoid.
-3. **[Minor]** USB D+/D− run ~85% on B.Cu, which references the **+3V3** plane (In2), not GND;
-   reference flips at the vias. Fine for FS USB; to fix, route on F.Cu or swap inner planes
-   (GND→In2) so B.Cu sees GND.
+3. **[Mitigated — inner planes swapped]** Inner planes are now In1=+3V3 / In2=GND, so the USB
+   D+/D− pair (mostly on B.Cu) now references **GND**. For a guaranteed clean, coupled pair,
+   hand-route D+/D− on B.Cu in the KiCad GUI and **lock** them out of the autoroute; FS USB
+   (12 Mbps) doesn't strictly require it.
 4. **[Minor]** GPIO2 floating — add 10 kΩ pull-up (Espressif fn 2), optional.
 5. **[Resolved — limiters unshared]** The shared 5.1 kΩ opto limiter let a ringing channel
    reverse-bias the idle opto's LED ~10.8 V (>6 V VR). **Fixed:** split into one resistor per

@@ -25,7 +25,7 @@ headless (`/Applications/freerouting.app`, `-de in.dsn -do out.ses -mp N`) →
 ratsnest), so iterate as: edit `doorbell_design.py` → `./build.sh` → `./build.sh route`.
 
 > The PCB uses the explicit compact floorplan in `gen_pcb.py` (`PCB_PLACE`): logic/USB in the
-> lower-left, bus interface on the right; ~35.8×47.7 mm, 4-layer (F.Cu / GND / +3V3 / B.Cu).
+> lower-left, bus interface on the right; ~35.8×47.7 mm, 4-layer (F.Cu / +3V3 / GND / B.Cu).
 > J1/J2/U1 sit flush on their board edges (`EDGE_FLUSH`); `check_pcb.py` gates the placement.
 
 ---
