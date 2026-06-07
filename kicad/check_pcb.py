@@ -68,7 +68,11 @@ check("all footprints inside the board outline", not outside,
 #    NOT flag, because a pad with NO net assigned generates no ratsnest.
 from doorbell_design import NOCONN, REF
 _nc = {(REF.get(k, k), str(p)) for k, p in NOCONN}   # NOCONN uses internal keys; map to refdes
-floating = sorted({f"{ref}.{p.GetNumber()}" for ref, fp in fps.items() for p in fp.Pads()
+# fiducials (and any FP_EXCLUDE_FROM_POS_FILES footprint) are bare copper with a netless pad by
+# design -- not a floating signal pin, so they're exempt from the "every pad in a net" check.
+floating = sorted({f"{ref}.{p.GetNumber()}" for ref, fp in fps.items()
+                   if not (fp.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_POS_FILES)
+                   for p in fp.Pads()
                    if p.GetNetname() == "" and (ref, p.GetNumber()) not in _nc})
 check("every pad in a net or marked No-Connect", not floating,
       ("floating: " + ", ".join(floating)) if floating else "all pads accounted for")

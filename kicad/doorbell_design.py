@@ -167,6 +167,7 @@ FP_LIB_DIRS = {
     "Relay_SMD": f"{_STOCK}/Relay_SMD.pretty",
     "Connector_USB": f"{_STOCK}/Connector_USB.pretty",
     "TerminalBlock_4Ucon": f"{_STOCK}/TerminalBlock_4Ucon.pretty",
+    "Fiducial": f"{_STOCK}/Fiducial.pretty",   # PCBA optical reference marks (added in gen_pcb.py)
 }
 
 def footprint_path(libname):

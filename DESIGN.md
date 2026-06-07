@@ -366,6 +366,44 @@ footprint stays inside the outline.
 **DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published 2-layer
 capabilities (e.g. 0.127 mm spacing inside J1's fine-pitch courtyard, 0.3 mm board-edge copper).
 
+**Fiducials** (`gen_pcb.py`, added after plane-stitching). Three global PCBA optical reference
+marks — `Fiducial:Fiducial_1mm_Mask2mm` (1 mm copper / 2 mm mask) — forming an **asymmetric
+triangle** so the pick-and-place camera can resolve board orientation unambiguously. The search
+grows inward from three corners (top-left, bottom-left, bottom-right; top-right deliberately empty)
+on a 0.5 mm grid and takes the first spot that sits ≥2 mm inside the board edge and clears every
+**component courtyard** by ≥1.4 mm, every pad by ≥1.5 mm, and every stitch-via. JLCPCB adds its own
+panel/rail fiducials during assembly regardless, so these are belt-and-suspenders local references;
+on a board this dense they're optional, but they cost nothing and are good practice.
+
+*Spread caveat:* this board is packed — the only large open region is the upper-left, the true
+bottom-right corner is entirely under J1's USB-C shell, and the top-right is full of J2 + the
+relays. So the achievable marks are FID1 top-left (1.9, 14.1), FID2 bottom-left (8.4, 56.1), FID3
+bottom-centre (21.6, 56.6, just left of J1) — a tall triangle (43 mm) with a ~20 mm base, narrower
+on the right than ideal but correct and DRC-clean. There is **no** spot on the right third with
+≥1.4 mm body clearance (best candidate clears a part by only 1.28 mm, under the fiducial's own
+1.3 mm courtyard half-extent → would overlap), so a fourth/right-side mark isn't placeable.
+
+Five gotchas, all handled in code so DRC stays **0/0**:
+- **A fiducial must not land under a component body.** The search clears each footprint's
+  *courtyard*, not just its pads — an early version checked only pad distance and tucked FID3 into
+  the gap *between* J1's two USB-C pad rows, i.e. under the connector shell (invisible to the
+  camera). The fiducial's courtyard is **kept** (not stripped) so DRC courtyard-overlap catches any
+  future regression of this kind; the ≥1.4 mm courtyard clearance (> the mark's 1.3 mm courtyard
+  half-extent) keeps that check clean.
+- The footprint is **bare copper, not a placed part** → `FP_EXCLUDE_FROM_POS_FILES` +
+  `FP_EXCLUDE_FROM_BOM` so it never enters the CPL (`jlcpcb_cpl.py` skips that attribute; the
+  panel CPL already filters to real refdes) or the BOM. Its netless pad is exempted from
+  `check_pcb.py`'s "every pad in a net" check the same way.
+- The stock fiducial pad carries a **0.6 mm local clearance override** that Freerouting (DSN) does
+  not honour on a netless pad — it routes to the 0.2 mm board default and DRC then flags the gap.
+  Fix: **drop the override** (inherit 0.2 mm) rather than fence the fiducial off — an all-layer
+  keepout starves this dense autorouting and breaks a net.
+- An autorouted F.Cu track can still run *under* the 2 mm mask window, exposing two nets in one
+  aperture (a solder-mask bridge). Fix: a **minimal F.Cu-only keepout** (no tracks/vias, r =
+  1.1 mm = mask radius + margin) around each fiducial — front-side only, so B.Cu/inner planes stay
+  free and routing still completes 0 unrouted. The fiducial's own pad/footprint are explicitly
+  allowed inside it.
+
 ### Build / test notes
 
 - **Antenna:** the ESP32-C3-MINI-1 antenna **overhangs the left board edge** (off-board), so no

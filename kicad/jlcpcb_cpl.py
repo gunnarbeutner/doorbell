@@ -36,6 +36,8 @@ for f in b.GetFootprints():
     ref = f.GetReference()
     if ref in HANDSOLDER or getattr(f, "IsDNP", lambda: False)():
         continue
+    if f.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_POS_FILES:   # fiducials etc. -- not placed parts
+        continue
     xs = [p.GetPosition().x for p in f.Pads()]
     ys = [p.GetPosition().y for p in f.Pads()]
     if not xs:

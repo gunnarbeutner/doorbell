@@ -193,6 +193,85 @@ for f in board.GetFootprints():
             print(f"  WARN: no clear plane-stitch via for {f.GetReference()}.{p.GetNumber()} ({net})")
 print(f"  plane stitching: {_nstitch} vias")
 
+# --- assembly fiducials: 3 global optical reference marks (1 mm copper / 2 mm mask opening),
+#     grown inward from three corners (top-left, bottom-left, bottom-right). Three points (the
+#     top-right is deliberately left empty) form an asymmetric triangle, so the pick-and-place
+#     camera can resolve board orientation unambiguously. JLCPCB adds its own panel/rail fiducials
+#     during assembly regardless, so these are belt-and-suspenders local references -- they cost
+#     nothing and are good practice. Placed AFTER the stitch vias so the search avoids every pad
+#     AND via; the footprint is bare copper (no net) and excluded from BOM + CPL (it is not a
+#     placed part). This board is densely packed, so a fiducial must NOT land under a component
+#     body -- the search clears every footprint's COURTYARD (not just its pads), so e.g. it won't
+#     sit in the gap between J1's USB-C pad rows (under the connector shell). It walks a 0.5 mm grid
+#     inward from each corner and takes the first spot that sits >=2 mm inside the board edge and
+#     clears every courtyard by >=1.4 mm, every pad by >=1.5 mm, and every via -- which on this
+#     layout lands them near the corners where room exists (the true BR/TR corners are full of
+#     J1/J2, so those marks pull inboard). ---
+FID_LIB = FP_LIB_DIRS["Fiducial"]
+# Obstacles: per-pad bounding circles (mask-bridge clearance) + stitch vias + per-footprint
+# COURTYARD rectangles (so a fiducial never lands under a part body). The fiducial's own courtyard
+# is ~1.3 mm half-extent, so the 1.4 mm courtyard clearance also keeps DRC courtyard-overlap clean.
+_fid_obst = list(_obs) + [(vx, vy, 0.25) for (vx, vy) in _svias]   # pads (r) + stitch vias (0.5mm)
+def _crtyd_rect(f):
+    cy = f.GetCourtyard(pcbnew.F_CrtYd)
+    bb = cy.BBox() if (cy and cy.OutlineCount()) else f.GetBoundingBox(False, False)
+    return (MM(bb.GetLeft()), MM(bb.GetRight()), MM(bb.GetTop()), MM(bb.GetBottom()))
+_fid_rects = [_crtyd_rect(f) for f in board.GetFootprints()]   # only real parts placed so far
+def _rect_dist(px, py, l, r, t, bo):
+    dx = max(l-px, 0.0, px-r); dy = max(t-py, 0.0, py-bo)
+    return (dx*dx + dy*dy) ** 0.5
+def _fid_clear(fx, fy):
+    if not (x0+2.0 < fx < x1-2.0 and y0+2.0 < fy < y1-2.0): return False
+    if any(((fx-ox)**2+(fy-oy)**2)**0.5 <= orad+1.5 for ox, oy, orad in _fid_obst): return False
+    return all(_rect_dist(fx, fy, *R) >= 1.4 for R in _fid_rects)
+def _fid_maskwin_keepout(fx, fy):
+    # Minimal fence: keep autorouted F.Cu tracks/vias out of the fiducial's 2 mm mask WINDOW so no
+    # foreign-net copper gets exposed in its aperture (a solder-mask bridge). F.Cu ONLY -- the mask
+    # is front-side, so B.Cu / inner planes are left free; an all-layer keepout starved the dense
+    # autorouting and broke a net. r = mask radius (1.0) + 0.1 margin. Pads allowed (the fiducial's
+    # own pad sits here); pours are irrelevant on F.Cu (signals-only, no F.Cu plane).
+    z = pcbnew.ZONE(board); z.SetIsRuleArea(True); z.SetLayer(pcbnew.F_Cu)
+    z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True)
+    z.SetDoNotAllowPads(False); z.SetDoNotAllowFootprints(False); z.SetDoNotAllowZoneFills(False)
+    ch = pcbnew.SHAPE_LINE_CHAIN()
+    for k in range(24):
+        a = math.radians(k*15)
+        ch.Append(vmm(fx+1.1*math.cos(a), fy+1.1*math.sin(a)))
+    ch.SetClosed(True); z.AddPolygon(ch); board.Add(z)
+def _place_fiducial(ref, cx, cy):              # cx,cy = the board corner to grow inward from
+    sx, sy = (1 if cx == x0 else -1), (1 if cy == y0 else -1)
+    for total in range(5, 60):                 # prefer spots closest to the corner (small dx+dy)
+        for i in range(2, total-1):
+            fx, fy = cx + sx*i*0.5, cy + sy*(total-i)*0.5
+            if _fid_clear(fx, fy):
+                fp = pcbnew.FootprintLoad(FID_LIB, "Fiducial_1mm_Mask2mm")
+                fp.SetReference(ref); fp.SetValue("FID")
+                fp.Reference().SetVisible(False)       # keep silk out of the fiducial clear area
+                # Courtyard is KEPT (cleared of every part by >=1.4 mm above) so DRC courtyard-
+                # overlap catches any future regression that puts a fiducial under a component.
+                # The stock fiducial pad carries a 0.6 mm LOCAL clearance override. Freerouting
+                # (driven from the DSN) does not honour per-pad local clearance on a netless pad,
+                # so it routes to the 0.2 mm board default and KiCad's DRC then flags 0.2-0.6 mm
+                # "violations" against the override. Drop the override (inherit the 0.2 mm board
+                # clearance the router actually used) instead of fencing the fiducial off with a
+                # keepout -- a keepout steals routing channels on this dense board and the
+                # autorouter then fails to complete a net. 1.5 mm placement clearance keeps real
+                # copper comfortably clear regardless.
+                for _p in fp.Pads():
+                    _p.SetLocalClearance(0)            # 0 => inherit board/net clearance
+                fp.SetPosition(vmm(fx, fy))
+                fp.SetAttributes(fp.GetAttributes() | pcbnew.FP_EXCLUDE_FROM_POS_FILES
+                                 | pcbnew.FP_EXCLUDE_FROM_BOM)   # bare copper, not a placed part
+                board.Add(fp)
+                _fid_maskwin_keepout(fx, fy)
+                _fid_rects.append(_crtyd_rect(fp))     # keep the next fiducial off this one
+                return (fx, fy)
+    raise RuntimeError(f"no clear fiducial location found for {ref}")
+_fids = [_place_fiducial("FID1", x0, y0),      # top-left
+         _place_fiducial("FID2", x0, y1),      # bottom-left
+         _place_fiducial("FID3", x1, y1)]      # bottom-right (top-right left empty -> asymmetric)
+print(f"  fiducials: {len(_fids)} placed at " + ", ".join(f"({x:.1f},{y:.1f})" for x, y in _fids))
+
 # NOTE: J1 is now the GCT USB4085 -- a 2-row THROUGH-HOLE Type-C. VBUS (A4/A9 front row,
 # B4/B9 back row) and the data pair land on plated thru-holes the router reaches from either
 # layer, so the old single-row HRO part's "+5V bridge" (off-pad vias east of the NPTH pegs,
