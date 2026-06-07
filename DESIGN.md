@@ -234,7 +234,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | MCU | **ESP32-C3-MINI-1** | Modern, ESPHome-supported, JLCPCB-stocked, native USB |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **JLCPCB SMT** + 2 hand-soldered THT parts (USB-C, WF26 terminal) | Most parts reflowed; J1/J2 are through-hole, hand-placed after SMT |
-| Relay | **SMD signal relay, 5 V coil, gold/bifurcated contacts** (e.g. Omron G6K / HF) | Dry, ≤12 VDC, mA-level switching; gold contacts are *more* reliable than the V3 SONGLE's silver at these low "wetting" currents |
+| Relay | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts are *more* reliable than the V3 SONGLE's silver at these low "wetting" currents. **4.5 V** (not 5 V) coil so the post-Schottky ~4.5 V rail clears the 3.6 V must-operate with margin (see review finding 2) |
 | Relay driver | **Discrete: logic-level NMOS + flyback diode + gate pull-down** | The SONGLE module did this for us; now on-board. Pull-down ⇒ relays default OFF at boot |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT, hand-soldered) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
 | USB-C connector | **GCT USB4085** (2-row THT) | The cheap single-row SMD Type-C (HRO) carries interleaved/duplicated D+/D−/CC/VBUS pads that fight routing; USB4085's two TH rows escape cleanly. LCSC C7095263 |
@@ -268,7 +268,7 @@ GPIO ──100Ω── gate │ NMOS (2N7002)        coil ── +5V
               gate ──10kΩ── GND            coil ── drain
                   source ── GND      flyback D (1N4148W): cathode→+5V, anode→drain
 ```
-5 V coils run off the USB rail (keeps the 3V3 LDO unloaded). The 10 kΩ gate pull-down
+4.5 V coils run off the +5V rail (≈4.5 V after the SS14 Schottky; keeps the 3V3 LDO unloaded). The 10 kΩ gate pull-down
 holds each relay **off** while the GPIO floats during boot — so the door opener can't
 pulse and the chime can't be silenced by a booting/dead board.
 
@@ -306,7 +306,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | U2 | AMS1117-3.3 | SOT-223 |
 | J1 | **GCT USB4085** USB-C 2.0 (LCSC C7095263) | THT, 2-row — hand-solder |
 | J2 | 6-way screw terminal, 3.5 mm (e.g. 4Ucon / generic KF128-3.5 6P) | THT — hand-solder |
-| K1, K2 | Signal relay, 5 V coil, SPDT, gold contacts | SMD |
+| K1, K2 | Signal relay, **4.5 V coil**, SPDT, gold contacts (G6K-2F-Y-TR DC4.5, C397193) | SMD |
 | Q1, Q2 | 2N7002 (logic-level NMOS) | SOT-23 |
 | D1, D2 | 1N4148W (flyback) | SOD-123 |
 | OC1, OC2 | PC817 / EL817S (SMD opto) | SOP-4 |
@@ -404,9 +404,11 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 1. **[Major — firmware]** `doorbell.yaml` still uses `board: esp32dev` and pins 25/26/32/33
    (nonexistent on C3). Remap to the C3 GPIO map above (32→IO7, 33→IO6, 26→IO4, 25→IO5),
    `board: esp32-c3-devkitm-1`, before flashing.
-2. **[Minor]** Relay pickup margin thin: G6K must-operate = 80% (4.0 V); post-Schottky rail
-   ~4.5 V → coil ~4.31 V (86%), goes negative under VBUS sag. Bench-measure coil V under WiFi
-   TX; consider the 4.5 V coil variant (DC4.5, must-operate 3.6 V) or a P-FET ideal-diode for VBUS.
+2. **[Resolved — switched to DC4.5 coil]** With the 5 V coil, must-operate (80% = 4.0 V) sat
+   just under the post-Schottky ~4.5 V rail (coil ~4.31 V, 86%) — thin, and negative under VBUS
+   sag. **Fixed:** K1/K2 are now the **G6K-2F-Y-TR DC4.5** (LCSC C397193, must-operate 3.6 V), so
+   the same ~4.5 V rail clears pickup by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%)
+   max coil voltage. Same footprint/pinout. Bench-confirm coil V under WiFi TX + long cable if paranoid.
 3. **[Minor]** USB D+/D− run ~85% on B.Cu, which references the **+3V3** plane (In2), not GND;
    reference flips at the vias. Fine for FS USB; to fix, route on F.Cu or swap inner planes
    (GND→In2) so B.Cu sees GND.

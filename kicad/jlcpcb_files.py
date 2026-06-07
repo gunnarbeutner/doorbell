@@ -19,8 +19,8 @@ HANDSOLDER = set()                 # parts hand-soldered after SMT assembly (exc
 # field, and OVERRIDES the schematic's LCSC field (e.g. to swap an out-of-stock part).
 EXTRA_LCSC = {"J1": "C7095263",    # GCT USB4085 USB-C receptacle (THT)
               "J2": "C5290323",    # DORABO DB125-3.5-6P-GN-S screw terminal (THT)
-              "K1": "C2982926",    # Omron G6K-2F-Y-5V DPDT signal relay
-              "K2": "C2982926",
+              "K1": "C397193",     # Omron G6K-2F-Y-TR DC4.5 DPDT relay (4.5V coil; must-operate 3.6V, more VBUS-sag margin)
+              "K2": "C397193",
               "U1": "C2838502",    # ESP32-C3-MINI-1-N4 (4MB, PCB antenna)
               "U2": "C3294699"}    # SGM2212-3.3 low-dropout LDO (overrides the AMS1117 symbol's LCSC)
 

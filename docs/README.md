@@ -56,4 +56,4 @@ C1's *capacitance* is fine — only its **voltage rating** (and part type) must 
 **[Confirmed OK]**
 - Netlist vs Fritzing `KlingelV4.fzz`: front-end matches `doorbell_design.py` NETS; only documented V4 changes differ.
 - USB flashing: D+ = J1 A6+B6→IO19, D− = A7+B7→IO18; CC1/CC2 own 5.1 k; VBUS→LDO (`doorbell_design.py` NETS `:82`,`:86`).
-- BOM parts verified at lcsc.com (relay C2982926, MCU C2838502, opto C115450, USB C7095263, terminal C5290323).
+- BOM parts verified at lcsc.com (relay C397193 = G6K-2F-Y-TR DC4.5, MCU C2838502, opto C115450, USB C7095263, terminal C5290323).

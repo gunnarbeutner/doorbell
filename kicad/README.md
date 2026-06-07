@@ -186,4 +186,4 @@ generator uses internal keys `R_lim`/`C_bulk`/… mapped to designators R1/R2/C1
 5. Update PCB from schematic; in layout keep an isolation gap between bus nets (P1–P5, IN_P4)
    and logic (GND/+3V3/+5V), and an antenna keep-out under U1.
 6. Export BOM + CPL for JLCPCB (CDFER fields populate LCSC/rotation). Verify LCSC stock for
-   U1, J1 and the relay; the relay needs its LCSC field set (e.g. Omron G6K-2F-Y-5VDC).
+   U1, J1 and the relay; the relay needs its LCSC field set (Omron G6K-2F-Y-TR DC4.5 = C397193).

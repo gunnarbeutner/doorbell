@@ -21,8 +21,8 @@ COMP = {
     "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "SGM2212-3.3"),   # low-dropout; LCSC C3294699 (EXTRA_LCSC)
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4085)"),
     "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
-    "K1": ("Relay", "G6K-2", "G6K-2F-Y 5V"),
-    "K2": ("Relay", "G6K-2", "G6K-2F-Y 5V"),
+    "K1": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),   # 4.5V coil: must-operate 3.6V, margin on the ~4.5V post-Schottky rail
+    "K2": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),
     "Q1": ("PCM_JLCPCB-Transistors", "NMOS,2N7002", "2N7002"),
     "Q2": ("PCM_JLCPCB-Transistors", "NMOS,2N7002", "2N7002"),
     "D1": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),
