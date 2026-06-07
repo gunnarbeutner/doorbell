@@ -35,7 +35,7 @@ ratsnest), so iterate as: edit `doorbell_design.py` → `./build.sh` → `./buil
 Single-board redesign of the Klingel controller (ESP32-C3 + USB-C + on-board relay
 drivers). See `../DESIGN.md` for the full rationale; this folder is the KiCad starting
 point. **Carry the proven V3 analog path over verbatim** — do not re-tune the opto
-front-end (PC817/LTV-217, R_lim = 5.1 kΩ, R_em = 1 kΩ) or the relay contact arrangement.
+front-end values (PC817/LTV-217, 5.1 kΩ limiter per opto = R_lim1/R_lim2, R_em = 1 kΩ shared emitter) or the relay contact arrangement.
 
 ## What's in here
 
@@ -80,7 +80,7 @@ whose pins are typed *Unspecified*; harmless.
 | D4 (D_vbus) | SS14 (VBUS reverse-protect) | `PCM_JLCPCB-Diodes:Schottky,SS14` | `PCM_JLCPCB:D_SMA` | C2480 |
 | D5 (D_esd) | SRV05-4 (USB D+/D− ESD) | `PCM_JLCPCB-Diode-Packages:Package, SRV05-4_C7420376` | `PCM_JLCPCB:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1` | C7420376 |
 | OK1, OK2 (OC1/OC2) | LTV-217 (PC817, SMD) | `PCM_JLCPCB-Optocouplers:LTV-217-B-G` ⁵ | `PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm` | C115450 |
-| R1 (R_lim) | 5.1 kΩ — opto LED limiter | `PCM_JLCPCB-Resistors:0603,5.1kΩ` | `PCM_JLCPCB:R_0603` | C23186 |
+| R1, R13 (R_lim1, R_lim2) | 5.1 kΩ — opto LED limiters (one per opto) | `PCM_JLCPCB-Resistors:0603,5.1kΩ` | `PCM_JLCPCB:R_0603` | C23186 |
 | R2 (R_em) | 1 kΩ — opto emitter | `PCM_JLCPCB-Resistors:0603,1kΩ` | `PCM_JLCPCB:R_0603` | C21190 |
 | R3, R4 (R_g1/2) | 100 Ω — gate series | `PCM_JLCPCB-Resistors:0603,100Ω` | `PCM_JLCPCB:R_0603` | C22775 |
 | R5, R6, R7, R8, R12 (R_pd1/2, R_en, R_boot, R_io8) | 10 kΩ — gate pull-downs, EN/BOOT/GPIO8 pull-ups | `PCM_JLCPCB-Resistors:0603,10kΩ` | `PCM_JLCPCB:R_0603` | C25804 |
@@ -156,7 +156,7 @@ GATE2     : R_g2.2  Q2.G  R_pd2.1
 K2_DRAIN  : Q2.D  K2.coil  D2.A
 
 # ---- Bus / WF26 (J2: pin n = line n) + relay contacts (CARRIED FROM V3) ----
-P1     : J2.1  R_lim.2            # bus common — NOT board GND (keep isolated!)
+P1     : J2.1  R_lim1.2  R_lim2.2  # bus common — NOT board GND (keep isolated!)
 P2     : J2.2  K1.COM             # K1 COM
 P3     : J2.3  K1.NO              # K1 NO  -> energise K1 bridges P2+P3 (ÖT)
 P4     : J2.4  K2.COM             # K2 COM
@@ -165,7 +165,8 @@ P5     : J2.5  OC2.1(anode)
 #   K1.NC and K2.NO are intentionally unconnected.
 
 # ---- Bell sense front-end (CARRIED FROM V3, do not re-tune) ----
-OC_CATH : OC1.2  OC2.2  R_lim.1   # shared cathodes -> R_lim(5.1k) -> P1
+OC1_CATH : OC1.2  R_lim1.1         # OC1 cathode -> its own R_lim1(5.1k) -> P1
+OC2_CATH : OC2.2  R_lim2.1         # OC2 cathode -> its own R_lim2(5.1k) -> P1 (unshared)
 OC1_OUT : OC1.4(collector)  U1.IO6   # ESP internal pull-up in firmware
 OC2_OUT : OC2.4(collector)  U1.IO7
 OC_EMIT : OC1.3  OC2.3  R_em.1    # shared emitters -> R_em(1k) -> GND
@@ -175,7 +176,7 @@ LED_A  : R_led.2  LED_pwr.A
 ```
 
 The net list above is the design intent; `gen_schematic.py` already wires all of it (the
-generator uses internal keys `R_lim`/`C_in`/… mapped to designators R1/R2/C2/…; see the
+generator uses internal keys `R_lim1`/`C_in`/… mapped to designators R1/R2/C2/…; see the
 `REF` table in the script). The contacts were verified against the written file:
 `P2 = J2.2 + K1.3(COM)`, `P3 = J2.3 + K1.4(NO)`, `P4 = J2.4 + K2.3(COM)`,
 `IN_P4 = K2.2(NC) + OK1.1(anode)`.
@@ -191,7 +192,7 @@ generator uses internal keys `R_lim`/`C_in`/… mapped to designators R1/R2/C2/�
    - K1: P2→COM(3), P3→NO(4), **NC(2) No-Connect**. K2: P4→COM(3), IN_P4→NC(2), **NO(4) No-Connect**.
    - Relay gates have 10 kΩ pull-downs to GND (relays default **off** at boot).
    - `P1` connects only to J2.1 and R1 — **never to GND** (bus/logic isolation).
-   - Opto LEDs return to `P1` (R1), not GND; R2 is on the emitters.
+   - Each opto LED returns to `P1` via its own limiter (R1/R13), not GND; R2 is the shared emitter resistor.
 5. Update PCB from schematic; in layout keep an isolation gap between bus nets (P1–P5, IN_P4)
    and logic (GND/+3V3/+5V), and an antenna keep-out under U1.
 6. Export BOM + CPL for JLCPCB (CDFER fields populate LCSC/rotation). Verify LCSC stock for

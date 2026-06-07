@@ -46,7 +46,7 @@ into the WF26 — see "Why line 4 needs two pins" below.
 
 | J2 pin | TV20/S line | Signal | Role in our circuit |
 |-----|-------------|--------|---------------------|
-| P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Both opto LED cathodes → R_lim (5.1 kΩ) → P1 |
+| P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Each opto LED cathode → its own 5.1 kΩ (R_lim1/R_lim2) → P1 |
 | P2 | Line 2 | Speech (Sprechen/Hören); bridged to 3 = ÖT | Relay K1 **COM (MAIN1)** |
 | P3 | Line 3 | Speech; bridged to 2 = ÖT door-opener trigger | Relay K1 **NO (NO1)** |
 | P4 | Line 4 (TV20/S side) | Türruf — ~12 VDC house-door gong, **in** | Relay K2 **COM** |
@@ -220,9 +220,11 @@ The redesign eliminates this entirely by integrating everything onto one PCB.
 ## Redesign (V4) — integrated single board
 
 **Design philosophy: carry the proven V3 analog path over verbatim.** The bell-sense
-front-end (2× PC817, R2 = 5.1 kΩ shared cathode→P1 limiter, R1 = 1 kΩ shared emitter→GND)
+front-end (2× PC817, 5.1 kΩ cathode→P1 LED limiters, 1 kΩ shared emitter→GND)
 and the relay contact arrangement (K1 COM=P2/NO=P3, K2 COM=P4/NC=IN-P4) are reproduced
-**unchanged** — including how the Türruf AC tone is handled (it is debounced in firmware via
+**unchanged** — with one deliberate fix: the V3 *single shared* LED limiter is split into one
+5.1 kΩ resistor per opto (**R_lim1, R_lim2**) so a ringing channel can't reverse-bias the idle
+opto's LED past its 6 V VR (review finding 5). The Türruf AC tone is still debounced in firmware (via
 `delayed_on`/`delayed_off`, not rectified). The only genuinely new work is **integration**:
 an ESP32-C3 MCU, USB-C power, and **discrete relay coil drivers** replacing the SONGLE
 module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engineered.
@@ -310,7 +312,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | Q1, Q2 | 2N7002 (logic-level NMOS) | SOT-23 |
 | D1, D2 | 1N4148W (flyback) | SOD-123 |
 | OC1, OC2 | PC817 / EL817S (SMD opto) | SOP-4 |
-| R_lim | 5.1 kΩ (opto LED limiter, shared) | 0603 |
+| R_lim1, R_lim2 | 5.1 kΩ (opto LED limiter, one per opto) | 0603 |
 | R_em | 1 kΩ (opto emitter, shared) | 0603 |
 | R_g1, R_g2 | 100 Ω (gate series) | 0603 |
 | R_pd1, R_pd2 | 10 kΩ (gate pull-down) | 0603 |
@@ -413,9 +415,10 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
    reference flips at the vias. Fine for FS USB; to fix, route on F.Cu or swap inner planes
    (GND→In2) so B.Cu sees GND.
 4. **[Minor]** GPIO2 floating — add 10 kΩ pull-up (Espressif fn 2), optional.
-5. **[Minor]** Shared opto R1 reverse-biases the idle opto's LED ~10.8 V (>6 V VR) during the
-   other channel's ring; leakage-limited (proven in V3). Optional: anti-parallel diode or
-   per-opto cathode resistor.
+5. **[Resolved — limiters unshared]** The shared 5.1 kΩ opto limiter let a ringing channel
+   reverse-bias the idle opto's LED ~10.8 V (>6 V VR). **Fixed:** split into one resistor per
+   opto (R_lim1 = R1, R_lim2 = R13), so each idle cathode stays near P1. R_em (1 kΩ emitter)
+   stays shared — it carries only µA and is not part of the reverse path.
 6. **[Minor/process]** Promised UART0/test pads not on the board (GPIO20/21 = NC, 0 TP
    footprints); `ROT_FIX={}` — verify polarized-part rotations at the Confirm-Placement gate;
    no mounting holes. (THT J1/J2 in the CPL/BOM is **intended** — JLCPCB assembles them via THT

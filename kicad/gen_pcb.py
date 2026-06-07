@@ -50,7 +50,8 @@ PCB_PLACE = {
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
     "OC2":    (4,  34, 270),  # apartment bell sense (left, moved further down)
     "OC1":    (8,  34, 270),  # house bell sense (left)
-    "R_lim":  (6,  28, 0),    # R1, on top of the optos (centred)
+    "R_lim1":  (8,  28, 0),    # R1, OC1's own LED limiter (above OC1) -- unshared
+    "R_lim2": (4,  28, 0),    # R13, OC2's own LED limiter (above OC2) -- unshared
     "R_em":   (1,  36.4, 90), # R2, left of OC2 (CCW); OC_EMIT pad aligned with OC2.3
     "K2":     (15.5, 27, 270),# chime-suppress relay, rotated CW (nudged left)
     "Q2":     (19.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°

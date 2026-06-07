@@ -9,9 +9,10 @@ import os
 REF = {
     "U1":"U1","U2":"U2","J1":"J1","J2":"J2","K1":"K1","K2":"K2","Q1":"Q1","Q2":"Q2",
     "D1":"D1","D2":"D2","D_vbus":"D4","D_esd":"D5","OC1":"OK1","OC2":"OK2","LED1":"D3",
-    "R_lim":"R1","R_em":"R2","R_g1":"R3","R_g2":"R4","R_pd1":"R5","R_pd2":"R6",
+    "R_lim1":"R1","R_em":"R2","R_g1":"R3","R_g2":"R4","R_pd1":"R5","R_pd2":"R6",
     "R_en":"R7","R_boot":"R8","R_cc1":"R9","R_cc2":"R10","R_led":"R11",
     "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6","R_io8":"R12",
+    "R_lim2":"R13",
     "SW_boot":"SW1","SW_en":"SW2","FLAG5":"#FLG1","FLAG3":"#FLG2","FLAGG":"#FLG3",
 }
 
@@ -31,7 +32,8 @@ COMP = {
     "D_esd": ("PCM_JLCPCB-Diode-Packages", "Package, SRV05-4_C7420376", "SRV05-4"), # USB D+/D- ESD array (LCSC C7420376)
     "OC1": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
     "OC2": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
-    "R_lim": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
+    "R_lim1": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
+    "R_lim2": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC2's own LED limiter (unshared)
     "R_em": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
     "R_g1": ("PCM_JLCPCB-Resistors", "0603,100Ω", "100"),
     "R_g2": ("PCM_JLCPCB-Resistors", "0603,100Ω", "100"),
@@ -72,7 +74,7 @@ FOOTPRINT = {
     "LED1": "PCM_JLCPCB:D_0603",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
 }
-for _r in ("R_lim","R_em","R_g1","R_g2","R_pd1","R_pd2","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8"):
+for _r in ("R_lim1","R_lim2","R_em","R_g1","R_g2","R_pd1","R_pd2","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8"):
     FOOTPRINT[_r] = "PCM_JLCPCB:R_0603"
 for _c in ("C_in","C_3v3","C_out","C_en","C_dec"):
     FOOTPRINT[_c] = "PCM_JLCPCB:C_0603"
@@ -110,7 +112,7 @@ NETS = {
     "GATE2_DRV": [("U1","19"),("R_g2","1")],
     "GATE2": [("R_g2","2"),("Q2","1"),("R_pd2","1")],
     "K2_DRAIN": [("Q2","3"),("K2","8"),("D2","2")],
-    "P1": [("J2","1"),("R_lim","2")],
+    "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2")],
     "P2": [("J2","2"),("K1","3")],
     "P3": [("J2","3"),("K1","4")],
     # Line 4 (Türruf) is BROKEN INTO the board for chime suppression: P4 = bus/TV20S side
@@ -120,7 +122,11 @@ NETS = {
     "P4": [("J2","4"),("K2","3")],
     "IN_P4": [("K2","2"),("OC1","1"),("J2","6")],
     "P5": [("J2","5"),("OC2","1")],
-    "OC_CATH": [("OC1","2"),("OC2","2"),("R_lim","1")],
+    # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single
+    # shared limiter let one ringing channel lift the common cathode node ~10.8 V and reverse-bias
+    # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
+    "OC1_CATH": [("OC1","2"),("R_lim1","1")],
+    "OC2_CATH": [("OC2","2"),("R_lim2","1")],
     "OC1_OUT": [("OC1","4"),("U1","20")],
     "OC2_OUT": [("OC2","4"),("U1","21")],
     "OC_EMIT": [("OC1","3"),("OC2","3"),("R_em","1")],
@@ -148,7 +154,7 @@ GRID = {
     "R_boot": (60, 64), "SW_boot": (56, 68),
     "R_g1": (104, 30), "Q1": (109, 30), "R_pd1": (109, 36), "D1": (116, 26), "K1": (126, 30),
     "R_g2": (104, 64), "Q2": (109, 64), "R_pd2": (109, 70), "D2": (116, 60), "K2": (126, 64),
-    "OC1": (36, 82), "OC2": (36, 96), "R_lim": (50, 85), "R_em": (50, 96), "J2": (16, 86),
+    "OC1": (36, 82), "OC2": (36, 96), "R_lim1": (50, 85), "R_lim2": (50, 90), "R_em": (50, 96), "J2": (16, 86),
     "R_led": (66, 84), "LED1": (66, 90),
 }
 
