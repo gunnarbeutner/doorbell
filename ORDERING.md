@@ -26,6 +26,9 @@ Do **not** upload `doorbell-panel-*` — that's our self-made panel, kept only a
 - **PCB Assembly:** ON
   - **Assembly side:** Top only
   - **PCBA Type:** **Standard** (Economic won't place the ESP32 module / relays)
+  - **Through-hole parts:** J1 (USB-C) and J2 (6-way terminal) are THT but **assembled by JLCPCB**
+    (they're in the CPL/BOM; `HANDSOLDER` is empty) — **nothing is hand-soldered**. Confirm their
+    through-hole assembly is included when JLCPCB reviews/quotes the order.
   - **Assembly Qty:** `2` — assemble one + a spare. The setup/part fees are already paid, so the
     second board is nearly free and cheap insurance against a dud.
 - ☑ **Confirm Parts Placement** — JLCPCB checks rotation/polarity against their library and emails

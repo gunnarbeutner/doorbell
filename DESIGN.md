@@ -32,7 +32,7 @@ milliamp-level). Small SMD signal relays are sufficient.
 
 ## WF26 connector — 6-way screw terminal (3.5 mm)
 
-**Connector:** 6-way, 3.5 mm pitch **screw terminal**, THT (hand-soldered after SMT).
+**Connector:** 6-way, 3.5 mm pitch **screw terminal**, THT (assembled by JLCPCB — through-hole, not hand-soldered).
 The WF26 bus wires are fine, flimsy stranded (~26–28 AWG flat cable) — *below* the rated
 minimum of Wago picoMAX/221 push-in & lever connectors (0.2 mm² ≈ 24 AWG), and push-in cage
 clamps grip fine bare strands poorly without ferrules. A screw terminal clamps thin stranded
@@ -233,10 +233,10 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 |----------|--------|--------|
 | MCU | **ESP32-C3-MINI-1** | Modern, ESPHome-supported, JLCPCB-stocked, native USB |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
-| Assembly | **JLCPCB SMT** + 2 hand-soldered THT parts (USB-C, WF26 terminal) | Most parts reflowed; J1/J2 are through-hole, hand-placed after SMT |
+| Assembly | **Full JLCPCB assembly** (SMT + THT) | SMT parts reflowed; J1/J2 (USB-C, WF26 terminal) are through-hole but **also assembled by JLCPCB** (THT assembly) — nothing hand-soldered |
 | Relay | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts are *more* reliable than the V3 SONGLE's silver at these low "wetting" currents. **4.5 V** (not 5 V) coil so the post-Schottky ~4.5 V rail clears the 3.6 V must-operate with margin (see review finding 2) |
 | Relay driver | **Discrete: logic-level NMOS + flyback diode + gate pull-down** | The SONGLE module did this for us; now on-board. Pull-down ⇒ relays default OFF at boot |
-| WF26 connector | **6-way screw terminal, 3.5 mm** (THT, hand-soldered) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
+| WF26 connector | **6-way screw terminal, 3.5 mm** (THT, JLCPCB-assembled) | Bus wire ~26–28 AWG is below Wago push-in/lever min (0.2 mm²); screws clamp fine stranded reliably. 6-way because line 4 needs **in + out** for the series chime-break |
 | USB-C connector | **GCT USB4085** (2-row THT) | The cheap single-row SMD Type-C (HRO) carries interleaved/duplicated D+/D−/CC/VBUS pads that fight routing; USB4085's two TH rows escape cleanly. LCSC C7095263 |
 | Layers | **4-layer** (F.Cu / GND / +3V3 / B.Cu) | Solid GND + power planes; lets the USB D+/D− pair route together and keeps signals off the planes |
 | Power | **USB-C** (5 V) → **SGM2212-3.3** (low-dropout LDO, LCSC C3294699) via a series SS14 VBUS reverse-protection Schottky | native-USB flashing/logging on the C3; +5V & +3V3 distributed on the planes. Low-dropout part chosen so the ~0.45 V Schottky drop still leaves ~1 V headroom (an AMS1117's 1.3 V dropout would have browned out under WiFi TX) |
@@ -304,8 +304,8 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 |-----|------|-----------|
 | U1 | ESP32-C3-MINI-1 | module |
 | U2 | AMS1117-3.3 | SOT-223 |
-| J1 | **GCT USB4085** USB-C 2.0 (LCSC C7095263) | THT, 2-row — hand-solder |
-| J2 | 6-way screw terminal, 3.5 mm (e.g. 4Ucon / generic KF128-3.5 6P) | THT — hand-solder |
+| J1 | **GCT USB4085** USB-C 2.0 (LCSC C7095263) | THT, 2-row — JLCPCB-assembled |
+| J2 | 6-way screw terminal, 3.5 mm (e.g. 4Ucon / generic KF128-3.5 6P) | THT — JLCPCB-assembled |
 | K1, K2 | Signal relay, **4.5 V coil**, SPDT, gold contacts (G6K-2F-Y-TR DC4.5, C397193) | SMD |
 | Q1, Q2 | 2N7002 (logic-level NMOS) | SOT-23 |
 | D1, D2 | 1N4148W (flyback) | SOD-123 |
@@ -319,7 +319,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | C_* | 10 µF×3 (C_in, C_out, C_3v3), 100 nF×2 (C_en, C_dec) | 0603 |
 | LED_pwr + R | power indicator (+3V3) | 0603 |
 
-> J2 (the screw terminal) is THT → **hand-solder it** after SMT. Prefer LCSC *Basic* parts
+> J1/J2 are through-hole but **assembled by JLCPCB** (THT assembly), not hand-soldered. Prefer LCSC *Basic* parts
 > elsewhere; give K1/K2 a second source.
 
 ### PCB — stackup, floorplan & routing
@@ -417,7 +417,8 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
    other channel's ring; leakage-limited (proven in V3). Optional: anti-parallel diode or
    per-opto cathode resistor.
 6. **[Minor/process]** Promised UART0/test pads not on the board (GPIO20/21 = NC, 0 TP
-   footprints); THT J1/J2 still in JLCPCB CPL/BOM (`HANDSOLDER=set()`); `ROT_FIX={}` — verify
-   polarized-part rotations at the Confirm-Placement gate; no mounting holes.
+   footprints); `ROT_FIX={}` — verify polarized-part rotations at the Confirm-Placement gate;
+   no mounting holes. (THT J1/J2 in the CPL/BOM is **intended** — JLCPCB assembles them via THT
+   assembly, `HANDSOLDER` stays empty; nothing is hand-soldered.)
 7. **[Nit]** 2 of U1's 9 EPAD thermal cells unstitched (benign, monolithic EPAD); one 0.388 mm
    bus↔logic clearance (<0.5 mm aspiration, fine for 12 V); U2 comment says "1A" but SGM2212 is ~800 mA.
