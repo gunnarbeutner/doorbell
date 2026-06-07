@@ -11,7 +11,7 @@ REF = {
     "D1":"D1","D2":"D2","OC1":"OK1","OC2":"OK2","LED1":"D3",
     "R_lim":"R1","R_em":"R2","R_g1":"R3","R_g2":"R4","R_pd1":"R5","R_pd2":"R6",
     "R_en":"R7","R_boot":"R8","R_cc1":"R9","R_cc2":"R10","R_led":"R11",
-    "C_bulk":"C1","C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6",
+    "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6","R_io8":"R12",
     "SW_boot":"SW1","SW_en":"SW2","FLAG5":"#FLG1","FLAG3":"#FLG2","FLAGG":"#FLG3",
 }
 
@@ -40,7 +40,7 @@ COMP = {
     "R_cc1": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
     "R_cc2": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
     "R_led": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
-    "C_bulk": ("PCM_JLCPCB-Capacitors", "CASE-B-3528-21(mm),100uF", "100uF"),
+    "R_io8": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "C_in": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_3v3": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_out": ("PCM_JLCPCB-Capacitors", "0603,22uF", "22uF"),
@@ -66,10 +66,9 @@ FOOTPRINT = {
     "D1": "PCM_JLCPCB:D_SOD-123", "D2": "PCM_JLCPCB:D_SOD-123",
     "OC1": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm", "OC2": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm",
     "LED1": "PCM_JLCPCB:D_0603",
-    "C_bulk": "PCM_JLCPCB:C_CASE-B-3528-21(mm)",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
 }
-for _r in ("R_lim","R_em","R_g1","R_g2","R_pd1","R_pd2","R_en","R_boot","R_cc1","R_cc2","R_led"):
+for _r in ("R_lim","R_em","R_g1","R_g2","R_pd1","R_pd2","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8"):
     FOOTPRINT[_r] = "PCM_JLCPCB:R_0603"
 for _c in ("C_in","C_3v3","C_out","C_en","C_dec"):
     FOOTPRINT[_c] = "PCM_JLCPCB:C_0603"
@@ -79,20 +78,24 @@ FP_OVERRIDE = {r: FOOTPRINT[r] for r in ("J1", "J2", "K1", "K2")}
 
 # nets: name -> [(ref, pad), ...]    (G6K-2 relay: coil 1,8 | COM=3 NC=2 NO=4)
 NETS = {
-    "+5V": [("J1","A4"),("J1","B4"),("J1","A9"),("J1","B9"),("C_bulk","1"),("C_in","1"),
+    "+5V": [("J1","A4"),("J1","B4"),("J1","A9"),("J1","B9"),("C_in","1"),
             ("U2","3"),("K1","1"),("K2","1"),("D1","1"),("D2","1"),("FLAG5","1")],
     "+3V3": [("U2","2"),("U2","4"),("C_out","1"),("C_3v3","1"),("C_dec","1"),("U1","3"),
-             ("R_en","1"),("R_boot","1"),("R_led","1"),("FLAG3","1")],
-    "GND": [("J1","A1"),("J1","B1"),("J1","A12"),("J1","B12"),("J1","SH"),("C_bulk","2"),
-            ("C_in","2"),("C_out","2"),("C_3v3","2"),("C_dec","2"),("U2","1"),("U1","1"),
+             ("R_en","1"),("R_boot","1"),("R_led","1"),("R_io8","2"),("FLAG3","1")],
+    # U1 (ESP32-C3-MINI-1) has 21 GND pins + the EPAD (pad 49) -- ALL must tie to GND, not just pin 1.
+    "GND": [("J1","A1"),("J1","B1"),("J1","A12"),("J1","B12"),("J1","SH"),
+            ("C_in","2"),("C_out","2"),("C_3v3","2"),("C_dec","2"),("U2","1"),
             ("Q1","2"),("Q2","2"),("R_pd1","2"),("R_pd2","2"),("R_em","2"),("C_en","2"),
-            ("R_cc1","2"),("R_cc2","2"),("LED1","1"),("SW_boot","2"),("SW_en","2"),("FLAGG","1")],
+            ("R_cc1","2"),("R_cc2","2"),("LED1","1"),("SW_boot","2"),("SW_en","2"),("FLAGG","1")]
+           + [("U1", str(_gp)) for _gp in
+              (1,2,11,14,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53)],
     "USB_DM": [("J1","A7"),("J1","B7"),("U1","26")],
     "USB_DP": [("J1","A6"),("J1","B6"),("U1","27")],
     "USB_CC1": [("J1","A5"),("R_cc1","1")],
     "USB_CC2": [("J1","B5"),("R_cc2","1")],
     "EN": [("U1","8"),("R_en","2"),("C_en","1"),("SW_en","1")],
     "BOOT": [("U1","23"),("R_boot","2"),("SW_boot","1")],
+    "GPIO8": [("U1","22"),("R_io8","1")],   # strapping pin: 10k pull-up (download-mode robustness)
     "GATE1_DRV": [("U1","18"),("R_g1","1")],
     "GATE1": [("R_g1","2"),("Q1","1"),("R_pd1","1")],
     "K1_DRAIN": [("Q1","3"),("K1","8"),("D1","2")],
@@ -120,12 +123,15 @@ NETS = {
 NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("K2","4"),("K2","5"),("K2","6"),("K2","7"),
           ("J1","A8"),("J1","B8"),
-          ("U1","5"),("U1","6"),("U1","12"),("U1","13"),
-          ("U1","16"),("U1","22"),("U1","30"),("U1","31")]
+          # U1: every pin is now accounted for -- nets, GND, or here. Unused GPIOs:
+          ("U1","5"),("U1","6"),("U1","12"),("U1","13"),("U1","16"),("U1","30"),("U1","31"),
+          # U1 manufacturer NC pins (NC1..NC14):
+          ("U1","4"),("U1","7"),("U1","9"),("U1","10"),("U1","15"),("U1","17"),("U1","24"),
+          ("U1","25"),("U1","28"),("U1","29"),("U1","32"),("U1","33"),("U1","34"),("U1","35")]
 
 # placement grid (units of 2.54mm), shared cluster layout for schematic + PCB
 GRID = {
-    "J1": (16, 20), "R_cc1": (10, 24), "R_cc2": (10, 28), "C_bulk": (24, 34),
+    "J1": (16, 20), "R_cc1": (10, 24), "R_cc2": (10, 28), "R_io8": (74, 52),
     "U2": (36, 20), "C_in": (30, 30), "C_out": (42, 30), "C_3v3": (48, 30), "C_dec": (54, 30),
     "FLAG5": (28, 14), "FLAG3": (48, 16), "FLAGG": (36, 36),
     "U1": (82, 46), "R_en": (60, 28), "C_en": (64, 34), "SW_en": (56, 32),

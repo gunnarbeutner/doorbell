@@ -31,7 +31,7 @@ PCB_PLACE = {
     "R_en":   (29, 45, 0),    # EN pullup, under SW_en
     "C_en":   (32, 45, 180),  # EN cap, under SW_en
     "U2":     (18, 52, 0),    # AMS1117 LDO, in the gap between U1 and J1
-    "C_bulk": (16, 40, 0),    # 5V bulk cap, above U2 (nudged up)
+    "R_io8": (16, 40, 0),     # GPIO8 strapping pull-up (in the freed C1 spot)
     "C_in":   (15, 45.5, 270),# LDO input cap, above U2 (rotated 180°)
     "C_out":  (21, 45.5, 90), # LDO output cap, above U2
     "LED1":   (8.77, 56, 90), # power LED, row south of U1 (equal spacing in the row)

@@ -63,6 +63,16 @@ for ref, fp in fps.items():
 check("all footprints inside the board outline", not outside,
       ("outside: " + ", ".join(outside)) if outside else f"board {BR-BL:.1f}x{BB-BT:.1f} mm")
 
+# 3. every pad is either in a net or explicitly No-Connect. Catches a pin omitted from the
+#    netlist (e.g. a module GND pin left floating) -- which DRC's "unconnected pads" count does
+#    NOT flag, because a pad with NO net assigned generates no ratsnest.
+from doorbell_design import NOCONN
+_nc = {(r, str(p)) for r, p in NOCONN}
+floating = sorted({f"{ref}.{p.GetNumber()}" for ref, fp in fps.items() for p in fp.Pads()
+                   if p.GetNetname() == "" and (ref, p.GetNumber()) not in _nc})
+check("every pad in a net or marked No-Connect", not floating,
+      ("floating: " + ", ".join(floating)) if floating else "all pads accounted for")
+
 print("PCB constraint checklist:")
 ok_all = True
 for ok, name, detail in results:
