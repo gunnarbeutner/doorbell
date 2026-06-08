@@ -32,6 +32,8 @@ LIB = {
     "Connector": f"{KS}/Connector.kicad_sym",
     "Connector_Generic": f"{KS}/Connector_Generic.kicad_sym",
     "Relay": f"{KS}/Relay.kicad_sym",
+    "Audio": f"{KS}/Audio.kicad_sym",       # ES8388 codec
+    "SM_LP_5001": f"{HERE}/lib_audio/SM_LP_5001.kicad_sym",   # Bourns SM-LP-5001 (easyeda2kicad import)
     "power": f"{KS}/power.kicad_sym",
 }
 _libcache = {}
@@ -86,6 +88,8 @@ SCHEM_POS = {
 
     # relay driver 2 (lower right): same layout shifted down.
     "R_g2": (104, 60), "Q2": (106, 65), "R_pd2": (104, 70), "D2": (110, 64.5), "K2": (119, 65),
+    # relay driver 3 (K3 PTT placeholder): same layout, third row.
+    "R_g3": (104, 94), "Q3": (106, 99), "R_pd3": (104, 104), "D3": (110, 98.5), "K3": (119, 99),
     # de-crowd the EN/BOOT reset network between the decoupling caps and the MCU.
     "C_dec": (54, 24), "SW_en": (58, 32), "R_en": (62, 28), "C_en": (62, 34),
     "SW_boot": (58, 66), "R_boot": (62, 64),
@@ -116,7 +120,10 @@ for ref, (nick, entry, value) in COMP.items():
     pads += [pad for (r, pad) in NOCONN if r == ref]
     unit = 1
     for pad in pads:
-        _, _, unit = pin_pos(sym, pad); break
+        try:
+            _, _, unit = pin_pos(sym, pad); break
+        except KeyError:
+            continue   # footprint-only pad (true NC die pad), no symbol pin — skip
     inst = SchematicSymbol(libraryNickname=nick, entryName=entry,
                            position=Position(ox, oy, 0), unit=unit, uuid=U())
     designator = REF[ref]
@@ -153,7 +160,10 @@ for ref, (nick, entry, value) in COMP.items():
                       paths=[SymbolProjectPath(sheetInstancePath="/"+ROOT, reference=designator, unit=unit)])]
     sch.schematicSymbols.append(inst)
     for pad in set(pads):
-        px, py, _ = pin_pos(sym, pad)
+        try:
+            px, py, _ = pin_pos(sym, pad)
+        except KeyError:
+            continue   # footprint-only NC pad (e.g. ES8388 pads 9/25): covered on the PCB by NOCONN
         pin_xy[(ref, pad)] = (ox + px, oy - py)
         pin_ang[(ref, pad)] = pin_angle_of(sym, pad)
 

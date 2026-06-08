@@ -18,33 +18,33 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
                              EDGE_FLUSH, EDGE_OVERHANG)
 
 # ---- PCB placement: ref -> (x_mm, y_mm, rotation_deg) ----
-# LOGIC/USB section in the lower-left: the ESP32-C3 with its LDO / boot+reset / LED / decoupling
+# LOGIC/USB section in the lower-left: the ESP32 with its LDO / boot+reset / LED / decoupling
 # support clustered just above it, and the USB-C centred on the bottom edge. BUS interface
 # (WF26 terminal, optos, bell-sense R, relays + drivers) on the right. The ESP32 antenna
 # overhangs the left board edge (off-board), so no copper keep-out is needed.
 PCB_PLACE = {
-    # === LOWER-LEFT: ESP32-C3 + its power / boot / LED support clustered just ABOVE it ===
-    "U1":     (8, 42, 90),    # WROOM-02, rot 90° (antenna faces left, overhangs); up 5mm to clear caps
-    "SW_boot":(23, 41, 0),    # BOOT button (spread apart from RST)
-    "SW_en":  (31, 41, 180),  # EN / reset button (spread apart from BOOT)
-    "R_boot": (23, 45, 0),    # BOOT pullup, under SW_boot
-    "R_en":   (29, 45, 0),    # EN pullup, under SW_en
-    "C_en":   (32, 45, 180),  # EN cap, under SW_en
-    "U2":     (16, 49.5, 270),# SGM2212 LDO, rotated 90deg CCW; shifted left toward U1
-    "R_io8": (7.6, 55.5, 270),  # GPIO8 strapping pull-up, right of C3 (rotated CCW 180°->270°); up 0.5mm
-    "C_in":   (18, 44, 0),    # LDO input cap (+5V), above U2 toward VIN (right)
-    "C_out":  (14, 44, 0),    # LDO output cap (+3V3), above U2 toward VOUT (left)
-    "LED1":   (17.5, 41, 90), # power LED, to the left of the BOOT button
-    "R_led":  (14.5, 41, 90), # LED series resistor, left of LED1
-    "C_dec":  (2.5, 55.5, 270), # U1 100nF decoupling, south of U1 (vertical); up 0.5mm
-    "C_3v3":  (5.55, 55.5, 270),# U1 10uF decoupling, south of U1 (equal spacing in the row); up 0.5mm
+    # === LOWER-LEFT: ESP32 + its power / boot / LED support ===
+    "U1":     (18, 62, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
+    "SW_boot":(53, 61, 0),    # BOOT button; +30mm right, +20mm down
+    "SW_en":  (61, 61, 180),  # EN / reset button; +30mm right, +20mm down
+    "R_boot": (53, 65, 0),    # BOOT pullup
+    "R_en":   (59, 65, 0),    # EN pullup
+    "C_en":   (62, 65, 180),  # EN cap
+    "U2":     (46, 69.5, 270),# SGM2212 LDO; +30mm right, +20mm down
+    "R_io8":  (29.2, 60.7, 270), # GPIO8 pull-up; right of U1 east face, pin 1 (GPIO8) at y≈59.9
+    "C_in":   (48, 64, 0),    # LDO input cap (+5V)
+    "C_out":  (44, 64, 0),    # LDO output cap (+3V3)
+    "LED1":   (47.5, 61, 90), # power LED
+    "R_led":  (44.5, 61, 90), # LED series resistor
+    "C_dec":  (31, 70.65, 270),  # 100nF decoupling; right of U1 east face, pad 1 (+3V3) top / pad 2 (GND) bottom
+    "C_3v3":  (33, 70.65, 270),  # 10uF decoupling; same row, next to C_dec
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
-    "J1":     (25.8, 50, 0),  # USB-C (USB4085 THT) on the bottom edge; moved left to narrow board
-    "R_cc1":  (24.5, 50, 90), # CC1 pulldown (manual placement)
-    "R_cc2":  (33, 50, 90),   # CC2 pulldown (manual placement)
-    # Protection diodes (manual placement): Schottky below U2, ESD array on D+/D- above J1.
-    "D_vbus": (16, 56.5, 0),  # SS14 VBUS reverse-protection Schottky (SMA), below U2
-    "D_esd":  (28.5, 49.5, 0),# SRV05-4 USB D+/D- ESD array
+    "J1":     (55.8, 70, 0),  # USB-C (USB4085 THT); +30mm right, +20mm down
+    "R_cc1":  (54.5, 70, 90), # CC1 pulldown
+    "R_cc2":  (63, 70, 90),   # CC2 pulldown
+    # Protection diodes: Schottky below U2, ESD array on D+/D- above J1.
+    "D_vbus": (46, 76.5, 0),  # SS14 VBUS reverse-protection Schottky; +30mm right, +20mm down
+    "D_esd":  (58.5, 69.5, 0),# SRV05-4 USB D+/D- ESD array; +30mm right, +20mm down
     # === TOP edge: WF26 terminal, centred above the bus interface ===
     "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
@@ -55,15 +55,33 @@ PCB_PLACE = {
     "R_em":   (5.10, 29.05, 180),  # R3, rotated 180° keeping the OC_EMIT leg (pad1) fixed at x5.92
     "K2":     (15.5, 27, 270),# chime-suppress relay, rotated CW (nudged left)
     "Q2":     (19.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
-    "R_g2":   (12.32, 36.18, 180), # gate series R (R4), rotated flat (CCW); GATE2 pad kept fixed
+    "R_g2":   (12.32, 36.18, 180), # gate series R, rotated flat (CCW); GATE2 pad kept fixed
     "R_pd2":  (11.5, 34, 90), # gate pulldown, swapped with Q2 + rotated 180°
     "D2":     (14.8, 33.6, 0),# flyback, moved north (toward K2 coil)
     "K1":     (27, 27, 270),  # door-opener relay, rotated CW (moved left)
     "Q1":     (31, 34, 180),  # NMOS, swapped with R_pd1 + rotated 180°
-    "R_g1":   (23.82, 36.18, 180), # gate series R (R3), rotated flat (CCW); GATE1 pad kept fixed
+    "R_g1":   (23.82, 36.18, 180), # gate series R, rotated flat (CCW); GATE1 pad kept fixed
     "R_pd1":  (23, 34, 90),   # gate pulldown, swapped with Q1 + rotated 180°
     "D1":     (26.3, 33.6, 0),# flyback, moved north (toward K1 coil)
-    "R_ot":   (34, 24, 270),  # R14, ÖT bridge series 2.2k: in series K1.NO -> J2.P3 (right of K1)
+    "R_ot":   (15.5, 20, 270), # ÖT bridge 2.2k: above K2 (top of relay body)
+    # === K3 (PTT placeholder) relay + driver: same spacing as K2→K1 (11.5 mm) ===
+    "K3":     (38.5, 27, 270),
+    "Q3":     (42.5, 34, 180),
+    "R_g3":   (35.32, 36.18, 180),
+    "R_pd3":  (34.5, 34, 90),
+    "D3":     (37.8, 33.6, 0),
+    # === OC3 session-sense opto + limiter: open mid-band between the bus row (y~36) and U1
+    #     top (y~52). Dropped here in free space; reorganise later. ===
+    "OC3":    (7, 45, 270),
+    "R_lim3": (13, 45, 0),
+    # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
+    #     Provisional placement — reorganise later. ===
+    "U3":     (80, 35, 0),
+    "T1":     (80, 52, 0),
+    "C_dv":   (73, 30, 0), "C_pv": (73, 33, 0), "C_hv": (73, 36, 0), "C_av": (73, 39, 0),
+    "C_avb":  (87, 30, 0), "C_vref": (87, 33, 0), "C_vmid": (87, 36, 0), "C_aref": (87, 39, 0),
+    "C_lin":  (77, 27, 0), "C_lout": (83, 27, 0),
+    "R_sda":  (92, 30, 0), "R_scl": (92, 33, 0),   # I2C pull-ups, right of the cap column (clear of T1's large body)
 }
 MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
 
@@ -275,7 +293,7 @@ j1ref.SetTextAngleDegrees(0)
 
 # Relays sit close together; the default side-placed refdes overlaps the neighbour's body
 # silk. Centre each relay's reference on its own body instead.
-for _k in ("K1", "K2"):
+for _k in ("K1", "K2", "K3"):
     _kl, _kr, _kt, _kb = fext(fps[_k])
     _kref = fps[_k].Reference()
     _kref.SetPosition(vmm((_kl + _kr) / 2.0, (_kt + _kb) / 2.0))

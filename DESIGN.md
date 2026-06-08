@@ -308,7 +308,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | Layers | **4-layer** (F.Cu / +3V3 / GND / B.Cu) | Solid GND + power planes; GND on In2 (under B.Cu) so the USB D+/D− pair on B.Cu references GND; keeps signals off the planes |
 | Power | **USB-C** (5 V) → **SGM2212-3.3** (low-dropout LDO, LCSC C3294699) via a series SS14 VBUS reverse-protection Schottky | native-USB flashing/logging on the C3; +5V & +3V3 distributed on the planes. Low-dropout part chosen so the ~0.45 V Schottky drop still leaves ~1 V headroom (an AMS1117's 1.3 V dropout would have browned out under WiFi TX) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates all inter-board jumpers (the V3 failure mode) |
-| Audio | **Out of scope** (evaluated, deferred — see below) | Needs S3+PSRAM + custom analog bridging; not worth the risk to the proven core |
+| Audio | **Half-duplex PTT path now on-board** (K3 PTT relay + OC3 session-sense); analog front-end still bench-gated | Bus is half-duplex (single LS1 reused) ⇒ no echo-cancel ⇒ C6 suffices; supersedes the 2026-06-06 "needs S3+PSRAM" deferral. See "Audio (revisited)" |
 
 ### ESP32-C3 GPIO map (final)
 
@@ -471,7 +471,7 @@ Five gotchas, all handled in code so DRC stays **0/0**:
 - **Test points:** P1–P5, +5 V, +3V3, the 4 GPIOs, UART0 — for bench validation against the
   real TV20/S (door pulse + chime suppress) before it goes in the wall.
 
-### Audio — evaluated and deferred (2026-06-06)
+### Audio — evaluated and deferred (2026-06-06) — ⚠️ partly superseded 2026-06-08 (see "Audio (revisited)" below)
 
 Two-way intercom audio (press/hold talk + send/receive) was considered and **deliberately
 left out of V4**:
@@ -483,6 +483,96 @@ left out of V4**:
   isolation transformer) and emulate the WF26's multi-pole S2 talk switch.
 - If ever pursued, do it as a **separate ESP32-S3 daughterboard** tapping lines 2/3 — so the
   proven C3 core is never put at risk. The core board intentionally carries **no audio hooks**.
+
+### Audio (revisited 2026-06-08) — half-duplex PTT path now on the board
+
+Superseding the "evaluated and deferred" decision above. The board now carries the hooks for a
+**half-duplex** intercom path: **U1 is an ESP32-C6-WROOM-1-N8** (swapped from the C3-WROOM-02 for
+more GPIO + headroom) and **K3** (a third G6K-2F-Y relay + 2N7002/1N4148W driver on **GPIO3**) is
+fitted as the **virtual PTT** relay (contacts currently N/C until the audio circuit is finalised).
+`kicad/doorbell_design.py` is the authoritative net/BOM.
+
+> ⚠️ Doc-sync debt: the MCU decision row, the "ESP32-C3 GPIO map (final)" table and the BOM still
+> read **C3-WROOM-02**. The board is **C6-WROOM-1-N8** per the script — those sections need a
+> separate C3→C6 sync pass (pad numbers, GPIO assignments, BOM line).
+>
+> ⚠️ **U1 LCSC mismatch (action needed):** `jlcpcb_files.py` `EXTRA_LCSC["U1"]` is still
+> **C2934560** (commented "ESP32-C3-WROOM-02-N4"). The footprint/COMP are now C6-WROOM-1 — ordering
+> as-is would assemble the **wrong module on the wrong pad layout**. Replace with the real
+> C6-WROOM-1-N8 LCSC before fab. (Not auto-changed — an LCSC part # must not be guessed.)
+
+**As-built after this change (build verified: ERC 0 err, DRC 0/0, routes 0 unrouted, `check_pcb` PASS):**
+
+- **K3 wired as the virtual PTT** (pole A): **COM = P4, NC → P3 (listen/idle, default), NO → P2
+  (talk)**. Default at boot = listen (gate pull-down holds K3 off). Driver Q3/D3 on **GPIO3**.
+  Pole B (pads 5/6/7) spare. *Firmware rule:* energise **K2 first** (break P4→IN_P4) before K3
+  talk, else the handset's own S2 strap (line4↔3) parallels K3 and shorts P2↔P3.
+- **OC3 session-sense added**: LED across **P2↔P5** via **R_lim3** (5.1 k, value TBD), collector →
+  **GPIO2 / pad 27** (non-strapping), emitter on the shared `OC_EMIT`. "Can send" = OC3 active AND K3 talk.
+- **Phase 2 COMMITTED to the netlist (2026-06-08; ERC 0 err/DRC 0/routes 0-unrouted, board now
+  ~94×68 mm).** Codec = **ES8388** (U3, stereo, QFN-28; LCSC **C365736**). Isolation = **T1 =
+  Bourns SM-LP-5001** (600:600 **1:1** line/audio transformer; LCSC **C7503474**), primary winding
+  across **P1/P5** — *tap confirmed from `wf26/wf26.kicad_sch`*: LS1 (16 Ω speaker/mic) sits
+  **directly across P1↔P5** (pin1=P5, pin2=P1; C1 22 µF parallel P1→P2), so tapping the transducer
+  sidesteps the "speech=2/3" question. **T1 pinout:** winding A = pads **1,3** (across P1/P5),
+  winding B = pads **4,6** (secondary → K3 pole B / GND), center taps **2,5 = NC**. U1 LCSC corrected
+  to **C5366877**. *Symbol+footprint+3D for SM-LP-5001 imported with `easyeda2kicad` (from LCSC
+  C7503474) into `kicad/lib_audio/`; registered in the project sym/fp-lib-tables.*
+  - **Digital interface (wired to U1):** I²S **MCLK=GPIO18, BCLK=GPIO19, WS=GPIO11,
+    DOUT/DSDIN=GPIO10, DIN/ASDOUT=GPIO0**; I²C **SDA=GPIO6, SCL=GPIO7** (10 k pull-ups R18/R19);
+    CE→GND (addr 0x10). MCLK is ESP-driven. Spare GPIO left: 1/4/5.
+  - **Analog direction via K3 pole B** (tracks pole A's PTT, no extra GPIO): idle/listen ties the
+    xfmr secondary→**LIN1** (capture); energised/talk ties it→**LOUT1** (playback). One codec
+    channel used; R-channel + 2nd outputs NC.
+  - **Support net** (U3): DVDD/PVDD/HPVDD/AVDD→+3V3 with decoupling; VREF/VMID/ADCVREF reservoir
+    caps; AC-coupling C15/C16 on the line in/out. EPAD→GND (QFN F.Paste thermal cells carry no
+    copper → exempted in `check_pcb`; no via-in-pad).
+  - ⚠️ **Still bench-gated / open:** coupling-cap values, line-input **biasing** (LIN1 may need a
+    VMID bias resistor), and whether the unused analog inputs want tying to AGND — all
+    **provisional, datasheet-typical, unverified on hardware**. (T1 part + 1:1 600:600 ratio now
+    fixed; the SM-LP-5001 is symmetric so primary/secondary assignment is arbitrary.) Starting point.
+
+**The bus is half-duplex by design — this simplifies everything digital.** The WF26 has a
+**single 16 Ω transducer (LS1, across P1/P5)** *reused* for both directions; the Sprechen/Hören
+switch S2 (which K3 emulates) picks which:
+- **PTT released → listen (P4↔P3):** LS1 is the **speaker** — door-station mic → handset → our **RX/capture** window.
+- **PTT engaged → talk (P4↔P2):** LS1 is the **mic** — handset → door-station speaker → our **TX/inject** window.
+
+Consequences:
+- **One tap pair, not two.** RX and TX share P1/P5 and one codec, time-multiplexed; direction is owned by K3.
+- **No acoustic echo cancellation.** You never tap both directions at once, so AEC is moot — which
+  **supersedes the main reason audio was deferred** ("full-duplex needs ESP32-S3/P4 + PSRAM").
+  Full-duplex is physically impossible on this bus regardless of MCU; the **half-duplex path the bus
+  actually supports is within the C6's reach** (I²S codec + ESPHome half-duplex). Re-evaluate.
+- **Sequencing, not mixing:** assert K3 → settle → stream one direction → release → stream the other (walkie-talkie cadence).
+
+**Detecting "can we send" — OC3 session-sense.** Talk is **relay-gated inside the WF26**: its
+internal relay coil (~320 Ω, across **P2↔P5**) is energised by the TV20/S only while a session is
+live, and S2→K1_COM reaches P2 only while that coil is on. So OC3 + K3 fully define the audio state:
+
+| OC3 (P2↔P5 coil energise) | K3 | State |
+|---|---|---|
+| inactive | – | session dead — neither RX nor TX |
+| active | released | listen → **capture (RX)** |
+| active | engaged | talk → **send (TX)** ✅ |
+
+⇒ "can I send right now?" = **OC3 active AND K3 engaged.** Add **OC3** (third LTV-217/PC817,
+identical to the OC1/OC2 bell front-end) + **R_lim3** limiter, LED across the session pair,
+phototransistor → a spare C6 GPIO, firmware-debounced. *Bench-confirm the session voltage's
+pair/level/AC-ness before fixing R_lim3 and whether an anti-parallel diode is needed for AC.*
+
+**Is leaving LS1 connected electrically safe? — Yes.** LS1 is a passive 16 Ω transducer the TV20/S
+is already designed to drive, so nothing is overstressed by merely leaving it in circuit, and a
+**high-Z RX tap doesn't load it** (handset keeps working = free local monitoring). The only
+constraints fall on **our injection stage**, not LS1: drive it **transformer-isolated,
+series-current-limited, and high-Z/disabled except during talk**, and rate the amp to drive the
+parallel **16 Ω**. Reasons to still **lift one LS1 lead** (the 1-wire mod) are **functional, not
+safety**: (a) in TX the live mic mixes room ambient into what the door station hears; (b) in RX
+incoming audio blares from the handset; (c) the amp wastes power into 16 Ω.
+
+**Still bench-gated (unchanged):** the **P1/P5-vs-lines-2/3** tap-point reconciliation (see "Open /
+inferred" above). LS1 sits on P1/P5 but the TV20/S models speech on 2/3; *where* TX is injected
+depends on how the mic-on-P1/P5 reaches 2/3. Scope this before committing the codec/transformer front-end.
 
 ---
 

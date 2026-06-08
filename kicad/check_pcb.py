@@ -70,10 +70,13 @@ from doorbell_design import NOCONN, REF
 _nc = {(REF.get(k, k), str(p)) for k, p in NOCONN}   # NOCONN uses internal keys; map to refdes
 # fiducials (and any FP_EXCLUDE_FROM_POS_FILES footprint) are bare copper with a netless pad by
 # design -- not a floating signal pin, so they're exempt from the "every pad in a net" check.
+# Paste/mechanical apertures (e.g. a QFN EPAD's F.Paste-only thermal cells) carry no copper and
+# no number -- they can't hold a net, so they're not floating signal pins either.
 floating = sorted({f"{ref}.{p.GetNumber()}" for ref, fp in fps.items()
                    if not (fp.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_POS_FILES)
                    for p in fp.Pads()
-                   if p.GetNetname() == "" and (ref, p.GetNumber()) not in _nc})
+                   if p.GetNetname() == "" and p.IsOnCopperLayer()
+                   and (ref, p.GetNumber()) not in _nc})
 check("every pad in a net or marked No-Connect", not floating,
       ("floating: " + ", ".join(floating)) if floating else "all pads accounted for")
 

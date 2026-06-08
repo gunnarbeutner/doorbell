@@ -47,9 +47,6 @@ def _patch_default(m):
     block = m.group(0)
     for net in RECLASSED:
         block = re.sub(r'(?<=\s)' + re.escape(net) + r'(?=[\s\n])', '', block)
-    block = re.sub(r'\(use_via',
-                   '(use_layer "F.Cu")\n        (use_layer "B.Cu")\n        (use_via',
-                   block)
     return block
 dsn = re.sub(r'\(class kicad_default.*?\)', _patch_default, dsn, flags=re.DOTALL)
 
