@@ -67,6 +67,12 @@ energised it opens the line (gong silenced) — this is the proven V3 topology. 
 collapsed IN-P4 to an internal-only node (no jumper back to the WF26), silently breaking
 chime suppression; restored here on the 6-way J2 (pad 6).
 
+> **P4 is dual-purpose** *(found 2026-06-08)*: besides carrying the incoming Türruf, line 4
+> is the **common of the WF26's Sprechen/Hören switch** — i.e. the PTT / on-hook handshake.
+> At rest it straps **P4↔P3 (on-hook/listen)**; pressed it ties **P4↔P2 (off-hook/talk)**.
+> Disconnecting P4 forces a permanent off-hook and **suppresses the chime** (observed). See
+> "WF26 internal trace" below.
+
 > **Invariant to keep:** `build/netlist.txt` must show `[WF26-P2] … U2.MAIN1` and
 > `[WF26-P3] … U2.NO1`, with U2's NC1 unconnected (it must not appear in any net).
 
@@ -172,15 +178,19 @@ From `STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehlersuc
 ## WF26 internal circuit (from teardown photos / `m53n9gtxg41f1.png`)
 
 The apartment handset (Sprechstelle **WF26/G**, PCB silk "…WF26") has **no MCU**, but it is
-**not purely passive**: the teardown photo (`IMG_5082.jpg`) shows an **internal signal relay
-(Siemens V23100-…)** plus an RC network and the two switches. We deliberately do **not**
-reverse-engineer it further — the existing V3 board works against the real TV20/S, so V4
-reproduces its proven sense / ÖT-bridge / line-4 series-break topology rather than modelling
-the handset. The hand-traced internal schematic shows:
+**not purely passive**: the teardown photo (`IMG_5082.jpg`) shows an **internal signal relay**
+plus an RC network and the two switches. It has now been **fully reverse-engineered
+(2026-06-08)** into a standalone, ERC-clean KiCad project — `wf26/wf26.kicad_sch`, see
+**"WF26 internal trace"** below. V4's board still only reproduces its proven sense /
+ÖT-bridge / line-4 series-break topology (it emulates button presses, not the handset); the
+full trace exists for the audio-tap / virtual-PTT exploration. The hand-traced internal
+schematic shows:
 
 - **Speaker/Mic** — a single **16 Ω** transducer used for both Türruf/Etagenruf tone
   output and half-duplex speech.
-- **Relay (Siemens V23100-…)** — internal; switched function **not traced** (see note above).
+- **Relay** — internal SPDT; **now fully traced** (see "WF26 internal trace" below). Part is
+  uncertain: the hand-drawn schematic labels it **TIANBO HJR-4102-N-12V**; the teardown photo
+  was read as Siemens V23100 — confirm the actual part on the board, as the pinout depends on it.
 - **S2** — multi-pole **Sprechen/Hören (Lautsprechertaste)** changeover switch: routes
   the transducer between the tone path and the speech path (talk vs. listen).
 - **S3** — the **Türöffner (ÖT)** / call buttons (momentary), bridging bus lines as above.
@@ -194,6 +204,54 @@ the handset. The hand-traced internal schematic shows:
 
 > Note on labels: **K1/K2 are the relays' own designators** on the 2-channel module
 > (channel 1 / channel 2), driven by GPIO26 / GPIO25 respectively.
+
+### WF26 internal trace (reverse-engineered 2026-06-08)
+
+Full handset internals captured in **`wf26/wf26.kicad_sch`** (standalone KiCad project, custom
+HJR-4102 relay symbol, ERC-clean). Parts: LS1 (16 Ω speaker/mic), S2 (Sprechen/Hören, DPDT),
+S1 (Türöffner/ÖT, DPDT), R1 (2.2 kΩ), C1 (22 µF/50 V), K1 (relay), J1 (5-way bus = P1–P5).
+
+| Net | Pins |
+|-----|------|
+| P1 | J1.1, LS1.2, C1.1(+) |
+| P2 | J1.2, R1.1, C1.2(−), K1.7 (NO), K1.8 (coil) |
+| P3 | J1.3, S2.1, S2.4, S1.1, S1.4 |
+| P4 | J1.4, S2.2, S2.3, S2.5 |
+| P5 | J1.5, LS1.1, K1.5 (coil) |
+| S1_COM | R1.2, S1.2, S1.5 |
+| K1_COM | K1.1, K1.12, S2.6 |
+| n/c | S1.3, S1.6, K1.6 (NC) |
+
+**Headline finding — P4 is dual-purpose (ring *and* PTT handshake).** Line 4 / Türruf carries
+the incoming house-door ring (confirmed: the controller's AC opto across P1/P4 detects it),
+**and** it is the common of the Sprechen/Hören switch S2:
+- **S2 at rest → P4↔P3** = on-hook / idle / **listen** — the state in which the gong can sound.
+- **S2 pressed → P4↔P2** (via relay common K1_COM; NO = P2) = off-hook / **talk**.
+
+So **disconnecting P4 forces a permanent off-hook** — the P4↔P3 strap breaks, the TV20/S reads
+the station as off-hook, and the chime is suppressed (matches the observed "remove P4 → no
+doorbell sound"). This confirms the polarity: **talk = P4↔P2, listen = P4↔P3** (the earlier
+"P3↔P4 = talk" guess is actually the listen/idle state).
+
+**Relay K1:** 6-pin DIL **SPDT (1 Form C)** — coil **5/8** (~320 Ω, across **P5↔P2**), common
+**1+12** (tied), contacts **6** (NC, unused) / **7** (NO = P2). The coil is energised by the
+TV20/S powering the line (session active), which **gates** the talk path: S2→K1_COM only
+reaches P2 while the coil is on.
+
+**Open / inferred (verify on the bench):**
+- Which physical S2 slider position is "pressed/talk" — inferred from the relay gating + the
+  doorbell test, not measured.
+- How the Türruf (P4) / Etagenruf (P5) tones reach the transducer: LS1 is hard-wired **P1/P5**,
+  which does **not** yet fully reconcile with the TV20/S "speech = lines 2/3" model — needs scoping.
+- C1 polarity (+ assumed toward P1); NC vs NO of K1 pins 6/7 (de-energised, COM 1/12 closes to NC).
+- Relay part identity (HJR-4102 vs Siemens V23100, above).
+
+**Interfacing takeaways (audio tap / virtual PTT):**
+- Record incoming audio: high-Z tap on **P1/P5** (speaker stays live, no board contact).
+- Virtual PTT from the bus, board untouched: leave the handset's P4 floating, drive bus wire 4
+  yourself — **4↔3 = listen, 4↔2 = talk** (only during an active call; talk is relay-gated).
+- Injecting TX audio on P1/P5 makes LS1 replay it (quiet at mic level); lift one LS1 lead to
+  silence it (1-wire board mod).
 
 ---
 

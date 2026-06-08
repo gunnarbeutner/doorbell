@@ -1,0 +1,215 @@
+(kicad_symbol_lib
+	(version 20241209)
+	(generator "claude")
+	(generator_version "10.0")
+	(symbol "HJR-4102-N-12V"
+		(pin_names
+			(offset 1.016)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "K"
+			(at -11.43 11.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "HJR-4102-N-12V"
+			(at -11.43 -11.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TIANBO HJR-4102-N-12V, 6-pin DIL SPDT (1 Form C). Coil 5,8 (~320R). Common 1&12 tied. Contacts 6/7 (NC/NO - verify by continuity). No internal flyback diode per datasheet."
+			(at 0 0 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "HJR-4102-N-12V_0_1"
+			(rectangle
+				(start -10.16 10.16)
+				(end 10.16 -10.16)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(rectangle
+				(start -1.524 4.445)
+				(end 1.524 -4.445)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 10.16) (xy 0 4.445)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0 -10.16) (xy 0 -4.445)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -7.62 10.16) (xy -7.62 -10.16)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -7.62 -5.08) (xy -5.08 -5.08)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -5.08 -5.08) (xy 3.302 -0.635)
+				)
+				(stroke (width 0.254) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 7.62 10.16) (xy 7.62 6.35) (xy 3.81 6.35) (xy 3.81 0)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 2.794 0) (xy 4.826 0)
+				)
+				(stroke (width 0.254) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 7.62 -10.16) (xy 7.62 -6.35) (xy 5.08 -6.35) (xy 5.08 -3.302)
+				)
+				(stroke (width 0) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 4.064 -3.302) (xy 6.096 -3.302)
+				)
+				(stroke (width 0.254) (type default))
+				(fill (type none))
+			)
+			(text "NC"
+				(at 5.842 1.27 0)
+				(effects (font (size 0.889 0.889)))
+			)
+			(text "NO"
+				(at 5.842 -2.159 0)
+				(effects (font (size 0.889 0.889)))
+			)
+		)
+		(symbol "HJR-4102-N-12V_1_1"
+			(pin passive line
+				(at -7.62 12.7 270)
+				(length 2.54)
+				(name "COM"
+					(effects (font (size 1.016 1.016)))
+				)
+				(number "1"
+					(effects (font (size 1.016 1.016)))
+				)
+			)
+			(pin passive line
+				(at 0 12.7 270)
+				(length 2.54)
+				(name "coil"
+					(effects (font (size 1.016 1.016)))
+				)
+				(number "5"
+					(effects (font (size 1.016 1.016)))
+				)
+			)
+			(pin passive line
+				(at 7.62 12.7 270)
+				(length 2.54)
+				(name "NC"
+					(effects (font (size 1.016 1.016)))
+				)
+				(number "6"
+					(effects (font (size 1.016 1.016)))
+				)
+			)
+			(pin passive line
+				(at -7.62 -12.7 90)
+				(length 2.54)
+				(name "COM"
+					(effects (font (size 1.016 1.016)))
+				)
+				(number "12"
+					(effects (font (size 1.016 1.016)))
+				)
+			)
+			(pin passive line
+				(at 0 -12.7 90)
+				(length 2.54)
+				(name "coil"
+					(effects (font (size 1.016 1.016)))
+				)
+				(number "8"
+					(effects (font (size 1.016 1.016)))
+				)
+			)
+			(pin passive line
+				(at 7.62 -12.7 90)
+				(length 2.54)
+				(name "NO"
+					(effects (font (size 1.016 1.016)))
+				)
+				(number "7"
+					(effects (font (size 1.016 1.016)))
+				)
+			)
+		)
+	)
+)

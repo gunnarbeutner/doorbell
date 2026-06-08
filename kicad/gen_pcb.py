@@ -52,7 +52,7 @@ PCB_PLACE = {
     "OC1":    (6.74, 23.85, 270),  # house bell sense; opto block centered in UL quadrant
     "R_lim1": (6.74, 17.85, 0),    # R1, OC1's own LED limiter (above OC1) -- unshared
     "R_lim2": (2.74, 17.85, 0),    # R2, OC2's own LED limiter (above OC2) -- unshared
-    "R_em":   (6.74, 29.05, 0),  # R3, south of OK1 (rotated CW 90°->0°); with the centered opto block
+    "R_em":   (5.10, 29.05, 180),  # R3, rotated 180° keeping the OC_EMIT leg (pad1) fixed at x5.92
     "K2":     (15.5, 27, 270),# chime-suppress relay, rotated CW (nudged left)
     "Q2":     (19.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
     "R_g2":   (12.32, 36.18, 180), # gate series R (R4), rotated flat (CCW); GATE2 pad kept fixed
