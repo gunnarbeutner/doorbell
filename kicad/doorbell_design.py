@@ -106,10 +106,10 @@ NETS = {
     "EN": [("U1","2"),("R_en","2"),("C_en","1"),("SW_en","1")],
     "BOOT": [("U1","8"),("R_boot","2"),("SW_boot","1")],   # GPIO9 strap
     "GPIO8": [("U1","7"),("R_io8","1")],   # strapping pin: 10k pull-up (download-mode robustness)
-    "GATE1_DRV": [("U1","3"),("R_g1","1")],
+    "GATE1_DRV": [("U1","11"),("R_g1","1")],
     "GATE1": [("R_g1","2"),("Q1","1"),("R_pd1","1")],
     "K1_DRAIN": [("Q1","3"),("K1","8"),("D1","2")],
-    "GATE2_DRV": [("U1","4"),("R_g2","1")],
+    "GATE2_DRV": [("U1","10"),("R_g2","1")],
     "GATE2": [("R_g2","2"),("Q2","1"),("R_pd2","1")],
     "K2_DRAIN": [("Q2","3"),("K2","8"),("D2","2")],
     "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2")],
@@ -131,8 +131,8 @@ NETS = {
     # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
     "OC1_CATH": [("OC1","2"),("R_lim1","1")],
     "OC2_CATH": [("OC2","2"),("R_lim2","1")],
-    "OC1_OUT": [("OC1","4"),("U1","10")],   # IO10 (north row, faces OC1 -> short direct route)
-    "OC2_OUT": [("OC2","4"),("U1","15")],   # IO3  (north row, faces OC2 -> short direct route)
+    "OC1_OUT": [("OC1","4"),("U1","15")],   # IO3  (north row, faces OC1 -> short direct route)
+    "OC2_OUT": [("OC2","4"),("U1","17")],   # IO1  (north row, faces OC2 -> short direct route)
     "OC_EMIT": [("OC1","3"),("OC2","3"),("R_em","1")],
     "LED_A": [("R_led","2"),("LED1","2")],
 }
@@ -142,9 +142,9 @@ NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("K2","4"),("K2","5"),("K2","6"),("K2","7"),
           ("J1","A8"),("J1","B8"),
           ("D_esd","4"),("D_esd","6"),   # SRV05-4 unused I/O channels
-          # U1 (WROOM-02): unused GPIOs -- IO6(5), IO7(6), IO20/U0RXD(11), IO21/U0TXD(12),
-          # IO2(16), IO1(17), IO0(18). (OC1/OC2 sense moved to IO10/IO3 on the opto-facing row.)
-          ("U1","5"),("U1","6"),("U1","11"),("U1","12"),("U1","16"),("U1","17"),("U1","18")]
+          # U1 (WROOM-02): freed/unused GPIOs -- IO4(3), IO5(4), IO6(5), IO7(6),
+          # IO21/U0TXD(12) [N/C -- ROM drives HIGH at boot], IO2(16) [strap], IO0(18).
+          ("U1","3"),("U1","4"),("U1","5"),("U1","6"),("U1","12"),("U1","16"),("U1","18")]
 
 # placement grid (units of 2.54mm), shared cluster layout for schematic + PCB
 GRID = {

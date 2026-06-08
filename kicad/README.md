@@ -102,24 +102,26 @@ the **4.5 V (DC4.5)** variant — must-operate 3.6 V, clearing the post-Schottky
 `../DESIGN.md` review finding 2). ⁵ LTV-217 = JLCPCB-stocked 817-family SMD opto (PC817
 equivalent); swap for `PC817S` for the exact V3 part.
 
-## ESP32-C3-MINI-1 pin usage (official pads)
+## ESP32-C3-WROOM-02 pin usage (castellated pads)
 
-| Pad | Pin | Net | Role |
-|-----|-----|-----|------|
-| 3 | 3V3 | +3V3 | supply |
-| 1 + 49(EP) | GND | GND | supply + thermal |
-| 8 | EN | EN_NET | reset (R_en↑ + C_en) |
-| 23 | IO9 | BOOT_NET | strap (R_boot↑, SW_boot) |
-| 22 | IO8 | GPIO8 | strap — 10 kΩ pull-up (R_io8), download-mode robustness |
-| 26 | IO18 | USB_DM | USB D− |
-| 27 | IO19 | USB_DP | USB D+ |
-| 18 | IO4 | GATE1_DRV | K1 driver (door / ÖT) |
-| 19 | IO5 | GATE2_DRV | K2 driver (chime) |
-| 20 | IO6 | OC1_OUT | house bell sense (Türruf) |
-| 21 | IO7 | OC2_OUT | apartment bell sense (Etagenruf) |
+| Pad | GPIO | Net | Role |
+|-----|------|-----|------|
+| 1 | 3V3 | +3V3 | supply |
+| 9 + 19(EP) | GND | GND | supply + thermal |
+| 2 | EN | EN | reset (R_en↑ + C_en) |
+| 8 | IO9 | BOOT | strap (R_boot↑, SW_boot) |
+| 7 | IO8 | GPIO8 | strap — 10 kΩ pull-up (R_io8), download-mode robustness |
+| 13 | IO18 | USB_DM | USB D− |
+| 14 | IO19 | USB_DP | USB D+ |
+| 11 | IO20 | GATE1_DRV | K1 driver (door / ÖT) — IO20/U0RXD, high-Z at reset |
+| 10 | IO10 | GATE2_DRV | K2 driver (chime) — east-most north-row pad |
+| 15 | IO3 | OC1_OUT | house bell sense (Türruf) |
+| 17 | IO1 | OC2_OUT | apartment bell sense (Etagenruf) |
 
-IO4–IO7 are all non-strapping (strapping = IO2/IO8/IO9). The C3 firmware is `../doorbell-v4.yaml`
-(already remapped to these GPIOs, `board: esp32-c3-devkitm-1`); `../doorbell.yaml` is the old V3 config.
+All four active GPIOs are on the north castellated row (pads 10–18), facing both the relay cluster
+and the opto block. IO20/U0RXD is safe as a gate driver: high-Z input at reset, 10 kΩ pull-down
+holds K2 off. IO21/U0TXD (pad 12) is N/C — ROM drives it HIGH at boot. Non-strapping: IO1/IO3/IO10/IO20
+(strapping = IO2/IO8/IO9). Firmware: `../doorbell-v4.yaml`, `board: esp32-c3-devkitm-1`.
 
 ## Net list (draw these connections)
 
@@ -146,12 +148,12 @@ BOOT_NET : U1.IO9  R_boot.2 SW_boot.1
 GPIO8    : U1.IO8  R_io8.1            # strap: 10k pull-up to +3V3 (download-mode robustness)
 
 # ---- Relay K1 driver (door opener / ÖT) ----
-GATE1_DRV : U1.IO4  R_g1.1
+GATE1_DRV : U1.IO20  R_g1.1
 GATE1     : R_g1.2  Q1.G  R_pd1.1
 K1_DRAIN  : Q1.D  K1.coil  D1.A
 
 # ---- Relay K2 driver (chime suppress) ----
-GATE2_DRV : U1.IO5  R_g2.1
+GATE2_DRV : U1.IO10  R_g2.1
 GATE2     : R_g2.2  Q2.G  R_pd2.1
 K2_DRAIN  : Q2.D  K2.coil  D2.A
 
@@ -167,8 +169,8 @@ P5     : J2.5  OC2.1(anode)
 # ---- Bell sense front-end (CARRIED FROM V3, do not re-tune) ----
 OC1_CATH : OC1.2  R_lim1.1         # OC1 cathode -> its own R_lim1(5.1k) -> P1
 OC2_CATH : OC2.2  R_lim2.1         # OC2 cathode -> its own R_lim2(5.1k) -> P1 (unshared)
-OC1_OUT : OC1.4(collector)  U1.IO6   # ESP internal pull-up in firmware
-OC2_OUT : OC2.4(collector)  U1.IO7
+OC1_OUT : OC1.4(collector)  U1.IO3   # ESP internal pull-up in firmware
+OC2_OUT : OC2.4(collector)  U1.IO1
 OC_EMIT : OC1.3  OC2.3  R_em.1    # shared emitters -> R_em(1k) -> GND
 
 # ---- Power LED ----

@@ -314,24 +314,17 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 
 | GPIO | Signal | Dir | Notes |
 |------|--------|-----|-------|
-| IO4 | K1 relay driver — front door buzzer / ÖT (bridge P2+P3) | out | gate pull-down ⇒ off at boot |
-| IO5 | K2 relay driver — chime suppress (break P4) | out | gate pull-down ⇒ off at boot ⇒ chime passes |
-| IO10 | OC1 collector — house bell sense (Türruf, P4) | in | internal pull-up (firmware); on U1's north row facing OC1 (was IO6) |
-| IO3 | OC2 collector — apartment bell sense (Etagenruf, P5) | in | internal pull-up (firmware); on U1's north row facing OC2 (was IO7) |
-| IO6 / IO7 | — (unused) | — | freed when bell sense moved to IO10/IO3; No-Connect |
+| IO20 | K1 relay driver — front door buzzer / ÖT (bridge P2+P3) | out | pad 11 (north row); IO20/U0RXD — high-Z input at reset, pull-down holds relay off |
+| IO10 | K2 relay driver — chime suppress (break P4) | out | pad 10 (east end, north row); gate pull-down ⇒ off at boot |
+| IO3 | OC1 collector — house bell sense (Türruf, P4) | in | pad 15 (north row, faces OC1); internal pull-up (firmware) |
+| IO1 | OC2 collector — apartment bell sense (Etagenruf, P5) | in | pad 17 (north row, faces OC2); internal pull-up (firmware) |
+| IO4 / IO5 / IO6 / IO7 | — (unused) | — | No-Connect; freed when relay drivers moved to north row |
 | IO18 / IO19 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
 | IO9 | BOOT strap | — | 10 kΩ pull-up + button to GND |
 | EN | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec value) (+ optional button) |
-| IO20 / IO21 | UART0 RX/TX | — | currently **No-Connect** (DESIGN intent was test pads — not yet on the board; native USB-Serial-JTAG is the primary log path) |
+| IO21 | UART0 TX | — | **No-Connect** — ROM drives HIGH at boot; must not be reused as relay gate |
 
-Avoided: IO2 / IO8 / IO9 (strapping), IO11–IO17 (internal flash). The active GPIOs — IO4/IO5
-(relays), IO10/IO3 (bell sense) — are all non-strapping. **Bell sense uses IO10/IO3 because, on the
-WROOM-02 at rot 90 (antenna fixed left), those sit on U1's *north* castellated row directly facing
-the optos** — so OC1/OC2 route ~7 mm straight instead of wrapping ~25 mm around the module (the
-old IO6/IO7 are on the far south row; rotating U1 to fix it isn't an option without moving the
-antenna off the left edge). IO8 carries a 10 kΩ
-pull-up (R10, download-mode robustness); **IO2 is left floating** — Espressif's datasheet
-(Table 3-3 fn 2) recommends a 10 kΩ pull-up there to harden boot against glitches (optional).
+Avoided: IO2 / IO8 / IO9 (strapping), IO11–IO17 (internal flash), IO21/U0TXD (ROM drives HIGH at boot — unsuitable as relay gate). All four active GPIOs — IO20/IO10 (relay drivers) and IO3/IO1 (bell sense) — are non-strapping and on U1's **north castellated row**, which directly faces both the opto block and the relay cluster. IO20 (pad 11, x=6.7 mm) drives K1; IO10 (pad 10, x=8.2 mm) drives K2 — saving ~25 mm vs. the former south-row IO4/IO5 assignment. Bell-sense pads (IO3=pad 15, IO1=pad 17) route ~7–11 mm straight up to OC1/OC2. IO20/U0RXD is safe as a gate driver: it is a high-Z input at reset, so the 10 kΩ pull-down holds K1 off during the boot window. IO8 carries a 10 kΩ pull-up (R10, download-mode robustness); **IO2 is left floating** — Espressif's datasheet (Table 3-3 fn 2) recommends a 10 kΩ pull-up there to harden boot against glitches (optional).
 
 ### Relay driver subcircuit (per channel)
 
@@ -427,8 +420,7 @@ the two 5.1 kΩ limiters, the shared emitter R) is centred in the **upper-left q
 U1; the LDO (U2), boot/reset buttons, power LED and the decoupling/LDO caps cluster around U1
 (caps along the bottom-left, R10 right of C3); **USB-C (J1) centred on the bottom edge**, mouth
 overhanging downward, CC pulldowns flanking it; **bus interface on the right** (WF26 6-way terminal
-on the top edge, relays + drivers). The bell-sense GPIOs (IO10/IO3) are on U1's north row facing
-the optos, so OC1/OC2 route straight up (~7 mm) instead of around the module — see the GPIO map.
+on the top edge, relays + drivers). All four active GPIOs (IO20/IO10 relay drivers, IO3/IO1 bell sense) are on U1's **north** castellated row — IO20(pad 11)→K1 and IO10(pad 10)→K2; bell-sense routes straight up to OC1/OC2 (~7–11 mm). See the GPIO map.
 
 **Edge overhang** (`EDGE_OVERHANG` in `doorbell_design.py`): J1 overhangs the bottom edge by
 3.1 mm (the connector shell clears the PCB) and U1 overhangs the left edge by 5.9 mm (< the
@@ -516,9 +508,7 @@ adequacy (470 µF unnecessary); 2N7002 gate drive @3.3 V; bell-sense logic level
 connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 
 **To address:**
-1. **[Major — firmware]** `doorbell.yaml` still uses `board: esp32dev` and pins 25/26/32/33
-   (nonexistent on C3). Remap to the C3 GPIO map above (32→IO3, 33→IO10, 26→IO4, 25→IO5),
-   `board: esp32-c3-devkitm-1`, before flashing.
+1. **[Resolved — firmware remapped]** `doorbell-v4.yaml` uses `board: esp32-c3-devkitm-1` and the V4 GPIO map (OC1/Türruf→IO3, OC2/Etagenruf→IO1, K1→IO10, K2→IO20); logs over USB_SERIAL_JTAG.
 2. **[Resolved — switched to DC4.5 coil]** With the 5 V coil, must-operate (80% = 4.0 V) sat
    just under the post-Schottky ~4.5 V rail (coil ~4.31 V, 86%) — thin, and negative under VBUS
    sag. **Fixed:** K1/K2 are now the **G6K-2F-Y-TR DC4.5** (LCSC C397193, must-operate 3.6 V), so
@@ -555,6 +545,12 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 - **Bell-sense GPIOs IO6/IO7 → IO10/IO3** so they land on U1's *north* castellated row facing the
   optos: OC1/OC2 now route ~7 mm straight up instead of ~25 mm around the module. `doorbell-v4.yaml`
   updated to match (House GPIO6→GPIO10, Apartment GPIO7→GPIO3).
+- **Relay-driver GPIOs IO4/IO5 → IO20/IO10; bell-sense IO10/IO3 → IO3/IO1** — consolidates all
+  four active GPIOs onto U1's north row. Gate traces shorten by ~25 mm. IO20/U0RXD (pad 11)
+  drives K1; IO10 (pad 10) drives K2. IO20/U0RXD as gate driver is safe: high-Z input at reset,
+  10 kΩ pull-down holds K1 off during boot. IO21/U0TXD left N/C (ROM drives HIGH at boot).
+  `doorbell-v4.yaml` updated (K1 GPIO4→GPIO20, K2 GPIO5→GPIO10, OC1 GPIO10→GPIO3,
+  OC2 GPIO3→GPIO1).
 - **Re-verify for the WROOM-02:** review finding 7's "9 EPAD thermal cells" was MINI-1-specific —
   the WROOM-02 has its own EPAD (pad 19, multi-rect), stitched the same way (one benign
   plane-stitch warning). All other CLEAN/Resolved items above are unaffected by the swap.
