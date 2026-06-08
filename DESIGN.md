@@ -50,8 +50,8 @@ into the WF26 — see "Why line 4 needs two pins" below.
 | P2 | Line 2 | Speech (Sprechen/Hören); bridged to 3 = ÖT | Relay K1 **COM (MAIN1)** |
 | P3 | Line 3 | Speech; bridged to 2 = ÖT door-opener trigger | Relay K1 **NO** → **R14 (2.2 kΩ)** → P3 |
 | P4 | Line 4 (TV20/S side) | Türruf — ~12 VDC house-door gong, **in** | Relay K2 **COM** |
-| IN-P4 | Line 4 (WF26 side) | Türruf return, **out** to the handset | Relay K2 **NC** → OC1 anode (house-bell sense) **and** jumper → WF26 terminal 4 (gong). K2 opens this to suppress the chime |
-| P5 | Line 5 | Etagenruf — floor/apartment call (tone) | → OC2 anode (apartment bell sense) |
+| IN-P4 | Line 4 (WF26 side) | Türruf return, **out** to the handset | Relay K2 **NC** → OC2 anode (house-bell sense) **and** jumper → WF26 terminal 4 (gong). K2 opens this to suppress the chime |
+| P5 | Line 5 | Etagenruf — floor/apartment call (tone) | → OC3 anode (apartment bell sense) |
 
 **Relay K1** (P2 on COM/MAIN1; NO1 → R14 → P3) simulates pressing the ÖT button: energising
 K1 closes COM1→NO1, **bridging P2+P3 through R14 (2.2 kΩ)** → TV20/S activates the door
@@ -63,8 +63,8 @@ COM/MAIN2, IN-P4 on NC2) breaks the Türruf line when energised to suppress the 
 **Why line 4 needs two pins.** K1 (door opener) *adds* a contact across P2+P3 — a parallel
 closure, fine from a parallel bus tap. K2 (chime suppress) must *break* the Türruf so it
 stops reaching the WF26 gong — a **series** operation, so line 4 is split at the board:
-**P4** = bus/TV20-S side (→ K2 COM), **IN-P4** = WF26-handset side (→ K2 NC, OC1 sense, and
-J2.6 jumper back to WF26 terminal 4). At rest K2 passes P4→IN-P4 (gong rings, OC1 senses);
+**P4** = bus/TV20-S side (→ K2 COM), **IN-P4** = WF26-handset side (→ K2 NC, OC2 sense, and
+J2.6 jumper back to WF26 terminal 4). At rest K2 passes P4→IN-P4 (gong rings, OC2 senses);
 energised it opens the line (gong silenced) — this is the proven V3 topology. V4 originally
 collapsed IN-P4 to an internal-only node (no jumper back to the WF26), silently breaking
 chime suppression; restored here on the 6-way J2 (pad 6).
@@ -105,8 +105,8 @@ chime suppression; restored here on the 6-way J2 (pad 6).
 
 | GPIO (V3) | ESPHome entity | Direction | Hardware | → V4 C3 pin |
 |------|---------------|-----------|----------|----|
-| 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses P5 / Etagenruf) | **IO3** |
-| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC1 collector (senses P4 / Türruf) | **IO10** |
+| 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC3 collector (senses P5 / Etagenruf) | **IO3** |
+| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses P4 / Türruf) | **IO10** |
 | 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K1 (bridges P2+P3 = ÖT door opener) | **IO4** |
 | 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K2 (switches P4 = chime suppress) | **IO5** |
 
@@ -119,10 +119,10 @@ Each bell line drives a PC817 LED **referenced to the bus common P1** (the ~12 V
 voltage sits across line 4↔1 / 5↔1, per the PDF), and the phototransistor pulls the
 GPIO low. R2 and R1 are **shared** between both optos.
 ```
-P4-IN ──► OC1 LED anode ;  P5 ──► OC2 LED anode
-OC1/OC2 LED cathodes ──┬── R2 (5.1kΩ, shared) ──► P1 (bus common)   [LED loop is bell↔P1]
-OC1 collector ──► GPIO33 ;  OC2 collector ──► GPIO32   (ESP32 internal pull-up to 3V3)
-OC1/OC2 emitters ──┬── R1 (1kΩ, shared) ──► GND
+P4-IN ──► OC2 LED anode ;  P5 ──► OC3 LED anode
+OC2/OC3 LED cathodes ──┬── R2 (5.1kΩ, shared) ──► P1 (bus common)   [LED loop is bell↔P1]
+OC2 collector ──► GPIO33 ;  OC3 collector ──► GPIO32   (ESP32 internal pull-up to 3V3)
+OC2/OC3 emitters ──┬── R1 (1kΩ, shared) ──► GND
 Bell present → LED conducts → phototransistor pulls GPIO low → ESPHome inverted:true ⇒ "on"
 ```
 > R2 (5.1 kΩ) is the **LED series limiter on the cathode→P1 return**; R1 (1 kΩ) is the
@@ -268,8 +268,8 @@ reaches P2 while the coil is on.
 |-----|------|------|
 | U1 | LuaNode32 / ESP32 DevKit (ESP-WROOM-32, 30-pin), socketed | MCU |
 | U2 | 2-ch relay module (SONGLE SRD-05VDC-SL-C), separate board | K1 + K2 |
-| OC1 | PC817 optocoupler | House bell sense |
-| OC2 | PC817 optocoupler | Apartment bell sense |
+| OC2 | PC817 optocoupler | House bell sense |
+| OC3 | PC817 optocoupler | Apartment bell sense |
 | R2 | 5.1 kΩ (2010 SMD) | Opto LED series limiter (shared, in cathode→P1 return) |
 | R1 | 1 kΩ (2010 SMD) | Opto phototransistor emitter resistor (shared, to GND) |
 | J4–J9 | Camdenboss CTB0158 screw terminals (various sizes) | Wiring breakout |
@@ -308,7 +308,7 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | Layers | **4-layer** (F.Cu / +3V3 / GND / B.Cu) | Solid GND + power planes; GND on In2 (under B.Cu) so the USB D+/D− pair on B.Cu references GND; keeps signals off the planes |
 | Power | **USB-C** (5 V) → **SGM2212-3.3** (low-dropout LDO, LCSC C3294699) via a series SS14 VBUS reverse-protection Schottky | native-USB flashing/logging on the C3; +5V & +3V3 distributed on the planes. Low-dropout part chosen so the ~0.45 V Schottky drop still leaves ~1 V headroom (an AMS1117's 1.3 V dropout would have browned out under WiFi TX) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates all inter-board jumpers (the V3 failure mode) |
-| Audio | **Half-duplex PTT path now on-board** (K3 PTT relay + OC3 session-sense); analog front-end still bench-gated | Bus is half-duplex (single LS1 reused) ⇒ no echo-cancel ⇒ C6 suffices; supersedes the 2026-06-06 "needs S3+PSRAM" deferral. See "Audio (revisited)" |
+| Audio | **Half-duplex PTT path now on-board** (K3 PTT relay + OC1 session-sense); analog front-end still bench-gated | Bus is half-duplex (single LS1 reused) ⇒ no echo-cancel ⇒ C6 suffices; supersedes the 2026-06-06 "needs S3+PSRAM" deferral. See "Audio (revisited)" |
 
 ### ESP32-C3 GPIO map (final)
 
@@ -316,15 +316,15 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 |------|--------|-----|-------|
 | IO20 | K1 relay driver — front door buzzer / ÖT (bridge P2+P3) | out | pad 11 (north row); IO20/U0RXD — high-Z input at reset, pull-down holds relay off |
 | IO10 | K2 relay driver — chime suppress (break P4) | out | pad 10 (east end, north row); gate pull-down ⇒ off at boot |
-| IO3 | OC1 collector — house bell sense (Türruf, P4) | in | pad 15 (north row, faces OC1); internal pull-up (firmware) |
-| IO1 | OC2 collector — apartment bell sense (Etagenruf, P5) | in | pad 17 (north row, faces OC2); internal pull-up (firmware) |
+| IO3 | OC2 collector — house bell sense (Türruf, P4) | in | pad 15 (north row, faces OC2); internal pull-up (firmware) |
+| IO1 | OC3 collector — apartment bell sense (Etagenruf, P5) | in | pad 17 (north row, faces OC3); internal pull-up (firmware) |
 | IO4 / IO5 / IO6 / IO7 | — (unused) | — | No-Connect; freed when relay drivers moved to north row |
 | IO18 / IO19 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
 | IO9 | BOOT strap | — | 10 kΩ pull-up + button to GND |
 | EN | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec value) (+ optional button) |
 | IO21 | UART0 TX | — | **No-Connect** — ROM drives HIGH at boot; must not be reused as relay gate |
 
-Avoided: IO2 / IO8 / IO9 (strapping), IO11–IO17 (internal flash), IO21/U0TXD (ROM drives HIGH at boot — unsuitable as relay gate). All four active GPIOs — IO20/IO10 (relay drivers) and IO3/IO1 (bell sense) — are non-strapping and on U1's **north castellated row**, which directly faces both the opto block and the relay cluster. IO20 (pad 11, x=6.7 mm) drives K1; IO10 (pad 10, x=8.2 mm) drives K2 — saving ~25 mm vs. the former south-row IO4/IO5 assignment. Bell-sense pads (IO3=pad 15, IO1=pad 17) route ~7–11 mm straight up to OC1/OC2. IO20/U0RXD is safe as a gate driver: it is a high-Z input at reset, so the 10 kΩ pull-down holds K1 off during the boot window. IO8 carries a 10 kΩ pull-up (R10, download-mode robustness); **IO2 is left floating** — Espressif's datasheet (Table 3-3 fn 2) recommends a 10 kΩ pull-up there to harden boot against glitches (optional).
+Avoided: IO2 / IO8 / IO9 (strapping), IO11–IO17 (internal flash), IO21/U0TXD (ROM drives HIGH at boot — unsuitable as relay gate). All four active GPIOs — IO20/IO10 (relay drivers) and IO3/IO1 (bell sense) — are non-strapping and on U1's **north castellated row**, which directly faces both the opto block and the relay cluster. IO20 (pad 11, x=6.7 mm) drives K1; IO10 (pad 10, x=8.2 mm) drives K2 — saving ~25 mm vs. the former south-row IO4/IO5 assignment. Bell-sense pads (IO3=pad 15, IO1=pad 17) route ~7–11 mm straight up to OC2/OC3. IO20/U0RXD is safe as a gate driver: it is a high-Z input at reset, so the 10 kΩ pull-down holds K1 off during the boot window. IO8 carries a 10 kΩ pull-up (R10, download-mode robustness); **IO2 is left floating** — Espressif's datasheet (Table 3-3 fn 2) recommends a 10 kΩ pull-up there to harden boot against glitches (optional).
 
 ### Relay driver subcircuit (per channel)
 
@@ -374,7 +374,7 @@ so this is about hum/ground-loops more than shock, but it's a property worth kee
 | K1, K2 | Signal relay, **4.5 V coil**, SPDT, gold contacts (G6K-2F-Y-TR DC4.5, C397193) | SMD |
 | Q1, Q2 | 2N7002 (logic-level NMOS) | SOT-23 |
 | D1, D2 | 1N4148W (flyback) | SOD-123 |
-| OC1, OC2 | PC817 / EL817S (SMD opto) | SOP-4 |
+| OC2, OC3 | PC817 / EL817S (SMD opto) | SOP-4 |
 | R_lim1, R_lim2 | 5.1 kΩ (opto LED limiter, one per opto) | 0603 |
 | R_em | 1 kΩ (opto emitter, shared) | 0603 |
 | R_g1, R_g2 | 100 Ω (gate series) | 0603 |
@@ -407,12 +407,12 @@ GND on In2 as copper-fill zones; the filler leaves clearance gaps around any sig
 Freerouting placed on those layers. Result: **0 unconnected, 0 DRC**; no manually-placed vias.
 
 **Floorplan** (`PCB_PLACE` in `gen_pcb.py`): the **ESP32-C3-WROOM-02 (U1, rot 90°)** sits
-left-of-centre with its antenna overhanging the left edge; the **opto bell-sense block** (OC1/OC2,
+left-of-centre with its antenna overhanging the left edge; the **opto bell-sense block** (OC2/OC3,
 the two 5.1 kΩ limiters, the shared emitter R) is centred in the **upper-left quadrant** just above
 U1; the LDO (U2), boot/reset buttons, power LED and the decoupling/LDO caps cluster around U1
 (caps along the bottom-left, R10 right of C3); **USB-C (J1) centred on the bottom edge**, mouth
 overhanging downward, CC pulldowns flanking it; **bus interface on the right** (WF26 6-way terminal
-on the top edge, relays + drivers). All four active GPIOs (IO20/IO10 relay drivers, IO3/IO1 bell sense) are on U1's **north** castellated row — IO20(pad 11)→K1 and IO10(pad 10)→K2; bell-sense routes straight up to OC1/OC2 (~7–11 mm). See the GPIO map.
+on the top edge, relays + drivers). All four active GPIOs (IO20/IO10 relay drivers, IO3/IO1 bell sense) are on U1's **north** castellated row — IO20(pad 11)→K1 and IO10(pad 10)→K2; bell-sense routes straight up to OC2/OC3 (~7–11 mm). See the GPIO map.
 
 **Edge overhang** (`EDGE_OVERHANG` in `doorbell_design.py`): J1 overhangs the bottom edge by
 3.1 mm (the connector shell clears the PCB) and U1 overhangs the left edge by 5.9 mm (< the
@@ -507,8 +507,8 @@ fitted as the **virtual PTT** relay (contacts currently N/C until the audio circ
   (talk)**. Default at boot = listen (gate pull-down holds K3 off). Driver Q3/D3 on **GPIO3**.
   Pole B (pads 5/6/7) spare. *Firmware rule:* energise **K2 first** (break P4→IN_P4) before K3
   talk, else the handset's own S2 strap (line4↔3) parallels K3 and shorts P2↔P3.
-- **OC3 session-sense added**: LED across **P2↔P5** via **R_lim3** (5.1 k, value TBD), collector →
-  **GPIO2 / pad 27** (non-strapping), emitter on the shared `OC_EMIT`. "Can send" = OC3 active AND K3 talk.
+- **OC1 session-sense added**: LED across **P2↔P5** via **R_lim3** (5.1 k, value TBD), collector →
+  **GPIO2 / pad 27** (non-strapping), emitter on the shared `OC_EMIT`. "Can send" = OC1 active AND K3 talk.
 - **Phase 2 COMMITTED to the netlist (2026-06-08; ERC 0 err/DRC 0/routes 0-unrouted, board now
   ~90×68 mm).** Codec = **ES8311** (U3, **mono**, WQFN-20 3×3 0.4 mm pitch; LCSC **C962342**) —
   switched from the ES8388 because mono is the right fit for half-duplex (only one channel was ever
@@ -569,18 +569,18 @@ Consequences:
   actually supports is within the C6's reach** (I²S codec + ESPHome half-duplex). Re-evaluate.
 - **Sequencing, not mixing:** assert K3 → settle → stream one direction → release → stream the other (walkie-talkie cadence).
 
-**Detecting "can we send" — OC3 session-sense.** Talk is **relay-gated inside the WF26**: its
+**Detecting "can we send" — OC1 session-sense.** Talk is **relay-gated inside the WF26**: its
 internal relay coil (~320 Ω, across **P2↔P5**) is energised by the TV20/S only while a session is
-live, and S2→K1_COM reaches P2 only while that coil is on. So OC3 + K3 fully define the audio state:
+live, and S2→K1_COM reaches P2 only while that coil is on. So OC1 + K3 fully define the audio state:
 
-| OC3 (P2↔P5 coil energise) | K3 | State |
+| OC1 (P2↔P5 coil energise) | K3 | State |
 |---|---|---|
 | inactive | – | session dead — neither RX nor TX |
 | active | released | listen → **capture (RX)** |
 | active | engaged | talk → **send (TX)** ✅ |
 
-⇒ "can I send right now?" = **OC3 active AND K3 engaged.** Add **OC3** (third LTV-217/PC817,
-identical to the OC1/OC2 bell front-end) + **R_lim3** limiter, LED across the session pair,
+⇒ "can I send right now?" = **OC1 active AND K3 engaged.** Add **OC1** (third LTV-217/PC817,
+identical to the OC2/OC3 bell front-end) + **R_lim3** limiter, LED across the session pair,
 phototransistor → a spare C6 GPIO, firmware-debounced. *Bench-confirm the session voltage's
 pair/level/AC-ness before fixing R_lim3 and whether an anti-parallel diode is needed for AC.*
 
@@ -613,7 +613,7 @@ adequacy (470 µF unnecessary); 2N7002 gate drive @3.3 V; bell-sense logic level
 connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 
 **To address:**
-1. **[Resolved — firmware remapped]** `doorbell-v4.yaml` uses `board: esp32-c3-devkitm-1` and the V4 GPIO map (OC1/Türruf→IO3, OC2/Etagenruf→IO1, K1→IO10, K2→IO20); logs over USB_SERIAL_JTAG.
+1. **[Resolved — firmware remapped]** `doorbell-v4.yaml` uses `board: esp32-c3-devkitm-1` and the V4 GPIO map (OC2/Türruf→IO3, OC3/Etagenruf→IO1, K1→IO10, K2→IO20); logs over USB_SERIAL_JTAG.
 2. **[Resolved — switched to DC4.5 coil]** With the 5 V coil, must-operate (80% = 4.0 V) sat
    just under the post-Schottky ~4.5 V rail (coil ~4.31 V, 86%) — thin, and negative under VBUS
    sag. **Fixed:** K1/K2 are now the **G6K-2F-Y-TR DC4.5** (LCSC C397193, must-operate 3.6 V), so
@@ -648,14 +648,14 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
   silk moved into the strip left of the optos). Antenna overhang retuned to 5.9 mm; board grew to
   ~40.5 × 47.7 mm. ERC 0 / DRC 0/0 / check_pcb PASS, routes 0 unrouted.
 - **Bell-sense GPIOs IO6/IO7 → IO10/IO3** so they land on U1's *north* castellated row facing the
-  optos: OC1/OC2 now route ~7 mm straight up instead of ~25 mm around the module. `doorbell-v4.yaml`
+  optos: OC2/OC3 now route ~7 mm straight up instead of ~25 mm around the module. `doorbell-v4.yaml`
   updated to match (House GPIO6→GPIO10, Apartment GPIO7→GPIO3).
 - **Relay-driver GPIOs IO4/IO5 → IO20/IO10; bell-sense IO10/IO3 → IO3/IO1** — consolidates all
   four active GPIOs onto U1's north row. Gate traces shorten by ~25 mm. IO20/U0RXD (pad 11)
   drives K1; IO10 (pad 10) drives K2. IO20/U0RXD as gate driver is safe: high-Z input at reset,
   10 kΩ pull-down holds K1 off during boot. IO21/U0TXD left N/C (ROM drives HIGH at boot).
-  `doorbell-v4.yaml` updated (K1 GPIO4→GPIO20, K2 GPIO5→GPIO10, OC1 GPIO10→GPIO3,
-  OC2 GPIO3→GPIO1).
+  `doorbell-v4.yaml` updated (K1 GPIO4→GPIO20, K2 GPIO5→GPIO10, OC2 GPIO10→GPIO3,
+  OC3 GPIO3→GPIO1).
 - **Re-verify for the WROOM-02:** review finding 7's "9 EPAD thermal cells" was MINI-1-specific —
   the WROOM-02 has its own EPAD (pad 19, multi-rect), stitched the same way (one benign
   plane-stitch warning). All other CLEAN/Resolved items above are unaffected by the swap.

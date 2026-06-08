@@ -6,8 +6,8 @@
 #   1. board/framework  : esp32dev  ->  esp32-c6-devkitc-1  (generic ESP32-C6 board def; fits the WROOM-1)
 #   2. logger           : routed to the native USB-Serial-JTAG (GPIO16/U0TXD is N/C on C6)
 #   3. GPIO pins remapped to the V4 hardware (C6-WROOM-1 pad assignments differ from C3):
-#        House Doorbell    (OC1 / Türruf  sense) : GPIO3  -> GPIO22  (right col pad 20)
-#        Apartment Doorbell(OC2 / Etagenruf sense): GPIO1  -> GPIO23  (right col pad 21)
+#        House Doorbell    (OC2 / Türruf  sense) : GPIO3  -> GPIO3   (right col pad 26)
+#        Apartment Doorbell(OC3 / Etagenruf sense): GPIO1  -> GPIO23  (right col pad 21)
 #        front_door_buzzer (K1 / ÖT door opener) : GPIO20 -> GPIO20  (unchanged; right col pad 18)
 #        suppress_sound    (K2 / chime suppress) : GPIO10 -> GPIO21  (right col pad 19)
 #   4. *** relay outputs are ACTIVE-HIGH (unchanged from C3 version) ***
@@ -68,7 +68,7 @@ binary_sensor:
     name: "Apartment Doorbell"
     icon: mdi:doorbell
     pin:
-      number: GPIO23           # OC2 collector — Etagenruf (P5) sense   [V3: 32; C3: GPIO1; C6 pad 21]
+      number: GPIO23           # OC3 collector — Etagenruf (P5) sense   [V3: 32; C3: GPIO1; C6 pad 21]
       inverted: true           # opto pulls the pin LOW when the bell rings
       mode:
         input: true
@@ -84,7 +84,7 @@ binary_sensor:
     name: "House Doorbell"
     icon: mdi:doorbell
     pin:
-      number: GPIO22           # OC1 collector — Türruf (P4 / IN-P4) sense   [V3: 33; C3: GPIO3; C6 pad 20]
+      number: GPIO3            # OC2 collector — Türruf (P4 / IN-P4) sense   [V3: 33; C3: GPIO3; C6 pad 26]
       inverted: true
       mode:
         input: true

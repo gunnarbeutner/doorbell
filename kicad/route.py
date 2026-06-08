@@ -24,6 +24,28 @@ FREEROUTING = os.environ.get("FREEROUTING",
 PASSES = os.environ.get("FR_PASSES", "20")
 
 board = pcbnew.LoadBoard(BOARD)
+
+# --- Pre-fill inner planes before DSN export so Freerouting sees solid GND/+3V3 copper
+#     on In2/In1 and connects pads to them with short via stubs instead of long surface
+#     traces.  The DSN export includes the filled zone copper as pre-existing wiring.
+#     Zones are re-filled after the SES import to incorporate the new routing. ---
+def _add_plane(layer, netname):
+    net = board.FindNet(netname)
+    z = pcbnew.ZONE(board); z.SetLayer(layer); z.SetNet(net)
+    bb2 = board.GetBoardEdgesBoundingBox()
+    ins = 0.3
+    ch = pcbnew.SHAPE_LINE_CHAIN()
+    for cx, cy in [(pcbnew.ToMM(bb2.GetLeft())+ins, pcbnew.ToMM(bb2.GetTop())+ins),
+                   (pcbnew.ToMM(bb2.GetRight())-ins, pcbnew.ToMM(bb2.GetTop())+ins),
+                   (pcbnew.ToMM(bb2.GetRight())-ins, pcbnew.ToMM(bb2.GetBottom())-ins),
+                   (pcbnew.ToMM(bb2.GetLeft())+ins, pcbnew.ToMM(bb2.GetBottom())-ins)]:
+        ch.Append(pcbnew.VECTOR2I(pcbnew.FromMM(cx), pcbnew.FromMM(cy)))
+    ch.SetClosed(True); z.AddPolygon(ch); board.Add(z)
+_add_plane(pcbnew.In1_Cu, "+3V3")
+_add_plane(pcbnew.In2_Cu, "GND")
+board.BuildConnectivity()
+pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+
 if not pcbnew.ExportSpecctraDSN(board, DSN):
     sys.exit("DSN export failed")
 
@@ -33,9 +55,15 @@ if not pcbnew.ExportSpecctraDSN(board, DSN):
 # to B.Cu to keep the differential pair on one uninterrupted layer.
 # Syntax: (circuit (use_layer "layer")) inside the class.
 # Each net must belong to exactly one class, so remove them from kicad_default first.
+# GND is allowed on F.Cu + In2.Cu + B.Cu; +3V3 on F.Cu + In1.Cu + B.Cu.
+# B.Cu must be included because the only via is a full through-hole (F.Cu→In1→In2→B.Cu):
+# omitting B.Cu makes the via illegal for GND/+3V3 and Freerouting falls back to flat
+# F.Cu traces, never reaching the inner planes.  Signal nets (kicad_default) are
+# restricted to outer layers only so they cannot pollute In1/In2.  Post-route,
+# _add_plane() floods the remaining In1/In2 copper as solid pours.
 NET_CLASSES = [
-    ("gnd_plane",  ["GND"],             ["F.Cu", "In2.Cu"]),
-    ("v3v3_plane", ["+3V3"],            ["F.Cu", "In1.Cu"]),
+    ("gnd_plane",  ["GND"],             ["F.Cu", "In2.Cu", "B.Cu"]),
+    ("v3v3_plane", ["+3V3"],            ["F.Cu", "In1.Cu", "B.Cu"]),
     ("usb_diff",   ["USB_DP","USB_DM"], ["F.Cu", "B.Cu"]),
 ]
 RECLASSED = {n for _, nets, _ in NET_CLASSES for n in nets}
@@ -49,13 +77,21 @@ with open(DSN) as f: dsn = f.read()
 # sit beside a fine-pitch pin). The (clearance 50 (type smd_smd)) entry is left untouched.
 dsn = re.sub(r'\(clearance 200\)', '(clearance 127)', dsn)
 
-# Remove reclassed nets from kicad_default only (bare tokens in the class header,
-# not from the (net ...) definitions elsewhere in the DSN).
-# Also restrict kicad_default nets to F.Cu + B.Cu (no inner layers for signals).
+# Remove reclassed nets (USB_DP/USB_DM) from kicad_default, and restrict ALL nets
+# (including GND/+3V3) to the outer copper layers only.  In1.Cu (+3V3) and In2.Cu
+# (GND) are filled as solid copper pours after routing; Freerouting must not place
+# signal traces there.  Through-hole vias still drill through all 4 layers, so their
+# barrels connect GND/+3V3 pads to the inner-plane pours automatically.
 def _patch_default(m):
     block = m.group(0)
     for net in RECLASSED:
         block = re.sub(r'(?<=\s)' + re.escape(net) + r'(?=[\s\n])', '', block)
+    # Prepend use_layer directives before the existing use_via entry.
+    block = re.sub(
+        r'(\s*)\(use_via ',
+        r'\1(use_layer "F.Cu")\1(use_layer "B.Cu")\1(use_via ',
+        block,
+    )
     return block
 dsn = re.sub(r'\(class kicad_default.*?\)', _patch_default, dsn, flags=re.DOTALL)
 
@@ -87,6 +123,7 @@ if not pcbnew.ImportSpecctraSES(board, SES):
 # --- Subassembly groups: created HERE (post-route) so they never reach the Specctra DSN export --
 #     groups on the board confuse the DSN export and break the autoroute. Add them to the routed
 #     board by finding each member footprint by refdes. ---
+_grp_map = {}
 for _gname, _keys in GROUPS.items():
     _grp = pcbnew.PCB_GROUP(board)
     _grp.SetName(_gname)
@@ -95,24 +132,12 @@ for _gname, _keys in GROUPS.items():
         if _fp is not None:
             _grp.AddItem(_fp)
     board.Add(_grp)
+    _grp_map[_gname] = _grp
+# Add BOOT/RST silkscreen labels (PCB_TEXT) into their groups.
+for _drawing in board.GetDrawings():
+    if isinstance(_drawing, pcbnew.PCB_TEXT) and _drawing.GetText() in ("BOOT", "RST"):
+        _grp_map.get(_drawing.GetText(), pcbnew.PCB_GROUP(board)).AddItem(_drawing)
 print(f"  groups: {len(GROUPS)} subassemblies")
-
-# --- inner planes: poured after routing; fill leaves clearance gaps around any
-#     signal traces Freerouting placed on In1/In2. ---
-def _add_plane(layer, netname):
-    net = board.FindNet(netname)
-    z = pcbnew.ZONE(board); z.SetLayer(layer); z.SetNet(net)
-    bb2 = board.GetBoardEdgesBoundingBox()
-    ins = 0.3
-    ch = pcbnew.SHAPE_LINE_CHAIN()
-    for cx, cy in [(pcbnew.ToMM(bb2.GetLeft())+ins, pcbnew.ToMM(bb2.GetTop())+ins),
-                   (pcbnew.ToMM(bb2.GetRight())-ins, pcbnew.ToMM(bb2.GetTop())+ins),
-                   (pcbnew.ToMM(bb2.GetRight())-ins, pcbnew.ToMM(bb2.GetBottom())-ins),
-                   (pcbnew.ToMM(bb2.GetLeft())+ins, pcbnew.ToMM(bb2.GetBottom())-ins)]:
-        ch.Append(pcbnew.VECTOR2I(pcbnew.FromMM(cx), pcbnew.FromMM(cy)))
-    ch.SetClosed(True); z.AddPolygon(ch); board.Add(z)
-_add_plane(pcbnew.In1_Cu, "+3V3")
-_add_plane(pcbnew.In2_Cu, "GND")
 
 # --- ground pour + stitching vias on F.Cu / B.Cu ---
 def MM(v): return pcbnew.ToMM(v)

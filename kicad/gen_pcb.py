@@ -24,56 +24,54 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 # overhangs the left board edge (off-board), so no copper keep-out is needed.
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32 + its power / boot / LED support ===
-    "U1":     (18, 62, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
-    "SW_boot":(5, 56, 0),     # BOOT button, to the LEFT of U1
-    "SW_en":  (61, 61, 180),  # EN / reset button; +30mm right, +20mm down
-    "R_boot": (5, 61, 0),     # BOOT pullup, to the LEFT of U1 (with SW_boot)
-    "R_en":   (59, 65, 0),    # EN pullup
-    "C_en":   (62, 65, 180),  # EN cap
-    "U2":     (46, 69.5, 270),# SGM2212 LDO; +30mm right, +20mm down
-    "R_io8":  (29.2, 60.7, 270), # GPIO8 pull-up; right of U1 east face, pin 1 (GPIO8) at y≈59.9
-    "C_in":   (48, 64, 0),    # LDO input cap (+5V)
-    "C_out":  (44, 64, 0),    # LDO output cap (+3V3)
-    "LED1":   (47.5, 61, 90), # power LED
-    "R_led":  (44.5, 61, 90), # LED series resistor
-    "C_dec":  (28.9, 70.65, 270),  # 100nF decoupling; just clear of U1's east courtyard (x=27.8)
-    "C_3v3":  (30.1, 70.65, 270),  # 10uF decoupling; same row, next to C_dec
+    "U1":     (12, 62, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
+    "SW_boot":(12.5, 44, 180),  # BOOT button, CW from vertical → horizontal, above U1
+    "R_boot": (17.5, 44, 180),  # BOOT pullup, right of SW_boot (was above → right after CW)
+    "SW_en":  (26, 44, 0),    # RST button, CW → horizontal, right of BOOT group
+    "R_en":   (21, 43, 0),    # EN pullup, above SW_en
+    "C_en":   (21, 45, 180),  # EN cap, below SW_en
+    "U2":     (44.5, 57.5, 180), # SGM2212 LDO; rotated CW
+    "R_io8":  (23.2, 60.7, 270), # GPIO8 pull-up; right of U1 east face, pin 1 (GPIO8) at y≈59.9
+    "C_in":   (41.5, 62.5, 270), # LDO input cap (C2)
+    "C_out":  (41.5, 52.5, 270), # LDO output cap (C4)
+    "LED1":   (13, 14.5, 90), # power LED; left of J2
+    "R_led":  (13, 17.5, 90), # LED series resistor; left of J2
+    "C_dec":  (23.2, 70.65, 270),  # 100nF decoupling; just clear of U1's east courtyard
+    "C_3v3":  (24.75, 70.65, 270),  # 10uF decoupling; same row, next to C_dec
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
-    "J1":     (55.8, 70, 0),  # USB-C (USB4085 THT); +30mm right, +20mm down
-    "R_cc1":  (54.5, 70, 90), # CC1 pulldown
-    "R_cc2":  (63, 70, 90),   # CC2 pulldown
+    "J1":     (39.8, 70, 0),  # USB-C (USB4085 THT)
+    "R_cc1":  (39.5, 70, 90), # CC1 pulldown
+    "R_cc2":  (45.5, 70, 90), # CC2 pulldown
     # Protection diodes: Schottky below U2, ESD array on D+/D- above J1.
-    "D_vbus": (46, 76.5, 0),  # SS14 VBUS reverse-protection Schottky; +30mm right, +20mm down
-    "D_esd":  (58.5, 69.5, 0),# SRV05-4 USB D+/D- ESD array; +30mm right, +20mm down
+    "D_vbus": (46.5, 63.5, 0), # SS14 VBUS reverse-protection Schottky
+    "D_esd":  (42.5, 69.5, 0),# SRV05-4 USB D+/D- ESD array
     # === TOP edge: WF26 terminal, centred above the bus interface ===
     "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
-    "OC2":    (2.74, 23.85, 270),  # apartment bell sense; opto block centered in UL quadrant
-    "OC1":    (6.74, 23.85, 270),  # house bell sense; opto block centered in UL quadrant
-    "R_lim1": (6.74, 17.85, 0),    # R1, OC1's own LED limiter (above OC1) -- unshared
-    "R_lim2": (2.74, 17.85, 0),    # R2, OC2's own LED limiter (above OC2) -- unshared
-    "R_em":   (5.10, 29.05, 180),  # R3, rotated 180° keeping the OC_EMIT leg (pad1) fixed at x5.92
-    "K2":     (15.5, 27, 270),# chime-suppress relay, rotated CW (nudged left)
-    "Q2":     (19.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
-    "R_g2":   (12.32, 36.18, 180), # gate series R, rotated flat (CCW); GATE2 pad kept fixed
-    "R_pd2":  (11.5, 34, 90), # gate pulldown, swapped with Q2 + rotated 180°
-    "D2":     (14.8, 33.6, 0),# flyback, moved north (toward K2 coil)
-    "K1":     (27, 27, 270),  # door-opener relay, rotated CW (moved left)
-    "Q1":     (31, 34, 180),  # NMOS, swapped with R_pd1 + rotated 180°
-    "R_g1":   (23.82, 36.18, 180), # gate series R, rotated flat (CCW); GATE1 pad kept fixed
-    "R_pd1":  (23, 34, 90),   # gate pulldown, swapped with Q1 + rotated 180°
-    "D1":     (26.3, 33.6, 0),# flyback, moved north (toward K1 coil)
-    "R_ot":   (15.5, 20, 270), # ÖT bridge 2.2k: above K2 (top of relay body)
+    "OC3":    (2.74, 23.85, 270),  # apartment bell sense; opto block centered in UL quadrant
+    "OC2":    (6.74, 23.85, 270),  # house bell sense; opto block centered in UL quadrant
+    "OC1":    (10.74, 23.85, 270), # session-sense opto; right of OC2 in the bell-sense row
+    "R_lim1": (6.74, 17.85, 0),    # R1, OC2's own LED limiter (above OC2) -- unshared
+    "R_lim2": (2.74, 17.85, 0),    # R2, OC3's own LED limiter (above OC3) -- unshared
+    "R_lim3": (10.74, 17.85, 0),   # R17, OC1's LED limiter (above OC1)
+    "R_em":   (6.74, 29.05, 180),  # R3, centred under the three-opto column (x=6.74)
+    "K2":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
+    "Q2":     (23.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
+    "R_g2":   (16.32, 36.18, 180), # gate series R, rotated flat (CCW); GATE2 pad kept fixed
+    "R_pd2":  (15.5, 34, 90), # gate pulldown, swapped with Q2 + rotated 180°
+    "D2":     (18.8, 33.6, 0),# flyback, moved north (toward K2 coil)
+    "K1":     (31, 27, 270),  # door-opener relay, rotated CW
+    "Q1":     (35, 34, 180),  # NMOS, swapped with R_pd1 + rotated 180°
+    "R_g1":   (27.82, 36.18, 180), # gate series R, rotated flat (CCW); GATE1 pad kept fixed
+    "R_pd1":  (27, 34, 90),   # gate pulldown, swapped with Q1 + rotated 180°
+    "D1":     (30.3, 33.6, 0),# flyback, moved north (toward K1 coil)
+    "R_ot":   (19.5, 20, 270), # ÖT bridge 2.2k: above K2 (top of relay body)
     # === K3 (PTT placeholder) relay + driver: same spacing as K2→K1 (11.5 mm) ===
-    "K3":     (38.5, 27, 270),
-    "Q3":     (42.5, 34, 180),
-    "R_g3":   (35.32, 36.18, 180),
-    "R_pd3":  (34.5, 34, 90),
-    "D3":     (37.8, 33.6, 0),
-    # === OC3 session-sense opto + limiter: open mid-band between the bus row (y~36) and U1
-    #     top (y~52). Dropped here in free space; reorganise later. ===
-    "OC3":    (7, 45, 270),
-    "R_lim3": (7, 39, 0),    # R17 above OC3 (6mm up), matching the R_lim2/OC2 layout
+    "K3":     (42.5, 27, 270),
+    "Q3":     (46.5, 34, 180),
+    "R_g3":   (39.32, 36.18, 180),
+    "R_pd3":  (38.5, 34, 90),
+    "D3":     (41.8, 33.6, 0),
     # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
     #     Provisional placement — reorganise later. ===
     # ES8311 rot 180. Support passives packed tight against the edge carrying their U3 pin, each
@@ -153,6 +151,31 @@ _dy = (_t1bx[3] + 2.0) - _bt                         # block top 2 mm below T1's
 for k in _AUDIO_BLK:
     _p = fps[k].GetPosition()
     fps[k].SetPosition(pcbnew.VECTOR2I(_p.x + pcbnew.FromMM(_dx), _p.y + pcbnew.FromMM(_dy)))
+
+# --- Rotate the entire audio codec group (U3 + support passives + T1) 90° CW as a rigid body,
+#     then shift to sit between U1 (right edge ≈27 mm) and the USB/LDO area (J1 ≈56 mm). ---
+_FULL_AUDIO = _AUDIO_BLK + ["T1"]
+_fcx = sum(_TOMM(fps[k].GetPosition().x) for k in _FULL_AUDIO) / len(_FULL_AUDIO)
+_fcy = sum(_TOMM(fps[k].GetPosition().y) for k in _FULL_AUDIO) / len(_FULL_AUDIO)
+for k in _FULL_AUDIO:
+    _px = _TOMM(fps[k].GetPosition().x)
+    _py = _TOMM(fps[k].GetPosition().y)
+    fps[k].SetPosition(vmm(_fcx - (_py - _fcy), _fcy + (_px - _fcx)))
+    fps[k].SetOrientationDegrees((fps[k].GetOrientationDegrees() + 270) % 360)
+_audio_left = min(_bbx(k)[0] for k in _FULL_AUDIO)
+_audio_shift = (_bbx("R_io8")[1] + 1.0) - _audio_left
+for k in _FULL_AUDIO:
+    _p = fps[k].GetPosition()
+    fps[k].SetPosition(pcbnew.VECTOR2I(_p.x + pcbnew.FromMM(_audio_shift), _p.y))
+
+# Place T1 below U3 with 2 mm clearance, rotated 180° from its group orientation.
+fps["T1"].SetOrientationDegrees((fps["T1"].GetOrientationDegrees() + 180) % 360)
+_u3bb = _bbx("U3")
+_t1bb = _bbx("T1")
+fps["T1"].SetPosition(vmm(
+    (_u3bb[0] + _u3bb[1]) / 2.0 + 1.0,
+    _u3bb[3] + 2.0 + (_t1bb[3] - _t1bb[2]) / 2.0,
+))
 
 # On 4 layers the LDO's GND/heat reaches the inner GND plane through its thermal vias, so its
 # bottom (B.Cu) thermal pad is redundant -- drop it to free B.Cu under U2 for the USB pair.
@@ -262,9 +285,12 @@ _fid_rects = [_crtyd_rect(f) for f in board.GetFootprints()]   # only real parts
 #     the clear area; pads/footprints ARE allowed so U1's own antenna body doesn't self-violate.
 ANT_CLEAR = 15.0
 _u1 = fps[ANTENNA_REF]
-_ul, _ur, _, _ub = fext(_u1)                                     # antenna faces south -> _ub = bottom edge
+_, _, _, _ub = fext(_u1)                                          # antenna faces south -> _ub = bottom edge
+_silk = [g for g in _u1.GraphicalItems() if g.GetLayer() == pcbnew.F_SilkS]
+_ul = min(MM(g.GetBoundingBox().GetLeft())   for g in _silk)      # F.SilkS body extents (actual module outline)
+_ur = max(MM(g.GetBoundingBox().GetRight())  for g in _silk)
 _pad_s = max(MM(p.GetBoundingBox().GetBottom()) for p in _u1.Pads())
-_axL, _axR = max(x0, _ul - ANT_CLEAR), min(x1, _ur + ANT_CLEAR)  # ±ANT_CLEAR, clipped to board
+_axL, _axR = max(x0, _ul - ANT_CLEAR), min(x1, _ur + ANT_CLEAR)  # ±ANT_CLEAR from U1 silk body, clipped to board
 _ayT, _ayB = _pad_s + 0.2, _ub
 _az = pcbnew.ZONE(board); _az.SetIsRuleArea(True); _az.SetLayerSet(pcbnew.LSET.AllCuMask())
 _az.SetDoNotAllowTracks(True); _az.SetDoNotAllowVias(True); _az.SetDoNotAllowZoneFills(True)
@@ -325,10 +351,11 @@ def _place_fiducial(ref, cx, cy):              # cx,cy = the board corner to gro
                 _fid_rects.append(_crtyd_rect(fp))     # keep the next fiducial off this one
                 return (fx, fy)
     raise RuntimeError(f"no clear fiducial location found for {ref}")
-_fids = [_place_fiducial("FID1", x0, y0),      # top-left
-         _place_fiducial("FID2", x0, y1),      # bottom-left
-         _place_fiducial("FID3", x1, y1)]      # bottom-right (top-right left empty -> asymmetric)
-print(f"  fiducials: {len(_fids)} placed at " + ", ".join(f"({x:.1f},{y:.1f})" for x, y in _fids))
+_fids = []  # fiducials disabled
+# _fids = [_place_fiducial("FID1", x0, y0),      # top-left
+#          _place_fiducial("FID2", x0, y1),      # bottom-left
+#          _place_fiducial("FID3", x1, y1)]      # bottom-right (top-right left empty -> asymmetric)
+print(f"  fiducials: disabled")
 
 # NOTE: J1 is now the GCT USB4085 -- a 2-row THROUGH-HOLE Type-C. VBUS (A4/A9 front row,
 # B4/B9 back row) and the data pair land on plated thru-holes the router reaches from either
@@ -363,13 +390,14 @@ for _p in fps["J2"].Pads():
 # P1..P5/IN4 functional labels are what matter at this connector; "J2" still lives in the BOM/CPL.
 fps["J2"].Reference().SetVisible(False)
 
-# J1 overhangs the bottom edge, so its default reference text lands off-board. Put it just
-# ABOVE the connector body (inboard) instead.
 jl, jr, jt, jb = fext(fps["J1"])
 j1ref = fps["J1"].Reference()
-# D5 (ESD array) sits above J1; put the J1 label underneath the connector (bottom strip).
-j1ref.SetPosition(vmm(28.8, 58.3))
+j1ref.SetPosition(vmm((jl + jr) / 2.0, (jt + jb) / 2.0))
 j1ref.SetTextAngleDegrees(0)
+
+_t1l, _t1r, _t1t, _t1b = fext(fps["T1"])
+fps["T1"].Reference().SetPosition(vmm((_t1l + _t1r) / 2.0, (_t1t + _t1b) / 2.0))
+fps["T1"].Reference().SetTextAngleDegrees(0)
 
 # Relays sit close together; the default side-placed refdes overlaps the neighbour's body
 # silk. Centre each relay's reference on its own body instead.
@@ -379,20 +407,28 @@ for _k in ("K1", "K2", "K3"):
     _kref.SetPosition(vmm((_kl + _kr) / 2.0, (_kt + _kb) / 2.0))
     _kref.SetTextAngleDegrees(0)
 
-# U3's default refdes lands in the tightly-packed cap ring (silk over a pad). Move it a few mm to
-# the side of U3 (no support caps there after the 180 deg flip) -- silk over traces is fine.
+# U3's default refdes lands in the tightly-packed cap ring. After the 180° flip + 90° CW rotation
+# the clear side faces north; place the label above the MIC caps (which sit ~5 mm above U3).
 _u3ref = fps["U3"].Reference()
 _u3p = fps["U3"].GetPosition()
-_u3ref.SetPosition(pcbnew.VECTOR2I(_u3p.x + pcbnew.FromMM(5.5), _u3p.y))
+_u3ref.SetPosition(pcbnew.VECTOR2I(_u3p.x, _u3p.y - pcbnew.FromMM(8.5)))
 _u3ref.SetTextAngleDegrees(0)
 
-# Silkscreen labels above the user-facing buttons.
-for _sw, _txt in (("SW_boot", "BOOT"), ("SW_en", "RST")):
+# Reset Value() text on the two tactile switches: the library footprint places the text
+# at a large local offset (8.68, 2.615) that lands far from the body after rotation.
+for _k in ("SW_boot", "SW_en"):
+    fps[_k].Value().SetPosition(fps[_k].GetPosition())
+    fps[_k].Value().SetTextAngleDegrees(0)
+
+# Silkscreen labels on the left side of the user-facing buttons, rotated CCW (reads bottom-to-top).
+for _sw, _txt, _side, _ang in (("SW_boot", "BOOT", "left", 90), ("SW_en", "RST", "right", 270)):
     _sl, _sr, _st, _sb = fext(fps[_sw])
     _lab = pcbnew.PCB_TEXT(board)
     _lab.SetText(_txt)
     _lab.SetLayer(pcbnew.F_SilkS)
-    _lab.SetPosition(vmm((_sl + _sr) / 2.0, _st - 1.0))
+    _lx = (_sl - 1.0) if _side == "left" else (_sr + 1.0)
+    _lab.SetPosition(vmm(_lx, (_st + _sb) / 2.0))
+    _lab.SetTextAngleDegrees(_ang)
     _lab.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
     _lab.SetTextThickness(pcbnew.FromMM(0.15))
     board.Add(_lab)

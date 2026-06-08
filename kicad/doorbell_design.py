@@ -41,12 +41,12 @@ COMP = {
     "D3": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),
     "D_vbus": ("PCM_JLCPCB-Diodes", "Schottky,SS14", "SS14"),                       # VBUS reverse-protection (LCSC C2480)
     "D_esd": ("PCM_JLCPCB-Diode-Packages", "Package, SRV05-4_C7420376", "SRV05-4"), # USB D+/D- ESD array (LCSC C7420376)
-    "OC1": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
     "OC2": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
-    "OC3": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),   # session-active sense (P2<->P5 WF26 coil energise) = "can we send audio"
+    "OC3": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
+    "OC1": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),   # session-active sense (P2<->P5 WF26 coil energise) = "can we send audio"
     "R_lim1": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
-    "R_lim2": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC2's own LED limiter (unshared)
-    "R_lim3": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC3 session-sense limiter; VALUE TBD pending measured session voltage on P2<->P5
+    "R_lim2": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC3's own LED limiter (unshared)
+    "R_lim3": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC1 session-sense limiter; VALUE TBD pending measured session voltage on P2<->P5
     "R_em": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
     "R_g1": ("PCM_JLCPCB-Resistors", "0603,100Ω", "100"),
     "R_g2": ("PCM_JLCPCB-Resistors", "0603,100Ω", "100"),
@@ -103,8 +103,8 @@ FOOTPRINT = {
     "D1": "PCM_JLCPCB:D_SOD-123", "D2": "PCM_JLCPCB:D_SOD-123", "D3": "PCM_JLCPCB:D_SOD-123",
     "D_vbus": "PCM_JLCPCB:D_SMA",
     "D_esd": "PCM_JLCPCB:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1",
-    "OC1": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm", "OC2": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm",
-    "OC3": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm",
+    "OC2": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm", "OC3": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm",
+    "OC1": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm",
     "LED1": "PCM_JLCPCB:D_0603",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
 }
@@ -154,7 +154,7 @@ NETS = {
     "GATE2_DRV": [("U1","19"),("R_g2","1")],   # GPIO21 / pad 19
     "GATE2": [("R_g2","2"),("Q2","1"),("R_pd2","1")],
     "K2_DRAIN": [("Q2","3"),("K2","8"),("D2","2")],
-    "GATE3_DRV": [("U1","26"),("R_g3","1")],   # GPIO3 / pad 26 (C6 right col) — PTT relay K3
+    "GATE3_DRV": [("U1","20"),("R_g3","1")],   # GPIO22 / pad 20 (C6 right col) — PTT relay K3; consecutive with GATE1/GATE2 (18,19,20)
     "GATE3": [("R_g3","2"),("Q3","1"),("R_pd3","1")],
     "K3_DRAIN": [("Q3","3"),("K3","8"),("D3","2")],
     "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2"),("T1","1")],   # + audio xfmr winding-A end (tap across LS1 = P1/P5; CT pad 2 NC)
@@ -163,29 +163,29 @@ NETS = {
     #   NO->P2 (talk, energised). To talk, firmware must FIRST energise K2 (break P4->IN_P4 so
     #   the handset's own S2 isn't strapping line4<->line3 in parallel and shorting P2<->P3),
     #   then toggle K3. Pole B (K3 pads 5/6/7) is spare/NC. See DESIGN.md "Audio (revisited)".
-    "P2": [("J2","2"),("K1","3"),("K3","4"),("OC3","1")],
+    "P2": [("J2","2"),("K1","3"),("K3","4"),("OC1","1")],
     # ÖT door-opener bridge goes through R_ot (2.2k) in series with K1's NO contact, matching
     # the genuine WF26 (its ÖT button bridges lines 2<->3 via R1=2.2k, NOT a dead short -- so it
     # only loads the speech pair instead of fully shorting it). K1 COM=P2; K1 NO -> R_ot -> P3.
     "P3": [("J2","3"),("R_ot","1"),("K3","2")],   # + K3 NC = PTT listen/idle strap (P4<->P3)
     "OT_BRIDGE": [("R_ot","2"),("K1","4")],
     # Line 4 (Türruf) is BROKEN INTO the board for chime suppression: P4 = bus/TV20S side
-    # (-> K2 COM), IN_P4 = WF26-handset side (-> K2 NC, -> OC1 sense, -> J2.6 jumper back to
-    # the WF26's terminal 4). K2 at rest passes P4->IN_P4 (gong rings + OC1 senses); energised
+    # (-> K2 COM), IN_P4 = WF26-handset side (-> K2 NC, -> OC2 sense, -> J2.6 jumper back to
+    # the WF26's terminal 4). K2 at rest passes P4->IN_P4 (gong rings + OC2 senses); energised
     # it opens the line (gong silenced). This is the V3 series-break, restored on a 6-pin J2.
     "P4": [("J2","4"),("K2","3"),("K3","3")],   # + K3 COM = PTT changeover common (bus line 4)
-    "IN_P4": [("K2","2"),("OC1","1"),("J2","6")],
-    "P5": [("J2","5"),("OC2","1"),("R_lim3","2"),("T1","3")],   # + OC3 session-sense limiter return + audio xfmr winding-A other end
+    "IN_P4": [("K2","2"),("OC2","1"),("J2","6")],
+    "P5": [("J2","5"),("OC3","1"),("R_lim3","2"),("T1","3")],   # + OC1 session-sense limiter return + audio xfmr winding-A other end
     # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single
     # shared limiter let one ringing channel lift the common cathode node ~10.8 V and reverse-bias
     # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
-    "OC1_CATH": [("OC1","2"),("R_lim1","1")],
-    "OC2_CATH": [("OC2","2"),("R_lim2","1")],
-    "OC3_CATH": [("OC3","2"),("R_lim3","1")],   # OC3 LED cathode -> R_lim3 -> P5 (LED anode on P2)
-    "OC1_OUT": [("OC1","4"),("U1","20")],   # GPIO22 / pad 20 (C6 right col)
-    "OC2_OUT": [("OC2","4"),("U1","21")],   # GPIO23 / pad 21 (C6 right col)
-    "OC3_OUT": [("OC3","4"),("U1","27")],   # GPIO2 / pad 27 (C6 right col, non-strapping) — session-active in
-    "OC_EMIT": [("OC1","3"),("OC2","3"),("OC3","3"),("R_em","1")],
+    "OC2_CATH": [("OC2","2"),("R_lim1","1")],
+    "OC3_CATH": [("OC3","2"),("R_lim2","1")],
+    "OC1_CATH": [("OC1","2"),("R_lim3","1")],   # OC1 LED cathode -> R_lim3 -> P5 (LED anode on P2)
+    "OC2_OUT": [("OC2","4"),("U1","26")],   # GPIO3  / pad 26 (C6 right col) — house bell (Türruf)
+    "OC3_OUT": [("OC3","4"),("U1","21")],   # GPIO23 / pad 21 (C6 right col) — apartment bell (Etagenruf)
+    "OC1_OUT": [("OC1","4"),("U1","27")],   # GPIO2  / pad 27 (C6 right col) — session-active in
+    "OC_EMIT": [("OC2","3"),("OC3","3"),("OC1","3"),("R_em","1")],
     "LED_A": [("R_led","2"),("LED1","2")],
 
     # === Audio codec (ES8311, U3) — PROVISIONAL mono half-duplex front-end (analog bench-gated) ===
@@ -218,10 +218,13 @@ NETS = {
 # export, so they must not be on the board when it is sent to Freerouting). Footprints only; an
 # item belongs to at most one group.
 GROUPS = {
-    "MCU + boot":              ["U1", "SW_boot", "SW_en", "R_boot", "R_en", "C_en", "R_io8", "C_3v3", "C_dec"],
-    "Power (USB-C + LDO)":     ["J1", "U2", "C_in", "C_out", "D_vbus", "D_esd", "R_cc1", "R_cc2"],
+    "MCU":                     ["U1", "R_io8", "C_3v3", "C_dec"],
+    "BOOT":                    ["SW_boot", "R_boot"],
+    "RST":                     ["SW_en", "R_en", "C_en"],
+    "USB-C":                   ["J1", "D_esd", "R_cc1", "R_cc2"],
+    "Power (LDO)":             ["U2", "C_in", "C_out", "D_vbus"],
     "Power LED":               ["LED1", "R_led"],
-    "Bell sense (optos)":      ["OC1", "OC2", "OC3", "R_lim1", "R_lim2", "R_lim3", "R_em"],
+    "Bell sense (optos)":      ["OC2", "OC3", "OC1", "R_lim1", "R_lim2", "R_lim3", "R_em"],
     "K1 door-opener relay":    ["K1", "Q1", "D1", "R_g1", "R_pd1", "R_ot"],
     "K2 chime-suppress relay": ["K2", "Q2", "D2", "R_g2", "R_pd2"],
     "K3 PTT relay":            ["K3", "Q3", "D3", "R_g3", "R_pd3"],
@@ -245,7 +248,7 @@ NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           # Pad 9: GPIO1 — spare
           # Pad 22: NC (module marking); Pad 23: GPIO15 (strapping, float)
           # Pads 24-25: GPIO17(U0RXD), GPIO16(U0TXD) — leave N/C
-          # (pads 6/7/8/11/12/16/17 now = codec I2C/I2S; pad 27 = OC3_OUT)
+          # (pads 6/7/8/11/12/16/17 now = codec I2C/I2S; pads 18-20 = relay gates; pads 21/26/27 = opto outputs)
           ("U1","4"),("U1","5"),("U1","9"),
           ("U1","22"),("U1","23"),("U1","24"),("U1","25")]
 
@@ -260,8 +263,8 @@ GRID = {
     "R_g1": (104, 30), "Q1": (109, 30), "R_pd1": (109, 36), "D1": (116, 26), "K1": (126, 30),
     "R_g2": (104, 64), "Q2": (109, 64), "R_pd2": (109, 70), "D2": (116, 60), "K2": (126, 64),
     "R_g3": (104, 98), "Q3": (109, 98), "R_pd3": (109, 104), "D3": (116, 94), "K3": (126, 98),
-    "OC1": (36, 82), "OC2": (36, 96), "R_lim1": (50, 85), "R_lim2": (50, 90), "R_em": (50, 96), "J2": (16, 86),
-    "OC3": (36, 110), "R_lim3": (50, 110),   # session-sense opto + limiter (schematic placement; reorganise later)
+    "OC2": (36, 82), "OC3": (36, 96), "R_lim1": (50, 85), "R_lim2": (50, 90), "R_em": (50, 96), "J2": (16, 86),
+    "OC1": (36, 110), "R_lim3": (50, 110),   # session-sense opto + limiter (schematic placement; reorganise later)
     # --- audio codec cluster (schematic canvas; reorganise later) ---
     "U3": (90, 90), "T1": (70, 110),
     "C_dv": (78, 80), "C_pv": (82, 80), "C_av": (86, 80), "C_avb": (90, 80),
