@@ -401,18 +401,10 @@ around obstacles). Switching J1 to the **GCT USB4085** — a 2-row *through-hole
 C7095263) — gives clean escapes, and going 4-layer lets the **D+/D− pair route together** on
 B.Cu over the GND plane.
 
-**Keeping the planes solid (the codegen recipe).** Freerouting (driven from KiCad's DSN) does
-not natively reserve power planes, so:
-- `In1`/`In2` are marked **`LT_POWER`** → the autorouter keeps all *signals* on F.Cu/B.Cu.
-- It then won't via to the planes, so `gen_pcb.py` **pre-stitches** every surface (SMD) GND/+3V3
-  pad to its plane with an offset via + short F.Cu stub (≈27 vias; **no via-in-pad**). THT
-  power/GND pads already pass through the planes and are skipped.
-- The planes are **filled in `route.py` *before* the DSN export** — not in `gen_pcb.py`, where
-  `ZONE_FILLER` on a freshly-built board segfaults pcbnew — so the stitch vias tie together and
-  GND/+3V3 are complete before routing.
-
-Result: signals only on F.Cu/B.Cu, In1/In2 clean solid planes, **D+/D− routed together** on
-B.Cu → **0 unconnected, 0 DRC**.
+**Routing + plane recipe.** Freerouting routes on all four layers freely (no `LT_POWER`
+designation, no pre-stitch vias). After the SES is imported, `route.py` pours +3V3 on In1 and
+GND on In2 as copper-fill zones; the filler leaves clearance gaps around any signal traces
+Freerouting placed on those layers. Result: **0 unconnected, 0 DRC**; no manually-placed vias.
 
 **Floorplan** (`PCB_PLACE` in `gen_pcb.py`): the **ESP32-C3-WROOM-02 (U1, rot 90°)** sits
 left-of-centre with its antenna overhanging the left edge; the **opto bell-sense block** (OC1/OC2,
@@ -432,12 +424,12 @@ footprint stays inside the outline.
 **DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published 2-layer
 capabilities (e.g. 0.127 mm spacing inside J1's fine-pitch courtyard, 0.3 mm board-edge copper).
 
-**Fiducials** (`gen_pcb.py`, added after plane-stitching). Three global PCBA optical reference
+**Fiducials** (`gen_pcb.py`). Three global PCBA optical reference
 marks — `Fiducial:Fiducial_1mm_Mask2mm` (1 mm copper / 2 mm mask) — forming an **asymmetric
 triangle** so the pick-and-place camera can resolve board orientation unambiguously. The search
 grows inward from three corners (top-left, bottom-left, bottom-right; top-right deliberately empty)
 on a 0.5 mm grid and takes the first spot that sits ≥2 mm inside the board edge and clears every
-**component courtyard** by ≥1.4 mm, every pad by ≥1.5 mm, and every stitch-via. JLCPCB adds its own
+**component courtyard** by ≥1.4 mm, every pad by ≥1.5 mm. JLCPCB adds its own
 panel/rail fiducials during assembly regardless, so these are belt-and-suspenders local references;
 on a board this dense they're optional, but they cost nothing and are good practice.
 

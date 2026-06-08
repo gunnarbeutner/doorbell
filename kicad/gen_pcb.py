@@ -70,9 +70,9 @@ MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge o
 def vmm(x, y): return pcbnew.VECTOR2I(pcbnew.FromMM(x), pcbnew.FromMM(y))
 
 board = pcbnew.CreateEmptyBoard()
-board.SetCopperLayerCount(4)        # 4-layer stack: F.Cu / In1=+3V3 / In2=GND / B.Cu (GND under B.Cu for the USB pair)
-board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_POWER)   # plane layers -> autorouter keeps
-board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_POWER)   # signals on F.Cu / B.Cu only
+board.SetCopperLayerCount(4)        # 4-layer stack: F.Cu / In1 / In2 / B.Cu
+board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_MIXED)
+board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_MIXED)
 
 nets = {}
 for name in NETS:
@@ -101,7 +101,7 @@ for ref, libname in FOOTPRINT.items():
     placed.append((x, y))
     fps[ref] = fp
 
-# On 4 layers the LDO's GND/heat reaches the inner planes through its thermal vias, so its
+# On 4 layers the LDO's GND/heat reaches the inner GND plane through its thermal vias, so its
 # bottom (B.Cu) thermal pad is redundant -- drop it to free B.Cu under U2 for the USB pair.
 for _p in list(fps["U2"].Pads()):
     if _p.GetAttribute() == pcbnew.PAD_ATTRIB_SMD and _p.IsOnLayer(pcbnew.B_Cu) and not _p.IsOnLayer(pcbnew.F_Cu):
@@ -147,52 +147,12 @@ rect.SetLayer(pcbnew.Edge_Cuts)
 rect.SetWidth(pcbnew.FromMM(0.15))
 board.Add(rect)
 
-# --- 4-layer inner planes: In1.Cu = solid +3V3, In2.Cu = solid GND. GND is on In2 (adjacent to
-#     B.Cu) so a USB D+/D- pair routed on B.Cu references the GND plane. Components reach the
-#     planes through vias; +5V stays a (short) surface trace. Filled in route.py. ---
-def add_plane(layer, netname):
-    z = pcbnew.ZONE(board); z.SetLayer(layer); z.SetNet(nets[netname])
-    ch = pcbnew.SHAPE_LINE_CHAIN()
-    for (cx, cy) in [(x0+0.3, y0+0.3), (x1-0.3, y0+0.3), (x1-0.3, y1-0.3), (x0+0.3, y1-0.3)]:
-        ch.Append(vmm(cx, cy))
-    ch.SetClosed(True); z.AddPolygon(ch); board.Add(z)
-add_plane(pcbnew.In1_Cu, "+3V3")
-add_plane(pcbnew.In2_Cu, "GND")
-
-# --- pre-stitch every surface (SMD) GND/+3V3 pad to its inner plane with an offset via + a
-#     short F.Cu stub. The planes are LT_POWER, so the autorouter won't via to them itself;
-#     we make those connections here so Freerouting only has to route signals on F.Cu/B.Cu.
-#     (THT power/GND pads already pass through the planes, so they're skipped.) ---
-PLANE_OF = {"GND": pcbnew.In2_Cu, "+3V3": pcbnew.In1_Cu}
-def _pc(p):                            # pad centre (mm) + bounding-circle radius (covers corners)
+def _pc(p):
     bb = p.GetBoundingBox()
     return (MM((bb.GetLeft()+bb.GetRight())/2.0), MM((bb.GetTop()+bb.GetBottom())/2.0),
             (MM(bb.GetRight()-bb.GetLeft())**2 + MM(bb.GetBottom()-bb.GetTop())**2)**0.5/2.0)
 _obs = [_pc(p) for f in board.GetFootprints() for p in f.Pads()]
-_svias, _nstitch = [], 0
-def _clear(vx, vy):                    # via (0.5mm) site clear of all pads, prior stitch vias, edge
-    if not (x0+0.6 < vx < x1-0.6 and y0+0.6 < vy < y1-0.6): return False
-    if any(((vx-ox)**2+(vy-oy)**2)**0.5 < 0.25+orad+0.25 for ox, oy, orad in _obs): return False
-    if any(((vx-px)**2+(vy-py)**2)**0.5 < 0.7 for px, py in _svias): return False
-    return True
-for f in board.GetFootprints():
-    for p in f.Pads():
-        net = p.GetNetname()
-        if net not in PLANE_OF or p.GetAttribute() != pcbnew.PAD_ATTRIB_SMD:
-            continue
-        pcx, pcy, pr = _pc(p); d = pr + 0.25 + 0.35
-        for ang in (0, 90, 180, 270, 45, 135, 225, 315):
-            vx, vy = pcx + d*math.cos(math.radians(ang)), pcy + d*math.sin(math.radians(ang))
-            if _clear(vx, vy):
-                v = pcbnew.PCB_VIA(board); v.SetPosition(vmm(vx, vy))
-                v.SetDrill(pcbnew.FromMM(0.3)); v.SetWidth(pcbnew.FromMM(0.5)); v.SetNet(nets[net]); board.Add(v)
-                t = pcbnew.PCB_TRACK(board); t.SetLayer(pcbnew.F_Cu); t.SetWidth(pcbnew.FromMM(0.2))
-                t.SetStart(vmm(pcx, pcy)); t.SetEnd(vmm(vx, vy)); t.SetNet(nets[net]); board.Add(t)
-                _svias.append((vx, vy)); _nstitch += 1
-                break
-        else:
-            print(f"  WARN: no clear plane-stitch via for {f.GetReference()}.{p.GetNumber()} ({net})")
-print(f"  plane stitching: {_nstitch} vias")
+_svias = []
 
 # --- assembly fiducials: 3 global optical reference marks (1 mm copper / 2 mm mask opening),
 #     grown inward from three corners (top-left, bottom-left, bottom-right). Three points (the
