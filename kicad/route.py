@@ -12,7 +12,9 @@ Run with KiCad's bundled Python (owns pcbnew); see build.sh. Env:
 """
 import os, sys, subprocess, math, re
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 import pcbnew
+from doorbell_design import GROUPS, REF
 
 BOARD = os.path.join(HERE, "doorbell.kicad_pcb")
 DSN = os.path.join(HERE, "doorbell.dsn")
@@ -81,6 +83,19 @@ subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da"], chec
 
 if not pcbnew.ImportSpecctraSES(board, SES):
     sys.exit("SES import failed")
+
+# --- Subassembly groups: created HERE (post-route) so they never reach the Specctra DSN export --
+#     groups on the board confuse the DSN export and break the autoroute. Add them to the routed
+#     board by finding each member footprint by refdes. ---
+for _gname, _keys in GROUPS.items():
+    _grp = pcbnew.PCB_GROUP(board)
+    _grp.SetName(_gname)
+    for _k in _keys:
+        _fp = board.FindFootprintByReference(REF[_k])
+        if _fp is not None:
+            _grp.AddItem(_fp)
+    board.Add(_grp)
+print(f"  groups: {len(GROUPS)} subassemblies")
 
 # --- inner planes: poured after routing; fill leaves clearance gaps around any
 #     signal traces Freerouting placed on In1/In2. ---

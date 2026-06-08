@@ -213,6 +213,22 @@ NETS = {
     "SEC_B":   [("T1","6"),("C_on","2"),("C_mn","2")],   # secondary leg B: OUTN & MIC1N
 }
 
+# Subassembly groups (KiCad PCB_GROUP) -> internal keys. Each functional block selects/moves as a
+# unit in the PCB editor. Created in route.py AFTER autorouting (groups confuse the Specctra DSN
+# export, so they must not be on the board when it is sent to Freerouting). Footprints only; an
+# item belongs to at most one group.
+GROUPS = {
+    "MCU + boot":              ["U1", "SW_boot", "SW_en", "R_boot", "R_en", "C_en", "R_io8", "C_3v3", "C_dec"],
+    "Power (USB-C + LDO)":     ["J1", "U2", "C_in", "C_out", "D_vbus", "D_esd", "R_cc1", "R_cc2"],
+    "Power LED":               ["LED1", "R_led"],
+    "Bell sense (optos)":      ["OC1", "OC2", "OC3", "R_lim1", "R_lim2", "R_lim3", "R_em"],
+    "K1 door-opener relay":    ["K1", "Q1", "D1", "R_g1", "R_pd1", "R_ot"],
+    "K2 chime-suppress relay": ["K2", "Q2", "D2", "R_g2", "R_pd2"],
+    "K3 PTT relay":            ["K3", "Q3", "D3", "R_g3", "R_pd3"],
+    "Audio codec (ES8311)":    ["U3", "T1", "C_dv", "C_pv", "C_av", "C_avb", "C_vref", "C_vmid",
+                                "C_aref", "C_op", "C_on", "C_mp", "C_mn", "R_sda", "R_scl"],
+}
+
 # intentionally-unused pins -> No-Connect markers (schematic) / unconnected (PCB)
 NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("K2","4"),("K2","5"),("K2","6"),("K2","7"),

@@ -25,9 +25,9 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32 + its power / boot / LED support ===
     "U1":     (18, 62, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
-    "SW_boot":(53, 61, 0),    # BOOT button; +30mm right, +20mm down
+    "SW_boot":(5, 56, 0),     # BOOT button, to the LEFT of U1
     "SW_en":  (61, 61, 180),  # EN / reset button; +30mm right, +20mm down
-    "R_boot": (53, 65, 0),    # BOOT pullup
+    "R_boot": (5, 61, 0),     # BOOT pullup, to the LEFT of U1 (with SW_boot)
     "R_en":   (59, 65, 0),    # EN pullup
     "C_en":   (62, 65, 180),  # EN cap
     "U2":     (46, 69.5, 270),# SGM2212 LDO; +30mm right, +20mm down
@@ -36,8 +36,8 @@ PCB_PLACE = {
     "C_out":  (44, 64, 0),    # LDO output cap (+3V3)
     "LED1":   (47.5, 61, 90), # power LED
     "R_led":  (44.5, 61, 90), # LED series resistor
-    "C_dec":  (31, 70.65, 270),  # 100nF decoupling; right of U1 east face, pad 1 (+3V3) top / pad 2 (GND) bottom
-    "C_3v3":  (33, 70.65, 270),  # 10uF decoupling; same row, next to C_dec
+    "C_dec":  (28.9, 70.65, 270),  # 100nF decoupling; just clear of U1's east courtyard (x=27.8)
+    "C_3v3":  (30.1, 70.65, 270),  # 10uF decoupling; same row, next to C_dec
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
     "J1":     (55.8, 70, 0),  # USB-C (USB4085 THT); +30mm right, +20mm down
     "R_cc1":  (54.5, 70, 90), # CC1 pulldown
@@ -76,16 +76,23 @@ PCB_PLACE = {
     "R_lim3": (7, 39, 0),    # R17 above OC3 (6mm up), matching the R_lim2/OC2 layout
     # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
     #     Provisional placement — reorganise later. ===
-    # ES8311 rot 180: I2S/AGND (east pins 6-10) face WEST toward U1; OUTP/OUTN (north 12/13)
-    # face SOUTH toward T1; MIC/VMID (west 16-18) face EAST. West escape channel kept clear.
+    # ES8311 rot 180. Support passives packed tight against the edge carrying their U3 pin, each
+    # oriented so its U3-connected pad faces inward (rot: 0=pad1 W, 90=pad1 S, 180=pad1 E, 270=pad1 N).
+    # West edge (I2S 6-9 -> U1) kept clear. Sides at rot180: N=CCLK/MCLK/PVDD/DVDD/DGND,
+    # E=CE/CDATA/MIC1P/MIC1N/VMID, S=AVDD/OUTP/OUTN/DACVREF/ADCVREF.
     "U3":     (78, 32, 180),
-    "T1":     (80, 56, 0),
-    # north arc (faces U3 south pins 1-5 at rot180 = north: CCLK/MCLK/PVDD/DVDD/DGND)
-    "C_dv":   (70, 26, 0), "C_pv": (74, 26, 0), "R_scl": (78, 26, 0), "C_avb": (82, 26, 0), "C_vmid": (86, 26, 0),
-    # east arc (MIC1P/MIC1N/CDATA)
-    "C_mp":   (88, 30, 0), "C_mn": (88, 34, 0), "R_sda": (88, 38, 0),
-    # south arc (AVDD/OUTP/OUTN/DACVREF/ADCVREF), above T1
-    "C_av":   (70, 40, 0), "C_op": (74, 40, 0), "C_on": (78, 40, 0), "C_vref": (82, 40, 0), "C_aref": (86, 40, 0),
+    # Passives sit ~2 mm off U3's pad toes -- a clear ring for the pin escapes/vias -- then ring out.
+    # NORTH row: PVDD/DVDD decoupling + SCL pull-up (pad-to-U3 faces south)
+    "C_dv":   (76.8, 27.3, 90), "C_pv": (78.0, 27.3, 90), "R_scl": (79.2, 27.3, 270),
+    # EAST column: VMID + MIC coupling + SDA pull-up (pad-to-U3 faces west)
+    "R_sda": (82.7, 30.3, 180), "C_mp": (82.7, 31.6, 0), "C_mn": (82.7, 32.9, 0), "C_vmid": (82.7, 34.2, 0),
+    # SOUTH row: AVDD decoupling/bulk + OUT coupling + DAC/ADC refs (pad-to-U3 faces north),
+    # nudged right to clear T1 on the left.
+    "C_av":   (76.1, 37.2, 270), "C_avb": (77.3, 37.2, 270), "C_op": (78.5, 37.2, 270),
+    "C_on":   (79.7, 37.2, 270), "C_vref": (80.9, 37.2, 270), "C_aref": (82.1, 37.2, 270),
+    # isolation transformer to the LEFT of U3, rotated clockwise (vertical). Winding A faces the
+    # bus (P1/P5) to the west; secondary reaches the OUT/MIC coupling caps.
+    "T1":     (69, 40, 270),
 }
 MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
 
@@ -122,6 +129,30 @@ for ref, libname in FOOTPRINT.items():
             pad.SetNet(nets[pad_net[key]])
     placed.append((x, y))
     fps[ref] = fp
+
+# --- Rotate the whole audio sub-block (codec U3 + its support passives, NOT T1) 180 deg as a
+#     rigid body, then place it BELOW T1. Relative orientations are preserved, so the pad-facing
+#     packing survives. Done here -- before the EP-via / edge logic -- so they follow U3's new pos.
+_TOMM = pcbnew.ToMM
+_AUDIO_BLK = ["U3", "C_dv", "C_pv", "R_scl", "C_vmid", "C_mp", "C_mn", "R_sda",
+              "C_av", "C_avb", "C_op", "C_on", "C_vref", "C_aref"]
+_acx = sum(_TOMM(fps[k].GetPosition().x) for k in _AUDIO_BLK) / len(_AUDIO_BLK)
+_acy = sum(_TOMM(fps[k].GetPosition().y) for k in _AUDIO_BLK) / len(_AUDIO_BLK)
+for k in _AUDIO_BLK:                        # 180 deg about the block centroid
+    _p = fps[k].GetPosition()
+    fps[k].SetPosition(vmm(2 * _acx - _TOMM(_p.x), 2 * _acy - _TOMM(_p.y)))
+    fps[k].SetOrientationDegrees((fps[k].GetOrientationDegrees() + 180) % 360)
+def _bbx(k):                                # footprint bbox (mm), no silk text
+    _b = fps[k].GetBoundingBox(False, False)
+    return _TOMM(_b.GetLeft()), _TOMM(_b.GetRight()), _TOMM(_b.GetTop()), _TOMM(_b.GetBottom())
+_t1bx = _bbx("T1")
+_bxs = [_bbx(k) for k in _AUDIO_BLK]
+_bl = min(b[0] for b in _bxs); _br = max(b[1] for b in _bxs); _bt = min(b[2] for b in _bxs)
+_dx = (_t1bx[0] + _t1bx[1]) / 2 - (_bl + _br) / 2   # centre horizontally under T1
+_dy = (_t1bx[3] + 2.0) - _bt                         # block top 2 mm below T1's bottom
+for k in _AUDIO_BLK:
+    _p = fps[k].GetPosition()
+    fps[k].SetPosition(pcbnew.VECTOR2I(_p.x + pcbnew.FromMM(_dx), _p.y + pcbnew.FromMM(_dy)))
 
 # On 4 layers the LDO's GND/heat reaches the inner GND plane through its thermal vias, so its
 # bottom (B.Cu) thermal pad is redundant -- drop it to free B.Cu under U2 for the USB pair.
@@ -304,11 +335,12 @@ print(f"  fiducials: {len(_fids)} placed at " + ", ".join(f"({x:.1f},{y:.1f})" f
 # layer, so the old single-row HRO part's "+5V bridge" (off-pad vias east of the NPTH pegs,
 # joined on B.Cu) is no longer needed -- Freerouting joins the +5V holes directly.
 
-# Place J2 (WF26 screw terminal) toward the RIGHT: align its right edge ~2 mm inside the board's
-# right edge (frees the upper-left corner for the product name). J1 is placed explicitly.
+# Place J2 (WF26 screw terminal) toward the LEFT: align its left edge ~2 mm to the right of R16
+# (R_ot), with clearance. (Previously pinned to the board's right edge.)
+_r16l, _r16r, _r16t, _r16b = fext(fps["R_ot"])
 _jl, _jr, _jt, _jb = fext(fps["J2"])
 _pj = fps["J2"].GetPosition()
-fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((x1 - 2.0) - _jr), _pj.y))
+fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((_r16r + 2.0) - _jl), _pj.y))
 
 # J2 (WF26 terminal) per-screw labels on the front silk so the bus lines are unambiguous when
 # wiring in the wall: pad n -> net Pn; pad 6 = IN-P4, the line-4 return to the WF26's terminal 4.
@@ -346,6 +378,13 @@ for _k in ("K1", "K2", "K3"):
     _kref = fps[_k].Reference()
     _kref.SetPosition(vmm((_kl + _kr) / 2.0, (_kt + _kb) / 2.0))
     _kref.SetTextAngleDegrees(0)
+
+# U3's default refdes lands in the tightly-packed cap ring (silk over a pad). Move it a few mm to
+# the side of U3 (no support caps there after the 180 deg flip) -- silk over traces is fine.
+_u3ref = fps["U3"].Reference()
+_u3p = fps["U3"].GetPosition()
+_u3ref.SetPosition(pcbnew.VECTOR2I(_u3p.x + pcbnew.FromMM(5.5), _u3p.y))
+_u3ref.SetTextAngleDegrees(0)
 
 # Silkscreen labels above the user-facing buttons.
 for _sw, _txt in (("SW_boot", "BOOT"), ("SW_en", "RST")):
