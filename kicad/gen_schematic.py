@@ -82,6 +82,8 @@ SCHEM_POS = {
     # relay driver 1 (upper right): gate R + pulldown stacked on the FET gate,
     # FET drain wired across to the coil with the flyback diode on the node.
     "R_g1": (104, 26), "Q1": (106, 31), "R_pd1": (104, 36), "D1": (110, 30.5), "K1": (119, 31),
+    "R_ot": (127, 37),   # ÖT bridge series R, below-right of K1's contacts
+
     # relay driver 2 (lower right): same layout shifted down.
     "R_g2": (104, 60), "Q2": (106, 65), "R_pd2": (104, 70), "D2": (110, 64.5), "K2": (119, 65),
     # de-crowd the EN/BOOT reset network between the decoupling caps and the MCU.

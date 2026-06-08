@@ -63,6 +63,7 @@ PCB_PLACE = {
     "R_g1":   (23.82, 36.18, 180), # gate series R (R3), rotated flat (CCW); GATE1 pad kept fixed
     "R_pd1":  (23, 34, 90),   # gate pulldown, swapped with Q1 + rotated 180°
     "D1":     (26.3, 33.6, 0),# flyback, moved north (toward K1 coil)
+    "R_ot":   (34, 24, 270),  # R14, ÖT bridge series 2.2k: in series K1.NO -> J2.P3 (right of K1)
 }
 MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
 

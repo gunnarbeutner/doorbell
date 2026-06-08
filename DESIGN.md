@@ -48,14 +48,16 @@ into the WF26 — see "Why line 4 needs two pins" below.
 |-----|-------------|--------|---------------------|
 | P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Each opto LED cathode → its own 5.1 kΩ (R_lim1/R_lim2) → P1 |
 | P2 | Line 2 | Speech (Sprechen/Hören); bridged to 3 = ÖT | Relay K1 **COM (MAIN1)** |
-| P3 | Line 3 | Speech; bridged to 2 = ÖT door-opener trigger | Relay K1 **NO (NO1)** |
+| P3 | Line 3 | Speech; bridged to 2 = ÖT door-opener trigger | Relay K1 **NO** → **R14 (2.2 kΩ)** → P3 |
 | P4 | Line 4 (TV20/S side) | Türruf — ~12 VDC house-door gong, **in** | Relay K2 **COM** |
 | IN-P4 | Line 4 (WF26 side) | Türruf return, **out** to the handset | Relay K2 **NC** → OC1 anode (house-bell sense) **and** jumper → WF26 terminal 4 (gong). K2 opens this to suppress the chime |
 | P5 | Line 5 | Etagenruf — floor/apartment call (tone) | → OC2 anode (apartment bell sense) |
 
-**Relay K1** (P2 on COM/MAIN1, P3 on NO1) simulates pressing the ÖT button: energising
-K1 closes COM1→NO1, **bridging P2+P3** → TV20/S activates the door opener. (The PDF's
-own door-opener test confirms this: *"Klemmen 2 u. 3 brücken"*.) **Relay K2** (P4 on
+**Relay K1** (P2 on COM/MAIN1; NO1 → R14 → P3) simulates pressing the ÖT button: energising
+K1 closes COM1→NO1, **bridging P2+P3 through R14 (2.2 kΩ)** → TV20/S activates the door
+opener. (The PDF's test *"Klemmen 2 u. 3 brücken"* uses a dead short; the real handset — and
+now this board, via R14 — bridges through 2.2 kΩ, which still triggers but doesn't fully
+short the speech pair. See "Audio system" note.) **Relay K2** (P4 on
 COM/MAIN2, IN-P4 on NC2) breaks the Türruf line when energised to suppress the chime.
 
 **Why line 4 needs two pins.** K1 (door opener) *adds* a contact across P2+P3 — a parallel
@@ -73,8 +75,9 @@ chime suppression; restored here on the 6-way J2 (pad 6).
 > Disconnecting P4 forces a permanent off-hook and **suppresses the chime** (observed). See
 > "WF26 internal trace" below.
 
-> **Invariant to keep:** `build/netlist.txt` must show `[WF26-P2] … U2.MAIN1` and
-> `[WF26-P3] … U2.NO1`, with U2's NC1 unconnected (it must not appear in any net).
+> **Invariant to keep:** the door-opener bridge stays COM=P2, NO→P3, NC unconnected — now
+> with **R14 (2.2 kΩ) in series on the NO→P3 leg** (net `OT_BRIDGE`). (V3 named these
+> `U2.MAIN1` / `U2.NO1`; V4 is K1 + R14.)
 
 ### Wire colour map (existing flat Ethernet cable, confirmed)
 
@@ -128,7 +131,7 @@ Bell present → LED conducts → phototransistor pulls GPIO low → ESPHome inv
 
 ### Relay outputs
 ```
-K1 (GPIO26, front door buzzer):  COM(MAIN1)→P2, NO→P3  — energise to bridge P2+P3 (ÖT)
+K1 (GPIO26, front door buzzer):  COM(MAIN1)→P2, NO→R14(2.2k)→P3  — energise to bridge P2+P3 via 2.2k (ÖT)
 K2 (GPIO25, chime suppress):     COM(MAIN2)→P4, NC→IN-P4 — energise to break Türruf line
 ```
 
@@ -151,7 +154,9 @@ Audio runs on lines 2+3 as a simple analogue half-duplex pair through the TV20/S
 - **Auto-disconnect** — WF26 drops the circuit after ~60s regardless.
 
 **Implications for our circuit:**
-- K1 (door opener) bridges lines 2+3 for 1750ms. The TV20/S interprets this short as an ÖT button press, not audio — momentary conversation disruption is unavoidable but acceptable.
+- K1 (door opener) bridges lines 2+3 for 1750ms. The TV20/S interprets this short as an ÖT button press, not audio — momentary conversation disruption results. **Note (2026-06-08):** this disruption is *not* truly unavoidable — the genuine WF26 ÖT button bridges 2↔3 through **R1 = 2.2 kΩ** (confirmed), which still triggers the opener but only *loads* the speech pair instead of fully shorting it. **Implemented 2026-06-08:** added **R14 (2.2 kΩ, 0603)** in series with K1's NO contact
+(`K1.NO → R14 → J2.P3`, net `OT_BRIDGE`), so the controller now bridges 2↔3 through 2.2 kΩ
+exactly like the genuine handset instead of dead-shorting it. Board re-routed, DRC clean.
 - The ESP32 has **no access to audio** — bell detection and relay switching only. Adding audio would require an analogue front-end tapping lines 2+3, which is out of scope.
 - No special relay contact requirements for audio — clean contacts are sufficient.
 
@@ -194,8 +199,10 @@ schematic shows:
 - **S2** — multi-pole **Sprechen/Hören (Lautsprechertaste)** changeover switch: routes
   the transducer between the tone path and the speech path (talk vs. listen).
 - **S3** — the **Türöffner (ÖT)** / call buttons (momentary), bridging bus lines as above.
-- **R1 ≈ 2.2 kΩ**, **C1 (50 V)** — RC network on the tone/speech path (values read from the
-  image; confirm against the board if exact values matter).
+- **R1 = 2.2 kΩ** (**confirmed 2026-06-08** by colour bands red-red-red-gold = 22×10² ±5%),
+  **C1 (22 µF / 50 V)**. R1 is **in series in the ÖT door-opener bridge**: pressing S1 ties
+  lines 2↔3 *through R1*, i.e. the genuine handset triggers the opener with a **2.2 kΩ bridge,
+  not a dead short** (C1 value still image-read — confirm if it matters).
 - A **5-pin terminal block** = the bus interface (terminals 1–5 ↔ lines/P1–P5). Our board's
   6-way J2 taps P1–P5 here and jumpers IN-P4 back onto terminal 4.
 

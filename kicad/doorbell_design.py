@@ -11,7 +11,7 @@ REF = {
     "D1":"D1","D2":"D2","D_vbus":"D4","D_esd":"D5","OC1":"OK1","OC2":"OK2","LED1":"D3",
     # resistors grouped by function (pairs adjacent): opto / relay drivers / MCU straps / USB CC / LED
     "R_lim1":"R1","R_lim2":"R2","R_em":"R3","R_g1":"R4","R_g2":"R5","R_pd1":"R6","R_pd2":"R7",
-    "R_en":"R8","R_boot":"R9","R_io8":"R10","R_cc1":"R11","R_cc2":"R12","R_led":"R13",
+    "R_en":"R8","R_boot":"R9","R_io8":"R10","R_cc1":"R11","R_cc2":"R12","R_led":"R13","R_ot":"R14",
     "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6",
     "SW_boot":"SW1","SW_en":"SW2","FLAG5":"#FLG1","FLAG3":"#FLG2","FLAGG":"#FLG3",
 }
@@ -44,6 +44,7 @@ COMP = {
     "R_cc1": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
     "R_cc2": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
     "R_led": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
+    "R_ot": ("PCM_JLCPCB-Resistors", "0603,2.2kΩ", "2.2k"),  # ÖT door-opener bridge series R; matches genuine WF26 R1 (2.2k, confirmed by colour bands red-red-red-gold)
     "R_io8": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "C_in": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_3v3": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
@@ -74,7 +75,7 @@ FOOTPRINT = {
     "LED1": "PCM_JLCPCB:D_0603",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
 }
-for _r in ("R_lim1","R_lim2","R_em","R_g1","R_g2","R_pd1","R_pd2","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8"):
+for _r in ("R_lim1","R_lim2","R_em","R_g1","R_g2","R_pd1","R_pd2","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot"):
     FOOTPRINT[_r] = "PCM_JLCPCB:R_0603"
 for _c in ("C_in","C_3v3","C_out","C_en","C_dec"):
     FOOTPRINT[_c] = "PCM_JLCPCB:C_0603"
@@ -113,7 +114,11 @@ NETS = {
     "K2_DRAIN": [("Q2","3"),("K2","8"),("D2","2")],
     "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2")],
     "P2": [("J2","2"),("K1","3")],
-    "P3": [("J2","3"),("K1","4")],
+    # ÖT door-opener bridge goes through R_ot (2.2k) in series with K1's NO contact, matching
+    # the genuine WF26 (its ÖT button bridges lines 2<->3 via R1=2.2k, NOT a dead short -- so it
+    # only loads the speech pair instead of fully shorting it). K1 COM=P2; K1 NO -> R_ot -> P3.
+    "P3": [("J2","3"),("R_ot","1")],
+    "OT_BRIDGE": [("R_ot","2"),("K1","4")],
     # Line 4 (Türruf) is BROKEN INTO the board for chime suppression: P4 = bus/TV20S side
     # (-> K2 COM), IN_P4 = WF26-handset side (-> K2 NC, -> OC1 sense, -> J2.6 jumper back to
     # the WF26's terminal 4). K2 at rest passes P4->IN_P4 (gong rings + OC1 senses); energised
