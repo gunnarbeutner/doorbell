@@ -32,7 +32,7 @@ LIB = {
     "Connector": f"{KS}/Connector.kicad_sym",
     "Connector_Generic": f"{KS}/Connector_Generic.kicad_sym",
     "Relay": f"{KS}/Relay.kicad_sym",
-    "Audio": f"{KS}/Audio.kicad_sym",       # ES8388 codec
+    "ES8311": f"{HERE}/lib_audio/ES8311.kicad_sym",   # ES8311 mono codec (easyeda2kicad import)
     "SM_LP_5001": f"{HERE}/lib_audio/SM_LP_5001.kicad_sym",   # Bourns SM-LP-5001 (easyeda2kicad import)
     "power": f"{KS}/power.kicad_sym",
 }

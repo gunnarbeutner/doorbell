@@ -15,7 +15,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import pcbnew
 from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
-                             EDGE_FLUSH, EDGE_OVERHANG)
+                             EDGE_FLUSH, EDGE_OVERHANG, ANTENNA_REF)
 
 # ---- PCB placement: ref -> (x_mm, y_mm, rotation_deg) ----
 # LOGIC/USB section in the lower-left: the ESP32 with its LDO / boot+reset / LED / decoupling
@@ -73,15 +73,19 @@ PCB_PLACE = {
     # === OC3 session-sense opto + limiter: open mid-band between the bus row (y~36) and U1
     #     top (y~52). Dropped here in free space; reorganise later. ===
     "OC3":    (7, 45, 270),
-    "R_lim3": (13, 45, 0),
+    "R_lim3": (7, 39, 0),    # R17 above OC3 (6mm up), matching the R_lim2/OC2 layout
     # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
     #     Provisional placement — reorganise later. ===
-    "U3":     (80, 35, 0),
-    "T1":     (80, 52, 0),
-    "C_dv":   (73, 30, 0), "C_pv": (73, 33, 0), "C_hv": (73, 36, 0), "C_av": (73, 39, 0),
-    "C_avb":  (87, 30, 0), "C_vref": (87, 33, 0), "C_vmid": (87, 36, 0), "C_aref": (87, 39, 0),
-    "C_lin":  (77, 27, 0), "C_lout": (83, 27, 0),
-    "R_sda":  (92, 30, 0), "R_scl": (92, 33, 0),   # I2C pull-ups, right of the cap column (clear of T1's large body)
+    # ES8311 rot 180: I2S/AGND (east pins 6-10) face WEST toward U1; OUTP/OUTN (north 12/13)
+    # face SOUTH toward T1; MIC/VMID (west 16-18) face EAST. West escape channel kept clear.
+    "U3":     (78, 32, 180),
+    "T1":     (80, 56, 0),
+    # north arc (faces U3 south pins 1-5 at rot180 = north: CCLK/MCLK/PVDD/DVDD/DGND)
+    "C_dv":   (70, 26, 0), "C_pv": (74, 26, 0), "R_scl": (78, 26, 0), "C_avb": (82, 26, 0), "C_vmid": (86, 26, 0),
+    # east arc (MIC1P/MIC1N/CDATA)
+    "C_mp":   (88, 30, 0), "C_mn": (88, 34, 0), "R_sda": (88, 38, 0),
+    # south arc (AVDD/OUTP/OUTN/DACVREF/ADCVREF), above T1
+    "C_av":   (70, 40, 0), "C_op": (74, 40, 0), "C_on": (78, 40, 0), "C_vref": (82, 40, 0), "C_aref": (86, 40, 0),
 }
 MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
 
@@ -124,6 +128,28 @@ for ref, libname in FOOTPRINT.items():
 for _p in list(fps["U2"].Pads()):
     if _p.GetAttribute() == pcbnew.PAD_ATTRIB_SMD and _p.IsOnLayer(pcbnew.B_Cu) and not _p.IsOnLayer(pcbnew.F_Cu):
         fps["U2"].Remove(_p)
+
+# --- ES8311 (U3) exposed-pad thermal vias: contained, deliberate exception to no-via-in-pad.
+#     The QFN-20 center EP (GND) cannot reach the inner GND plane via an offset via at 0.40 mm
+#     pitch (boxed in by the perimeter pins), so drop a 2x2 GND via array INSIDE the EP. Placed
+#     here (pre-route) so Freerouting sees the EP already grounded and routes the perimeter GND
+#     pins normally instead of thrashing on an un-escapable pad. Same-net (GND) as the EP -> no
+#     clearance violation; through vias span F.Cu -> In2 GND plane. JLCPCB tents/plugs these.
+_ep = next(p for p in fps["U3"].Pads() if p.GetNumber() == "21")
+_epx, _epy = _ep.GetPosition().x, _ep.GetPosition().y
+for _dx in (pcbnew.FromMM(-0.35), pcbnew.FromMM(0.35)):
+    for _dy in (pcbnew.FromMM(-0.35), pcbnew.FromMM(0.35)):
+        _v = pcbnew.PCB_VIA(board)
+        _v.SetPosition(pcbnew.VECTOR2I(_epx + _dx, _epy + _dy))
+        _v.SetDrill(pcbnew.FromMM(0.3)); _v.SetWidth(pcbnew.FromMM(0.6))
+        _v.SetNet(nets["GND"]); board.Add(_v)
+
+# Strip U3's (ES8311) imported package-outline silkscreen: the EasyEDA footprint draws silk lines
+# across the QFN pads (silk_over_copper DRC). Drop the F.SilkS graphics; the reference designator
+# text and the pads/courtyard are kept.
+for _g in list(fps["U3"].GraphicalItems()):
+    if _g.GetLayer() == pcbnew.F_SilkS:
+        fps["U3"].Remove(_g)
 
 def MM(v): return pcbnew.ToMM(v)
 def fext(fp):                          # footprint extents WITHOUT silk text (mm)
@@ -196,6 +222,28 @@ def _crtyd_rect(f):
     bb = cy.BBox() if (cy and cy.OutlineCount()) else f.GetBoundingBox(False, False)
     return (MM(bb.GetLeft()), MM(bb.GetRight()), MM(bb.GetTop()), MM(bb.GetBottom()))
 _fid_rects = [_crtyd_rect(f) for f in board.GetFootprints()]   # only real parts placed so far
+
+# --- ESP32-C6 antenna keepout: clear ALL copper (tracks/vias/plane pour) ANT_CLEAR mm either
+#     side of the WROOM-1 antenna so nearby copper can't detune it. The antenna faces south
+#     (flush to the bottom edge), so this widens the module's own antenna-area keepout laterally.
+#     The north edge sits just below U1's southernmost pad row, so the zone never covers a U1 pad
+#     (and thus never blocks a track reaching one). Pours-not-allowed cuts the GND/+3V3 planes in
+#     the clear area; pads/footprints ARE allowed so U1's own antenna body doesn't self-violate.
+ANT_CLEAR = 15.0
+_u1 = fps[ANTENNA_REF]
+_ul, _ur, _, _ub = fext(_u1)                                     # antenna faces south -> _ub = bottom edge
+_pad_s = max(MM(p.GetBoundingBox().GetBottom()) for p in _u1.Pads())
+_axL, _axR = max(x0, _ul - ANT_CLEAR), min(x1, _ur + ANT_CLEAR)  # ±ANT_CLEAR, clipped to board
+_ayT, _ayB = _pad_s + 0.2, _ub
+_az = pcbnew.ZONE(board); _az.SetIsRuleArea(True); _az.SetLayerSet(pcbnew.LSET.AllCuMask())
+_az.SetDoNotAllowTracks(True); _az.SetDoNotAllowVias(True); _az.SetDoNotAllowZoneFills(True)
+_az.SetDoNotAllowPads(False); _az.SetDoNotAllowFootprints(False)
+_ach = pcbnew.SHAPE_LINE_CHAIN()
+for _pt in ((_axL, _ayT), (_axR, _ayT), (_axR, _ayB), (_axL, _ayB)):
+    _ach.Append(vmm(*_pt))
+_ach.SetClosed(True); _az.AddPolygon(_ach); _az.SetZoneName("antenna keepout"); board.Add(_az)
+_fid_rects.append((_axL, _axR, _ayT, _ayB))                      # keep fiducials out of the clear zone
+print(f"  antenna keepout: x[{_axL:.1f},{_axR:.1f}] y[{_ayT:.1f},{_ayB:.1f}] (±{ANT_CLEAR:.0f}mm lateral)")
 def _rect_dist(px, py, l, r, t, bo):
     dx = max(l-px, 0.0, px-r); dy = max(t-py, 0.0, py-bo)
     return (dx*dx + dy*dy) ** 0.5

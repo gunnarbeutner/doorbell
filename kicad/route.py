@@ -40,6 +40,13 @@ RECLASSED = {n for _, nets, _ in NET_CLASSES for n in nets}
 
 with open(DSN) as f: dsn = f.read()
 
+# Relax the routing clearance/track that Freerouting honours from KiCad's default 0.2mm/0.2mm to
+# JLCPCB's published fine-pitch capability (0.127mm clearance / 0.15mm track) -- the same fab
+# limit the board already allows for J1. The default 0.2mm clearance acts as a too-wide keepout
+# halo around every pad and makes the 0.40mm-pitch ES8311 (U3) un-escapable (a 0.6mm via can't
+# sit beside a fine-pitch pin). The (clearance 50 (type smd_smd)) entry is left untouched.
+dsn = re.sub(r'\(clearance 200\)', '(clearance 127)', dsn)
+
 # Remove reclassed nets from kicad_default only (bare tokens in the class header,
 # not from the (net ...) definitions elsewhere in the DSN).
 # Also restrict kicad_default nets to F.Cu + B.Cu (no inner layers for signals).

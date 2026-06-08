@@ -510,27 +510,50 @@ fitted as the **virtual PTT** relay (contacts currently N/C until the audio circ
 - **OC3 session-sense added**: LED across **P2↔P5** via **R_lim3** (5.1 k, value TBD), collector →
   **GPIO2 / pad 27** (non-strapping), emitter on the shared `OC_EMIT`. "Can send" = OC3 active AND K3 talk.
 - **Phase 2 COMMITTED to the netlist (2026-06-08; ERC 0 err/DRC 0/routes 0-unrouted, board now
-  ~94×68 mm).** Codec = **ES8388** (U3, stereo, QFN-28; LCSC **C365736**). Isolation = **T1 =
-  Bourns SM-LP-5001** (600:600 **1:1** line/audio transformer; LCSC **C7503474**), primary winding
-  across **P1/P5** — *tap confirmed from `wf26/wf26.kicad_sch`*: LS1 (16 Ω speaker/mic) sits
-  **directly across P1↔P5** (pin1=P5, pin2=P1; C1 22 µF parallel P1→P2), so tapping the transducer
-  sidesteps the "speech=2/3" question. **T1 pinout:** winding A = pads **1,3** (across P1/P5),
-  winding B = pads **4,6** (secondary → K3 pole B / GND), center taps **2,5 = NC**. U1 LCSC corrected
-  to **C5366877**. *Symbol+footprint+3D for SM-LP-5001 imported with `easyeda2kicad` (from LCSC
-  C7503474) into `kicad/lib_audio/`; registered in the project sym/fp-lib-tables.*
+  ~90×68 mm).** Codec = **ES8311** (U3, **mono**, WQFN-20 3×3 0.4 mm pitch; LCSC **C962342**) —
+  switched from the ES8388 because mono is the right fit for half-duplex (only one channel was ever
+  used) and `easyeda2kicad` removed the footprint barrier. Isolation = **T1 = Bourns SM-LP-5001**
+  (600:600 **1:1** line/audio transformer; LCSC **C7503474**), primary winding across **P1/P5** —
+  *tap confirmed from `wf26/wf26.kicad_sch`*: LS1 (16 Ω speaker/mic) sits **directly across P1↔P5**
+  (pin1=P5, pin2=P1; C1 22 µF parallel P1→P2), so tapping the transducer sidesteps the "speech=2/3"
+  question. **T1 pinout:** winding A = pads **1,3** (across P1/P5), winding B = pads **4,6**
+  (secondary), center taps **2,5 = NC**. U1 LCSC corrected to **C5366877**. *Symbol+footprint+3D for
+  both ES8311 and SM-LP-5001 imported with `easyeda2kicad` into `kicad/lib_audio/`; registered in
+  the project sym/fp-lib-tables.*
   - **Digital interface (wired to U1):** I²S **MCLK=GPIO18, BCLK=GPIO19, WS=GPIO11,
-    DOUT/DSDIN=GPIO10, DIN/ASDOUT=GPIO0**; I²C **SDA=GPIO6, SCL=GPIO7** (10 k pull-ups R18/R19);
-    CE→GND (addr 0x10). MCLK is ESP-driven. Spare GPIO left: 1/4/5.
-  - **Analog direction via K3 pole B** (tracks pole A's PTT, no extra GPIO): idle/listen ties the
-    xfmr secondary→**LIN1** (capture); energised/talk ties it→**LOUT1** (playback). One codec
-    channel used; R-channel + 2nd outputs NC.
-  - **Support net** (U3): DVDD/PVDD/HPVDD/AVDD→+3V3 with decoupling; VREF/VMID/ADCVREF reservoir
-    caps; AC-coupling C15/C16 on the line in/out. EPAD→GND (QFN F.Paste thermal cells carry no
-    copper → exempted in `check_pcb`; no via-in-pad).
-  - ⚠️ **Still bench-gated / open:** coupling-cap values, line-input **biasing** (LIN1 may need a
-    VMID bias resistor), and whether the unused analog inputs want tying to AGND — all
-    **provisional, datasheet-typical, unverified on hardware**. (T1 part + 1:1 600:600 ratio now
-    fixed; the SM-LP-5001 is symmetric so primary/secondary assignment is arbitrary.) Starting point.
+    DSDIN=GPIO10, ASDOUT=GPIO0**; I²C **SDA=GPIO6, SCL=GPIO7** (10 k pull-ups R18/R19);
+    CE→GND (addr 0x18). MCLK is ESP-driven. Spare GPIO left: 1/4/5.
+  - **Analog: ES8311 differential** OUTP/OUTN + MIC1P/MIC1N, AC-coupled (C_op/C_on/C_mp/C_mn) to
+    T1 winding B (SEC_A=pads 4, SEC_B=pad 6). Out and mic share the secondary; **firmware mutes the
+    idle direction** (standard ES8311 half-duplex) — so the **K3 pole-B audio switch was dropped**;
+    K3 is back to PTT-only on pole A, pole B spare.
+  - **Support net** (U3): PVDD/DVDD/AVDD→+3V3 with decoupling; DACVREF/ADCVREF/VMID reservoir caps;
+    CE/DGND/AGND/EP→GND.
+  - **EP grounding (deliberate no-via-in-pad exception):** the QFN-20 center thermal EP can't reach
+    the inner GND plane via an offset via at 0.4 mm pitch, so `gen_pcb.py` drops a **2×2 GND via
+    array inside the EP** (pre-route, so Freerouting sees it grounded). U3's imported package-silk is
+    stripped (it crossed pads → silk_over_copper).
+  - ⚠️ **Routing required relaxing clearance — see "Fine-pitch clearance" below.**
+  - ⚠️ **Still bench-gated / open:** coupling-cap values, MIC1P/N input **biasing**, and whether to
+    tie unused analog to AGND — all **provisional, datasheet-typical, unverified on hardware**.
+
+#### Fine-pitch clearance (2026-06-08)
+
+The ES8311's **0.40 mm pitch** would not autoroute under the board's conservative **0.2 mm**
+net-class clearance: a 0.6 mm via can't sit beside a fine-pitch pin at 0.2 mm, so the power/GND
+pins couldn't escape. Footprint was verified to **match the official KiCad land pattern** (not a bad
+import) — the 0.2 mm clearance halo was the cause. **Fix:** relaxed routing clearance to JLCPCB's
+published **0.127 mm** capability — globally, since the tighter spacing spreads board-wide once the
+autorouter packs the escapes. `route.py` patches the DSN (`clearance 200→127`); a global DRU rule
+makes KiCad's DRC consistent; hole-to-copper relaxed 0.25→0.2 mm to match. **Tracks stay 0.2 mm.**
+Trade-off: the board's 0.2 mm copper-clearance *design margin* is spent (now routes at JLCPCB's
+0.127 mm fab limit). Reverting to ES8388 is the alternative if that margin must be kept.
+
+#### ESP32 antenna keepout (2026-06-08)
+
+`gen_pcb.py` adds an all-copper rule area (no tracks/vias/plane pour) **±15 mm either side of the
+WROOM-1 antenna**, from just below U1's south pad row to the bottom edge — clears the GND/+3V3 planes
+around the antenna. Fiducial placement avoids it.
 
 **The bus is half-duplex by design — this simplifies everything digital.** The WF26 has a
 **single 16 Ω transducer (LS1, across P1/P5)** *reused* for both directions; the Sprechen/Hören

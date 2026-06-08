@@ -16,13 +16,21 @@
 #   solder-mask dam ................ 0.10 mm
 #   min PTH hole ................... 0.15 mm (>= 0.30 mm recommended)
 #
-# The GCT USB4085 USB-C is a fine-pitch part: its own adjacent pads sit 0.15 mm apart -- below
-# the board's 0.2 mm net-class clearance, but ABOVE JLCPCB's 0.127 mm minimum spacing, so it
-# is manufacturable. Relax clearance to JLCPCB's limit, scoped to J1's courtyard only, so the
-# rest of the board keeps its 0.2 mm design margin.
-(rule "USB4085 fine-pitch pads (within JLCPCB 0.127mm min spacing)"
-	(condition "A.intersectsCourtyard('J1') && B.intersectsCourtyard('J1')")
+# Fine-pitch routing clearance. The board defaults to a conservative 0.2 mm clearance, but two
+# fine-pitch parts need tighter spacing to route: J1 (USB4085, pads 0.15 mm apart) and U3 (ES8311,
+# 0.40 mm-pitch QFN-20 whose power/GND pins can't escape -- a 0.6 mm via won't sit beside a pin at
+# 0.2 mm clearance). Both are well within JLCPCB's published 0.127 mm minimum spacing. Once the
+# autorouter packs the fine-pitch escapes the tighter spacing spreads board-wide, so this relaxes
+# the routing clearance to JLCPCB's 0.127 mm capability globally (the 0.2 mm value was design
+# margin, not a fab limit). Tracks stay 0.2 mm; plane/zone clearances are unaffected.
+(rule "fine-pitch routing clearance (JLCPCB 0.127mm capability)"
 	(constraint clearance (min 0.127mm)))
+
+# Hole-to-copper clearance: with copper clearance now 0.127 mm, an autorouted track can pass within
+# ~0.24 mm of a THT hole. Relax hole clearance from the board's 0.25 mm to JLCPCB's 0.2 mm
+# capability so it stays consistent with the tighter routing.
+(rule "hole-to-copper clearance (JLCPCB 0.2mm)"
+	(constraint hole_clearance (min 0.2mm)))
 
 # Board-edge copper clearance: relax from the board's conservative 0.5 mm to JLCPCB's published
 # 0.3 mm capability. U1's antenna overhangs the left edge, so its edge-row pins/traces (e.g.

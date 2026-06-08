@@ -16,8 +16,8 @@ REF = {
     "R_en":"R10","R_boot":"R11","R_io8":"R12","R_cc1":"R13","R_cc2":"R14","R_led":"R15","R_ot":"R16",
     "R_lim3":"R17","R_sda":"R18","R_scl":"R19",
     # --- audio codec (ES8388) support caps ---
-    "C_dv":"C7","C_pv":"C8","C_hv":"C9","C_av":"C10","C_avb":"C11",
-    "C_vref":"C12","C_vmid":"C13","C_aref":"C14","C_lin":"C15","C_lout":"C16",
+    "C_dv":"C7","C_pv":"C8","C_av":"C9","C_avb":"C10","C_vref":"C11",
+    "C_vmid":"C12","C_aref":"C13","C_op":"C14","C_on":"C15","C_mp":"C16","C_mn":"C17",
     "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6",
     "SW_boot":"SW1","SW_en":"SW2","FLAG5":"#FLG1","FLAG3":"#FLG2","FLAGG":"#FLG3",
 }
@@ -26,7 +26,7 @@ REF = {
 COMP = {
     "U1": ("PCM_Espressif", "ESP32-C6-WROOM-1", "ESP32-C6-WROOM-1-N8"),  # 28-pad + EPAD; pads 1-14 = left col, 15-28 = right col
     "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "SGM2212-3.3"),   # low-dropout; LCSC C3294699 (EXTRA_LCSC)
-    "U3": ("Audio", "ES8388", "ES8388"),                          # stereo audio codec (ADC+DAC); LCSC C365736 (EXTRA_LCSC). PROVISIONAL audio front-end.
+    "U3": ("ES8311", "ES8311", "ES8311"),                         # mono audio codec (ADC+DAC); LCSC C962342. Symbol+fp via easyeda2kicad -> kicad/lib_audio/. PROVISIONAL front-end.
     "T1": ("SM_LP_5001", "SM-LP-5001", "SM-LP-5001"),   # Bourns 600:600 1:1 line/audio iso xfmr; LCSC C7503474. Symbol+fp imported via easyeda2kicad -> kicad/lib_audio/
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4085)"),
     "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
@@ -68,17 +68,18 @@ COMP = {
     "C_out": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),    # SGM2212 wants COUT 1-10uF (was 22uF for AMS1117)
     "C_en": ("PCM_JLCPCB-Capacitors", "0603,1uF", "1uF"),   # EN reset RC: Espressif spec value (was 100nF)
     "C_dec": ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),
-    # --- ES8388 support network (values provisional, per datasheet typical app) ---
+    # --- ES8311 support network (values provisional, per datasheet typical app) ---
     "C_dv":  ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),  # DVDD decouple
     "C_pv":  ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),  # PVDD decouple
-    "C_hv":  ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),  # HPVDD decouple
     "C_av":  ("PCM_JLCPCB-Capacitors", "0603,100nF", "100nF"),  # AVDD decouple
     "C_avb": ("PCM_JLCPCB-Capacitors", "0603,10uF",  "10uF"),   # AVDD bulk
-    "C_vref":("PCM_JLCPCB-Capacitors", "0603,10uF",  "10uF"),   # VREF reservoir
+    "C_vref":("PCM_JLCPCB-Capacitors", "0603,10uF",  "10uF"),   # DACVREF reservoir
     "C_vmid":("PCM_JLCPCB-Capacitors", "0603,1uF",   "1uF"),    # VMID
     "C_aref":("PCM_JLCPCB-Capacitors", "0603,1uF",   "1uF"),    # ADCVREF
-    "C_lin": ("PCM_JLCPCB-Capacitors", "0603,1uF",   "1uF"),    # line-in AC coupling (listen)
-    "C_lout":("PCM_JLCPCB-Capacitors", "0603,10uF",  "10uF"),   # line-out AC coupling (talk)
+    "C_op":  ("PCM_JLCPCB-Capacitors", "0603,1uF",   "1uF"),    # OUTP -> xfmr sec coupling
+    "C_on":  ("PCM_JLCPCB-Capacitors", "0603,1uF",   "1uF"),    # OUTN -> xfmr sec coupling
+    "C_mp":  ("PCM_JLCPCB-Capacitors", "0603,1uF",   "1uF"),    # xfmr sec -> MIC1P coupling
+    "C_mn":  ("PCM_JLCPCB-Capacitors", "0603,1uF",   "1uF"),    # xfmr sec -> MIC1N coupling
     "LED1": ("PCM_JLCPCB-Diodes", "LED,0603,Red", "PWR"),
     "SW_boot": ("PCM_JLCPCB-Connectors_Buttons", "Tactile Button, 160gf, 12V, 50mA, 4.0mm", "BOOT"),
     "SW_en": ("PCM_JLCPCB-Connectors_Buttons", "Tactile Button, 160gf, 12V, 50mA, 4.0mm", "EN"),
@@ -91,7 +92,7 @@ COMP = {
 FOOTPRINT = {
     "U1": "PCM_Espressif:ESP32-C6-WROOM-1",
     "U2": "PCM_JLCPCB:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR",
-    "U3": "Package_DFN_QFN:QFN-28-1EP_5x5mm_P0.5mm_EP3.35x3.35mm",   # ES8388 (no thermal vias in EPAD — respects no-via-in-pad)
+    "U3": "ES8311:WQFN-20_L3.0-W3.0-P0.40-BL-EP1.7",   # ES8311 mono codec (easyeda2kicad import, C962342)
     "T1": "SM_LP_5001:XFMR-SMD_SM-LP-5001E",   # Bourns SM-LP-5001: winding A=1,3 (CT=2) / winding B=4,6 (CT=5)
     "J1": "Connector_USB:USB_C_Receptacle_GCT_USB4085",  # 2-row THT Type-C (LCSC C7095263)
     "J2": "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical",
@@ -110,7 +111,7 @@ FOOTPRINT = {
 for _r in ("R_lim1","R_lim2","R_lim3","R_em","R_g1","R_g2","R_g3","R_pd1","R_pd2","R_pd3","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot","R_sda","R_scl"):
     FOOTPRINT[_r] = "PCM_JLCPCB:R_0603"
 for _c in ("C_in","C_3v3","C_out","C_en","C_dec",
-           "C_dv","C_pv","C_hv","C_av","C_avb","C_vref","C_vmid","C_aref","C_lin","C_lout"):
+           "C_dv","C_pv","C_av","C_avb","C_vref","C_vmid","C_aref","C_op","C_on","C_mp","C_mn"):
     FOOTPRINT[_c] = "PCM_JLCPCB:C_0603"
 
 # FP override used by the schematic generator (stock symbols carry no footprint)
@@ -125,9 +126,9 @@ NETS = {
             ("U2","3"),("K1","1"),("K2","1"),("K3","1"),("D1","1"),("D2","1"),("D3","1"),("FLAG5","1")],
     "+3V3": [("U2","2"),("U2","4"),("C_out","1"),("C_3v3","1"),("C_dec","1"),("U1","2"),
              ("R_en","1"),("R_boot","1"),("R_led","1"),("R_io8","2"),("FLAG3","1"),
-             # ES8388 supplies (DVDD/PVDD/HPVDD/AVDD) + their decoupling + I2C pull-ups
-             ("U3","2"),("U3","3"),("U3","16"),("U3","17"),
-             ("C_dv","1"),("C_pv","1"),("C_hv","1"),("C_av","1"),("C_avb","1"),
+             # ES8311 supplies (PVDD/DVDD/AVDD) + their decoupling + I2C pull-ups
+             ("U3","3"),("U3","4"),("U3","11"),
+             ("C_dv","1"),("C_pv","1"),("C_av","1"),("C_avb","1"),
              ("R_sda","1"),("R_scl","1")],
     # U1 (ESP32-C6-WROOM-1) GND: castellated pads 1, 28 + EPAD (pad 29) -- all must tie to GND.
     "GND": [("J1","A1"),("J1","B1"),("J1","A12"),("J1","B12"),("J1","SH"),
@@ -135,10 +136,10 @@ NETS = {
             ("Q1","2"),("Q2","2"),("Q3","2"),("R_pd1","2"),("R_pd2","2"),("R_pd3","2"),("R_em","2"),("C_en","2"),
             ("R_cc1","2"),("R_cc2","2"),("LED1","1"),("SW_boot","2"),("SW_en","2"),
             ("D_esd","2"),("FLAGG","1"),
-            # ES8388 grounds (DGND/HPGND/AGND/EPAD) + CE addr-select to GND + ref-cap grounds + xfmr sec cold
-            ("U3","4"),("U3","13"),("U3","18"),("U3","26"),("U3","29"),("T1","6"),
+            # ES8311 grounds (DGND/AGND/EP) + CE addr-select to GND + ref-cap grounds
+            ("U3","5"),("U3","10"),("U3","20"),("U3","21"),
             ("C_vref","2"),("C_vmid","2"),("C_aref","2"),
-            ("C_dv","2"),("C_pv","2"),("C_hv","2"),("C_av","2"),("C_avb","2")]
+            ("C_dv","2"),("C_pv","2"),("C_av","2"),("C_avb","2")]
            + [("U1","1"),("U1","28"),("U1","29")],  # WROOM-1: GND pad 1 + pad 28 + EPAD (pad 29, multi-rect)
     "USB_DM": [("J1","A7"),("J1","B7"),("U1","13"),("D_esd","3")],   # C6: GPIO12/USB_D- on pad 13
     "USB_DP": [("J1","A6"),("J1","B6"),("U1","14"),("D_esd","1")],   # C6: GPIO13/USB_D+ on pad 14
@@ -187,40 +188,40 @@ NETS = {
     "OC_EMIT": [("OC1","3"),("OC2","3"),("OC3","3"),("R_em","1")],
     "LED_A": [("R_led","2"),("LED1","2")],
 
-    # === Audio codec (ES8388, U3) — PROVISIONAL half-duplex front-end (analog values bench-gated) ===
-    # Tap: T1 primary across P1/P5 (directly across the WF26 transducer LS1 — confirmed from
-    # wf26.kicad_sch). Direction is switched by K3 POLE B, tracking pole A's PTT: idle/listen ties
-    # the xfmr secondary -> LIN1 (capture); energised/talk ties it -> LOUT1 (playback). One codec
-    # channel (L) used; R channel + 2nd outputs left NC.
-    "I2S_MCLK": [("U3","1"),("U1","16")],    # GPIO18 (pad 16)
-    "I2S_BCLK": [("U3","5"),("U1","17")],    # GPIO19 (pad 17)
-    "I2S_WS":   [("U3","7"),("U1","12")],    # LRCK <-> GPIO11 (pad 12)
-    "I2S_DOUT": [("U3","6"),("U1","11")],    # DSDIN <- ESP (GPIO10, pad 11) — playback data
-    "I2S_DIN":  [("U3","8"),("U1","8")],     # ASDOUT -> ESP (GPIO0, pad 8) — capture data
-    "I2C_SDA":  [("U3","27"),("U1","6"),("R_sda","2")],   # CDATA <-> GPIO6 (pad 6)
-    "I2C_SCL":  [("U3","28"),("U1","7"),("R_scl","2")],   # CCLK <-> GPIO7 (pad 7)
-    "ES_VREF":    [("U3","10"),("C_vref","1")],
-    "ES_VMID":    [("U3","20"),("C_vmid","1")],
-    "ES_ADCVREF": [("U3","19"),("C_aref","1")],
-    "ES_LIN1":    [("U3","24"),("C_lin","2")],     # LIN1 <- listen coupling
-    "ES_LOUT1":   [("U3","12"),("C_lout","2")],    # LOUT1 -> talk coupling
-    "AUDIO_SEC":    [("T1","4"),("K3","6")],       # xfmr winding-B end -> K3 pole-B COM (other end T1.6 -> GND; CT pad 5 NC)
-    "AUDIO_LISTEN": [("K3","5"),("C_lin","1")],    # K3 NC(B): secondary -> LIN1 (capture)
-    "AUDIO_TALK":   [("K3","7"),("C_lout","1")],   # K3 NO(B): LOUT1 -> secondary (playback)
+    # === Audio codec (ES8311, U3) — PROVISIONAL mono half-duplex front-end (analog bench-gated) ===
+    # Tap: T1 winding A across P1/P5 (directly across the WF26 transducer LS1 — confirmed from
+    # wf26.kicad_sch). ES8311 is MONO with DIFFERENTIAL out (OUTP/OUTN) and mic in (MIC1P/MIC1N),
+    # both AC-coupled to T1 winding B (sec). Out and mic share the secondary; firmware mutes the
+    # idle direction (DAC off in listen, ADC off in talk) — standard ES8311 half-duplex, so the
+    # K3 pole-B audio switch is no longer needed (K3 reverts to PTT-only on pole A).
+    "I2S_MCLK": [("U3","2"),("U1","16")],    # MCLK  <- GPIO18 (pad 16)
+    "I2S_BCLK": [("U3","6"),("U1","17")],    # SCLK  <- GPIO19 (pad 17)
+    "I2S_WS":   [("U3","8"),("U1","12")],    # LRCK  <-> GPIO11 (pad 12)
+    "I2S_DOUT": [("U3","9"),("U1","11")],    # DSDIN <- ESP (GPIO10, pad 11) — playback data
+    "I2S_DIN":  [("U3","7"),("U1","8")],     # ASDOUT -> ESP (GPIO0, pad 8) — capture data
+    "I2C_SDA":  [("U3","19"),("U1","6"),("R_sda","2")],   # CDATA <-> GPIO6 (pad 6)
+    "I2C_SCL":  [("U3","1"),("U1","7"),("R_scl","2")],    # CCLK  <-> GPIO7 (pad 7)
+    "ES_DACVREF": [("U3","14"),("C_vref","1")],
+    "ES_ADCVREF": [("U3","15"),("C_aref","1")],
+    "ES_VMID":    [("U3","16"),("C_vmid","1")],
+    # differential analog, AC-coupled to T1 winding B (pads 4,6; CT pad 5 NC):
+    "ES_OUTP": [("U3","12"),("C_op","1")],
+    "ES_OUTN": [("U3","13"),("C_on","1")],
+    "ES_MICP": [("U3","18"),("C_mp","1")],
+    "ES_MICN": [("U3","17"),("C_mn","1")],
+    "SEC_A":   [("T1","4"),("C_op","2"),("C_mp","2")],   # secondary leg A: OUTP & MIC1P
+    "SEC_B":   [("T1","6"),("C_on","2"),("C_mn","2")],   # secondary leg B: OUTN & MIC1N
 }
 
 # intentionally-unused pins -> No-Connect markers (schematic) / unconnected (PCB)
 NOCONN = [("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("K2","4"),("K2","5"),("K2","6"),("K2","7"),
-          # K3 = virtual PTT, both poles now used: pole A (2/3/4) = P4 PTT changeover;
-          # pole B (5/6/7) = codec talk/listen analog switch. No spare K3 contacts.
+          # K3 = virtual PTT on pole A (2/3/4 = P4 changeover). Pole B (5/6/7) spare —
+          # the ES8311 differential front-end is firmware-muted, no relay audio switch needed.
+          ("K3","5"),("K3","6"),("K3","7"),
           ("J1","A8"),("J1","B8"),
           ("D_esd","4"),("D_esd","6"),   # SRV05-4 unused I/O channels
-          # ES8388 (U3): unused R-channel / 2nd outputs + true-NC die pads.
-          #   11=ROUT1 14=ROUT2 15=LOUT2 21=RIN2 22=LIN2 23=RIN1 (symbol pins -> NC markers);
-          #   9,25 = NC pads present on the QFN but absent from the symbol (PCB-only, covered here).
-          ("U3","11"),("U3","14"),("U3","15"),("U3","21"),("U3","22"),("U3","23"),
-          ("U3","9"),("U3","25"),
+          # ES8311 (U3): all 20 pins + EP are used — no NC pins.
           ("T1","2"),("T1","5"),   # SM-LP-5001 winding center taps — unused for 1:1 isolation
 
           # U1 (C6-WROOM-1): remaining unused GPIOs.
@@ -247,9 +248,10 @@ GRID = {
     "OC3": (36, 110), "R_lim3": (50, 110),   # session-sense opto + limiter (schematic placement; reorganise later)
     # --- audio codec cluster (schematic canvas; reorganise later) ---
     "U3": (90, 90), "T1": (70, 110),
-    "C_dv": (78, 80), "C_pv": (82, 80), "C_hv": (86, 80), "C_av": (90, 80), "C_avb": (94, 80),
-    "C_vref": (98, 88), "C_vmid": (98, 92), "C_aref": (98, 96),
-    "C_lin": (78, 104), "C_lout": (82, 104), "R_sda": (98, 82), "R_scl": (98, 84),
+    "C_dv": (78, 80), "C_pv": (82, 80), "C_av": (86, 80), "C_avb": (90, 80),
+    "C_vref": (98, 86), "C_vmid": (98, 90), "C_aref": (98, 94),
+    "C_op": (78, 104), "C_on": (82, 104), "C_mp": (86, 104), "C_mn": (90, 104),
+    "R_sda": (98, 80), "R_scl": (98, 82),
     "R_led": (66, 84), "LED1": (66, 90),
 }
 
@@ -263,7 +265,7 @@ FP_LIB_DIRS = {
     "Relay_SMD": f"{_STOCK}/Relay_SMD.pretty",
     "Connector_USB": f"{_STOCK}/Connector_USB.pretty",
     "TerminalBlock_4Ucon": f"{_STOCK}/TerminalBlock_4Ucon.pretty",
-    "Package_DFN_QFN": f"{_STOCK}/Package_DFN_QFN.pretty",   # ES8388 QFN-28
+    "ES8311": f"{_HERE}/lib_audio/ES8311.pretty",   # ES8311 mono codec (easyeda2kicad import, C962342)
     "SM_LP_5001": f"{_HERE}/lib_audio/SM_LP_5001.pretty",    # Bourns SM-LP-5001 (easyeda2kicad import, C7503474)
     "Fiducial": f"{_STOCK}/Fiducial.pretty",   # PCBA optical reference marks (added in gen_pcb.py)
 }
