@@ -220,9 +220,54 @@ while GND_FILL and yy < BB - EDGE:
         xx += PITCH
     yy += PITCH
 
+# --- Copper thieving: solid no-net zones on F.Cu and B.Cu covering the full board.
+#     Added post-route so Freerouting sees a clean board; ZONE_FILLER below floods
+#     the leftover space with isolated copper islands, keeping 0.5 mm clear of all
+#     signal copper. The antenna keepout (DoNotAllowZoneFills) prevents thieving
+#     from entering the RF clear area automatically. ---
+_THIEVE_CLR  = 0.5   # mm clearance from signal copper
+_THIEVE_MINW = 0.15  # mm minimum island width
+_no_net = board.FindNet("")
+_bb2 = board.GetBoardEdgesBoundingBox()
+_thieve_corners = [
+    (pcbnew.ToMM(_bb2.GetLeft()),  pcbnew.ToMM(_bb2.GetTop())),
+    (pcbnew.ToMM(_bb2.GetRight()), pcbnew.ToMM(_bb2.GetTop())),
+    (pcbnew.ToMM(_bb2.GetRight()), pcbnew.ToMM(_bb2.GetBottom())),
+    (pcbnew.ToMM(_bb2.GetLeft()),  pcbnew.ToMM(_bb2.GetBottom())),
+]
+for _layer, _lname in ((pcbnew.F_Cu, "F"), (pcbnew.B_Cu, "B")):
+    _tz = pcbnew.ZONE(board)
+    _tz.SetLayer(_layer)
+    _tz.SetNet(_no_net)
+    _tz.SetFillMode(pcbnew.ZONE_FILL_MODE_POLYGONS)
+    _tz.SetLocalClearance(pcbnew.FromMM(_THIEVE_CLR))
+    _tz.SetMinThickness(pcbnew.FromMM(_THIEVE_MINW))
+    _tz.SetIsRuleArea(False)
+    _tz.SetZoneName(f"thieving_{_lname}")
+    _tch = pcbnew.SHAPE_LINE_CHAIN()
+    for _cx, _cy in _thieve_corners:
+        _tch.Append(Vmm(_cx, _cy))
+    _tch.SetClosed(True); _tz.AddPolygon(_tch); board.Add(_tz)
+print(f"  copper thieving: F.Cu + B.Cu zones added (clearance {_THIEVE_CLR} mm, min width {_THIEVE_MINW} mm)")
+
 board.BuildConnectivity()
 pcbnew.ZONE_FILLER(board).Fill(board.Zones())
 pcbnew.SaveBoard(BOARD, board)
 ngnd = sum(1 for f in board.GetFootprints() for p in f.Pads() if p.GetNetname() == "GND")
 print(f"routed + inner planes + {nvia} stitching vias -> {BOARD} "
       f"({len(board.GetTracks())} track/via items, {ngnd} GND pads)")
+
+# --- Copper density report ---
+_IU2 = pcbnew.FromMM(1) ** 2          # IU² per mm²
+_bba = board.GetBoardEdgesBoundingBox()
+_board_area = pcbnew.ToMM(_bba.GetWidth()) * pcbnew.ToMM(_bba.GetHeight())
+_COPPER_LAYERS = [
+    (pcbnew.F_Cu,  "F.Cu "),
+    (pcbnew.In1_Cu, "In1  "),
+    (pcbnew.In2_Cu, "In2  "),
+    (pcbnew.B_Cu,  "B.Cu "),
+]
+print(f"  copper density (board {_board_area:.0f} mm²):")
+for _lid, _lname in _COPPER_LAYERS:
+    _area = sum(z.GetFilledArea() / _IU2 for z in board.Zones() if z.GetLayer() == _lid)
+    print(f"    {_lname} {_area:6.0f} mm²  {100*_area/_board_area:5.1f}%")
