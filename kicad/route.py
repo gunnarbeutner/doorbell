@@ -115,7 +115,7 @@ dsn = re.sub(r'(\n  \)\n\s*\(wiring)', "\n" + injection + r'\1', dsn)
 with open(DSN, 'w') as f: f.write(dsn)
 print(f"exported {DSN} (injected {len(NET_CLASSES)} net class rule(s))")
 
-subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da",
+subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da", "-mt", "1",
                 "--router.optimizer.enabled=true"], check=True)
 
 if not pcbnew.ImportSpecctraSES(board, SES):
@@ -221,14 +221,16 @@ while GND_FILL and yy < BB - EDGE:
         xx += PITCH
     yy += PITCH
 
-# --- Copper thieving: solid no-net zones on F.Cu and B.Cu covering the full board.
-#     Added post-route so Freerouting sees a clean board; ZONE_FILLER below floods
-#     the leftover space with isolated copper islands, keeping 0.5 mm clear of all
-#     signal copper. The antenna keepout (DoNotAllowZoneFills) prevents thieving
-#     from entering the RF clear area automatically. ---
+# --- Copper thieving: two overlapping zones per outer layer, same board-outline polygon.
+#     Priority 1 (GND): fills open areas and connects to GND — acts as a partial ground plane.
+#     Priority 0 (no-net): fills whatever GND can't reach (under ICs, tight spots) for plating
+#     uniformity. Isolated no-net islands are intentional; ISLAND_REMOVAL_MODE_NEVER suppresses
+#     the isolated_copper DRC warning. The antenna keepout (DoNotAllowZoneFills) blocks both
+#     zones from entering the RF clear area automatically. ---
 _THIEVE_CLR  = 0.5   # mm clearance from signal copper
 _THIEVE_MINW = 0.15  # mm minimum island width
-_no_net = board.FindNet("")
+_gnd_net = board.FindNet("GND")
+_no_net  = board.FindNet("")
 _bb2 = board.GetBoardEdgesBoundingBox()
 _thieve_corners = [
     (pcbnew.ToMM(_bb2.GetLeft()),  pcbnew.ToMM(_bb2.GetTop())),
@@ -237,19 +239,24 @@ _thieve_corners = [
     (pcbnew.ToMM(_bb2.GetLeft()),  pcbnew.ToMM(_bb2.GetBottom())),
 ]
 for _layer, _lname in ((pcbnew.F_Cu, "F"), (pcbnew.B_Cu, "B")):
-    _tz = pcbnew.ZONE(board)
-    _tz.SetLayer(_layer)
-    _tz.SetNet(_no_net)
-    _tz.SetFillMode(pcbnew.ZONE_FILL_MODE_POLYGONS)
-    _tz.SetLocalClearance(pcbnew.FromMM(_THIEVE_CLR))
-    _tz.SetMinThickness(pcbnew.FromMM(_THIEVE_MINW))
-    _tz.SetIsRuleArea(False)
-    _tz.SetZoneName(f"thieving_{_lname}")
-    _tch = pcbnew.SHAPE_LINE_CHAIN()
-    for _cx, _cy in _thieve_corners:
-        _tch.Append(Vmm(_cx, _cy))
-    _tch.SetClosed(True); _tz.AddPolygon(_tch); board.Add(_tz)
-print(f"  copper thieving: F.Cu + B.Cu zones added (clearance {_THIEVE_CLR} mm, min width {_THIEVE_MINW} mm)")
+    for _net, _priority, _suffix in ((_gnd_net, 1, "gnd"), (_no_net, 0, "float")):
+        _tz = pcbnew.ZONE(board)
+        _tz.SetLayer(_layer)
+        _tz.SetNet(_net)
+        _tz.SetAssignedPriority(_priority)
+        _tz.SetFillMode(pcbnew.ZONE_FILL_MODE_POLYGONS)
+        _tz.SetLocalClearance(pcbnew.FromMM(_THIEVE_CLR))
+        _tz.SetMinThickness(pcbnew.FromMM(_THIEVE_MINW))
+        _tz.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+        _tz.SetIsRuleArea(False)
+        _tz.SetZoneName(f"thieving_{_lname}_{_suffix}")
+        if _net == _no_net:
+            _tz.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_NEVER)
+        _tch = pcbnew.SHAPE_LINE_CHAIN()
+        for _cx, _cy in _thieve_corners:
+            _tch.Append(Vmm(_cx, _cy))
+        _tch.SetClosed(True); _tz.AddPolygon(_tch); board.Add(_tz)
+print(f"  copper thieving: F.Cu + B.Cu GND+float zones added (clearance {_THIEVE_CLR} mm, min width {_THIEVE_MINW} mm)")
 
 board.BuildConnectivity()
 pcbnew.ZONE_FILLER(board).Fill(board.Zones())

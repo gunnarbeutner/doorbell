@@ -8,9 +8,10 @@
 # JLCPCB standard 2-layer, 1 oz FR4 minimums (for reference). The board's net class keeps a
 # more conservative 0.2 mm clearance / 0.2 mm track for routing margin; these are the hard
 # fab limits the design must never cross:
-#   trace width / spacing .......... 0.127 mm (5 mil)
+#   trace width / spacing .......... 0.10 mm (4 mil)   [JLCPCB 1 oz 2-layer]
 #   via drill / outer diameter ..... 0.30 mm / 0.60 mm   (annular ring >= 0.15 mm)
-#   via-to-via (hole-to-hole) ...... 0.254 mm
+#   via-to-via (hole-to-hole) ...... 0.20 mm
+#   PTH hole -> copper ............. 0.28 mm   (via/NPTH hole -> copper: 0.20 mm)
 #   board edge -> copper ........... 0.30 mm   (board enforces 0.5 mm via min_copper_edge_clearance)
 #   silkscreen line / text height .. 0.15 mm / 1.0 mm
 #   solder-mask dam ................ 0.10 mm
@@ -19,18 +20,25 @@
 # Fine-pitch routing clearance. The board defaults to a conservative 0.2 mm clearance, but two
 # fine-pitch parts need tighter spacing to route: J1 (USB4085, pads 0.15 mm apart) and U3 (ES8311,
 # 0.40 mm-pitch QFN-20 whose power/GND pins can't escape -- a 0.6 mm via won't sit beside a pin at
-# 0.2 mm clearance). Both are well within JLCPCB's published 0.127 mm minimum spacing. Once the
+# 0.2 mm clearance). Both are well within JLCPCB's published 0.10 mm minimum spacing. Once the
 # autorouter packs the fine-pitch escapes the tighter spacing spreads board-wide, so this relaxes
-# the routing clearance to JLCPCB's 0.127 mm capability globally (the 0.2 mm value was design
-# margin, not a fab limit). Tracks stay 0.2 mm; plane/zone clearances are unaffected.
-(rule "fine-pitch routing clearance (JLCPCB 0.127mm capability)"
+# the routing clearance to 0.127 mm globally (the 0.2 mm value was design margin, not a fab limit;
+# JLCPCB's actual capability is 0.10 mm but 0.127 mm gives margin). Tracks stay 0.2 mm;
+# plane/zone clearances are unaffected.
+(rule "fine-pitch routing clearance (JLCPCB 0.10mm capability)"
 	(constraint clearance (min 0.127mm)))
 
-# Hole-to-copper clearance: with copper clearance now 0.127 mm, an autorouted track can pass within
-# ~0.24 mm of a THT hole. Relax hole clearance from the board's 0.25 mm to JLCPCB's 0.2 mm
-# capability so it stays consistent with the tighter routing.
-(rule "hole-to-copper clearance (JLCPCB 0.2mm)"
+# Via and NPTH hole-to-copper clearance: JLCPCB publishes 0.20 mm for both via-hole-to-track
+# and NPTH-to-track. Relax from the board's 0.25 mm to match.
+(rule "via/NPTH hole-to-copper clearance (JLCPCB 0.2mm)"
 	(constraint hole_clearance (min 0.2mm)))
+
+# PTH hole-to-copper clearance: JLCPCB requires 0.28 mm from a plated-through-hole edge to the
+# nearest copper — stricter than the 0.20 mm limit for vias/NPTH. This rule overrides the
+# via/NPTH rule above for PTH pads (KiCad applies the most restrictive matching rule).
+(rule "PTH hole-to-copper clearance (JLCPCB 0.28mm)"
+	(condition "A.Pad_Type == 'Through Hole Pad'")
+	(constraint hole_clearance (min 0.28mm)))
 
 # Board-edge copper clearance: relax from the board's conservative 0.5 mm to JLCPCB's published
 # 0.3 mm capability. U1's antenna overhangs the left edge, so its edge-row pins/traces (e.g.

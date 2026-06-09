@@ -25,8 +25,8 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32 + its power / boot / LED support ===
     "U1":     (13, 52, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
-    "SW_boot":(8.525, 40, 180),  # BOOT button, CW from vertical → horizontal, above U1
-    "R_boot": (13.525, 40, 180),  # BOOT pullup, right of SW_boot (was above → right after CW)
+    "SW_boot":(8.500, 40, 180),  # BOOT button, CW from vertical → horizontal, above U1
+    "R_boot": (13.500, 40, 180),  # BOOT pullup, right of SW_boot (was above → right after CW)
     "SW_en":  (22, 40, 0),    # RST button, right of BOOT group
     "R_en":   (17, 39, 0),    # EN pullup, above SW_en
     "C_en":   (17, 41, 180),  # EN cap, below SW_en
@@ -34,8 +34,8 @@ PCB_PLACE = {
     "R_io8":  (24.2, 50.7, 270), # GPIO8 pull-up; right of U1 east face, pin 1 (GPIO8) at y≈59.9
     "C_in":   (43.25, 52.5, 0), # LDO input cap (C2)
     "C_out":  (41.5, 41.5, 270), # LDO output cap (C4)
-    "LED1":   (46.5, 18.5, 90), # power LED; right of J2
-    "R_led":  (46.5, 15.5, 270), # LED series resistor; right of J2
+    "LED1":   (48.0, 18.5, 90), # power LED; right of J2
+    "R_led":  (48.0, 15.5, 270), # LED series resistor; right of J2
     "C_dec":  (24.2, 60.65, 270),  # 100nF decoupling; just clear of U1's east courtyard
     "C_3v3":  (25.75, 60.65, 270),  # 10uF decoupling; same row, next to C_dec
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
