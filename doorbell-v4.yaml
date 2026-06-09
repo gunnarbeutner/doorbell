@@ -7,9 +7,9 @@
 #   2. logger           : routed to the native USB-Serial-JTAG (GPIO16/U0TXD is N/C on C6)
 #   3. GPIO pins remapped to the V4 hardware (C6-WROOM-1 pad assignments differ from C3):
 #        House Doorbell    (OC2 / Türruf  sense) : GPIO3  -> GPIO3   (right col pad 26)
-#        Apartment Doorbell(OC3 / Etagenruf sense): GPIO1  -> GPIO23  (right col pad 21)
-#        front_door_buzzer (K1 / ÖT door opener) : GPIO20 -> GPIO20  (unchanged; right col pad 18)
-#        suppress_sound    (K2 / chime suppress) : GPIO10 -> GPIO21  (right col pad 19)
+#        Apartment Doorbell(OC3 / Etagenruf sense): GPIO1  -> GPIO2   (right col pad 27)
+#        front_door_buzzer (K2 / ÖT door opener) : GPIO20 -> GPIO21  (right col pad 19)
+#        suppress_sound    (K3 / chime suppress) : GPIO10 -> GPIO22  (right col pad 20)
 #   4. *** relay outputs are ACTIVE-HIGH (unchanged from C3 version) ***
 #
 # The api encryption key, OTA password and static IP are kept identical to V3 so the existing
@@ -68,7 +68,7 @@ binary_sensor:
     name: "Apartment Doorbell"
     icon: mdi:doorbell
     pin:
-      number: GPIO23           # OC3 collector — Etagenruf (P5) sense   [V3: 32; C3: GPIO1; C6 pad 21]
+      number: GPIO2            # OC3 collector — Etagenruf (P5) sense   [V3: 32; C3: GPIO1; C6 pad 27]
       inverted: true           # opto pulls the pin LOW when the bell rings
       mode:
         input: true
@@ -134,7 +134,7 @@ binary_sensor:
         - output.turn_off: suppress_doorbell_sound_bin   # let the chime ring
     on_release:
       then:
-        - output.turn_on: suppress_doorbell_sound_bin    # energise K2 -> break P4 -> silence
+        - output.turn_on: suppress_doorbell_sound_bin    # energise K3 -> break P4 -> silence
 
 switch:
   - platform: template
@@ -159,10 +159,10 @@ switch:
 # V3 (turn_on = relay energised); only the physical polarity flipped.
 output:
   - platform: gpio
-    pin: GPIO21              # K2 — chime suppress (break P4)            [V3: 25; C3: GPIO10; C6 pad 19]
+    pin: GPIO22              # K3 — chime suppress (break P4)            [V3: 25; C3: GPIO10; C6 pad 20]
     id: suppress_doorbell_sound_bin
   - platform: gpio
-    pin: GPIO20              # K1 — front-door buzzer / ÖT (bridge P2+P3) [V3: 26; unchanged on C6, pad 18]
+    pin: GPIO21              # K2 — front-door buzzer / ÖT (bridge P2+P3) [V3: 26; C6 pad 19]
     id: front_door_buzzer_bin
 
 button:

@@ -24,73 +24,73 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 # overhangs the left board edge (off-board), so no copper keep-out is needed.
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32 + its power / boot / LED support ===
-    "U1":     (12, 62, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
-    "SW_boot":(12.5, 44, 180),  # BOOT button, CW from vertical → horizontal, above U1
-    "R_boot": (17.5, 44, 180),  # BOOT pullup, right of SW_boot (was above → right after CW)
-    "SW_en":  (26, 44, 0),    # RST button, CW → horizontal, right of BOOT group
-    "R_en":   (21, 43, 0),    # EN pullup, above SW_en
-    "C_en":   (21, 45, 180),  # EN cap, below SW_en
-    "U2":     (44.5, 57.5, 180), # SGM2212 LDO; rotated CW
-    "R_io8":  (23.2, 60.7, 270), # GPIO8 pull-up; right of U1 east face, pin 1 (GPIO8) at y≈59.9
-    "C_in":   (41.5, 62.5, 270), # LDO input cap (C2)
-    "C_out":  (41.5, 52.5, 270), # LDO output cap (C4)
-    "LED1":   (13, 14.5, 90), # power LED; left of J2
-    "R_led":  (13, 17.5, 90), # LED series resistor; left of J2
-    "C_dec":  (23.2, 70.65, 270),  # 100nF decoupling; just clear of U1's east courtyard
-    "C_3v3":  (24.75, 70.65, 270),  # 10uF decoupling; same row, next to C_dec
+    "U1":     (13, 52, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
+    "SW_boot":(8.525, 40, 180),  # BOOT button, CW from vertical → horizontal, above U1
+    "R_boot": (13.525, 40, 180),  # BOOT pullup, right of SW_boot (was above → right after CW)
+    "SW_en":  (22, 40, 0),    # RST button, right of BOOT group
+    "R_en":   (17, 39, 0),    # EN pullup, above SW_en
+    "C_en":   (17, 41, 180),  # EN cap, below SW_en
+    "U2":     (44.5, 46.75, 180), # SGM2212 LDO; rotated CW
+    "R_io8":  (24.2, 50.7, 270), # GPIO8 pull-up; right of U1 east face, pin 1 (GPIO8) at y≈59.9
+    "C_in":   (43.25, 52.5, 0), # LDO input cap (C2)
+    "C_out":  (41.5, 41.5, 270), # LDO output cap (C4)
+    "LED1":   (46.5, 18.5, 90), # power LED; right of J2
+    "R_led":  (46.5, 15.5, 270), # LED series resistor; right of J2
+    "C_dec":  (24.2, 60.65, 270),  # 100nF decoupling; just clear of U1's east courtyard
+    "C_3v3":  (25.75, 60.65, 270),  # 10uF decoupling; same row, next to C_dec
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
-    "J1":     (39.8, 70, 0),  # USB-C (USB4085 THT)
-    "R_cc1":  (39.5, 70, 90), # CC1 pulldown
-    "R_cc2":  (45.5, 70, 90), # CC2 pulldown
+    "J1":     (40.8, 60, 0),  # USB-C (USB4085 THT)
+    "R_cc1":  (40.5, 60, 90), # CC1 pulldown
+    "R_cc2":  (46.5, 60, 90), # CC2 pulldown
     # Protection diodes: Schottky below U2, ESD array on D+/D- above J1.
-    "D_vbus": (46.5, 63.5, 0), # SS14 VBUS reverse-protection Schottky
-    "D_esd":  (42.5, 69.5, 0),# SRV05-4 USB D+/D- ESD array
+    "D_vbus": (44.75, 55.25, 0), # SS14 VBUS reverse-protection Schottky
+    "D_esd":  (43.5, 59.5, 0),# SRV05-4 USB D+/D- ESD array
     # === TOP edge: WF26 terminal, centred above the bus interface ===
     "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
-    "OC3":    (2.74, 23.85, 270),  # apartment bell sense; opto block centered in UL quadrant
-    "OC2":    (6.74, 23.85, 270),  # house bell sense; opto block centered in UL quadrant
-    "OC1":    (10.74, 23.85, 270), # session-sense opto; right of OC2 in the bell-sense row
-    "R_lim1": (6.74, 17.85, 0),    # R1, OC2's own LED limiter (above OC2) -- unshared
-    "R_lim2": (2.74, 17.85, 0),    # R2, OC3's own LED limiter (above OC3) -- unshared
-    "R_lim3": (10.74, 17.85, 0),   # R17, OC1's LED limiter (above OC1)
-    "R_em":   (6.74, 29.05, 180),  # R3, centred under the three-opto column (x=6.74)
-    "K2":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
-    "Q2":     (23.5, 34, 180),# NMOS, swapped with R_pd2 + rotated 180°
-    "R_g2":   (16.32, 36.18, 180), # gate series R, rotated flat (CCW); GATE2 pad kept fixed
-    "R_pd2":  (15.5, 34, 90), # gate pulldown, swapped with Q2 + rotated 180°
-    "D2":     (18.8, 33.6, 0),# flyback, moved north (toward K2 coil)
-    "K1":     (31, 27, 270),  # door-opener relay, rotated CW
-    "Q1":     (35, 34, 180),  # NMOS, swapped with R_pd1 + rotated 180°
-    "R_g1":   (27.82, 36.18, 180), # gate series R, rotated flat (CCW); GATE1 pad kept fixed
-    "R_pd1":  (27, 34, 90),   # gate pulldown, swapped with Q1 + rotated 180°
-    "D1":     (30.3, 33.6, 0),# flyback, moved north (toward K1 coil)
-    "R_ot":   (19.5, 20, 270), # ÖT bridge 2.2k: above K2 (top of relay body)
-    # === K3 (PTT placeholder) relay + driver: same spacing as K2→K1 (11.5 mm) ===
-    "K3":     (42.5, 27, 270),
-    "Q3":     (46.5, 34, 180),
-    "R_g3":   (39.32, 36.18, 180),
-    "R_pd3":  (38.5, 34, 90),
-    "D3":     (41.8, 33.6, 0),
+    "OC3":    (2.74, 27.5, 270),   # apartment bell sense; opto block centered in UL quadrant
+    "OC2":    (6.74, 27.5, 270),   # house bell sense; opto block centered in UL quadrant
+    "OC1":    (10.74, 27.5, 270),  # session-sense opto; right of OC2 in the bell-sense row
+    "R_lim1": (6.74, 21.5, 0),     # R1, OC2's own LED limiter (above OC2) -- unshared
+    "R_lim2": (2.74, 21.5, 0),     # R2, OC3's own LED limiter (above OC3) -- unshared
+    "R_lim3": (10.74, 21.5, 0),    # R17, OC1's LED limiter (above OC1)
+    "R_em":   (6.74, 33.7, 180),   # R3, centred under the three-opto column (x=6.74)
+    "K3":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
+    "Q3":     (23.5, 34, 180),# NMOS, swapped with R_pd3 + rotated 180°
+    "R_g3":   (14.75, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
+    "R_pd3":  (15.5, 34, 90), # gate pulldown, swapped with Q3 + rotated 180°
+    "D3":     (18.8, 33.6, 0),# flyback, moved north (toward K3 coil)
+    "K2":     (31, 27, 270),  # door-opener relay, rotated CW
+    "Q2":     (35, 34, 180),  # NMOS, swapped with R_pd2 + rotated 180°
+    "R_g2":   (26.25, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
+    "R_pd2":  (27, 34, 90),   # gate pulldown, swapped with Q2 + rotated 180°
+    "D2":     (30.3, 33.6, 0),# flyback, moved north (toward K2 coil)
+    "R_ot":   (19.5, 18, 270), # ÖT bridge 2.2k: above K3 (top of relay body)
+    # === K1 (PTT placeholder) relay + driver: same spacing as K3→K2 (11.5 mm) ===
+    "K1":     (42.5, 27, 270),
+    "Q1":     (46.5, 34, 180),
+    "R_g1":   (37.75, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
+    "R_pd1":  (38.5, 34, 90),
+    "D1":     (41.8, 33.6, 0),
     # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
     #     Provisional placement — reorganise later. ===
     # ES8311 rot 180. Support passives packed tight against the edge carrying their U3 pin, each
     # oriented so its U3-connected pad faces inward (rot: 0=pad1 W, 90=pad1 S, 180=pad1 E, 270=pad1 N).
     # West edge (I2S 6-9 -> U1) kept clear. Sides at rot180: N=CCLK/MCLK/PVDD/DVDD/DGND,
     # E=CE/CDATA/MIC1P/MIC1N/VMID, S=AVDD/OUTP/OUTN/DACVREF/ADCVREF.
-    "U3":     (78, 32, 180),
+    "U3":     (78, 22, 180),
     # Passives sit ~2 mm off U3's pad toes -- a clear ring for the pin escapes/vias -- then ring out.
     # NORTH row: PVDD/DVDD decoupling + SCL pull-up (pad-to-U3 faces south)
-    "C_dv":   (76.8, 27.3, 90), "C_pv": (78.0, 27.3, 90), "R_scl": (79.2, 27.3, 270),
+    "C_dv":   (76.8, 17.3, 90), "C_pv": (78.0, 17.3, 90), "R_scl": (79.2, 17.3, 270),
     # EAST column: VMID + MIC coupling + SDA pull-up (pad-to-U3 faces west)
-    "R_sda": (82.7, 30.3, 180), "C_mp": (82.7, 31.6, 0), "C_mn": (82.7, 32.9, 0), "C_vmid": (82.7, 34.2, 0),
+    "R_sda": (82.7, 20.3, 180), "C_mp": (82.7, 21.6, 0), "C_mn": (82.7, 22.9, 0), "C_vmid": (82.7, 24.2, 0),
     # SOUTH row: AVDD decoupling/bulk + OUT coupling + DAC/ADC refs (pad-to-U3 faces north),
     # nudged right to clear T1 on the left.
-    "C_av":   (76.1, 37.2, 270), "C_avb": (77.3, 37.2, 270), "C_op": (78.5, 37.2, 270),
-    "C_on":   (79.7, 37.2, 270), "C_vref": (80.9, 37.2, 270), "C_aref": (82.1, 37.2, 270),
+    "C_av":   (76.1, 27.2, 270), "C_avb": (77.3, 27.2, 270), "C_op": (78.5, 27.2, 270),
+    "C_on":   (79.7, 27.2, 270), "C_vref": (80.9, 27.2, 270), "C_aref": (82.1, 27.2, 270),
     # isolation transformer to the LEFT of U3, rotated clockwise (vertical). Winding A faces the
     # bus (P1/P5) to the west; secondary reaches the OUT/MIC coupling caps.
-    "T1":     (69, 40, 270),
+    "T1":     (69, 30, 270),
 }
 MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
 
@@ -380,7 +380,7 @@ for _p in fps["J2"].Pads():
     _jt2 = pcbnew.PCB_TEXT(board)
     _jt2.SetText(_lbl)
     _jt2.SetLayer(pcbnew.F_SilkS)
-    _jt2.SetPosition(pcbnew.VECTOR2I(_pp.x, _pp.y + pcbnew.FromMM(4.6)))   # in the gap below J2 body silk, above K1
+    _jt2.SetPosition(pcbnew.VECTOR2I(_pp.x, _pp.y + pcbnew.FromMM(4.6)))   # in the gap below J2 body silk, above K2
     _jt2.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
     _jt2.SetTextThickness(pcbnew.FromMM(0.12))
     board.Add(_jt2)
@@ -401,17 +401,16 @@ fps["T1"].Reference().SetTextAngleDegrees(0)
 
 # Relays sit close together; the default side-placed refdes overlaps the neighbour's body
 # silk. Centre each relay's reference on its own body instead.
-for _k in ("K1", "K2", "K3"):
+for _k in ("K2", "K3", "K1"):
     _kl, _kr, _kt, _kb = fext(fps[_k])
     _kref = fps[_k].Reference()
     _kref.SetPosition(vmm((_kl + _kr) / 2.0, (_kt + _kb) / 2.0))
     _kref.SetTextAngleDegrees(0)
 
-# U3's default refdes lands in the tightly-packed cap ring. After the 180° flip + 90° CW rotation
-# the clear side faces north; place the label above the MIC caps (which sit ~5 mm above U3).
+# U3's refdes: place to the right and below the IC body (clear of the cap ring).
 _u3ref = fps["U3"].Reference()
-_u3p = fps["U3"].GetPosition()
-_u3ref.SetPosition(pcbnew.VECTOR2I(_u3p.x, _u3p.y - pcbnew.FromMM(8.5)))
+_u3l, _u3r, _u3t, _u3b = fext(fps["U3"])
+_u3ref.SetPosition(pcbnew.VECTOR2I(pcbnew.FromMM(_u3r + 0.5), pcbnew.FromMM(_u3b + 1.0)))
 _u3ref.SetTextAngleDegrees(0)
 
 # Reset Value() text on the two tactile switches: the library footprint places the text
@@ -433,24 +432,24 @@ for _sw, _txt, _side, _ang in (("SW_boot", "BOOT", "left", 90), ("SW_en", "RST",
     _lab.SetTextThickness(pcbnew.FromMM(0.15))
     board.Add(_lab)
 
-# Product name on the front silkscreen, in the freed upper-left corner.
+# Product name on the front silkscreen, upper-left corner (reads top-to-bottom).
 _pn = pcbnew.PCB_TEXT(board)
 _pn.SetText("Doorbell Ctrl V4")
 _pn.SetLayer(pcbnew.F_SilkS)
-_pn.SetPosition(vmm(-3.2, 23.5))   # left of the centered opto block, in the left strip
+_pn.SetPosition(vmm(8.5, 14.5))
 _pn.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
 _pn.SetTextThickness(pcbnew.FromMM(0.15))
-_pn.SetTextAngleDegrees(90)   # rotated CCW (reads bottom-to-top)
+_pn.SetTextAngleDegrees(0)   # rotated CW from 90° CCW → horizontal (reads left-to-right)
 board.Add(_pn)
 
-# Board revision + date, parallel to the product name (also reads bottom-to-top).
+# Board revision + date, parallel to the product name (also reads top-to-bottom).
 _rd = pcbnew.PCB_TEXT(board)
 _rd.SetText("rev A  2026-06-07")
 _rd.SetLayer(pcbnew.F_SilkS)
-_rd.SetPosition(vmm(-1.0, 23.5))   # parallel to the product name, left of the optos
+_rd.SetPosition(vmm(8.5, 16.5))
 _rd.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
 _rd.SetTextThickness(pcbnew.FromMM(0.13))
-_rd.SetTextAngleDegrees(90)
+_rd.SetTextAngleDegrees(0)
 board.Add(_rd)
 
 # Overhanging parts (EDGE_OVERHANG) run their silkscreen off / across the board edge they
