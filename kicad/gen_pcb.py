@@ -65,7 +65,7 @@ PCB_PLACE = {
     "R_g2":   (26.25, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
     "R_pd2":  (27, 34, 90),   # gate pulldown, swapped with Q2 + rotated 180°
     "D2":     (30.3, 33.6, 0),# flyback, moved north (toward K2 coil)
-    "R_ot":   (19.5, 18, 270), # ÖT bridge 2.2k: above K3 (top of relay body)
+    "R_ot":   (21.25, 20.5, 270), # ÖT bridge 2.2k: above K3 (top of relay body)
     # === K1 (PTT placeholder) relay + driver: same spacing as K3→K2 (11.5 mm) ===
     "K1":     (42.5, 27, 270),
     "Q1":     (46.5, 34, 180),
@@ -82,6 +82,7 @@ PCB_PLACE = {
     # Passives sit ~2 mm off U3's pad toes -- a clear ring for the pin escapes/vias -- then ring out.
     # NORTH row: PVDD/DVDD decoupling + SCL pull-up (pad-to-U3 faces south)
     "C_dv":   (76.8, 17.3, 90), "C_pv": (78.0, 17.3, 90), "R_scl": (79.2, 17.3, 270),
+    "R_ce":   (27.25, 43.25, 180), # CE addr pull-down (10k to GND)
     # EAST column: VMID + MIC coupling + SDA pull-up (pad-to-U3 faces west)
     "R_sda": (82.7, 20.3, 180), "C_mp": (82.7, 21.6, 0), "C_mn": (82.7, 22.9, 0), "C_vmid": (82.7, 24.2, 0),
     # SOUTH row: AVDD decoupling/bulk + OUT coupling + DAC/ADC refs (pad-to-U3 faces north),

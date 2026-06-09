@@ -14,7 +14,7 @@ REF = {
     "R_lim1":"R1","R_lim2":"R2","R_em":"R3","R_g2":"R4","R_g3":"R5","R_g1":"R6",
     "R_pd2":"R7","R_pd3":"R8","R_pd1":"R9",
     "R_en":"R10","R_boot":"R11","R_io8":"R12","R_cc1":"R13","R_cc2":"R14","R_led":"R15","R_ot":"R16",
-    "R_lim3":"R17","R_sda":"R18","R_scl":"R19",
+    "R_lim3":"R17","R_sda":"R18","R_scl":"R19","R_ce":"R20",
     # --- audio codec (ES8388) support caps ---
     "C_dv":"C7","C_pv":"C8","C_av":"C9","C_avb":"C10","C_vref":"C11",
     "C_vmid":"C12","C_aref":"C13","C_op":"C14","C_on":"C15","C_mp":"C16","C_mn":"C17",
@@ -63,6 +63,7 @@ COMP = {
     "R_io8": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "R_sda": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # I2C SDA pull-up to +3V3 (codec)
     "R_scl": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # I2C SCL pull-up to +3V3 (codec)
+    "R_ce":  ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # CE I2C address pull-down to GND → addr 0x18
     "C_in": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_3v3": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_out": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),    # SGM2212 wants COUT 1-10uF (was 22uF for AMS1117)
@@ -108,7 +109,7 @@ FOOTPRINT = {
     "LED1": "PCM_JLCPCB:D_0603",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
 }
-for _r in ("R_lim1","R_lim2","R_lim3","R_em","R_g2","R_g3","R_g1","R_pd2","R_pd3","R_pd1","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot","R_sda","R_scl"):
+for _r in ("R_lim1","R_lim2","R_lim3","R_em","R_g2","R_g3","R_g1","R_pd2","R_pd3","R_pd1","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot","R_sda","R_scl","R_ce"):
     FOOTPRINT[_r] = "PCM_JLCPCB:R_0603"
 for _c in ("C_in","C_3v3","C_out","C_en","C_dec",
            "C_dv","C_pv","C_av","C_avb","C_vref","C_vmid","C_aref","C_op","C_on","C_mp","C_mn"):
@@ -136,9 +137,9 @@ NETS = {
             ("Q2","2"),("Q3","2"),("Q1","2"),("R_pd2","2"),("R_pd3","2"),("R_pd1","2"),("R_em","2"),("C_en","2"),
             ("R_cc1","2"),("R_cc2","2"),("LED1","1"),("SW_boot","2"),("SW_en","2"),
             ("D_esd","2"),("FLAGG","1"),
-            # ES8311 grounds (DGND/AGND/EP) + CE addr-select to GND + ref-cap grounds
-            ("U3","5"),("U3","10"),("U3","20"),("U3","21"),
-            ("C_vref","2"),("C_vmid","2"),("C_aref","2"),
+            # ES8311 grounds (DGND/AGND/EP) + ref-cap grounds + R_ce pull-down bottom
+            ("U3","5"),("U3","10"),("U3","21"),
+            ("C_vref","2"),("C_vmid","2"),("C_aref","2"),("R_ce","2"),
             ("C_dv","2"),("C_pv","2"),("C_av","2"),("C_avb","2")]
            + [("U1","1"),("U1","28"),("U1","29")],  # WROOM-1: GND pad 1 + pad 28 + EPAD (pad 29, multi-rect)
     "USB_DM": [("J1","A7"),("J1","B7"),("U1","13"),("D_esd","3")],   # C6: GPIO12/USB_D- on pad 13
@@ -206,6 +207,7 @@ NETS = {
     "I2S_DIN":  [("U3","7"),("U1","8")],     # ASDOUT -> ESP (GPIO0, pad 8) — capture data
     "I2C_SDA":  [("U3","19"),("U1","6"),("R_sda","2")],   # CDATA <-> GPIO6 (pad 6)
     "I2C_SCL":  [("U3","1"),("U1","7"),("R_scl","2")],    # CCLK  <-> GPIO7 (pad 7)
+    "ES_CE":    [("U3","20"),("R_ce","1")],               # CE addr-select: U3 pin 20 -> pull-down -> GND
     "ES_DACVREF": [("U3","14"),("C_vref","1")],
     "ES_ADCVREF": [("U3","15"),("C_aref","1")],
     "ES_VMID":    [("U3","16"),("C_vmid","1")],
@@ -234,7 +236,7 @@ GROUPS = {
     "K3 chime-suppress relay": ["K3", "Q3", "D3", "R_g3", "R_pd3"],
     "K1 PTT relay":            ["K1", "Q1", "D1", "R_g1", "R_pd1"],
     "Audio codec (ES8311)":    ["U3", "T1", "C_dv", "C_pv", "C_av", "C_avb", "C_vref", "C_vmid",
-                                "C_aref", "C_op", "C_on", "C_mp", "C_mn", "R_sda", "R_scl"],
+                                "C_aref", "C_op", "C_on", "C_mp", "C_mn", "R_sda", "R_scl", "R_ce"],
 }
 
 # intentionally-unused pins -> No-Connect markers (schematic) / unconnected (PCB)
@@ -275,7 +277,7 @@ GRID = {
     "C_dv": (78, 80), "C_pv": (82, 80), "C_av": (86, 80), "C_avb": (90, 80),
     "C_vref": (98, 86), "C_vmid": (98, 90), "C_aref": (98, 94),
     "C_op": (78, 104), "C_on": (82, 104), "C_mp": (86, 104), "C_mn": (90, 104),
-    "R_sda": (98, 80), "R_scl": (98, 82),
+    "R_ce": (98, 78), "R_sda": (98, 80), "R_scl": (98, 82),
     "R_led": (66, 84), "LED1": (66, 90),
 }
 

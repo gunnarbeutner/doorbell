@@ -4,13 +4,23 @@
 # preserved verbatim; only the things that change with the new MCU/board were touched:
 #
 #   1. board/framework  : esp32dev  ->  esp32-c6-devkitc-1  (generic ESP32-C6 board def; fits the WROOM-1)
-#   2. logger           : routed to the native USB-Serial-JTAG (GPIO16/U0TXD is N/C on C6)
+#   2. logger           : routed to the native USB-Serial-JTAG (GPIO12/GPIO13 = USB D-/D+ on C6)
 #   3. GPIO pins remapped to the V4 hardware (C6-WROOM-1 pad assignments differ from C3):
 #        House Doorbell    (OC2 / Türruf  sense) : GPIO3  -> GPIO3   (right col pad 26)
 #        Apartment Doorbell(OC3 / Etagenruf sense): GPIO1  -> GPIO2   (right col pad 27)
 #        front_door_buzzer (K2 / ÖT door opener) : GPIO20 -> GPIO21  (right col pad 19)
 #        suppress_sound    (K3 / chime suppress) : GPIO10 -> GPIO22  (right col pad 20)
 #   4. *** relay outputs are ACTIVE-HIGH (unchanged from C3 version) ***
+#   5. Audio added (ES8311 mono codec, U3; half-duplex PTT via K1; session-sense via OC1):
+#        I2C_SDA  (ES8311 control)               : GPIO6             (pad  6)
+#        I2C_SCL  (ES8311 control)               : GPIO7             (pad  7)
+#        I2S_DIN  (ADC / capture, ASDOUT)        : GPIO0             (pad  8)
+#        I2S_WS   (LRCK)                         : GPIO11            (pad 12)
+#        I2S_MCLK (master clock)                 : GPIO18            (pad 16)
+#        I2S_BCLK (bit clock, SCLK)              : GPIO19            (pad 17)
+#        K1       (PTT relay, talk=energised)    : GPIO20            (pad 18)
+#        I2S_DOUT (DAC / playback, DSDIN)        : GPIO10            (pad 11)
+#        OC1      (session-sense, P5↔P2 coil)   : GPIO23            (pad 21)
 #
 # The api encryption key, OTA password and static IP are kept identical to V3 so the existing
 # Home Assistant integration keeps working without re-pairing.
@@ -53,6 +63,33 @@ wifi:
     gateway: 192.168.3.1
     subnet: 255.255.255.0
     dns1: 192.168.3.53
+
+i2c:
+  sda: GPIO6               # I2C_SDA — ES8311 (U3) control bus  [C6 pad 6]
+  scl: GPIO7               # I2C_SCL — ES8311 (U3) control bus  [C6 pad 7]
+  scan: false
+
+i2s_audio:
+  id: i2s_bus
+  i2s_lrclk_pin: GPIO11   # I2S_WS / LRCK   [C6 pad 12]
+  i2s_bclk_pin: GPIO19    # I2S_BCLK / SCLK [C6 pad 17]
+  i2s_mclk_pin: GPIO18    # I2S_MCLK        [C6 pad 16]
+
+es8311:
+  address: 0x18            # CE → R_ce (10k) → GND on U3 → I2C addr 0x18
+
+speaker:
+  - platform: i2s_audio
+    id: intercom_speaker
+    i2s_audio_id: i2s_bus
+    dac_type: external
+    i2s_dout_pin: GPIO10   # I2S_DOUT / DSDIN (ESP→codec, playback)  [C6 pad 11]
+
+microphone:
+  - platform: i2s_audio
+    id: intercom_mic
+    i2s_audio_id: i2s_bus
+    i2s_din_pin: GPIO0     # I2S_DIN / ASDOUT (codec→ESP, capture)  [C6 pad 8]
 
 # Optional on the C3 (BLE works, but uses resources on the single core). Remove this and
 # esp32_ble_tracker if you don't use the Bluetooth proxy.
@@ -114,6 +151,19 @@ binary_sensor:
               else:
                 - homeassistant.event:
                     event: esphome.doorbell_not_opened
+  - platform: gpio
+    name: "Intercom Session"
+    icon: mdi:phone-in-talk
+    id: intercom_session_active
+    pin:
+      number: GPIO23        # OC1 collector — session-active sense (P5↔P2 coil)  [C6 pad 21]
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 500ms
   - platform: homeassistant
     id: apartment_occupancy
     entity_id: binary_sensor.apartment_occupancy
@@ -128,6 +178,10 @@ binary_sensor:
     id: doorbell_sound_state
     icon: mdi:music-note
     lambda: |-
+      // During an active intercom session K3 must stay energised: it is the prerequisite for the
+      // K1 PTT hardware interlock (K3 pole-B is in series with Q1's gate drive), and dropping K3
+      // mid-session would silently kill K1 and leave the intercom_ptt switch in a stale state.
+      if (id(intercom_session_active).state) return false;
       return !id(internet_connection).state || (id(apartment_occupancy).state && !id(someone_at_house_door).state && id(doorbell_sound).state);
     on_press:
       then:
@@ -137,6 +191,12 @@ binary_sensor:
         - output.turn_on: suppress_doorbell_sound_bin    # energise K3 -> break P4 -> silence
 
 switch:
+  - platform: output
+    name: "Intercom PTT"
+    icon: mdi:phone-outgoing
+    id: intercom_ptt
+    output: ptt_relay_bin
+    restore_mode: ALWAYS_OFF   # boot into listen/idle (K1 off = NC = P4↔P3)
   - platform: template
     name: "Auto-open front door"
     icon: mdi:gate
@@ -158,6 +218,9 @@ switch:
 # — exactly what the gate pull-downs are there to prevent. The logical meaning is unchanged from
 # V3 (turn_on = relay energised); only the physical polarity flipped.
 output:
+  - platform: gpio
+    pin: GPIO20              # K1 — PTT relay (NO=talk/P4↔P2, NC=listen/idle)  [C6 pad 18]
+    id: ptt_relay_bin
   - platform: gpio
     pin: GPIO22              # K3 — chime suppress (break P4)            [V3: 25; C3: GPIO10; C6 pad 20]
     id: suppress_doorbell_sound_bin

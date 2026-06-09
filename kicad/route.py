@@ -115,7 +115,8 @@ dsn = re.sub(r'(\n  \)\n\s*\(wiring)', "\n" + injection + r'\1', dsn)
 with open(DSN, 'w') as f: f.write(dsn)
 print(f"exported {DSN} (injected {len(NET_CLASSES)} net class rule(s))")
 
-subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da"], check=True)
+subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da",
+                "--router.optimizer.enabled=true"], check=True)
 
 if not pcbnew.ImportSpecctraSES(board, SES):
     sys.exit("SES import failed")
@@ -257,17 +258,42 @@ ngnd = sum(1 for f in board.GetFootprints() for p in f.Pads() if p.GetNetname() 
 print(f"routed + inner planes + {nvia} stitching vias -> {BOARD} "
       f"({len(board.GetTracks())} track/via items, {ngnd} GND pads)")
 
-# --- Copper density report ---
+# --- Copper density report (pre-thieve = routed+planes only; post = +thieving fill) ---
+# Zones account for fills (inner planes, thieving); tracks/vias/pads are separate objects.
+# Outer layers have no zones before thieving, so routing copper must be summed explicitly.
+# Track area = length×width (rectangle); via area = π r²; pad area = size.x×size.y (approx).
 _IU2 = pcbnew.FromMM(1) ** 2          # IU² per mm²
 _bba = board.GetBoardEdgesBoundingBox()
 _board_area = pcbnew.ToMM(_bba.GetWidth()) * pcbnew.ToMM(_bba.GetHeight())
 _COPPER_LAYERS = [
-    (pcbnew.F_Cu,  "F.Cu "),
+    (pcbnew.F_Cu,   "F.Cu "),
     (pcbnew.In1_Cu, "In1  "),
     (pcbnew.In2_Cu, "In2  "),
-    (pcbnew.B_Cu,  "B.Cu "),
+    (pcbnew.B_Cu,   "B.Cu "),
 ]
-print(f"  copper density (board {_board_area:.0f} mm²):")
+
+def _routing_copper_mm2(lid):
+    area = 0.0
+    for _t in board.GetTracks():
+        if _t.Type() == pcbnew.PCB_VIA_T:
+            if _t.IsOnLayer(lid):
+                _r = _t.GetWidth() / 2.0
+                area += math.pi * _r * _r
+        elif _t.GetLayer() == lid:
+            area += float(_t.GetLength()) * _t.GetWidth()
+    for _fp in board.GetFootprints():
+        for _pad in _fp.Pads():
+            if _pad.IsOnLayer(lid):
+                _sz = _pad.GetSize()
+                area += float(_sz.x) * float(_sz.y)
+    return area / _IU2
+
+print(f"  copper density (board {_board_area:.0f} mm²)  [pre-thieve → post-thieve]:")
 for _lid, _lname in _COPPER_LAYERS:
-    _area = sum(z.GetFilledArea() / _IU2 for z in board.Zones() if z.GetLayer() == _lid)
-    print(f"    {_lname} {_area:6.0f} mm²  {100*_area/_board_area:5.1f}%")
+    _routing = _routing_copper_mm2(_lid)
+    _pre  = _routing + sum(z.GetFilledArea() / _IU2 for z in board.Zones()
+                           if z.GetLayer() == _lid and not z.GetZoneName().startswith("thieving"))
+    _post = _routing + sum(z.GetFilledArea() / _IU2 for z in board.Zones()
+                           if z.GetLayer() == _lid)
+    print(f"    {_lname} {_pre:6.0f} mm² ({100*_pre/_board_area:5.1f}%)  →  "
+          f"{_post:6.0f} mm² ({100*_post/_board_area:5.1f}%)")
