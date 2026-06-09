@@ -471,7 +471,7 @@ for _sw, _txt, _side, _ang in (("SW_boot", "BOOT", "left", 90), ("SW_en", "RST",
 
 # Product name + revision on the front silkscreen (reads bottom-to-top, left of U1).
 _pn = pcbnew.PCB_TEXT(board)
-_pn.SetText("Doorbell Ctrl V4  rev A  2026-06-07")
+_pn.SetText("Doorbell Controller V4.0  2026-06-10")
 _pn.SetLayer(pcbnew.F_SilkS)
 _pn.SetPosition(vmm(0.5, 52.75))
 _pn.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
