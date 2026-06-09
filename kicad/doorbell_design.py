@@ -150,10 +150,12 @@ NETS = {
     "BOOT": [("U1","15"),("R_boot","2"),("SW_boot","1")],  # GPIO9/BOOT on C6 pad 15
     "GPIO8": [("U1","10"),("R_io8","1")],  # C6 strapping pin GPIO8 on pad 10; 10k pull-up
     "GATE1_DRV": [("U1","18"),("R_g1","1")],   # GPIO20 / pad 18 — PTT relay K1
-    # K3 pole-B (pins 6/7) is wired as a hardware interlock: K1's gate drive is broken by K3's
+    # K3 pole-B (pins 5/6/7) is wired as a hardware interlock: K1's gate drive is broken by K3's
     # spare pole-B contact so Q1 cannot turn on unless K3 is already energised. This prevents the
     # hazard where K1-talk (P4<->P2) without K3 open would short P2<->P3 via the WF26's S2 strap.
-    "GATE1_PRE": [("R_g1","2"),("K3","7")],    # R_g1 out -> K3 pole-B NO (pin 7)
+    # Pole-B pinout: COM=6, NC=7, NO=5 (symmetric with pole-A: COM=3, NC=2, NO=4).
+    # NO (pin 5) is used so the path is OPEN at rest and only closes when K3 energises.
+    "GATE1_PRE": [("R_g1","2"),("K3","5")],    # R_g1 out -> K3 pole-B NO (pin 5)
     "GATE1": [("K3","6"),("Q1","1"),("R_pd1","1")],  # K3 pole-B COM (pin 6) -> Q1 gate + pull-down
     "K1_DRAIN": [("Q1","3"),("K1","8"),("D1","2")],
     "GATE2_DRV": [("U1","19"),("R_g2","1")],   # GPIO21 / pad 19 — door-opener K2
@@ -163,16 +165,16 @@ NETS = {
     "GATE3": [("R_g3","2"),("Q3","1"),("R_pd3","1")],
     "K3_DRAIN": [("Q3","3"),("K3","8"),("D3","2")],
     "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2"),("T1","1")],   # + audio xfmr winding-A end (tap across LS1 = P1/P5; CT pad 2 NC)
-    # K1 = virtual PTT, emulating the WF26's Sprechen/Hören switch S2 on bus line 4:
-    #   K1 COM=IN_P4 (TV20/S/K3-NC side — retains bus signal when K3 is on), NC->P3 (listen/idle, DEFAULT),
-    #   NO->P2 (talk, energised). K3 pole-B hardware interlock (GATE1_PRE/GATE1) enforces that K3
-    #   must be energised before K1 can fire — prevents the P2<->P3 short hazard. Pole B (K1 pads
-    #   5/6/7) is spare/NC. See DESIGN.md "Audio (revisited)".
+    # K1 = virtual PTT, pure TX relay (pole A). COM=IN_P4, NO->P2 (talk, energised).
+    #   NC (pin 2) is intentionally open — not wired to P3 — so K1 de-energised does NOT strap
+    #   P4<->P3 and cannot block the WF26's physical S2 from switching to talk. The WF26's own
+    #   S2 (P4<->P3 at rest) handles the listen/idle state. K3 pole-B hardware interlock
+    #   (GATE1_PRE/GATE1) enforces K3 must be on before K1 can fire. Pole B (K1 pads 5/6/7) spare.
     "P2": [("J2","2"),("K2","3"),("K1","4"),("R_lim3","2")],  # + OC1 session-sense cathode return (P5 coil-feed > P2 coil-return)
     # ÖT door-opener bridge goes through R_ot (2.2k) in series with K2's NO contact, matching
     # the genuine WF26 (its ÖT button bridges lines 2<->3 via R1=2.2k, NOT a dead short -- so it
     # only loads the speech pair instead of fully shorting it). K2 COM=P2; K2 NO -> R_ot -> P3.
-    "P3": [("J2","3"),("R_ot","1"),("K1","2")],   # + K1 NC = PTT listen/idle strap (P4<->P3)
+    "P3": [("J2","3"),("R_ot","1")],
     "OT_BRIDGE": [("R_ot","2"),("K2","4")],
     # Line 4 (Türruf) is BROKEN INTO the board for chime suppression:
     # IN_P4 = TV20/S-incoming side (J2.6 -> K3 NC; OC2 and K1 COM sit here so both gong-sense
@@ -241,10 +243,10 @@ GROUPS = {
 
 # intentionally-unused pins -> No-Connect markers (schematic) / unconnected (PCB)
 NOCONN = [("K2","2"),("K2","5"),("K2","6"),("K2","7"),
-          ("K3","4"),("K3","5"),           # K3 pole-B pins 6/7 now used for K1-gate interlock
-          # K1 = virtual PTT on pole A (2/3/4 = P4 changeover). Pole B (5/6/7) spare —
-          # the ES8311 differential front-end is firmware-muted, no relay audio switch needed.
-          ("K1","5"),("K1","6"),("K1","7"),
+          ("K3","4"),("K3","7"),           # K3 pole-A NO (4) and pole-B NC (7) unused; pole-B NO (5) used for interlock
+          # K1 = virtual PTT on pole A. NC (pin 2) open — not wired to P3 — so K1 de-energised
+          # does not strap P4<->P3 and cannot block WF26's physical S2. Pole B (5/6/7) spare.
+          ("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("J1","A8"),("J1","B8"),
           ("D_esd","4"),("D_esd","6"),   # SRV05-4 unused I/O channels
           # ES8311 (U3): all 20 pins + EP are used — no NC pins.

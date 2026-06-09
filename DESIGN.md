@@ -505,11 +505,14 @@ fitted as the **virtual PTT** relay (contacts currently N/C until the audio circ
 
 **As-built after this change (build verified: ERC 0 err, DRC 0/0, routes 0 unrouted, `check_pcb` PASS):**
 
-- **K1 wired as the virtual PTT** (pole A): **COM = IN-P4 (TV20/S/K3-NC side, J2.6), NC → P3 (listen/idle, default), NO → P2
-  (talk)**. COM on K3 NC so PTT still works when K3 is energised (K3 NC retains the TV20/S signal even with the line broken).
-  Default at boot = listen (gate pull-down holds K1 off). Driver Q1/D1 on **GPIO3**.
-  Pole B (pads 5/6/7): hardware interlock — K3's spare pole-B contacts in series with Q1 gate drive;
-  K1 physically cannot energise unless K3 is already on (IN-P4→P4 line already broken).
+- **K1 wired as the virtual PTT** (pole A): **COM = IN-P4 (TV20/S/K3-NC side, J2.6), NC = open (unconnected), NO → P2
+  (talk)**. K1 is a pure TX relay — it only connects IN-P4↔P2 when energised. The NC contact (pin 2) is deliberately
+  left open so that K1 de-energised does **not** strap P4↔P3, preserving the WF26 physical S2's ability to switch to
+  talk mode when K3 is off. The WF26's own S2 (P4↔P3 at rest) handles the listen/idle state; T1 on P1/P5 captures
+  RX audio regardless of K1's state. COM on K3 NC so PTT still works when K3 is energised.
+  Default at boot = off/NC (gate pull-down holds K1 off). Driver Q1/D1 on **GPIO3**.
+  Pole B (pads 5/6/7): hardware interlock — K3's spare pole-B NO contact (pin 5) in series with Q1
+  gate drive (COM=6→GATE1, NO=5→GATE1_PRE, NC=7→NOCONN); K1 cannot energise unless K3 is already on.
 - **OC1 session-sense added**: LED across **P2↔P5** via **R_lim3** (5.1 k, value TBD), collector →
   **GPIO2 / pad 27** (non-strapping), emitter on the shared `OC_EMIT`. "Can send" = OC1 active AND K1 talk.
 - **Phase 2 COMMITTED to the netlist (2026-06-08; ERC 0 err/DRC 0/routes 0-unrouted, board now
@@ -662,11 +665,16 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 - **Re-verify for the WROOM-02:** review finding 7's "9 EPAD thermal cells" was MINI-1-specific —
   the WROOM-02 has its own EPAD (pad 19, multi-rect), stitched the same way (one benign
   plane-stitch warning). All other CLEAN/Resolved items above are unaffected by the swap.
-- **K1 hardware interlock (2026-06-09):** K3's spare pole-B contacts (pins 6/7) placed in series
-  with Q1's gate drive path (net GATE1_PRE: R_g1 out → K3 pin 7; net GATE1: K3 pin 6 → Q1 gate).
-  K1 physically cannot energise unless K3 is already on — the P2↔P3 short hazard (via WF26 S2 strap
-  line4↔3) is now prevented in hardware, not just firmware. R_g1 moved to (13.5, 34, 90°) to shorten
-  the GATE1_PRE trace.
+- **K1 hardware interlock (2026-06-09):** K3's spare pole-B contacts placed in series with Q1's gate
+  drive path (net GATE1_PRE: R_g1 out → K3 pin 5; net GATE1: K3 pin 6 → Q1 gate). Pole-B pinout:
+  COM=6, **NC=7, NO=5** (symmetric with pole-A: COM=3, NC=2, NO=4). Pin 5 (NO) used so the path is
+  open at rest and only closes when K3 energises. K1 physically cannot energise unless K3 is already
+  on. R_g1 moved to (13.5, 34, 90°) to shorten the GATE1_PRE trace.
+- **K1 NC open (2026-06-09):** K1 pin 2 (NC contact) changed from wired to P3 to unconnected.
+  K1 is now a pure TX relay — de-energised it makes no connection, so it cannot strap P4↔P3 and
+  block the WF26's physical S2 from switching to talk when K3 is off. (Root cause: with K3 off,
+  K3-NC passes IN-P4=P4; K1-NC→P3 then permanently tied P4↔P3 through both relays' NC contacts,
+  making S2's talk press bridge P2↔P3 via the chain P2↔K2_COM↔S2↔P4↔K3-NC↔IN-P4↔K1-NC↔P3.)
 - **P4/IN_P4 documentation fix + K1 COM move (2026-06-09):** IN_P4 = TV20/S-incoming side
   (J2.6 → K3 NC; OC2 and K1 COM sit here); P4 = WF26-handset side (J2.4 → K3 COM). J2 pinout
   unchanged. OC2 was already correct (K3 NC retains TV20/S signal when K3 is energised). K1 COM

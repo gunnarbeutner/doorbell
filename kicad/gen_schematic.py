@@ -226,17 +226,21 @@ WIRED_NETS = set()
 def PX(ref, pad): return pin_xy[(ref, pad)]
 
 # ---- relay-driver clusters: wire the gate node and the drain/coil/flyback node.
-def wire_relay_driver(rg, q, rpd, d, k):
+def wire_relay_driver(rg, q, rpd, d, k, wire_gate=True):
     # GATE node: gate resistor bottom -> FET gate -> pulldown top (vertical trunk).
-    wire(PX(rg, "2"), PX(rpd, "1"))            # gate pin taps this segment
-    junction(*PX(q, "1"))                      # T where the FET gate taps the node
+    # Skip when the gate net is split by an interlock (e.g. K1: GATE1_PRE / K3 / GATE1);
+    # in that case the two sub-nets are connected by auto-labels and no direct wire is drawn.
+    if wire_gate:
+        wire(PX(rg, "2"), PX(rpd, "1"))        # gate pin taps this segment
+        junction(*PX(q, "1"))                  # T where the FET gate taps the node
     # DRAIN node: FET drain -> (under flyback diode) -> relay coil pin 8.
     drain, dtop, k8 = PX(q, "3"), PX(d, "2"), PX(k, "8")
     wire(drain, (k8[0], drain[1]), k8)         # diode top pin taps the run
     junction(*dtop)                            # T where the diode taps the node
-for nets in (("GATE1", "K1_DRAIN"), ("GATE2", "K2_DRAIN")):
-    WIRED_NETS.update(nets)
-wire_relay_driver("R_g1", "Q1", "R_pd1", "D1", "K1")
+# K1 gate is split into GATE1_PRE (R_g1 side) and GATE1 (Q1/R_pd1 side) by the K3 interlock;
+# auto-labels handle both sub-nets — neither goes into WIRED_NETS.
+WIRED_NETS.update(("K1_DRAIN", "GATE2", "K2_DRAIN"))
+wire_relay_driver("R_g1", "Q1", "R_pd1", "D1", "K1", wire_gate=False)
 wire_relay_driver("R_g2", "Q2", "R_pd2", "D2", "K2")
 
 # ---- power LED: series resistor straight down into the LED (one wire) ----
