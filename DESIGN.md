@@ -317,6 +317,12 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
 - **OC1 (session sense)** parallels the WF26's internal relay coil (P5↔P2, ~320 Ω,
   energised by the TV20/S only during a live session). R_lim3 = 5.1 k provisional pending
   the measured session voltage.
+- **Cross-talk masking** (`doorbell-v4.yaml`, lambda filters ahead of the debounce): the
+  **House Doorbell** input is forced off while PTT is engaged (K1 ties IN_P4 to P2, so
+  speech audio appears across OC2's sense pair); the **Intercom Session** input is forced
+  off while the Apartment Doorbell is ringing (the Etagenruf tone on P5 appears across
+  OC1's P5↔P2 pair via the WF26's coil/C1 network). Both interferers are AC, so the raw
+  input keeps toggling and the mask re-evaluates continuously while active.
 
 ### Relays
 
@@ -591,6 +597,3 @@ rating; every U1 pad↔GPIO assignment against the Espressif C6-WROOM-1 symbol.
 - A benign plane-stitch warning on U1's EPAD.
 - No mounting holes, no dedicated test points (see "Build / test notes").
 - Bench-confirm the relay-coil voltage under WiFi TX with a long USB cable if paranoid.
-- **Firmware masking:** with K1 engaged, IN_P4 = P2 carries speech — OC2 (house bell) may
-  flicker; during an Etagenruf tone OC1 (P5↔P2) may flicker. Mask both in firmware while
-  the corresponding state is active.

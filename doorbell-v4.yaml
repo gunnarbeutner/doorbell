@@ -104,6 +104,7 @@ binary_sensor:
   - platform: gpio
     name: "Apartment Doorbell"
     icon: mdi:doorbell
+    id: apartment_doorbell
     pin:
       number: GPIO2            # OC3 collector — Etagenruf (P5) sense   [V3: 32; C3: GPIO1; C6 pad 27]
       inverted: true           # opto pulls the pin LOW when the bell rings
@@ -127,6 +128,12 @@ binary_sensor:
         input: true
         pullup: true
     filters:
+      # Mask while PTT is engaged: K1 ties IN_P4 to P2, so speech audio appears across
+      # OC2's sense pair (IN_P4<->P1) and would flicker this input. Speech is AC, so the
+      # raw input keeps toggling and this filter re-evaluates continuously while masked.
+      - lambda: |-
+          if (id(intercom_ptt).state) return false;
+          return x;
       - delayed_on: 50ms
       - delayed_off: 2s
     on_press:
@@ -162,6 +169,14 @@ binary_sensor:
         input: true
         pullup: true
     filters:
+      # Mask while the apartment bell rings: the Etagenruf tone driven onto P5 appears
+      # across OC1's sense pair (P5<->P2, via the WF26's coil/C1 network) and would fake a
+      # session. The tone is AC, so the raw input keeps toggling and this filter
+      # re-evaluates continuously while masked. apartment_doorbell holds for 2s past the
+      # tone (delayed_off), which also covers the tail.
+      - lambda: |-
+          if (id(apartment_doorbell).state) return false;
+          return x;
       - delayed_on: 50ms
       - delayed_off: 500ms
   - platform: homeassistant
