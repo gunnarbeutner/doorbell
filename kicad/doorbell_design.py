@@ -43,10 +43,10 @@ COMP = {
     "D_esd": ("PCM_JLCPCB-Diode-Packages", "Package, SRV05-4_C7420376", "SRV05-4"), # USB D+/D- ESD array (LCSC C7420376)
     "OC2": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
     "OC3": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
-    "OC1": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),   # session-active sense (P2<->P5 WF26 coil energise) = "can we send audio"
+    "OC1": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),   # session-active sense: anode=P5 (coil feed), cathode->R_lim3->P2 (coil return); conducts when K1_WF26 energised
     "R_lim1": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
     "R_lim2": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC3's own LED limiter (unshared)
-    "R_lim3": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC1 session-sense limiter; VALUE TBD pending measured session voltage on P2<->P5
+    "R_lim3": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),   # OC1 session-sense cathode limiter (P5->LED->R_lim3->P2); VALUE TBD pending measured P5-P2 session voltage
     "R_em": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
     "R_g2": ("PCM_JLCPCB-Resistors", "0603,100Ω", "100"),
     "R_g3": ("PCM_JLCPCB-Resistors", "0603,100Ω", "100"),
@@ -167,7 +167,7 @@ NETS = {
     #   NO->P2 (talk, energised). K3 pole-B hardware interlock (GATE1_PRE/GATE1) enforces that K3
     #   must be energised before K1 can fire — prevents the P2<->P3 short hazard. Pole B (K1 pads
     #   5/6/7) is spare/NC. See DESIGN.md "Audio (revisited)".
-    "P2": [("J2","2"),("K2","3"),("K1","4"),("OC1","1")],
+    "P2": [("J2","2"),("K2","3"),("K1","4"),("R_lim3","2")],  # + OC1 session-sense cathode return (P5 coil-feed > P2 coil-return)
     # ÖT door-opener bridge goes through R_ot (2.2k) in series with K2's NO contact, matching
     # the genuine WF26 (its ÖT button bridges lines 2<->3 via R1=2.2k, NOT a dead short -- so it
     # only loads the speech pair instead of fully shorting it). K2 COM=P2; K2 NO -> R_ot -> P3.
@@ -180,13 +180,13 @@ NETS = {
     # K3 at rest passes IN_P4(NC)->P4(COM); energised it opens the line (gong silenced).
     "P4": [("J2","4"),("K3","3")],                           # WF26 terminal 4: J2.4, K3 COM
     "IN_P4": [("K3","2"),("OC2","1"),("J2","6"),("K1","3")], # TV20/S incoming: K3 NC, OC2, J2.6, K1 COM
-    "P5": [("J2","5"),("OC3","1"),("R_lim3","2"),("T1","3")],   # + OC1 session-sense limiter return + audio xfmr winding-A other end
+    "P5": [("J2","5"),("OC3","1"),("OC1","1"),("T1","3")],   # + OC1 session-sense anode (P5 = relay coil feed, high side) + audio xfmr winding-A other end
     # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single
     # shared limiter let one ringing channel lift the common cathode node ~10.8 V and reverse-bias
     # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
     "OC2_CATH": [("OC2","2"),("R_lim1","1")],
     "OC3_CATH": [("OC3","2"),("R_lim2","1")],
-    "OC1_CATH": [("OC1","2"),("R_lim3","1")],   # OC1 LED cathode -> R_lim3 -> P5 (LED anode on P2)
+    "OC1_CATH": [("OC1","2"),("R_lim3","1")],   # OC1 LED cathode -> R_lim3 -> P2 (LED anode on P5)
     "OC2_OUT": [("OC2","4"),("U1","26")],   # GPIO3  / pad 26 (C6 right col) — house bell (Türruf)
     "OC3_OUT": [("OC3","4"),("U1","27")],   # GPIO2  / pad 27 (C6 right col) — apartment bell (Etagenruf)
     "OC1_OUT": [("OC1","4"),("U1","21")],   # GPIO23 / pad 21 (C6 right col) — session-active in
