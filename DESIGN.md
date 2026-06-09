@@ -49,8 +49,8 @@ into the WF26 — see "Why line 4 needs two pins" below.
 | P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Each opto LED cathode → its own 5.1 kΩ (R_lim1/R_lim2) → P1 |
 | P2 | Line 2 | Speech (Sprechen/Hören); bridged to 3 = ÖT | Relay K2 **COM (MAIN1)** |
 | P3 | Line 3 | Speech; bridged to 2 = ÖT door-opener trigger | Relay K2 **NO** → **R14 (2.2 kΩ)** → P3 |
-| P4 | Line 4 (TV20/S side) | Türruf — ~12 VDC house-door gong, **in** | Relay K3 **COM** |
-| IN-P4 | Line 4 (WF26 side) | Türruf return, **out** to the handset | Relay K3 **NC** → OC2 anode (house-bell sense) **and** jumper → WF26 terminal 4 (gong). K3 opens this to suppress the chime |
+| P4 | Line 4 (WF26 side, J2.4) | Türruf path to the handset | Relay K3 **COM** → WF26 terminal 4. K3 opens this to suppress the chime |
+| IN-P4 | Line 4 (TV20/S side, **incoming**, J2.6) | Türruf — ~12 VDC house-door gong, **in**; also K1 PTT common | Relay K3 **NC** → OC2 anode (always-on) **and** K1 **COM**. K3 NC retains the TV20/S signal when K3 is energised |
 | P5 | Line 5 | Etagenruf — floor/apartment call (tone) | → OC3 anode (apartment bell sense) |
 
 **Relay K2** (P2 on COM/MAIN1; NO1 → R14 → P3) simulates pressing the ÖT button: energising
@@ -63,16 +63,18 @@ COM/MAIN2, IN-P4 on NC2) breaks the Türruf line when energised to suppress the 
 **Why line 4 needs two pins.** K2 (door opener) *adds* a contact across P2+P3 — a parallel
 closure, fine from a parallel bus tap. K3 (chime suppress) must *break* the Türruf so it
 stops reaching the WF26 gong — a **series** operation, so line 4 is split at the board:
-**P4** = bus/TV20-S side (→ K3 COM), **IN-P4** = WF26-handset side (→ K3 NC, OC2 sense, and
-J2.6 jumper back to WF26 terminal 4). At rest K3 passes P4→IN-P4 (gong rings, OC2 senses);
-energised it opens the line (gong silenced) — this is the proven V3 topology. V4 originally
-collapsed IN-P4 to an internal-only node (no jumper back to the WF26), silently breaking
-chime suppression; restored here on the 6-way J2 (pad 6).
+**P4** = WF26-handset side (J2.4 → K3 COM → WF26 terminal 4),
+**IN-P4** = TV20/S-incoming side (J2.6 → K3 NC; "IN" = incoming from TV20/S).
+OC2 and K1 COM both sit on IN-P4 (K3 NC side): K3 NC retains the TV20/S signal when K3 is
+energised, so gong sensing and PTT both work during chime suppression.
+At rest K3 passes IN-P4→P4 (gong rings, OC2 senses); energised it opens the line (gong silenced) —
+this is the proven V3 topology. V4 originally collapsed the WF26-side node to an internal-only net
+(no jumper back to the WF26), silently breaking chime suppression; restored here on the 6-way J2 (pad 6).
 
-> **P4 is dual-purpose** *(found 2026-06-08)*: besides carrying the incoming Türruf, line 4
-> is the **common of the WF26's Sprechen/Hören switch** — i.e. the PTT / on-hook handshake.
-> At rest it straps **P4↔P3 (on-hook/listen)**; pressed it ties **P4↔P2 (off-hook/talk)**.
-> Disconnecting P4 forces a permanent off-hook and **suppresses the chime** (observed). See
+> **Line 4 is dual-purpose** *(found 2026-06-08)*: besides carrying the incoming Türruf (PCB net **IN-P4**, TV20/S side), line 4
+> is the **common of the WF26's Sprechen/Hören switch** — i.e. the PTT / on-hook handshake (PCB net **P4**, WF26 side).
+> At rest S2 straps **P4↔P3 (on-hook/listen)**; pressed it ties **P4↔P2 (off-hook/talk)**.
+> Disconnecting P4 (the WF26-side net) forces a permanent off-hook and **suppresses the chime** (observed). See
 > "WF26 internal trace" below.
 
 > **Invariant to keep:** the door-opener bridge stays COM=P2, NO→P3, NC unconnected — now
@@ -86,12 +88,12 @@ chime suppression; restored here on the 6-way J2 (pad 6).
 | Orange | P1 |
 | Green | P2 |
 | Blue/white stripe | P3 |
-| Blue | P4 (line 4, **in**) |
+| Blue | IN-P4 (line 4, **incoming from TV20/S**, J2.6) |
 | Black | P5 |
-| — (short jumper) | IN-P4 (J2.6) → back into WF26 terminal 4 |
+| — (short jumper) | P4 (J2.4) → back into WF26 terminal 4 |
 
-> To wire the series break: move the **blue** (line-4) wire off WF26 terminal 4 onto **J2.P4**,
-> and run a short jumper from **J2.IN-P4 (pad 6)** back to WF26 terminal 4. P1/P2/P3/P5 stay
+> To wire the series break: move the **blue** (line-4) wire off WF26 terminal 4 onto **J2.IN-P4 (pad 6)**,
+> and run a short jumper from **J2.P4 (pad 4)** back to WF26 terminal 4. P1/P2/P3/P5 stay
 > parallel taps on WF26 terminals 1/2/3/5.
 
 ---
@@ -106,9 +108,9 @@ chime suppression; restored here on the 6-way J2 (pad 6).
 | GPIO (V3) | ESPHome entity | Direction | Hardware | → V4 C3 pin |
 |------|---------------|-----------|----------|----|
 | 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC3 collector (senses P5 / Etagenruf) | **IO3** |
-| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses P4 / Türruf) | **IO10** |
+| 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (senses IN-P4 / Türruf, TV20/S side) | **IO10** |
 | 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K2 (bridges P2+P3 = ÖT door opener) | **IO4** |
-| 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K3 (switches P4 = chime suppress) | **IO5** |
+| 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K3 (breaks IN-P4→P4 = chime suppress) | **IO5** |
 
 ---
 
@@ -119,7 +121,7 @@ Each bell line drives a PC817 LED **referenced to the bus common P1** (the ~12 V
 voltage sits across line 4↔1 / 5↔1, per the PDF), and the phototransistor pulls the
 GPIO low. R2 and R1 are **shared** between both optos.
 ```
-P4-IN ──► OC2 LED anode ;  P5 ──► OC3 LED anode
+IN-P4 ──► OC2 LED anode ;  P5 ──► OC3 LED anode
 OC2/OC3 LED cathodes ──┬── R2 (5.1kΩ, shared) ──► P1 (bus common)   [LED loop is bell↔P1]
 OC2 collector ──► GPIO33 ;  OC3 collector ──► GPIO32   (ESP32 internal pull-up to 3V3)
 OC2/OC3 emitters ──┬── R1 (1kΩ, shared) ──► GND
@@ -127,12 +129,12 @@ Bell present → LED conducts → phototransistor pulls GPIO low → ESPHome inv
 ```
 > R2 (5.1 kΩ) is the **LED series limiter on the cathode→P1 return**; R1 (1 kΩ) is the
 > **phototransistor emitter resistor to GND** — the LED itself never connects to GND.
-> Verified against `build/netlist.txt` (nets `WF26-IN-P4`/`WF26-P5`, `N9`, `N10`/`N11`, `N12`).
+> Verified against `build/netlist.txt` (nets `WF26-P4`/`WF26-P5`, `N9`, `N10`/`N11`, `N12`). Note: V3 netlist used `WF26-IN-P4` for what is now `IN_P4` in V4.
 
 ### Relay outputs
 ```
 K2 (GPIO26, front door buzzer):  COM(MAIN1)→P2, NO→R14(2.2k)→P3  — energise to bridge P2+P3 via 2.2k (ÖT)
-K3 (GPIO25, chime suppress):     COM(MAIN2)→P4, NC→IN-P4 — energise to break Türruf line
+K3 (GPIO25, chime suppress):     COM(MAIN2)→P4, NC→IN-P4 — energise to break Türruf line (IN-P4 = TV20/S/J2.6 side)
 ```
 
 ### Power
@@ -229,8 +231,8 @@ S1 (Türöffner/ÖT, DPDT), R1 (2.2 kΩ), C1 (22 µF/50 V), K2 (relay), J1 (5-wa
 | K2_COM | K2.1, K2.12, S2.6 |
 | n/c | S1.3, S1.6, K2.6 (NC) |
 
-**Headline finding — P4 is dual-purpose (ring *and* PTT handshake).** Line 4 / Türruf carries
-the incoming house-door ring (confirmed: the controller's AC opto across P1/P4 detects it),
+**Headline finding — line 4 is dual-purpose (ring *and* PTT handshake).** Line 4 / Türruf carries
+the incoming house-door ring (confirmed: the controller's AC opto across P1/IN-P4 detects it),
 **and** it is the common of the Sprechen/Hören switch S2:
 - **S2 at rest → P4↔P3** = on-hook / idle / **listen** — the state in which the gong can sound.
 - **S2 pressed → P4↔P2** (via relay common K2_COM; NO = P2) = off-hook / **talk**.
@@ -315,8 +317,8 @@ module — all on one JLCPCB-assembled PCB. No low-level "what works" is re-engi
 | GPIO | Signal | Dir | Notes |
 |------|--------|-----|-------|
 | IO20 | K2 relay driver — front door buzzer / ÖT (bridge P2+P3) | out | pad 11 (north row); IO20/U0RXD — high-Z input at reset, pull-down holds relay off |
-| IO10 | K3 relay driver — chime suppress (break P4) | out | pad 10 (east end, north row); gate pull-down ⇒ off at boot |
-| IO3 | OC2 collector — house bell sense (Türruf, P4) | in | pad 15 (north row, faces OC2); internal pull-up (firmware) |
+| IO10 | K3 relay driver — chime suppress (break IN-P4→P4) | out | pad 10 (east end, north row); gate pull-down ⇒ off at boot |
+| IO3 | OC2 collector — house bell sense (Türruf, IN-P4 TV20/S side) | in | pad 15 (north row, faces OC2); internal pull-up (firmware) |
 | IO1 | OC3 collector — apartment bell sense (Etagenruf, P5) | in | pad 17 (north row, faces OC3); internal pull-up (firmware) |
 | IO4 / IO5 / IO6 / IO7 | — (unused) | — | No-Connect; freed when relay drivers moved to north row |
 | IO18 / IO19 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
@@ -352,7 +354,7 @@ USB D±  ── IO18/IO19 (native USB)             SGM2212: 10µF in (C_in) / 10
 
 ### Galvanic isolation (preserve in layout)
 
-The **bus side** (P1–P5 and IN-P4) is galvanically separate from the **logic side**
+The **bus side** (P1–P5, IN-P4, and P4) is galvanically separate from the **logic side**
 (GND / +3V3 / +5V). The only crossings are *through* the optocouplers (input) and the
 relay coil↔contact air gap (output). **P1 is the bus common, not board GND.** Keep a
 clearance gap / slot between the two domains on the PCB. (Voltages are low — 12 VAC bus —
@@ -503,10 +505,11 @@ fitted as the **virtual PTT** relay (contacts currently N/C until the audio circ
 
 **As-built after this change (build verified: ERC 0 err, DRC 0/0, routes 0 unrouted, `check_pcb` PASS):**
 
-- **K1 wired as the virtual PTT** (pole A): **COM = P4, NC → P3 (listen/idle, default), NO → P2
-  (talk)**. Default at boot = listen (gate pull-down holds K1 off). Driver Q1/D1 on **GPIO3**.
-  Pole B (pads 5/6/7) spare. *Firmware rule:* energise **K3 first** (break P4→IN_P4) before K1
-  talk, else the handset's own S2 strap (line4↔3) parallels K1 and shorts P2↔P3.
+- **K1 wired as the virtual PTT** (pole A): **COM = IN-P4 (TV20/S/K3-NC side, J2.6), NC → P3 (listen/idle, default), NO → P2
+  (talk)**. COM on K3 NC so PTT still works when K3 is energised (K3 NC retains the TV20/S signal even with the line broken).
+  Default at boot = listen (gate pull-down holds K1 off). Driver Q1/D1 on **GPIO3**.
+  Pole B (pads 5/6/7): hardware interlock — K3's spare pole-B contacts in series with Q1 gate drive;
+  K1 physically cannot energise unless K3 is already on (IN-P4→P4 line already broken).
 - **OC1 session-sense added**: LED across **P2↔P5** via **R_lim3** (5.1 k, value TBD), collector →
   **GPIO2 / pad 27** (non-strapping), emitter on the shared `OC_EMIT`. "Can send" = OC1 active AND K1 talk.
 - **Phase 2 COMMITTED to the netlist (2026-06-08; ERC 0 err/DRC 0/routes 0-unrouted, board now
@@ -605,7 +608,7 @@ Full adversarial review (datasheet-verified pinouts + routed-board parse). **No 
 defect in the PCB.** Automated: ERC 0 err, DRC 0/0, `check_pcb` PASS. Open items:
 
 **Verified CLEAN (datasheet/board-confirmed):** relay contact mapping (G6K-2F-Y coil 1/8,
-COM3/NC2/NO4 — K2 bridges P2+P3, K3 breaks P4); SGM2212 SOT-223 pinout + ~1 V headroom;
+COM3/NC2/NO4 — K2 bridges P2+P3, K3 breaks IN-P4→P4); SGM2212 SOT-223 pinout + ~1 V headroom;
 diode polarity (D4 reverse-protect, D2/D3 flyback, pad1=cathode); USB front-end (D+/D− not
 swapped, SRV05-4 low-cap, CC 5.1 kΩ Rd, no UART bridge, internal D+ pull-up); 3V3 decoupling
 adequacy (470 µF unnecessary); 2N7002 gate drive @3.3 V; bell-sense logic levels
@@ -659,3 +662,12 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
 - **Re-verify for the WROOM-02:** review finding 7's "9 EPAD thermal cells" was MINI-1-specific —
   the WROOM-02 has its own EPAD (pad 19, multi-rect), stitched the same way (one benign
   plane-stitch warning). All other CLEAN/Resolved items above are unaffected by the swap.
+- **K1 hardware interlock (2026-06-09):** K3's spare pole-B contacts (pins 6/7) placed in series
+  with Q1's gate drive path (net GATE1_PRE: R_g1 out → K3 pin 7; net GATE1: K3 pin 6 → Q1 gate).
+  K1 physically cannot energise unless K3 is already on — the P2↔P3 short hazard (via WF26 S2 strap
+  line4↔3) is now prevented in hardware, not just firmware. R_g1 moved to (13.5, 34, 90°) to shorten
+  the GATE1_PRE trace.
+- **P4/IN_P4 documentation fix + K1 COM move (2026-06-09):** IN_P4 = TV20/S-incoming side
+  (J2.6 → K3 NC; OC2 and K1 COM sit here); P4 = WF26-handset side (J2.4 → K3 COM). J2 pinout
+  unchanged. OC2 was already correct (K3 NC retains TV20/S signal when K3 is energised). K1 COM
+  moved from P4 (K3 COM/J2.4) to IN_P4 (K3 NC/J2.6) so PTT is visible to the TV20/S when K3 is on.

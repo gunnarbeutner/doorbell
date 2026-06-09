@@ -69,7 +69,7 @@ PCB_PLACE = {
     # === K1 (PTT placeholder) relay + driver: same spacing as K3→K2 (11.5 mm) ===
     "K1":     (42.5, 27, 270),
     "Q1":     (46.5, 34, 180),
-    "R_g1":   (37.75, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
+    "R_g1":   (13.5, 34, 90),
     "R_pd1":  (38.5, 34, 90),
     "D1":     (41.8, 33.6, 0),
     # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.

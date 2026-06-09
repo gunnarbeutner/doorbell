@@ -149,7 +149,11 @@ NETS = {
     "BOOT": [("U1","15"),("R_boot","2"),("SW_boot","1")],  # GPIO9/BOOT on C6 pad 15
     "GPIO8": [("U1","10"),("R_io8","1")],  # C6 strapping pin GPIO8 on pad 10; 10k pull-up
     "GATE1_DRV": [("U1","18"),("R_g1","1")],   # GPIO20 / pad 18 — PTT relay K1
-    "GATE1": [("R_g1","2"),("Q1","1"),("R_pd1","1")],
+    # K3 pole-B (pins 6/7) is wired as a hardware interlock: K1's gate drive is broken by K3's
+    # spare pole-B contact so Q1 cannot turn on unless K3 is already energised. This prevents the
+    # hazard where K1-talk (P4<->P2) without K3 open would short P2<->P3 via the WF26's S2 strap.
+    "GATE1_PRE": [("R_g1","2"),("K3","7")],    # R_g1 out -> K3 pole-B NO (pin 7)
+    "GATE1": [("K3","6"),("Q1","1"),("R_pd1","1")],  # K3 pole-B COM (pin 6) -> Q1 gate + pull-down
     "K1_DRAIN": [("Q1","3"),("K1","8"),("D1","2")],
     "GATE2_DRV": [("U1","19"),("R_g2","1")],   # GPIO21 / pad 19 — door-opener K2
     "GATE2": [("R_g2","2"),("Q2","1"),("R_pd2","1")],
@@ -159,22 +163,23 @@ NETS = {
     "K3_DRAIN": [("Q3","3"),("K3","8"),("D3","2")],
     "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2"),("T1","1")],   # + audio xfmr winding-A end (tap across LS1 = P1/P5; CT pad 2 NC)
     # K1 = virtual PTT, emulating the WF26's Sprechen/Hören switch S2 on bus line 4:
-    #   K1 COM=P4, NC->P3 (listen/idle, the DEFAULT — gate pull-down holds K1 off at boot),
-    #   NO->P2 (talk, energised). To talk, firmware must FIRST energise K3 (break P4->IN_P4 so
-    #   the handset's own S2 isn't strapping line4<->line3 in parallel and shorting P2<->P3),
-    #   then toggle K1. Pole B (K1 pads 5/6/7) is spare/NC. See DESIGN.md "Audio (revisited)".
+    #   K1 COM=IN_P4 (TV20/S/K3-NC side — retains bus signal when K3 is on), NC->P3 (listen/idle, DEFAULT),
+    #   NO->P2 (talk, energised). K3 pole-B hardware interlock (GATE1_PRE/GATE1) enforces that K3
+    #   must be energised before K1 can fire — prevents the P2<->P3 short hazard. Pole B (K1 pads
+    #   5/6/7) is spare/NC. See DESIGN.md "Audio (revisited)".
     "P2": [("J2","2"),("K2","3"),("K1","4"),("OC1","1")],
     # ÖT door-opener bridge goes through R_ot (2.2k) in series with K2's NO contact, matching
     # the genuine WF26 (its ÖT button bridges lines 2<->3 via R1=2.2k, NOT a dead short -- so it
     # only loads the speech pair instead of fully shorting it). K2 COM=P2; K2 NO -> R_ot -> P3.
     "P3": [("J2","3"),("R_ot","1"),("K1","2")],   # + K1 NC = PTT listen/idle strap (P4<->P3)
     "OT_BRIDGE": [("R_ot","2"),("K2","4")],
-    # Line 4 (Türruf) is BROKEN INTO the board for chime suppression: P4 = bus/TV20S side
-    # (-> K3 COM), IN_P4 = WF26-handset side (-> K3 NC, -> OC2 sense, -> J2.6 jumper back to
-    # the WF26's terminal 4). K3 at rest passes P4->IN_P4 (gong rings + OC2 senses); energised
-    # it opens the line (gong silenced). This is the V3 series-break, restored on a 6-pin J2.
-    "P4": [("J2","4"),("K3","3"),("K1","3")],   # + K1 COM = PTT changeover common (bus line 4)
-    "IN_P4": [("K3","2"),("OC2","1"),("J2","6")],
+    # Line 4 (Türruf) is BROKEN INTO the board for chime suppression:
+    # IN_P4 = TV20/S-incoming side (J2.6 -> K3 NC; OC2 and K1 COM sit here so both gong-sense
+    # and PTT still work when K3 is energised, since K3 NC retains the TV20/S signal).
+    # P4 = WF26-handset side (K3 COM -> J2.4 -> WF26 terminal 4).
+    # K3 at rest passes IN_P4(NC)->P4(COM); energised it opens the line (gong silenced).
+    "P4": [("J2","4"),("K3","3")],                           # WF26 terminal 4: J2.4, K3 COM
+    "IN_P4": [("K3","2"),("OC2","1"),("J2","6"),("K1","3")], # TV20/S incoming: K3 NC, OC2, J2.6, K1 COM
     "P5": [("J2","5"),("OC3","1"),("R_lim3","2"),("T1","3")],   # + OC1 session-sense limiter return + audio xfmr winding-A other end
     # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single
     # shared limiter let one ringing channel lift the common cathode node ~10.8 V and reverse-bias
@@ -234,7 +239,7 @@ GROUPS = {
 
 # intentionally-unused pins -> No-Connect markers (schematic) / unconnected (PCB)
 NOCONN = [("K2","2"),("K2","5"),("K2","6"),("K2","7"),
-          ("K3","4"),("K3","5"),("K3","6"),("K3","7"),
+          ("K3","4"),("K3","5"),           # K3 pole-B pins 6/7 now used for K1-gate interlock
           # K1 = virtual PTT on pole A (2/3/4 = P4 changeover). Pole B (5/6/7) spare —
           # the ES8311 differential front-end is firmware-muted, no relay audio switch needed.
           ("K1","5"),("K1","6"),("K1","7"),
