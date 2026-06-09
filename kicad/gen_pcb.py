@@ -60,9 +60,10 @@ PCB_PLACE = {
     "R_lim2": (2.74, 23.25, 0),    # R2, OC3's own LED limiter (above OC3) -- unshared
     "R_lim3": (10.74, 23.25, 0),   # R17, OC1's LED limiter (above OC1)
     # Opto LED reverse-voltage clamps (1N4148W anti-parallel): between R_lim and opto, same column.
-    "D_oc3":  (2.74, 26.5, 270),
-    "D_oc2":  (6.74, 26.5, 270),
-    "D_oc1":  (10.74, 26.5, 270),
+    # Rotated 270->90 with the 2026-06-10 net-pin swap (pads keep their previous XY positions).
+    "D_oc3":  (2.74, 26.5, 90),
+    "D_oc2":  (6.74, 26.5, 90),
+    "D_oc1":  (10.74, 26.5, 90),
     "R_em":   (0, 35.82, 90),      # R3, emitter common resistor
     "K3":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
     "Q3":     (23.5, 34, 180),# NMOS, swapped with R_pd3 + rotated 180°

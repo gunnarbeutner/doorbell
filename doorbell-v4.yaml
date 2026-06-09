@@ -179,12 +179,21 @@ binary_sensor:
     icon: mdi:music-note
     lambda: |-
       // During an active intercom session K3 must stay energised: it is the prerequisite for the
-      // K1 PTT hardware interlock (K3 pole-B is in series with Q1's gate drive), and dropping K3
-      // mid-session would silently kill K1 and leave the intercom_ptt switch in a stale state.
+      // K1 PTT hardware interlock (K3 pole-B is in series with Q1's gate drive). When this sensor
+      // does flip on (K3 about to drop), on_press below releases K1 first (10ms guard) so the
+      // PTT switch state stays in sync and the K1/K3 release race can't occur.
       if (id(intercom_session_active).state) return false;
       return !id(internet_connection).state || (id(apartment_occupancy).state && !id(someone_at_house_door).state && id(doorbell_sound).state);
     on_press:
       then:
+        # Release-order guard (DESIGN.md "Relay release race"): K1 must drop >=10ms before K3.
+        # Dropping K3 while K1 is still engaged recloses K3's pole-A NC (~1ms) before K1's
+        # armature releases (~1-3ms), momentarily dead-shorting P2<->P3 via the WF26's S2 strap.
+        # This sensor's on_press is the ONLY path that de-energises K3, so guarding here covers
+        # every case (incl. session end with PTT left on). turn_off via the switch (not the raw
+        # output) keeps the HA-visible PTT state in sync; a no-op if K1 was already off.
+        - switch.turn_off: intercom_ptt
+        - delay: 10ms                                    # > G6K-2F release time (~1-3ms)
         - output.turn_off: suppress_doorbell_sound_bin   # let the chime ring
     on_release:
       then:

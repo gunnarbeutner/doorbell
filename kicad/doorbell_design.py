@@ -206,13 +206,19 @@ NETS = {
     # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single
     # shared limiter let one ringing channel lift the common cathode node ~10.8 V and reverse-bias
     # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
-    "OC2_CATH": [("OC2","2"),("R_lim1","1"),("D_oc2","1")],   # D_oc2 anode: clamps reverse V across LED
-    "OC3_CATH": [("OC3","2"),("R_lim2","1"),("D_oc3","1")],
-    "OC1_CATH": [("OC1","2"),("R_lim3","1"),("D_oc1","1")],
+    # Anti-parallel reverse-voltage clamps: 1N4148W pin 1 = CATHODE, pin 2 = ANODE (CDFER lib,
+    # same convention as the D1-D3 flybacks / D4). Clamp ANODE (pin 2) sits on the opto LED's
+    # cathode net and clamp CATHODE (pin 1) on the LED's anode net, so the 1N4148 only conducts
+    # on the reverse half-wave (limits LED reverse V to ~0.7V, < the 6V VR rating) and is OFF
+    # while the opto LED conducts forward. (2026-06-10 fix: pins were swapped -> the clamp sat
+    # PARALLEL to the LED and stole the forward current, killing all three sense channels.)
+    "OC2_CATH": [("OC2","2"),("R_lim1","1"),("D_oc2","2")],   # D_oc2 ANODE (pin 2) on LED cathode net
+    "OC3_CATH": [("OC3","2"),("R_lim2","1"),("D_oc3","2")],
+    "OC1_CATH": [("OC1","2"),("R_lim3","1"),("D_oc1","2")],
     # SW center pins -> opto anodes (pos A=1↔2+4↔5 normal, pos B=2↔3+5↔6 reversed)
-    "OC2_JP": [("SW_OC2","2"),("OC2","1"),("D_oc2","2")],    # D_oc2 cathode: anti-parallel to opto LED
-    "OC3_JP": [("SW_OC3","2"),("OC3","1"),("D_oc3","2")],
-    "OC1_JP": [("SW_OC1","2"),("OC1","1"),("D_oc1","2")],
+    "OC2_JP": [("SW_OC2","2"),("OC2","1"),("D_oc2","1")],    # D_oc2 CATHODE (pin 1): anti-parallel to opto LED
+    "OC3_JP": [("SW_OC3","2"),("OC3","1"),("D_oc3","1")],
+    "OC1_JP": [("SW_OC1","2"),("OC1","1"),("D_oc1","1")],
     # SW pin 5 -> R_lim cathode-return side (sliding SW flips both poles simultaneously)
     "OC2_RET": [("SW_OC2","5"),("R_lim1","2")],
     "OC3_RET": [("SW_OC3","5"),("R_lim2","2")],

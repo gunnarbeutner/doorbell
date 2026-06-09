@@ -498,10 +498,8 @@ fitted as the **virtual PTT** relay (contacts currently N/C until the audio circ
 > read **C3-WROOM-02**. The board is **C6-WROOM-1-N8** per the script — those sections need a
 > separate C3→C6 sync pass (pad numbers, GPIO assignments, BOM line).
 >
-> ⚠️ **U1 LCSC mismatch (action needed):** `jlcpcb_files.py` `EXTRA_LCSC["U1"]` is still
-> **C2934560** (commented "ESP32-C3-WROOM-02-N4"). The footprint/COMP are now C6-WROOM-1 — ordering
-> as-is would assemble the **wrong module on the wrong pad layout**. Replace with the real
-> C6-WROOM-1-N8 LCSC before fab. (Not auto-changed — an LCSC part # must not be guessed.)
+> ~~⚠️ **U1 LCSC mismatch (action needed)**~~ **Resolved (verified 2026-06-10):**
+> `jlcpcb_files.py` `EXTRA_LCSC["U1"]` is now **C5366877** (ESP32-C6-WROOM-1-N8).
 
 **As-built after this change (build verified: ERC 0 err, DRC 0/0, routes 0 unrouted, `check_pcb` PASS):**
 
@@ -679,3 +677,103 @@ connectivity; galvanic isolation (bus↔logic only via optos/relay gaps).
   (J2.6 → K3 NC; OC2 and K1 COM sit here); P4 = WF26-handset side (J2.4 → K3 COM). J2 pinout
   unchanged. OC2 was already correct (K3 NC retains TV20/S signal when K3 is energised). K1 COM
   moved from P4 (K3 COM/J2.4) to IN_P4 (K3 NC/J2.6) so PTT is visible to the TV20/S when K3 is on.
+
+---
+
+## WF26 compatibility review (2026-06-10)
+
+Full cross-check of `kicad/doorbell_design.py` (NETS, authoritative) against the
+reverse-engineered handset — WF26 netlist re-extracted from `wf26/wf26.kicad_sch` with
+`kicad-cli` (matches the table above exactly) — plus the generated `doorbell.kicad_pcb`,
+the ES8311 datasheet, the ESP32-C6-WROOM-1 symbol and the SM-LP-5001 datasheet.
+
+### 🔴 CRITICAL — D_oc1/2/3 were wired *parallel*, not anti-parallel (all sensing dead) — ✅ FIXED 2026-06-10
+
+In the CDFER JLCPCB lib the **1N4148W symbol/footprint has pin 1 = cathode, pin 2 = anode**
+(verified from the symbol graphics; consistent with how D1–D3 flybacks and D4 are wired:
+pin 1 → +5V). NETS places **D_ocX pin 1 on `OC*_CATH`** (the opto LED *cathode* net) and
+**pin 2 on `OC*_JP`** (the LED *anode* net) — i.e. the clamp diode points the **same way as
+the opto LED**, not anti-parallel. Confirmed in the generated PCB (D7 pad 1 = `OC1_CATH`,
+pad 2 = `OC1_JP`; same for D8/D9). Consequences:
+
+1. **Forward path broken:** the 1N4148 (Vf ≈ 0.65–0.75 V) clamps the LED (Vf ≈ 1.2 V) —
+   nearly all bell current bypasses the opto. **OC1/OC2/OC3 never trigger: house bell,
+   apartment bell and session sense are all dead.**
+2. **No reverse protection either** — the very thing the diodes were added for: in reverse
+   both diodes block, and the opto LED can still see > its 6 V VR.
+
+**Fix (applied 2026-06-10):** the two D_oc pins are swapped in NETS — `OC*_CATH` now gets
+`("D_ocX","2")` (anode), `OC*_JP` gets `("D_ocX","1")` (cathode) — and the three footprints
+are rotated 270°→90° in `gen_pcb.py` `PCB_PLACE` so the pads keep their previous XY
+positions. The comments in NETS ("D_oc2 anode…", "D_oc2 cathode…") show the intent was
+right and the pin 1=anode assumption was the error. **Rebuild pending** (`./build.sh all-route`).
+
+### Verified compatible with the WF26 (clean)
+
+- **J2 pin map** = documented bus wiring (J2.1–5 = P1–P5, J2.6 = IN_P4). ✓
+- **K2 ÖT bridge** (P2 = COM, NO → R_ot 2.2 kΩ → P3) exactly mirrors the genuine handset's
+  S1+R1 path (`P2–R1–S1_COM–S1–P3` in the WF26 netlist). ✓
+- **K3 chime break** IN_P4(NC, pin 2) → P4(COM, pin 3): at rest closed (gong passes);
+  energised, WF26 terminal 4 floats = off-hook = chime suppressed — matches the traced S2
+  topology (P4 is S2's common) and the observed "remove P4 → no doorbell". OC2 + K1 COM on
+  the TV20/S side, so gong sense and PTT survive suppression. ✓
+- **K1 virtual PTT** (COM = IN_P4, NO → P2, NC open) = "drive bus wire 4 to line 2 = talk"
+  per the WF26 trace. NC-open fix (2026-06-09) present — at rest K1 cannot strap P4↔P3. ✓
+- **K3 pole-B interlock** verified in NETS (GATE1_PRE: R_g1→K3.5 NO; GATE1: K3.6 COM→Q1
+  gate + R_pd1): K1 electrically cannot energise unless K3 is on — without it, K1-talk with
+  line 4 still through-connected would short P2↔P3 via the WF26's at-rest S2 strap and fire
+  the door opener. ✓
+- **OC1 session sense** across P5↔P2 parallels the WF26's internal relay coil (K1_WF26
+  pins 5/8 = P5/P2, ~320 Ω, TV20/S-energised). Polarity unknown → SW_OC1 handles it. ✓
+- **Polarity switches SW_OC1/2/3:** wiring is self-consistent (COM pins 2/5 → opto anode /
+  R_lim return; throws on 1+6 / 3+4 = the two bus poles). Pos A and pos B give clean
+  opposite-polarity LED loops; even if the physical A/B positions are mirrored the function
+  is unaffected (it's a polarity selector). **Pinout verified against the official NIDEC CAS
+  datasheet (2026-06-10):** the CAS-220 contact schematic marks the commons "C" at terminals
+  **2 and 5** (centre pins), throws 1/3 and 4/6, both poles ganged — exactly as wired.
+  Contact rating: non-switching DC 50 V / 100 mA, switching DC 6 V / 100 mA — the ~2 mA,
+  ≤12 V opto loop is fine even if slid live. (The MST-22D18G3 was briefly evaluated as a
+  substitute; **CAS-220TB1 is the chosen part** — the unused MST symbol/footprint libs and
+  datasheet were removed 2026-06-10.)
+- **T1 winding A across P1/P5** = directly across LS1 (WF26: LS1.1 = P5, LS1.2 = P1). ✓
+  Galvanic bus↔logic isolation preserved (SM-LP-5001: 2000 VRMS dielectric; only optos,
+  relay air-gaps and T1 cross the domains). ✓
+- **ESP32-C6 pad map:** every U1 pad↔GPIO claim in NETS verified against the Espressif
+  symbol (gates GPIO20/21/22 = pads 18/19/20; optos GPIO3/2/23 = pads 26/27/21; USB D∓ =
+  pads 13/14; EN/BOOT/IO8 straps correct; IO15 float OK). Relays default off at boot. ✓
+- **ES8311 (U3):** all 20 pins + EP verified against the datasheet pinout (CCLK=1, MCLK=2,
+  PVDD/DVDD=3/4, DGND=5, SCLK=6, ASDOUT=7, LRCK=8, DSDIN=9, AGND=10, AVDD=11, OUTP/N=12/13,
+  DACVREF/ADCVREF/VMID=14/15/16, MIC1N/P=17/18, CDATA=19, CE=20). CE pull-down → addr 0x18. ✓
+
+### Cautions (firmware / bench, not blockers)
+
+- **T1 + codec see full ring-tone level:** the Etagenruf tone is the speaker drive across
+  P1/P5 — it hits T1 (a −10 dBm-class telecom transformer, prim. DCR 115 Ω) and arrives 1:1
+  at ES8311 MIC1P/N through the 1 µF caps with **no series limiting**. Every apartment ring
+  overdrives the mic path; risk of codec input overstress. Add series R / divider / clamp on
+  the MIC side (or attenuate at the primary) when the audio front-end is finalised.
+- **Relay release race:** dropping K3 while K1 is held closes K3's pole-A NC (~ms) before
+  K1's armature releases → momentary *dead short* P2↔P3 (via IN_P4↔P4↔S2-strap↔P3) for
+  ~1–5 ms. Likely harmless to the TV20/S opener (electromechanical), but firmware should
+  always sequence **K1 off → ≥10 ms → K3 off** (engage order is enforced by the interlock).
+  **Implemented in `doorbell-v4.yaml` (2026-06-10):** the `doorbell_sound_state` template
+  binary sensor's `on_press` — the *only* code path that de-energises K3 — now does
+  `switch.turn_off: intercom_ptt` → `delay: 10ms` → K3 off. No manual K3 sequencing anywhere
+  else; the existing sensor-driven control is the single owner of K3. Using the switch (not
+  the raw output) also keeps the HA-visible PTT state in sync when a session ends with PTT
+  still latched on.
+  - **K1 state feedback — evaluated and declined (2026-06-10).** Considered wiring K1's spare
+    pole B as an armature-state feedback contact to a spare GPIO (1/4/5 free; precedent: K3's
+    pole B already carries the logic-side gate interlock, so no new isolation concern). It
+    would only catch a fault that firmware sequencing can't: a welded/stuck K1 contact. At
+    µA–mA dry-circuit loads on bifurcated gold contacts, welding is not a realistic failure
+    mode; G6K-2F release time is bounded (≈1–3 ms), so a fixed ≥10 ms firmware gap covers the
+    race with large margin, and the worst case (a few-ms P2↔P3 short) equals the TV20/S's own
+    documented test action — too short to pull in the opener relay. A simultaneous-drop on
+    power loss has the same benign outcome and no feedback contact would help there.
+    **Decision: firmware sequencing suffices; K1 pole B stays spare.** (If telemetry is ever
+    wanted: K1.6 pole-B COM → spare GPIO w/ internal pull-up, K1.5 NO → GND; LOW = engaged.)
+- **Sense cross-talk during sessions:** with K1 engaged, IN_P4 = P2 carries speech — OC2
+  (house bell) may flicker; during an Etagenruf tone OC1 (P5↔P2) may flicker. Mask both in
+  firmware while the corresponding state is active.
+- **R_lim3 value** still TBD pending measured session voltage (unchanged).
