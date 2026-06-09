@@ -10,6 +10,8 @@ REF = {
     "U1":"U1","U2":"U2","U3":"U3","T1":"T1","J1":"J1","J2":"J2","K2":"K2","K3":"K3","K1":"K1",
     "Q2":"Q2","Q3":"Q3","Q1":"Q1",
     "D2":"D2","D3":"D3","D1":"D1","D_vbus":"D4","D_esd":"D5","OC1":"OK1","OC2":"OK2","OC3":"OK3","LED1":"D6",
+    "SW_OC1":"SW3","SW_OC2":"SW4","SW_OC3":"SW5",
+    "D_oc1":"D7","D_oc2":"D8","D_oc3":"D9",   # opto LED reverse-voltage clamps (1N4148W anti-parallel)
     # resistors grouped by function (pairs adjacent): opto / relay drivers / MCU straps / USB CC / LED
     "R_lim1":"R1","R_lim2":"R2","R_em":"R3","R_g2":"R4","R_g3":"R5","R_g1":"R6",
     "R_pd2":"R7","R_pd3":"R8","R_pd1":"R9",
@@ -30,6 +32,9 @@ COMP = {
     "T1": ("SM_LP_5001", "SM-LP-5001", "SM-LP-5001"),   # Bourns 600:600 1:1 line/audio iso xfmr; LCSC C7503474. Symbol+fp imported via easyeda2kicad -> kicad/lib_audio/
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4085)"),
     "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
+    "SW_OC1": ("cas220tb1", "CAS-220TB1", "Polarity"),
+    "SW_OC2": ("cas220tb1", "CAS-220TB1", "Polarity"),
+    "SW_OC3": ("cas220tb1", "CAS-220TB1", "Polarity"),
     "K2": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),   # 4.5V coil: must-operate 3.6V, margin on the ~4.5V post-Schottky rail
     "K3": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),
     "K1": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),   # PTT relay — contacts TBD (audio circuit not yet defined)
@@ -41,6 +46,9 @@ COMP = {
     "D1": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),
     "D_vbus": ("PCM_JLCPCB-Diodes", "Schottky,SS14", "SS14"),                       # VBUS reverse-protection (LCSC C2480)
     "D_esd": ("PCM_JLCPCB-Diode-Packages", "Package, SRV05-4_C7420376", "SRV05-4"), # USB D+/D- ESD array (LCSC C7420376)
+    "D_oc1": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),  # OC1 LED reverse-voltage clamp
+    "D_oc2": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),  # OC2 LED reverse-voltage clamp
+    "D_oc3": ("PCM_JLCPCB-Diodes", "Switching,1N4148W", "1N4148W"),  # OC3 LED reverse-voltage clamp
     "OC2": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
     "OC3": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),
     "OC1": ("PCM_JLCPCB-Optocouplers", "LTV-217-B-G", "LTV-217 (PC817)"),   # session-active sense: anode=P5 (coil feed), cathode->R_lim3->P2 (coil return); conducts when K1_WF26 energised
@@ -97,11 +105,15 @@ FOOTPRINT = {
     "T1": "SM_LP_5001:XFMR-SMD_SM-LP-5001E",   # Bourns SM-LP-5001: winding A=1,3 (CT=2) / winding B=4,6 (CT=5)
     "J1": "Connector_USB:USB_C_Receptacle_GCT_USB4085",  # 2-row THT Type-C (LCSC C7095263)
     "J2": "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical",
+    "SW_OC1": "cas220tb1:SW-SMD_NIDEC_CAS-220XBX",
+    "SW_OC2": "cas220tb1:SW-SMD_NIDEC_CAS-220XBX",
+    "SW_OC3": "cas220tb1:SW-SMD_NIDEC_CAS-220XBX",
     "K2": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
     "K3": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
     "K1": "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y",
     "Q2": "PCM_JLCPCB:Q_SOT-23", "Q3": "PCM_JLCPCB:Q_SOT-23", "Q1": "PCM_JLCPCB:Q_SOT-23",
     "D2": "PCM_JLCPCB:D_SOD-123", "D3": "PCM_JLCPCB:D_SOD-123", "D1": "PCM_JLCPCB:D_SOD-123",
+    "D_oc1": "PCM_JLCPCB:D_SOD-123", "D_oc2": "PCM_JLCPCB:D_SOD-123", "D_oc3": "PCM_JLCPCB:D_SOD-123",
     "D_vbus": "PCM_JLCPCB:D_SMA",
     "D_esd": "PCM_JLCPCB:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1",
     "OC2": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm", "OC3": "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm",
@@ -116,7 +128,8 @@ for _c in ("C_in","C_3v3","C_out","C_en","C_dec",
     FOOTPRINT[_c] = "PCM_JLCPCB:C_0603"
 
 # FP override used by the schematic generator (stock symbols carry no footprint)
-FP_OVERRIDE = {r: FOOTPRINT[r] for r in ("J1", "J2", "K2", "K3", "U3", "T1")}
+FP_OVERRIDE = {r: FOOTPRINT[r] for r in ("J1", "J2", "K2", "K3", "U3", "T1",
+                                          "SW_OC1", "SW_OC2", "SW_OC3")}
 
 # nets: name -> [(ref, pad), ...]    (G6K-2 relay: coil 1,8 | COM=3 NC=2 NO=4)
 NETS = {
@@ -164,13 +177,16 @@ NETS = {
     "GATE3_DRV": [("U1","20"),("R_g3","1")],   # GPIO22 / pad 20 — chime-suppress K3; consecutive with GATE1/GATE2 (18,19,20)
     "GATE3": [("R_g3","2"),("Q3","1"),("R_pd3","1")],
     "K3_DRAIN": [("Q3","3"),("K3","8"),("D3","2")],
-    "P1": [("J2","1"),("R_lim1","2"),("R_lim2","2"),("T1","1")],   # + audio xfmr winding-A end (tap across LS1 = P1/P5; CT pad 2 NC)
+    "P1": [("J2","1"),("T1","1"),
+           ("SW_OC2","3"),("SW_OC2","4"),   # SW pins 3+4 = P1 side (OC2)
+           ("SW_OC3","3"),("SW_OC3","4")],  # SW pins 3+4 = P1 side (OC3)
     # K1 = virtual PTT, pure TX relay (pole A). COM=IN_P4, NO->P2 (talk, energised).
     #   NC (pin 2) is intentionally open — not wired to P3 — so K1 de-energised does NOT strap
     #   P4<->P3 and cannot block the WF26's physical S2 from switching to talk. The WF26's own
     #   S2 (P4<->P3 at rest) handles the listen/idle state. K3 pole-B hardware interlock
     #   (GATE1_PRE/GATE1) enforces K3 must be on before K1 can fire. Pole B (K1 pads 5/6/7) spare.
-    "P2": [("J2","2"),("K2","3"),("K1","4"),("R_lim3","2")],  # + OC1 session-sense cathode return (P5 coil-feed > P2 coil-return)
+    "P2": [("J2","2"),("K2","3"),("K1","4"),
+           ("SW_OC1","3"),("SW_OC1","4")],  # SW pins 3+4 = P2 side (OC1)
     # ÖT door-opener bridge goes through R_ot (2.2k) in series with K2's NO contact, matching
     # the genuine WF26 (its ÖT button bridges lines 2<->3 via R1=2.2k, NOT a dead short -- so it
     # only loads the speech pair instead of fully shorting it). K2 COM=P2; K2 NO -> R_ot -> P3.
@@ -182,14 +198,25 @@ NETS = {
     # P4 = WF26-handset side (K3 COM -> J2.4 -> WF26 terminal 4).
     # K3 at rest passes IN_P4(NC)->P4(COM); energised it opens the line (gong silenced).
     "P4": [("J2","4"),("K3","3")],                           # WF26 terminal 4: J2.4, K3 COM
-    "IN_P4": [("K3","2"),("OC2","1"),("J2","6"),("K1","3")], # TV20/S incoming: K3 NC, OC2, J2.6, K1 COM
-    "P5": [("J2","5"),("OC3","1"),("OC1","1"),("T1","3")],   # + OC1 session-sense anode (P5 = relay coil feed, high side) + audio xfmr winding-A other end
+    "IN_P4": [("K3","2"),("J2","6"),("K1","3"),
+              ("SW_OC2","1"),("SW_OC2","6")],  # SW pins 1+6 = IN_P4 side (OC2)
+    "P5": [("J2","5"),("T1","3"),
+           ("SW_OC3","1"),("SW_OC3","6"),   # SW pins 1+6 = P5 side (OC3)
+           ("SW_OC1","1"),("SW_OC1","6")],  # SW pins 1+6 = P5 side (OC1)
     # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single
     # shared limiter let one ringing channel lift the common cathode node ~10.8 V and reverse-bias
     # the idle opto's LED beyond its 6 V VR; per-opto resistors keep each idle cathode near P1.
-    "OC2_CATH": [("OC2","2"),("R_lim1","1")],
-    "OC3_CATH": [("OC3","2"),("R_lim2","1")],
-    "OC1_CATH": [("OC1","2"),("R_lim3","1")],   # OC1 LED cathode -> R_lim3 -> P2 (LED anode on P5)
+    "OC2_CATH": [("OC2","2"),("R_lim1","1"),("D_oc2","1")],   # D_oc2 anode: clamps reverse V across LED
+    "OC3_CATH": [("OC3","2"),("R_lim2","1"),("D_oc3","1")],
+    "OC1_CATH": [("OC1","2"),("R_lim3","1"),("D_oc1","1")],
+    # SW center pins -> opto anodes (pos A=1↔2+4↔5 normal, pos B=2↔3+5↔6 reversed)
+    "OC2_JP": [("SW_OC2","2"),("OC2","1"),("D_oc2","2")],    # D_oc2 cathode: anti-parallel to opto LED
+    "OC3_JP": [("SW_OC3","2"),("OC3","1"),("D_oc3","2")],
+    "OC1_JP": [("SW_OC1","2"),("OC1","1"),("D_oc1","2")],
+    # SW pin 5 -> R_lim cathode-return side (sliding SW flips both poles simultaneously)
+    "OC2_RET": [("SW_OC2","5"),("R_lim1","2")],
+    "OC3_RET": [("SW_OC3","5"),("R_lim2","2")],
+    "OC1_RET": [("SW_OC1","5"),("R_lim3","2")],
     "OC2_OUT": [("OC2","4"),("U1","26")],   # GPIO3  / pad 26 (C6 right col) — house bell (Türruf)
     "OC3_OUT": [("OC3","4"),("U1","27")],   # GPIO2  / pad 27 (C6 right col) — apartment bell (Etagenruf)
     "OC1_OUT": [("OC1","4"),("U1","21")],   # GPIO23 / pad 21 (C6 right col) — session-active in
@@ -233,7 +260,8 @@ GROUPS = {
     "USB-C":                   ["J1", "D_esd", "R_cc1", "R_cc2"],
     "Power (LDO)":             ["U2", "C_in", "C_out", "D_vbus"],
     "Power LED":               ["LED1", "R_led"],
-    "Bell sense (optos)":      ["OC2", "OC3", "OC1", "R_lim1", "R_lim2", "R_lim3", "R_em"],
+    "Bell sense (optos)":      ["OC2", "OC3", "OC1", "R_lim1", "R_lim2", "R_lim3", "R_em", "D_oc1", "D_oc2", "D_oc3"],
+    "Polarity switches":       ["SW_OC3", "SW_OC2", "SW_OC1"],
     "K2 door-opener relay":    ["K2", "Q2", "D2", "R_g2", "R_pd2", "R_ot"],
     "K3 chime-suppress relay": ["K3", "Q3", "D3", "R_g3", "R_pd3"],
     "K1 PTT relay":            ["K1", "Q1", "D1", "R_g1", "R_pd1"],
@@ -259,7 +287,8 @@ NOCONN = [("K2","2"),("K2","5"),("K2","6"),("K2","7"),
           # Pads 24-25: GPIO17(U0RXD), GPIO16(U0TXD) — leave N/C
           # (pads 6/7/8/11/12/16/17 now = codec I2C/I2S; pads 18-20 = relay gates; pads 21/26/27 = opto outputs)
           ("U1","4"),("U1","5"),("U1","9"),
-          ("U1","22"),("U1","23"),("U1","24"),("U1","25")]
+          ("U1","22"),("U1","23"),("U1","24"),("U1","25"),
+]
 
 # placement grid (units of 2.54mm), shared cluster layout for schematic + PCB
 GRID = {
@@ -274,6 +303,10 @@ GRID = {
     "R_g1": (104, 98), "Q1": (109, 98), "R_pd1": (109, 104), "D1": (116, 94), "K1": (126, 98),
     "OC2": (36, 82), "OC3": (36, 96), "R_lim1": (50, 85), "R_lim2": (50, 90), "R_em": (50, 96), "J2": (16, 86),
     "OC1": (36, 110), "R_lim3": (50, 110),   # session-sense opto + limiter (schematic placement; reorganise later)
+    "D_oc2": (22, 82), "D_oc3": (22, 96), "D_oc1": (22, 110),  # opto LED clamp diodes (schematic)
+    "SW_OC2": (28, 82),   # OC2 polarity switch
+    "SW_OC3": (28, 96),   # OC3 polarity switch
+    "SW_OC1": (28, 110),  # OC1 polarity switch
     # --- audio codec cluster (schematic canvas; reorganise later) ---
     "U3": (90, 90), "T1": (70, 110),
     "C_dv": (78, 80), "C_pv": (82, 80), "C_av": (86, 80), "C_avb": (90, 80),
@@ -295,6 +328,7 @@ FP_LIB_DIRS = {
     "TerminalBlock_4Ucon": f"{_STOCK}/TerminalBlock_4Ucon.pretty",
     "ES8311": f"{_HERE}/lib_audio/ES8311.pretty",   # ES8311 mono codec (easyeda2kicad import, C962342)
     "SM_LP_5001": f"{_HERE}/lib_audio/SM_LP_5001.pretty",    # Bourns SM-LP-5001 (easyeda2kicad import, C7503474)
+    "cas220tb1": f"{_HERE}/lib_switches/cas220tb1.pretty",
     "Fiducial": f"{_STOCK}/Fiducial.pretty",   # PCBA optical reference marks (added in gen_pcb.py)
 }
 

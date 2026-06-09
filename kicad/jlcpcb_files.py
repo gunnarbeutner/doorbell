@@ -25,7 +25,10 @@ EXTRA_LCSC = {"J1": "C7095263",    # GCT USB4085 USB-C receptacle (THT)
               "U1": "C5366877",    # ESP32-C6-WROOM-1-N8 (8MB, PCB antenna)
               "U2": "C3294699",    # SGM2212-3.3 low-dropout LDO (overrides the AMS1117 symbol's LCSC)
               "U3": "C962342",     # ES8311 mono audio codec (QFN-20)
-              "T1": "C7503474"}    # Bourns SM-LP-5001 600:600 audio isolation transformer
+              "T1": "C7503474",    # Bourns SM-LP-5001 600:600 audio isolation transformer
+              "SW3": "C2921541",   # NIDEC CAS-220TB1 DPDT slide switch
+              "SW4": "C2921541",
+              "SW5": "C2921541"}
 
 sch = Schematic.from_file(SCH)
 comp = OrderedDict()   # ref -> (value, footprint, lcsc); de-dupes multi-unit symbols

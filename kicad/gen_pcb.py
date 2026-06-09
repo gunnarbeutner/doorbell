@@ -47,14 +47,23 @@ PCB_PLACE = {
     "D_esd":  (43.5, 59.5, 0),# SRV05-4 USB D+/D- ESD array
     # === TOP edge: WF26 terminal, centred above the bus interface ===
     "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
+    # === Polarity switches: DPDT SMD slide switches, 9 mm pitch, Y=18 left of J2.
+    #     Y=18 keeps the ±4.3 mm-extent SMD footprint inside the board outline. ===
+    "SW_OC3": (2,  18, 0),
+    "SW_OC2": (8,  18, 0),
+    "SW_OC1": (14, 18, 0),
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
-    "OC3":    (2.74, 27.5, 270),   # apartment bell sense; opto block centered in UL quadrant
-    "OC2":    (6.74, 27.5, 270),   # house bell sense; opto block centered in UL quadrant
-    "OC1":    (10.74, 27.5, 270),  # session-sense opto; right of OC2 in the bell-sense row
-    "R_lim1": (6.74, 21.5, 0),     # R1, OC2's own LED limiter (above OC2) -- unshared
-    "R_lim2": (2.74, 21.5, 0),     # R2, OC3's own LED limiter (above OC3) -- unshared
-    "R_lim3": (10.74, 21.5, 0),    # R17, OC1's LED limiter (above OC1)
-    "R_em":   (6.74, 33.7, 180),   # R3, centred under the three-opto column (x=6.74)
+    "OC3":    (2.74, 33.5, 270),   # apartment bell sense; opto block centered in UL quadrant
+    "OC2":    (6.74, 33.5, 270),   # house bell sense; opto block centered in UL quadrant
+    "OC1":    (10.74, 33.5, 270),  # session-sense opto; right of OC2 in the bell-sense row
+    "R_lim1": (6.74, 23.25, 0),    # R1, OC2's own LED limiter (above OC2) -- unshared
+    "R_lim2": (2.74, 23.25, 0),    # R2, OC3's own LED limiter (above OC3) -- unshared
+    "R_lim3": (10.74, 23.25, 0),   # R17, OC1's LED limiter (above OC1)
+    # Opto LED reverse-voltage clamps (1N4148W anti-parallel): between R_lim and opto, same column.
+    "D_oc3":  (2.74, 26.5, 270),
+    "D_oc2":  (6.74, 26.5, 270),
+    "D_oc1":  (10.74, 26.5, 270),
+    "R_em":   (0, 35.82, 90),      # R3, emitter common resistor
     "K3":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
     "Q3":     (23.5, 34, 180),# NMOS, swapped with R_pd3 + rotated 180°
     "R_g3":   (14.75, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
@@ -400,6 +409,33 @@ _t1l, _t1r, _t1t, _t1b = fext(fps["T1"])
 fps["T1"].Reference().SetPosition(vmm((_t1l + _t1r) / 2.0, (_t1t + _t1b) / 2.0))
 fps["T1"].Reference().SetTextAngleDegrees(0)
 
+# Polarity switches: default ref position (0, -6.65 local) ends up off-board; move to centre.
+for _swk in ("SW_OC1", "SW_OC2", "SW_OC3"):
+    fps[_swk].Reference().SetPosition(fps[_swk].GetPosition())
+    fps[_swk].Reference().SetTextAngleDegrees(0)
+
+# Group label above the polarity switches explaining their function.
+_pol_lbl = pcbnew.PCB_TEXT(board)
+_pol_lbl.SetText("POLARITY")
+_pol_lbl.SetLayer(pcbnew.F_SilkS)
+_pol_lbl.SetPosition(vmm(8, 14.0))
+_pol_lbl.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
+_pol_lbl.SetTextThickness(pcbnew.FromMM(0.12))
+_pol_lbl.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER)
+board.Add(_pol_lbl)
+
+# Default-position markers: short vertical tick at the pin-1 column (x = sw_x − 1.75) of
+# each switch, in the gap between the top pad row (y≈15.35) and the body silk (y≈16.05).
+# Slider left = pin 1↔2 + 4↔5 = normal/default polarity (matches pre-switch direct wiring).
+for _swx in (2.0, 8.0, 14.0):
+    _dm = pcbnew.PCB_SHAPE(board)
+    _dm.SetShape(pcbnew.SHAPE_T_SEGMENT)
+    _dm.SetLayer(pcbnew.F_SilkS)
+    _dm.SetWidth(pcbnew.FromMM(0.25))
+    _dm.SetStart(vmm(_swx - 1.75, 21.6))
+    _dm.SetEnd(vmm(_swx - 1.75, 22.3))
+    board.Add(_dm)
+
 # Relays sit close together; the default side-placed refdes overlaps the neighbour's body
 # silk. Centre each relay's reference on its own body instead.
 for _k in ("K2", "K3", "K1"):
@@ -433,25 +469,15 @@ for _sw, _txt, _side, _ang in (("SW_boot", "BOOT", "left", 90), ("SW_en", "RST",
     _lab.SetTextThickness(pcbnew.FromMM(0.15))
     board.Add(_lab)
 
-# Product name on the front silkscreen, upper-left corner (reads top-to-bottom).
+# Product name + revision on the front silkscreen (reads bottom-to-top, left of U1).
 _pn = pcbnew.PCB_TEXT(board)
-_pn.SetText("Doorbell Ctrl V4")
+_pn.SetText("Doorbell Ctrl V4  rev A  2026-06-07")
 _pn.SetLayer(pcbnew.F_SilkS)
-_pn.SetPosition(vmm(8.5, 14.5))
+_pn.SetPosition(vmm(0.5, 52.75))
 _pn.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
 _pn.SetTextThickness(pcbnew.FromMM(0.15))
-_pn.SetTextAngleDegrees(0)   # rotated CW from 90° CCW → horizontal (reads left-to-right)
+_pn.SetTextAngleDegrees(90)   # CCW, reads bottom-to-top
 board.Add(_pn)
-
-# Board revision + date, parallel to the product name (also reads top-to-bottom).
-_rd = pcbnew.PCB_TEXT(board)
-_rd.SetText("rev A  2026-06-07")
-_rd.SetLayer(pcbnew.F_SilkS)
-_rd.SetPosition(vmm(8.5, 16.5))
-_rd.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
-_rd.SetTextThickness(pcbnew.FromMM(0.13))
-_rd.SetTextAngleDegrees(0)
-board.Add(_rd)
 
 # Overhanging parts (EDGE_OVERHANG) run their silkscreen off / across the board edge they
 # overhang (silk_edge_clearance). Drop the silk graphics that extend past that edge; the fab
