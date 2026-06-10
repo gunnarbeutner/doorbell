@@ -489,14 +489,14 @@ for _pin, _cap, _bx, _by in (("12", "C_op", 264.16, 236.22),   # OUTP
     _p, _c1 = PX("U3", _pin), PX(_cap, "1")
     wire(_p, (_bx, _p[1]), (_bx, _by), (_c1[0], _by), _c1)
 _t4, _t6 = PX("T1", "4"), PX("T1", "6")
-wire(_t6, (PX("C_mn", "2")[0], _t6[1]))       # SEC_B rail on T1 pin 6's row
-for _cap in ("C_on", "C_mn"):
-    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t6[1]))
-junction(PX("C_on", "2")[0], _t6[1])
-wire(_t4, (PX("C_mp", "2")[0], _t4[1]))       # SEC_A rail on T1 pin 4's row
+wire(_t6, (PX("C_mp", "2")[0], _t6[1]))       # SEC_A rail on T1 pin 6's row
 for _cap in ("C_op", "C_mp"):
+    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t6[1]))
+junction(PX("C_op", "2")[0], _t6[1])
+wire(_t4, (PX("C_mn", "2")[0], _t4[1]))       # SEC_B rail on T1 pin 4's row
+for _cap in ("C_on", "C_mn"):
     _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t4[1]))
-junction(PX("C_op", "2")[0], _t4[1])
+junction(PX("C_on", "2")[0], _t4[1])
 
 # I2C pull-ups wired straight down onto their codec pins; the wire carries the net
 # name (U1's pins keep their labels, binding the rest of the net).

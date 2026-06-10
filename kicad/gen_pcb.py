@@ -41,8 +41,8 @@ PCB_PLACE = {
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
     "J1":     (44.1, 60, 0),  # USB-C (USB4105: SMD pads, THT shell stakes); A9/B4 VBUS
                               # column at x=46.5, in line with F1 pin 1 and its via
-    "R_cc1":  (49.21, 59.25, 90), # CC1 pulldown
-    "R_cc2":  (47.93, 59.25, 90), # CC2 pulldown
+    "R_cc1":  (49.21, 59.75, 90), # CC1 pulldown
+    "R_cc2":  (47.93, 59.75, 90), # CC2 pulldown
     # Protection diodes: Schottky below U2, ESD array on D+/D- above J1.
     "D_vbus": (44.25, 51, 0), # SS14 VBUS reverse-protection Schottky
     "D_esd":  (44, 59.25, 0),# TPD2S017 USB D+/D- flow-through ESD clamp
@@ -346,12 +346,12 @@ _d10a = next(p for p in fps["D_tvs"].Pads() if p.GetNumber() == "2").GetPosition
 _pre_track(_d10a, pcbnew.VECTOR2I(_d10c.x, _d10c.y), pcbnew.F_Cu, net=nets["GND"])
 _pre_via(pcbnew.VECTOR2I(_d10c.x, _d10c.y), net=nets["GND"])
 
-# VBUS_F distribution: F1 pin 2 doglegs into D4's anode, which doglegs on to D10's
-# cathode — chaining fuse output -> Schottky -> TVS (D5 pin 5 already taps D10).
+# VBUS_F distribution: star on F1 pin 2 — one dogleg to D4's anode, one to D10's
+# cathode (D5 pin 5 already taps D10).
 _f1b = next(p for p in fps["F_vbus"].Pads() if p.GetNumber() == "2").GetPosition()
 _d4a = next(p for p in fps["D_vbus"].Pads() if p.GetNumber() == "2").GetPosition()
 _dogleg(_f1b, _d4a, pcbnew.F_Cu, w=0.5, net=nets["VBUS_F"])
-_dogleg(_d4a, _d10k, pcbnew.F_Cu, w=0.5, net=nets["VBUS_F"])
+_dogleg(_f1b, _d10k, pcbnew.F_Cu, w=0.5, net=nets["VBUS_F"])
 
 # --- J1 GND-to-shield stitch: each end-of-row GND pad stack (A1/B12 left, A12/B1 right)
 #     ties to its side's rear (upper) SH stake with a 45°+straight dogleg, duplicated on
@@ -428,7 +428,15 @@ _ul = min(MM(g.GetBoundingBox().GetLeft())   for g in _silk)      # F.SilkS body
 _ur = max(MM(g.GetBoundingBox().GetRight())  for g in _silk)
 _pad_s = max(MM(p.GetBoundingBox().GetBottom()) for p in _u1.Pads())
 _axL, _axR = max(x0, _ul - ANT_CLEAR), min(x1, _ur + ANT_CLEAR)  # ±ANT_CLEAR from U1 silk body, clipped to board
-_ayT, _ayB = _pad_s + 0.2, _ub
+# north edge: align with the module's OWN antenna-keepout boundary (the rule area
+# embedded in the Espressif footprint) instead of hugging the pad row — banning the
+# extra ~0.8 mm band above it costs routing space Espressif doesn't ask for. The
+# pad-row formula remains as a floor (and the fallback if the footprint zone is gone).
+_own = [z for z in _u1.Zones() if z.GetIsRuleArea()]
+_ayT = _pad_s + 0.2
+if _own:
+    _ayT = max(_ayT, min(MM(z.GetBoundingBox().GetTop()) for z in _own))
+_ayB = _ub
 _az = pcbnew.ZONE(board); _az.SetIsRuleArea(True); _az.SetLayerSet(pcbnew.LSET.AllCuMask())
 _az.SetDoNotAllowTracks(True); _az.SetDoNotAllowVias(True); _az.SetDoNotAllowZoneFills(True)
 _az.SetDoNotAllowPads(False); _az.SetDoNotAllowFootprints(False)
@@ -535,6 +543,11 @@ j1ref.SetTextAngleDegrees(0)
 _t1l, _t1r, _t1t, _t1b = fext(fps["T1"])
 fps["T1"].Reference().SetPosition(vmm((_t1l + _t1r) / 2.0, (_t1t + _t1b) / 2.0))
 fps["T1"].Reference().SetTextAngleDegrees(0)
+
+# F1's ref to the right of its body, clear of the fuse courtyard.
+_f1l, _f1r, _f1t, _f1b2 = fext(fps["F_vbus"])
+fps["F_vbus"].Reference().SetPosition(vmm(_f1r + 1.0, (_f1t + _f1b2) / 2.0))
+fps["F_vbus"].Reference().SetTextAngleDegrees(0)
 
 # Polarity switches: default ref position (0, -6.65 local) ends up off-board; move to centre.
 for _swk in ("SW_OC1", "SW_OC2", "SW_OC3"):

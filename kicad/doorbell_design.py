@@ -286,7 +286,9 @@ NETS = {
     "GATE3_DRV": [("U1","20"),("R_g3","1")],   # GPIO22 / pad 20 — chime-suppress K3; consecutive with GATE1/GATE2 (18,19,20)
     "GATE3": [("R_g3","2"),("Q3","1"),("R_pd3","1")],
     "K3_DRAIN": [("Q3","3"),("K3","8"),("D3","2")],
-    "P1": [("J2","1"),("T1","1"),
+    # T1 leg<->pin assignment routing-driven, like the secondary: flipping winding A
+    # only inverts absolute audio polarity (inaudible)
+    "P1": [("J2","1"),("T1","3"),
            ("SW_OC2","3"),("SW_OC2","4"),   # SW pins 3+4 = P1 side (OC2)
            ("SW_OC3","3"),("SW_OC3","4")],  # SW pins 3+4 = P1 side (OC3)
     # K1 = virtual PTT, pure TX relay (pole A). COM=IN_P4, NO->P2 (talk, energised).
@@ -309,7 +311,7 @@ NETS = {
     "P4": [("J2","4"),("K3","3")],                           # WF26 terminal 4: J2.4, K3 COM
     "IN_P4": [("K3","2"),("J2","6"),("K1","3"),
               ("SW_OC2","1"),("SW_OC2","6")],  # SW pins 1+6 = IN_P4 side (OC2)
-    "P5": [("J2","5"),("T1","3"),
+    "P5": [("J2","5"),("T1","1"),
            ("SW_OC3","1"),("SW_OC3","6"),   # SW pins 1+6 = P5 side (OC3)
            ("SW_OC1","1"),("SW_OC1","6")],  # SW pins 1+6 = P5 side (OC1)
     # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single
@@ -364,8 +366,10 @@ NETS = {
     "ES_OUTN": [("U3","13"),("C_on","1")],
     "ES_MICP": [("U3","18"),("C_mp","1")],
     "ES_MICN": [("U3","17"),("C_mn","1")],
-    "SEC_A":   [("T1","4"),("C_op","2"),("C_mp","2")],   # secondary leg A: OUTP & MIC1P
-    "SEC_B":   [("T1","6"),("C_on","2"),("C_mn","2")],   # secondary leg B: OUTN & MIC1N
+    # leg<->pin assignment chosen for clean PCB routing; the swap only flips absolute
+    # audio polarity, which is inaudible (mono path, no phase-sensitive summing)
+    "SEC_A":   [("T1","6"),("C_op","2"),("C_mp","2")],   # secondary leg A: OUTP & MIC1P
+    "SEC_B":   [("T1","4"),("C_on","2"),("C_mn","2")],   # secondary leg B: OUTN & MIC1N
 }
 
 # Subassembly groups (KiCad PCB_GROUP) -> internal keys. Each functional block selects/moves as a
