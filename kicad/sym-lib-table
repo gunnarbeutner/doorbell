@@ -2,4 +2,5 @@
 	(version 7)
 	(lib (name "SM_LP_5001")(type "KiCad")(uri "${KIPRJMOD}/lib_audio/SM_LP_5001.kicad_sym")(options "")(descr "Bourns SM-LP-5001 audio iso transformer (easyeda2kicad import)"))
 	(lib (name "ES8311")(type "KiCad")(uri "${KIPRJMOD}/lib_audio/ES8311.kicad_sym")(options "")(descr "ES8311 mono audio codec (easyeda2kicad import)"))
+	(lib (name "TPD2S017")(type "KiCad")(uri "${KIPRJMOD}/lib_usb/TPD2S017.kicad_sym")(options "")(descr "TI TPD2S017 USB ESD clamp (easyeda2kicad import)"))
 )

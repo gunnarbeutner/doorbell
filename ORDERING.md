@@ -1,10 +1,10 @@
 # Ordering Klingel V4 from JLCPCB (one assembled board)
 
 Goal: get **one assembled board** via JLCPCB **Economic PCBA**. The board is ~52 × 58 mm,
-**4-layer**, all parts on the **top side**; J1 (USB-C) and J2 (6-way screw terminal) are
-through-hole but **assembled by JLCPCB** (THT assembly — nothing is hand-soldered). Economic
+**4-layer**, all parts on the **top side**; J2 (6-way screw terminal) is through-hole and
+J1 (USB-C) has THT shell stakes — both **assembled by JLCPCB** (THT assembly — nothing is hand-soldered). Economic
 PCBA batch-panels small boards for us, so we don't supply a panel — but the bottom edge
-carries the USB-C (J1, overhangs 3.1 mm) **and** U1's PCB antenna (flush on the edge), so
+carries the USB-C (J1, shell protrudes ~1.3 mm) **and** U1's PCB antenna (flush on the edge), so
 confirm JLCPCB's panel/depanel clears them (see the gates below).
 
 > Run `./build.sh all-route` first to (re)generate the fab files in `kicad/fab/` — the
@@ -33,8 +33,8 @@ confirm JLCPCB's panel/depanel clears them (see the gates below).
     C2921541) postdate that pass. If any line is Standard-only, the $25/side setup applies —
     decide then whether to proceed or substitute.
   - **Stock check:** also confirm LCSC stock on the less-common lines — the four above plus
-    K1–K3 (G6K-2F-Y DC4.5, C397193), J1 (USB4085, C7095263), J2 (DB125-3.5-6P, C5290323).
-  - **Through-hole parts:** J1 and J2 are in the CPL/BOM and assembled by JLCPCB; confirm THT
+    K1–K3 (G6K-2F-Y DC4.5, C397193), J1 (USB4105-GF-A-060, C3025063), J2 (DB125-3.5-6P, C5290323).
+  - **Through-hole parts:** J2 (and J1's shell stakes) are assembled by JLCPCB; confirm THT
     assembly is included when JLCPCB reviews/quotes the order.
   - **Assembly Qty:** `2` — assemble one + a spare. The setup/part fees are already paid, so
     the second board is nearly free and cheap insurance against a dud.
@@ -51,7 +51,7 @@ Economic has **no ≥70 mm / edge-rail requirement**; JLCPCB batch-panels small 
 If it prepares a production file / panel, check before approving that **no break-tab or
 mousebite lands on**:
 
-- **bottom edge** — J1 (USB-C, overhangs the edge 3.1 mm) and the **U1 antenna zone**
+- **bottom edge** — J1 (USB-C, shell protrudes ~1.3 mm past the edge) and the **U1 antenna zone**
   (the WROOM-1 antenna is flush on this edge over a copper keepout; tabs/drill nubs there
   sit right at the antenna)
 - **top edge** — J2 (6-way screw terminal, flush on the edge)
@@ -74,7 +74,8 @@ worst-consequence first:
 | **D4** SS14 (VBUS Schottky) | band direction | blocks VBUS → board dead |
 | **D7, D8, D9** 1N4148W (opto clamps) | band — must be **anti-parallel** to the opto LED (band toward the SW side / LED anode net) | all bell/session sense dead — a silent failure until bench test; scrutinise these three hardest |
 | **D1, D2, D3** 1N4148W (relay flybacks) | band direction | shorts the relay drive |
-| **D5** SRV05-4 (USB ESD) | orientation | wrong clamp / damage |
+| **D5** TPD2S017 (USB ESD) | pin-1 orientation — channels are in series with D± | USB dead / wrong clamp |
+| **D10** SMF5.0A (VBUS TVS) | band direction | shorts or leaves VBUS unclamped |
 | **Q1, Q2, Q3** 2N7002 | SOT-23 G/S/D | relay drive dead |
 | **OK1, OK2, OK3** LTV-217 optos | pin 1 | sense channels dead |
 | **K1, K2, K3** G6K-2F-Y relays | orientation | contacts swapped → opener/chime logic wrong |

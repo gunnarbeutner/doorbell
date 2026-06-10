@@ -257,12 +257,12 @@ rectified).
 |----------|--------|--------|
 | MCU | **ESP32-C6-WROOM-1-N8** (LCSC C5366877) | ESPHome-supported, native USB, enough GPIO for the audio path (I²S + I²C + 3 relay gates + 3 opto inputs) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
-| Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J1/J2 are through-hole but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
+| Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
 | Relays | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts beat silver at these low "wetting" currents. 4.5 V coil (must-operate 3.6 V) clears the post-Schottky ~4.5 V rail by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%) coil max |
 | Relay driver | **Discrete: 2N7002 + 1N4148W flyback + 10 k gate pull-down** | Pull-down ⇒ relays default OFF at boot |
 | Opto polarity | **DPDT slide switch per opto** (NIDEC CAS-220TB1, C2921541) + **anti-parallel 1N4148W clamp** across each LED | Bus signal polarity is unconfirmed per channel; the switch selects it without rework, the clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on AC content |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT) | See "WF26 connector"; 6-way because line 4 needs in + out for the series chime-break |
-| USB-C connector | **GCT USB4085** (2-row THT, C7095263) | Single-row SMD Type-C pads fight routing; USB4085's two TH rows escape cleanly |
+| USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers (D+/D− on B.Cu over GND) |
 | Layers | **4-layer** (F.Cu / +3V3 / GND / B.Cu) | Solid planes; GND on In2 (under B.Cu) so the USB D+/D− pair references GND |
 | Power | **USB-C 5 V** → SS14 reverse-protection Schottky → **SGM2212-3.3** low-dropout LDO (C3294699) | The ~0.45 V Schottky drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
 | Audio | **Half-duplex path on-board**: ES8311 mono codec + SM-LP-5001 isolation transformer + K1 virtual-PTT relay + OC1 session-sense; analog front-end provisional | The bus is half-duplex by design (single LS1 transducer) ⇒ no echo cancellation needed ⇒ within the C6's reach |
@@ -386,11 +386,12 @@ board. (K1's gate drive additionally runs through the K3 interlock contact, abov
 ### Power tree
 
 ```
-USB-C VBUS (5V) ── SS14 (series reverse-protect) ── +5V ──┬── relay coils (+5V)
+USB-C VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ──┬── relay coils (+5V)
                                                           └── SGM2212-3.3 ── +3V3 ── ESP32-C6 + codec
 CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3: 10µF (C_out) + 10µF + 100nF decoupling
 USB D±  ── IO12/IO13 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)
-USB D± ESD: SRV05-4 (D5)
+USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from fused VBUS; VBUS_F TVS: SMF5.0A (D10)
+VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all protection — a clamping D10 blows it (fail-safe)
 ```
 > No bulk electrolytic: the local LDO actively regulates the ~350 mA WiFi-TX burst
 > (modeled droop ≈ 90 mV across 20 µF of ceramic on +3V3), so a bulk cap buys nothing.
@@ -426,10 +427,11 @@ solid **GND** plane / `B.Cu` (signals). GND on In2 (under B.Cu) so the USB D+/D�
 routed on B.Cu references GND. +5V is a short surface trace. Set in `gen_pcb.py`
 (`SetCopperLayerCount(4)`); fab gerbers include the inner layers.
 
-**Why 4-layer + the USB4085 connector.** A single-row SMD Type-C carries D+/D−/CC/VBUS on
-interleaved, duplicated pads in one row — a routing nightmare. The 2-row through-hole
-USB4085 gives clean escapes, and 4 layers let the D+/D− pair route together on B.Cu over
-the GND plane.
+**Why 4-layer.** J1 (USB4105) is a single-row SMD Type-C: D+/D−/CC/VBUS escape from one
+fine-pitch interleaved pad row, which leans on the 4-layer stack — the D+/D− pair routes
+together on B.Cu over the GND plane, and the remaining escapes fan out on F.Cu/B.Cu.
+Placement around J1 must leave the escape fan room (verify Freerouting copes after any
+reshuffle).
 
 **Routing + plane recipe.** Freerouting routes on all four layers freely (no `LT_POWER`
 designation, no pre-stitch vias). After the SES is imported, `route.py` pours +3V3 on In1
@@ -449,7 +451,8 @@ upper middle; the **audio cluster** (U3 + support passives, T1 below it) sits mi
 between U1 and the LDO/USB area; LDO + buttons + power LED fill the right/centre gaps.
 
 **Edge handling** (`EDGE_FLUSH` / `EDGE_OVERHANG` in `doorbell_design.py`): J1 and U1 are
-pinned flush to the bottom edge (J1 overhanging 3.1 mm so a cable seats fully), J2 flush to
+pinned flush to the bottom edge (J1 sits on its footprint's recommended PCB-edge line,
+shell mouth protruding ~1.3 mm so a cable seats fully), J2 flush to
 the top edge; the remaining edges get a 1 mm margin off the tight bounding box.
 `check_pcb.py` verifies the overhangs and that every other footprint stays inside the
 outline.
@@ -599,7 +602,7 @@ LS1.
 
 **Datasheet-verified:** G6K-2F-Y pole pinout; SGM2212 SOT-223 pinout + ~1 V dropout
 headroom; relay coil margin (DC4.5 must-operate 3.6 V vs ~4.5 V rail); 1N4148W pin 1 =
-cathode (CDFER lib); LTV-217 pinout; USB front-end (D+/D− not swapped, SRV05-4 low-cap,
+cathode (CDFER lib); LTV-217 pinout; USB front-end (D+/D− not swapped; TPD2S017 pinout/V_CC bias,
 CC 5.1 kΩ Rd); 2N7002 gate drive at 3.3 V; bell-sense GPIO LOW levels; CAS-220 switch
 contact arrangement (COM = pins 2/5) and rating; ES8311 full pinout; SM-LP-5001 isolation
 rating; every U1 pad↔GPIO assignment against the Espressif C6-WROOM-1 symbol.

@@ -64,7 +64,8 @@ if not pcbnew.ExportSpecctraDSN(board, DSN):
 NET_CLASSES = [
     ("gnd_plane",  ["GND"],             ["F.Cu", "In2.Cu", "B.Cu"]),
     ("v3v3_plane", ["+3V3"],            ["F.Cu", "In1.Cu", "B.Cu"]),
-    ("usb_diff",   ["USB_DP","USB_DM"], ["F.Cu", "B.Cu"]),
+    # both sides of the TPD2S017 (connector-side + ESP-side) stay on outer layers
+    ("usb_diff",   ["USB_DP","USB_DM","USB_DP_ESP","USB_DM_ESP"], ["F.Cu", "B.Cu"]),
 ]
 RECLASSED = {n for _, nets, _ in NET_CLASSES for n in nets}
 

@@ -34,9 +34,11 @@ LIB = {
     "Connector": f"{KS}/Connector.kicad_sym",
     "Connector_Generic": f"{KS}/Connector_Generic.kicad_sym",
     "Relay": f"{KS}/Relay.kicad_sym",
+    "Device": f"{KS}/Device.kicad_sym",
     "ES8311": f"{HERE}/lib_audio/ES8311.kicad_sym",   # ES8311 mono codec (easyeda2kicad import)
     "SM_LP_5001": f"{HERE}/lib_audio/SM_LP_5001.kicad_sym",   # Bourns SM-LP-5001 (easyeda2kicad import)
     "cas220tb1": f"{HERE}/lib_switches/cas220tb1.kicad_sym",   # NIDEC CAS-220TB1 DPDT slide switch
+    "TPD2S017": f"{HERE}/lib_usb/TPD2S017.kicad_sym",   # TI USB ESD clamp (easyeda2kicad import)
     "power": f"{KS}/power.kicad_sym",
 }
 _libcache = {}
@@ -95,7 +97,7 @@ LEFT_TEXT = {"SW_OC1": 10.5, "SW_OC2": 10.5, "SW_OC3": 10.5,
              "R_em": 2.54,    # emitter trunk runs along the right side
              "R_sda": 2.54}   # right side crowds the audio group-box edge
 # Refs whose ref/value stack ABOVE the body (below/inside is blocked).
-TEXT_ABOVE = {"U2", "J1", "T1", "D_oc1", "D_oc2", "D_oc3"}
+TEXT_ABOVE = {"U2", "J1", "T1", "D_oc1", "D_oc2", "D_oc3", "D_esd"}
 # Refs whose ref/value stack BELOW the body (sides are blocked by wires/ports).
 BELOW_TEXT = {"SW_en", "SW_boot"}
 # Symbol rotation (deg, KiCad convention). Lets 2-pin parts lie inline with the
@@ -112,7 +114,12 @@ ROT = {"R_io8": 90, "R_g1": 90, "R_led": 270, "LED1": 270,
        "D_oc1": 180, "D_oc2": 180, "D_oc3": 180,
        # VBUS Schottky laid horizontal inline on J1's VBUS row: SS14 pin 2 (anode)
        # faces left toward J1, pin 1 (cathode/+5V) right.
-       "D_vbus": 90}
+       "D_vbus": 90,
+       # VBUS TVS flipped so pin 1 (cathode) faces up into the VBUS_F run over J1,
+       # pin 2 (anode) down into its GND port.
+       "D_tvs": 180,
+       # VBUS fuse inline on J1's VBUS row, pin 1 (J1 side) left
+       "F_vbus": 90}
 def screen_offset(px, py, ang):
     """Symbol-coord pin position -> screen offset for a symbol rotated by ang."""
     x, y = px, -py                      # screen y is down
@@ -132,12 +139,14 @@ def screen_offset(px, py, ang):
 #   bottom-left J2 + opto sense rows  bottom-mid  ES8311 codec + transformer
 G = 2.54
 SCHEM_POS = {
-    # --- USB-C: ESD array left of J1, CC terminators wired off the CC pins ---
-    "J1": (19, 20), "D_esd": (10, 20),
+    # --- USB-C: TPD2S017 flow-through ESD clamp below J1 (connects by labels: J1-side
+    #     USB_DP/USB_DM in, ESP-side *_ESP out), CC terminators wired off the CC pins ---
+    "J1": (19, 20), "D_esd": (18.5, 34),
     "R_cc1": (34, 17.5), "R_cc2": (31, 18.5),   # hang from short wires off A5/B5
-    # Schottky laid horizontal inline on J1's VBUS row (anode/pin 2 left, toward J1);
-    # +5V port hangs off the cathode. The ESD VP pin taps the row via a run over J1.
-    "D_vbus": (30, 14), "FLAG5": (35, 11),
+    # Fuse + Schottky laid horizontal inline on J1's VBUS row (J1 -> F1 -> D4 anode);
+    # +5V port hangs off the cathode. The VBUS_F TVS riser climbs from the fuse output
+    # over the top of J1.
+    "F_vbus": (28, 14), "D_vbus": (32, 14), "D_tvs": (26, 8.5), "FLAG5": (35, 11),
     # --- LDO + its in/out caps (the ESP32/ES8311 decouplers live with their ICs):
     #     caps flank U2 with pin 1 on the VIN/VOUT pin row, wired straight across;
     #     the +5V/+3V3 ports ride the cap tops. ERC power flags tucked in right. ---
@@ -363,7 +372,8 @@ STUB_BY_PIN = {("Q1", "1"): 5.08,     # GATE1 clear of Q1's gate junction
 # between signal pins at 2.54 pitch, where rotated port graphics overlap everything;
 # R_io8 lies inline with U1's dense pin column, so its rail end gets a label too.
 POWER_AS_LABEL = {("U3", "3"), ("U3", "4"), ("U3", "5"), ("U3", "10"),
-                  ("U3", "11"), ("U3", "21"), ("R_io8", "2")}
+                  ("U3", "11"), ("U3", "21"), ("R_io8", "2"),
+                  ("D_esd", "2")}   # GND mid-pin in the TPD2S017's 2.54-pitch column
 def add_label(net, x, y, outdir, stub=LABEL_STUB):
     dx, dy = DIR_DELTA[outdir]
     lx, ly = x + dx * stub, y + dy * stub
@@ -446,25 +456,26 @@ SKIP_LABEL_PINS.update({("U2", "3"), ("U2", "2"), ("U2", "4")})
 wire(PX("U2", "3"), PX("C_in", "1"))      # VIN  <- input cap
 wire(PX("U2", "2"), PX("C_out", "1"))     # VOUT -> output cap (pins 2/4 stack)
 
-# ---- USB-C: VBUS wired through the Schottky inline on J1's VBUS row; the ESD
-#      array's VP pin taps it via a run over the top of J1. D+/D- A/B pin pairs
-#      bussed together and run under J1 into the ESD array; U1 keeps its labels.
-WIRED_NETS.add("VBUS")
+# ---- USB-C: VBUS wired through the Schottky inline on J1's VBUS row; the VBUS TVS
+#      hangs from a run over the top of J1, and the TPD2S017's VCC bias pin joins by
+#      label. D+/D- stacked A/B pairs are tied and named; the nets continue into the
+#      TPD2S017 below J1 and on to U1 purely by label (auto-labels on its pins).
+WIRED_NETS.update(("VBUS", "VBUS_F"))
 _vb = PX("J1", "A4")                          # A4/B4/A9/B9 stack on one point
-wire(_vb, PX("D_vbus", "2"))                  # straight run into the Schottky anode
-wire((66.04, _vb[1]), (66.04, 17.78), (25.4, 17.78), PX("D_esd", "5"))
-junction(66.04, _vb[1])                       # T where the ESD branch leaves the row
-add_label("VBUS", 40.64, 17.78, 0, stub=0)    # name sits on the over-the-top run
-SKIP_LABEL_PINS.update({("J1", "A6"), ("J1", "B6"), ("D_esd", "1"),
-                        ("J1", "A7"), ("J1", "B7"), ("D_esd", "3")})
-for _pa, _pb, _esd, _net, _bx, _by, _lx in (
-        ("A6", "B6", "1", "USB_DP", 66.04, 83.82, 43.18),
-        ("A7", "B7", "3", "USB_DM", 68.58, 86.36, 48.26)):
-    pa, pb, pe = PX("J1", _pa), PX("J1", _pb), PX("D_esd", _esd)
-    wire(pa, (_bx, pa[1]), (_bx, _by), (pe[0], _by), pe)   # under J1 into the array
-    wire(pb, (_bx, pb[1]))                                 # stacked-pair tie
-    junction(_bx, pb[1])
-    add_label(_net, _lx, _by, 0, stub=0)                   # name sits on the run
+wire(_vb, PX("F_vbus", "1"))                  # J1 -> fuse
+add_label("VBUS", 66.04, _vb[1], 90, stub=0)  # name sits on the J1->F1 run
+_f2 = PX("F_vbus", "2")
+wire(_f2, PX("D_vbus", "2"))                  # fuse output -> Schottky anode
+wire(_f2, (_f2[0], 17.78), PX("D_tvs", "1"))  # TVS riser taps the fuse output, over J1
+junction(*_f2)                                # T: fuse pin / Schottky run / TVS riser
+add_label("VBUS_F", _f2[0], 24.13, 90, stub=0)   # name sits on the riser
+add_label("VBUS_F", *PX("D_esd", "5"), 0)     # TPD2S017 VCC bias -> VBUS_F by label
+SKIP_LABEL_PINS.update({("J1", "A6"), ("J1", "B6"), ("J1", "A7"), ("J1", "B7")})
+for _pa, _pb, _net, _bx in (("A6", "B6", "USB_DP", 66.04),
+                            ("A7", "B7", "USB_DM", 68.58)):
+    pa, pb = PX("J1", _pa), PX("J1", _pb)
+    wire(pa, (_bx, pa[1]), (_bx, pb[1]), pb)   # stacked-pair tie
+    add_label(_net, _bx, pa[1], 0, stub=0)     # name on the tie's top corner
 
 # ---- audio AC-coupling: U3's analog pins bend right/down on staggered columns and
 #      rows, drop through the coupling caps, and land on two horizontal rails on
