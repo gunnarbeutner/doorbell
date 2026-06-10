@@ -61,13 +61,28 @@ if not pcbnew.ExportSpecctraDSN(board, DSN):
 # F.Cu traces, never reaching the inner planes.  Signal nets (kicad_default) are
 # restricted to outer layers only so they cannot pollute In1/In2.  Post-route,
 # _add_plane() floods the remaining In1/In2 copper as solid pours.
+# Per-class track width (µm, DSN units): nets without a width fall back to the global
+# (rule (width 200)) from the structure section, i.e. 0.2 mm. +5V feeds the LDO (ESP32
+# WiFi-TX peaks ~350 mA) plus three relay coils; the P-bus nets carry the chime solenoid
+# current through K3's NC contact — both get 0.5 mm.
 NET_CLASSES = [
-    ("gnd_plane",  ["GND"],             ["F.Cu", "In2.Cu", "B.Cu"]),
-    ("v3v3_plane", ["+3V3"],            ["F.Cu", "In1.Cu", "B.Cu"]),
+    # name        nets                                            layers                      width_um
+    ("gnd_plane",  ["GND"],             ["F.Cu", "In2.Cu", "B.Cu"], None),
+    ("v3v3_plane", ["+3V3"],            ["F.Cu", "In1.Cu", "B.Cu"], None),
     # both sides of the TPD2S017 (connector-side + ESP-side) stay on outer layers
-    ("usb_diff",   ["USB_DP","USB_DM","USB_DP_ESP","USB_DM_ESP"], ["F.Cu", "B.Cu"]),
+    ("usb_diff",   ["USB_DP","USB_DM","USB_DP_ESP","USB_DM_ESP"], ["F.Cu", "B.Cu"], None),
+    ("power",      ["+5V"],                                       ["F.Cu", "B.Cu"], 500),
+    # every net galvanically tied to the WF26 bus (bus potential): the P-bus itself, the
+    # ÖT bridge (K2 contact <-> R16), and the opto sense legs up to the LED (switch
+    # outputs, LED cathode/limiter nodes, limiter returns). NOT bus potential: OCx_OUT /
+    # OC_EMIT (opto transistor side), SEC_A/SEC_B (behind T1's isolation), GATE1/_PRE
+    # (K3's interlock pole switches 3.3V only).
+    ("bus",        ["P1","P2","P3","P4","P5","IN_P4","OT_BRIDGE",
+                    "OC1_JP","OC2_JP","OC3_JP",
+                    "OC1_CATH","OC2_CATH","OC3_CATH",
+                    "OC1_RET","OC2_RET","OC3_RET"],               ["F.Cu", "B.Cu"], 500),
 ]
-RECLASSED = {n for _, nets, _ in NET_CLASSES for n in nets}
+RECLASSED = {n for _, nets, _, _ in NET_CLASSES for n in nets}
 
 with open(DSN) as f: dsn = f.read()
 
@@ -99,14 +114,15 @@ dsn = re.sub(r'\(class kicad_default.*?\)', _patch_default, dsn, flags=re.DOTALL
 # Build new class entries (net names unquoted, matching kicad_default style)
 via_m = re.search(r'\(use_via "([^"]+)"', dsn)
 via_name = via_m.group(1) if via_m else "Via[0-3]_600:300_um"
-def _class_entry(name, nets, layers):
+def _class_entry(name, nets, layers, width_um=None):
     nets_str = " ".join(nets)
     layers_str = "\n        ".join(f'(use_layer "{l}")' for l in layers)
+    rule_str = f'\n      (rule (width {width_um}))' if width_um else ''
     return (f'    (class {name} {nets_str}\n'
             f'      (circuit\n'
             f'        {layers_str}\n'
             f'        (use_via "{via_name}")\n'
-            f'      )\n'
+            f'      ){rule_str}\n'
             f'    )')
 
 injection = "\n".join(_class_entry(*c) for c in NET_CLASSES)

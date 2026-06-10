@@ -466,8 +466,18 @@ net-class clearance (a 0.6 mm via can't sit beside a fine-pitch pin), so routing
 is set to JLCPCB's published **0.127 mm** capability — globally, since the tighter spacing
 spreads board-wide once the autorouter packs the escapes. `route.py` patches the DSN
 (`clearance 200→127`); a global rule in `kicad/doorbell.kicad_dru` keeps KiCad's DRC
-consistent; hole-to-copper is 0.2 mm to match. **Tracks stay 0.2 mm.** Trade-off: the
+consistent; hole-to-copper is 0.2 mm to match. Trade-off: the
 board routes at the fab limit rather than keeping a clearance design margin.
+
+**Track widths:** signal nets route at the 0.2 mm default; two net classes injected into
+the DSN by `route.py` (`NET_CLASSES`, `(rule (width …))` per class) widen the
+current-carrying nets to **0.5 mm**: `+5V` (LDO input — ESP32 WiFi-TX peaks ~350 mA — plus
+three relay coils) and every net at WF26-bus potential — `P1/P2/P3/P4/P5/IN_P4` (the chime
+solenoid current crosses the board through K3's NC contact), `OT_BRIDGE`, and the opto
+sense legs up to the LED (`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor sides
+(`OCx_OUT`, `OC_EMIT`), the transformer secondary (`SEC_A/SEC_B`), and K3's interlock pole
+(`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. The widths live only in
+the DSN injection; KiCad's DRC does not enforce them.
 
 **DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published
 capabilities (e.g. 0.127 mm spacing, 0.3 mm board-edge copper).
