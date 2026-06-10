@@ -90,7 +90,7 @@ RIGHT_TEXT = {"Q1": 5.08, "Q2": 5.08, "Q3": 5.08,
               "K1": 16.5, "K2": 16.5, "K3": 16.5}
 # Refs whose ref/value stack to the LEFT of the body (right side is blocked),
 # mapped to the horizontal offset in mm (text right-justified at ox-offset).
-LEFT_TEXT = {"D_oc1": 1.78, "D_oc2": 1.78, "D_oc3": 1.78, "R_g1": 1.78,
+LEFT_TEXT = {"D_oc1": 1.78, "D_oc2": 1.78, "D_oc3": 1.78,
              "SW_OC1": 10.5, "SW_OC2": 10.5, "SW_OC3": 10.5}
 # Refs whose ref/value stack ABOVE the body (below/inside is blocked).
 TEXT_ABOVE = {"U2", "J1", "T1"}
@@ -99,8 +99,15 @@ BELOW_TEXT = {"SW_en", "SW_boot"}
 # Symbol rotation (deg, KiCad convention). Lets 2-pin parts lie inline with the
 # pin row they are wired to (90 = vertical passive turned horizontal, pin 1 left;
 # 180 = vertical passive flipped, pin 1 at the bottom).
-ROT = {"R_io8": 90, "R_g1": 180, "R_led": 270, "LED1": 270,
-       "R_en": 90, "R_boot": 90}
+ROT = {"R_io8": 90, "R_g1": 90, "R_led": 270, "LED1": 270,
+       "R_en": 90, "R_boot": 90,
+       # opto LED limiters laid horizontal (clockwise) so they sit inline on the
+       # RET return wire: pin 2 (RET) faces left into the wire, pin 1 (CATH) right.
+       "R_lim1": 270, "R_lim2": 270, "R_lim3": 270,
+       # opto reverse-clamp diodes flipped 180 so cathode (pin 1) sits at the top
+       # (opto-anode/JP node) and anode (pin 2) at the bottom (opto-cathode/CATH);
+       # placed between the switch and the opto, anti-parallel to the LED.
+       "D_oc1": 180, "D_oc2": 180, "D_oc3": 180}
 def screen_offset(px, py, ang):
     """Symbol-coord pin position -> screen offset for a symbol rotated by ang."""
     x, y = px, -py                      # screen y is down
@@ -136,8 +143,9 @@ SCHEM_POS = {
     "U1": (82, 22),   # MCU raised to the top row, level with POWER
     # single-use parts wired directly to the U1 pin they serve (right pin column):
     "R_io8": (98, 19),     # GPIO8 pull-up, rotated inline with pad 10's row
-    "R_g1": (106, 24.5),   # K1 gate series R, flipped so pin 1 meets pad 18's row;
-                           # its GATE1_PRE side runs to the K3 interlock by label
+    "R_g1": (98, 26),      # K1 gate series R, horizontal under R_io8 (same X), pin 1
+                           # inline with pad 18's row; GATE1_PRE side (pin 2) runs to
+                           # the K3 interlock by label
     # --- relay drivers, three rows right of the MCU ---
     # row 1 (K1, PTT): gate net split by the K3 interlock -> R_pd1 carries the
     # GATE1 label (R_g1 lives at U1, see above).
@@ -148,9 +156,13 @@ SCHEM_POS = {
     "R_ot": (132, 41.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
     # --- bell-sense rows: J2 | clamp diode | polarity switch | opto | limiter ---
     "J2": (14, 83),
-    "D_oc2": (20, 63), "SW_OC2": (32, 63), "OC2": (46, 63), "R_lim1": (58, 63),
-    "D_oc3": (20, 83), "SW_OC3": (32, 83), "OC3": (46, 83), "R_lim2": (58, 83),
-    "D_oc1": (20, 103), "SW_OC1": (32, 103), "OC1": (46, 103), "R_lim3": (58, 103),
+    # clamp diodes sit between the switch and the opto (gx46), nudged +0.5 row so the
+    # flipped cathode lands on the opto-anode/JP row; optos moved right to gx52.
+    # R_lim* laid horizontal at X=92.71mm (gx 36.5, on the 1.27 grid; ~93mm),
+    # dropped onto their RET wire rows (gy 72.5/91/111)
+    "D_oc2": (46, 63.5), "SW_OC2": (32, 63), "OC2": (52, 63), "R_lim1": (36.5, 72.5),
+    "D_oc3": (46, 83.5), "SW_OC3": (32, 83), "OC3": (52, 83), "R_lim2": (36.5, 91),
+    "D_oc1": (46, 103.5), "SW_OC1": (32, 103), "OC1": (52, 103), "R_lim3": (36.5, 111),
     "R_em": (64, 103),
     # --- audio codec: I2C pull-ups above U3, xfmr + coupling caps below;
     #     single-use parts wired straight to the U3 pin they serve: VREF/VMID
@@ -345,7 +357,13 @@ SKIP_LABEL_PINS = {("R_pd1", "1"),                                  # GATE1 wire
                    ("R_boot", "2"), ("SW_boot", "1"),               # BOOT rail
                    ("SW_OC2", "5"), ("OC2", "1"),                   # JP wired over the switch
                    ("SW_OC3", "5"), ("OC3", "1"),
-                   ("SW_OC1", "5"), ("OC1", "1")}
+                   ("SW_OC1", "5"), ("OC1", "1"),
+                   ("OC2", "2"), ("R_lim1", "1"),                   # CATH wired opto->limiter
+                   ("OC3", "2"), ("R_lim2", "1"),
+                   ("OC1", "2"), ("R_lim3", "1"),
+                   ("D_oc2", "1"), ("D_oc2", "2"),                  # clamp wired anti-parallel
+                   ("D_oc3", "1"), ("D_oc3", "2"),
+                   ("D_oc1", "1"), ("D_oc1", "2")}
 def PX(ref, pad): return pin_xy[(ref, pad)]
 
 # ---- relay-driver clusters: wire the gate node and the drain/coil/flyback node.
@@ -400,17 +418,29 @@ add_label("BOOT", 255.27, PX("SW_boot", "1")[1], outdir=0, stub=0)
 # (net name bound by a mid-wire label + the clamp diode's label); RET wired
 # under the bottom into the limiter return. Routes clear the P1/P2/P5/IN_P4
 # pin-label texts (rise/drop per row sized to the longest label).
-WIRED_NETS.update(("OC2_RET", "OC3_RET", "OC1_RET"))
-for _sw, _oc, _rl, _jp, _drop in (("SW_OC2", "OC2", "R_lim1", "OC2_JP", 12.7),
-                                  ("SW_OC3", "OC3", "R_lim2", "OC3_JP", 8.89),
-                                  ("SW_OC1", "OC1", "R_lim3", "OC1_JP", 8.89)):
+WIRED_NETS.update(("OC2_RET", "OC3_RET", "OC1_RET",
+                   "OC2_CATH", "OC3_CATH", "OC1_CATH"))
+for _sw, _oc, _rl, _d, _jp, _drop in (("SW_OC2", "OC2", "R_lim1", "D_oc2", "OC2_JP", 12.7),
+                                      ("SW_OC3", "OC3", "R_lim2", "D_oc3", "OC3_JP", 8.89),
+                                      ("SW_OC1", "OC1", "R_lim3", "D_oc1", "OC1_JP", 8.89)):
     sw5, sw2 = PX(_sw, "5"), PX(_sw, "2")
-    oc1, rl2 = PX(_oc, "1"), PX(_rl, "2")
+    oc1, oc2 = PX(_oc, "1"), PX(_oc, "2")     # opto LED: pin1 anode (JP), pin2 cathode (CATH)
+    d1, d2 = PX(_d, "1"), PX(_d, "2")         # clamp: pin1 cathode (top, JP), pin2 anode (bot, CATH)
+    rl2, rl1 = PX(_rl, "2"), PX(_rl, "1")
     jt = sw5[1] - 12.7                        # above the top pin-label texts
-    wire(sw5, (sw5[0], jt), (101.6, jt), (101.6, oc1[1]), oc1)
+    # JP / opto anode: SW pin5 up & over, down the x=101.6 trunk to the clamp cathode
+    # (on the opto-anode row), then a short hop right into the opto anode.
+    wire(sw5, (sw5[0], jt), (101.6, jt), (101.6, d1[1]), d1, oc1)
+    junction(*d1)
     add_label(_jp, 86.36, jt, 0, stub=0)      # name sits on the top run
+    # RET: SW pin2 down & across into the limiter return (pin 2).
     rb = sw2[1] + _drop                       # below the bottom pin-label texts
     wire(sw2, (sw2[0], rb), (rl2[0], rb), rl2)
+    # CATH / opto cathode: limiter pin 1 up into the clamp anode (pin 2), then a short
+    # hop right & up into the opto cathode (kept clear of the diode body).
+    wire(rl1, (rl1[0], d2[1]), d2)
+    wire(d2, (oc2[0], d2[1]), oc2)
+    junction(*d2)
 
 sch.libSymbols = lib_symbols
 
