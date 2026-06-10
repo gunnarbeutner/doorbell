@@ -215,14 +215,18 @@ NETS = {
     "OC2_CATH": [("OC2","2"),("R_lim1","1"),("D_oc2","2")],   # D_oc2 ANODE (pin 2) on LED cathode net
     "OC3_CATH": [("OC3","2"),("R_lim2","1"),("D_oc3","2")],
     "OC1_CATH": [("OC1","2"),("R_lim3","1"),("D_oc1","2")],
-    # SW center pins -> opto anodes (pos A=1↔2+4↔5 normal, pos B=2↔3+5↔6 reversed)
-    "OC2_JP": [("SW_OC2","2"),("OC2","1"),("D_oc2","1")],    # D_oc2 CATHODE (pin 1): anti-parallel to opto LED
-    "OC3_JP": [("SW_OC3","2"),("OC3","1"),("D_oc3","1")],
-    "OC1_JP": [("SW_OC1","2"),("OC1","1"),("D_oc1","1")],
-    # SW pin 5 -> R_lim cathode-return side (sliding SW flips both poles simultaneously)
-    "OC2_RET": [("SW_OC2","5"),("R_lim1","2")],
-    "OC3_RET": [("SW_OC3","5"),("R_lim2","2")],
-    "OC1_RET": [("SW_OC1","5"),("R_lim3","2")],
+    # SW center pins: JP on pin 5, RET on pin 2 (swapped vs the natural orientation;
+    # the footprint is rotated 180° on the PCB, which maps pads 1↔6/2↔5/3↔4, so the
+    # copper layout is unchanged — pads 1/6 and 3/4 are paired on the same nets anyway).
+    # Slide pos A = 1↔2 + 4↔5, pos B = 2↔3 + 5↔6; either position closes a complete
+    # loop of opposite polarity.
+    "OC2_JP": [("SW_OC2","5"),("OC2","1"),("D_oc2","1")],    # D_oc2 CATHODE (pin 1): anti-parallel to opto LED
+    "OC3_JP": [("SW_OC3","5"),("OC3","1"),("D_oc3","1")],
+    "OC1_JP": [("SW_OC1","5"),("OC1","1"),("D_oc1","1")],
+    # SW pin 2 -> R_lim cathode-return side (sliding SW flips both poles simultaneously)
+    "OC2_RET": [("SW_OC2","2"),("R_lim1","2")],
+    "OC3_RET": [("SW_OC3","2"),("R_lim2","2")],
+    "OC1_RET": [("SW_OC1","2"),("R_lim3","2")],
     "OC2_OUT": [("OC2","4"),("U1","26")],   # GPIO3  / pad 26 (C6 right col) — house bell (Türruf)
     "OC3_OUT": [("OC3","4"),("U1","27")],   # GPIO2  / pad 27 (C6 right col) — apartment bell (Etagenruf)
     "OC1_OUT": [("OC1","4"),("U1","21")],   # GPIO23 / pad 21 (C6 right col) — session-active in

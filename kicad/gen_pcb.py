@@ -49,9 +49,11 @@ PCB_PLACE = {
     "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
     # === Polarity switches: DPDT SMD slide switches, 9 mm pitch, Y=18 left of J2.
     #     Y=18 keeps the ±4.3 mm-extent SMD footprint inside the board outline. ===
-    "SW_OC3": (2,  18, 0),
-    "SW_OC2": (8,  18, 0),
-    "SW_OC1": (14, 18, 0),
+    # rotated 180°: pads map 1↔6/2↔5/3↔4 onto the same spots, matching the JP/RET
+    # pin swap in doorbell_design.py — copper layout identical to rot 0.
+    "SW_OC3": (2,  18, 180),
+    "SW_OC2": (8,  18, 180),
+    "SW_OC1": (14, 18, 180),
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
     "OC3":    (2.74, 33.5, 270),   # apartment bell sense; opto block centered in UL quadrant
     "OC2":    (6.74, 33.5, 270),   # house bell sense; opto block centered in UL quadrant
