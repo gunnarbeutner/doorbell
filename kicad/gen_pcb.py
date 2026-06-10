@@ -248,6 +248,17 @@ for edge, refs in by_edge.items():
         else:
             fps[r].SetPosition(pcbnew.VECTOR2I(p.x, p.y + pcbnew.FromMM(d)))
 
+# --- ESP32-C6 (U1) EPAD stitch: the WROOM EPAD (pad "29") is a 3x3 grid of 0.8 mm
+#     sub-pads; drop one GND via at each sub-pad centre (documented via-in-pad
+#     exception, same rationale as U3's EP). Low-inductance RF return + heat path
+#     into the In2 GND plane, and Freerouting sees the pad pre-grounded. Placed AFTER
+#     the edge-flush slide (U1 is flush-pinned, so its pads move during the slide).
+for _ep29 in (p for p in fps["U1"].Pads() if p.GetNumber() == "29"):
+    _v = pcbnew.PCB_VIA(board)
+    _v.SetPosition(_ep29.GetPosition())
+    _v.SetDrill(pcbnew.FromMM(0.3)); _v.SetWidth(pcbnew.FromMM(0.7))
+    _v.SetNet(nets["GND"]); board.Add(_v)
+
 # --- J1 shield stitch: on each side of the USB4105, join the front and rear shell-stake
 #     pads (SH) with a short vertical B.Cu track, tying each side's stakes together.
 #     B.Cu is clear there (J1's signal pads are SMD on F.Cu) and the tracks run wide of
