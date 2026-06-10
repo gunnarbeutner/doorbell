@@ -303,7 +303,12 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   rating non-switching DC 50 V / 100 mA — fine for the ~2 mA, ≤12 V opto loop). Pin 2 feeds
   the LED anode, pin 5 the R_lim return; throws 1+6 on one bus line, 3+4 on the other.
   Either position gives a complete loop of opposite polarity; a mirrored mounting is
-  harmless.
+  harmless. **Wrong position = silent false-negative, not damage:** the LED is held
+  reverse-biased, D7–D9 divert the ~2 mA limiter current and clamp the LED to ~0.7 V
+  (< 6 V VR), so nothing is harmed but the channel never detects (SPICE-confirmed,
+  `kicad/sim/oc2_polarity.cir`: V(coll) stays ~3 V). Bring-up check: ring the real bell
+  and confirm detection, or look for the ~10.7 V drop across R_lim (≈2 mA) when active —
+  near-0 V across R_lim with ~0.7 V across the LED means flip the switch.
 - **Reverse clamps (D7–D9, 1N4148W):** anti-parallel across each opto LED — clamp anode on
   the LED-cathode net, clamp cathode on the LED-anode net — so the clamp conducts only on
   the reverse half-wave and limits the LED's reverse voltage to ~0.7 V (< its 6 V VR).
@@ -314,6 +319,12 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   shared) carries only µA and is not part of any reverse path.
 - Bell present → LED conducts → phototransistor pulls the GPIO low → ESPHome
   `inverted: true` ⇒ "on". GPIO LOW level ≈ 0.12–0.27 V.
+- **Sense margin is SPICE-verified** (`kicad/sim/oc2_sense.cir`, `oc2_sense_ctr.cir`,
+  run with `ngspice -b`): at IF ≈ 1.7–2.1 mA (10–12 V line) the collector sits at
+  ≈ 0.14 V — far below the ESP32 V_IL (~0.825 V) — and stays there across CTR 0.5→2.6,
+  because the weak ~45 kΩ internal pull-up demands only ~56 µA while the opto can sink
+  ~0.85 mA even at abused-low CTR. Result is insensitive to opto part variation; the
+  shared 1 kΩ R_em is immaterial at these currents.
 - **OC1 (session sense)** parallels the WF26's internal relay coil (P5↔P2, ~320 Ω,
   energised by the TV20/S only during a live session). R_lim3 = 5.1 k provisional pending
   the measured session voltage.

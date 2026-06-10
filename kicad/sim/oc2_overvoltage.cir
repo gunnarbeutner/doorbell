@@ -1,0 +1,21 @@
+* OC2 input stage under a 230 VAC fault on the IN_P4<->P1 pair
+* (e.g. NTR201 mains coupled onto the bus by a miswire or transformer fault).
+* Input loop only: SW -> LED + anti-parallel clamp -> R_lim (5.1k 0603).
+* Reports peak/RMS current and the power dumped into R_lim1.
+
+Vmains a 0 SIN(0 325.27 50)     ; 230 Vrms, 50 Hz, peak = 325 V
+Vsense a a2 0
+Dled   a2 c DLED                ; opto LED
+Dclamp c  a2 DLED              ; D_oc2 anti-parallel clamp
+Rlim   c 0 5.1k
+
+.model DLED D(Is=1e-16 N=1.6 Rs=5)
+
+.control
+tran 50u 40m
+let p_rlim = i(Vsense)*i(Vsense)*5100
+meas tran iled_pk   MAX  abs(i(Vsense))
+meas tran prlim_avg AVG  p_rlim
+meas tran prlim_pk  MAX  p_rlim
+.endc
+.end

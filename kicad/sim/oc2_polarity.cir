@@ -1,0 +1,43 @@
+* OC2 house-doorbell sense -- polarity-switch right vs wrong, WITH anti-parallel clamp
+* SW_OC2 picks which bus line drives the LED anode. Flipping it = reversing the
+* applied Tuerruf polarity as the LED sees it. This deck applies +12 V (switch
+* correct) and -12 V (switch wrong) and reports:
+*   I(Vsense)  = LED forward current (the photo drive)
+*   I(Vclamp)  = current diverted through the D_oc2 anti-parallel clamp
+*   V(coll)    = GPIO3 node  (low => detected; ~3.3 V => NOT detected)
+
+.param beta=200 CTR=1.1
+
+Vturruf a 0 DC 12
+Vsense  a a2 0                 ; ammeter for LED current
+Dled    a2 c DLED             ; opto LED: anode a2, cathode c
+Vclamp  a2 cl 0               ; ammeter in the clamp branch
+Dclamp  c  cl DLED           ; D_oc2: anti-parallel (anode on LED-cathode net c)
+Rlim    c 0 5.1k
+
+Q1   coll base emit QOPTO
+Bb   0 base I = (CTR/beta)*i(Vsense)
+Vdd  vdd 0 3.3
+Rpu  vdd coll 45k
+Remit emit 0 1k
+
+.model DLED  D(Is=1e-16 N=1.6 Rs=5)
+.model QOPTO NPN(BF=200 Is=1e-15 Vaf=100)
+
+.control
+echo "  case          Vline   I_LED(mA)  I_clamp(mA)  V(coll)"
+foreach v 12 -12
+  reset
+  alter Vturruf dc = $v
+  op
+  let iled = i(Vsense)*1000
+  let icl  = i(Vclamp)*1000
+  let vc   = v(coll)
+  if $v = 12
+    echo "  switch CORRECT  $v V " $&iled "   " $&icl "  " $&vc
+  else
+    echo "  switch WRONG   $v V " $&iled "   " $&icl "  " $&vc
+  end
+end
+.endc
+.end
