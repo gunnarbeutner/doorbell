@@ -14,7 +14,8 @@ from kiutils.items.schitems import (LocalLabel, NoConnect, SymbolProjectInstance
                                     SymbolProjectPath, Connection, Junction,
                                     Rectangle, Text)
 from kiutils.items.common import Position, Property, Effects, Stroke, Justify, Font
-from doorbell_design import REF, COMP, FP_OVERRIDE, NETS, NOCONN, GRID
+from doorbell_design import (REF, COMP, FP_OVERRIDE, NETS, NOCONN, GRID,
+                             LCSC, SYMBOL_STANDIN, PURPOSE)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 P3 = os.path.expanduser("~/Documents/KiCad/10.0/3rdparty/symbols/com_github_CDFER_JLCPCB-Kicad-Library")
@@ -130,16 +131,18 @@ SCHEM_POS = {
     "J1": (19, 20), "D_esd": (10, 20),
     "R_cc1": (34, 17.5), "R_cc2": (31, 18.5),   # hang from short wires off A5/B5
     "D_vbus": (32, 11), "FLAG5": (35, 11),
-    # --- LDO + rail caps in two rows (incl. the ES8311 supply decouplers) ---
+    # --- LDO + its in/out caps (the ESP32/ES8311 decouplers live with their ICs) ---
     "U2": (47, 18), "FLAG3": (52, 12), "FLAGG": (59, 36),
-    "C_in": (40, 30), "C_out": (45, 30), "C_3v3": (50, 30), "C_dec": (55, 30),
-    "C_dv": (40, 38), "C_pv": (45, 38), "C_av": (50, 38), "C_avb": (55, 38),
+    "C_in": (40, 30), "C_out": (45, 30),
     "R_led": (137, 9), "LED1": (131, 9),   # horizontal chain right of the relay column
     # --- MCU straps below the MCU box: R/C tap a short EN/BOOT rail wired
     #     into the button, EN group left, BOOT group right ---
     "R_en": (73, 44), "C_en": (76, 45.5), "SW_en": (88, 45),
     "R_boot": (97, 44), "SW_boot": (106, 45),
     "U1": (82, 22),   # MCU raised to the top row, level with POWER
+    # MCU decoupling pair (PCB group "MCU") top-right of U1, clear of the pad-28..26
+    # port/label fan-out (ends ~x251) and of R_io8's +3V3 label row (y~48):
+    "C_3v3": (100, 12), "C_dec": (105, 12),
     # single-use parts wired directly to the U1 pin they serve (right pin column):
     "R_io8": (98, 19),     # GPIO8 pull-up, rotated inline with pad 10's row
     "R_g1": (98, 26),      # K1 gate series R, horizontal under R_io8 (same X), pin 1
@@ -167,7 +170,10 @@ SCHEM_POS = {
     #     single-use parts wired straight to the U3 pin they serve: VREF/VMID
     #     reservoirs hang from staggered wires off pins 14/15/16 (clear of the
     #     pin labels), CE pull-down off pin 20 beyond them ---
-    "R_sda": (84, 72), "R_scl": (90, 72), "R_ce": (129, 83.5),
+    #     supply decoupling row (PCB group "Audio codec") above U3, I2C pull-ups
+    #     shifted right to make room:
+    "C_dv": (75, 72), "C_pv": (80, 72), "C_av": (85, 72), "C_avb": (90, 72),
+    "R_sda": (96, 72), "R_scl": (101, 72), "R_ce": (129, 83.5),
     "U3": (92, 86), "T1": (83, 106),
     "C_op": (92, 104), "C_on": (96, 104), "C_mp": (100, 104), "C_mn": (104, 104),
     "C_vref": (113, 89.5), "C_aref": (118, 88.5), "C_vmid": (123, 87.5),
@@ -257,9 +263,24 @@ for ref, (nick, entry, value) in COMP.items():
     if fp:
         inst.properties.append(Property(key="Footprint", value=fp,
                                position=Position(ox, oy, 0), effects=mk_hidden()))
-    if symprops.get("LCSC"):
-        inst.properties.append(Property(key="LCSC", value=symprops["LCSC"],
+    # Part-identity fields, hidden: LCSC # (design override beats the symbol's own field),
+    # role description, and MPN/datasheet from the JLCPCB-library symbol. Stand-in symbols
+    # (SYMBOL_STANDIN) describe a different part, so only the design-level fields apply.
+    standin = ref in SYMBOL_STANDIN
+    def hidden_prop(key, value):
+        inst.properties.append(Property(key=key, value=value,
                                position=Position(ox, oy, 0), effects=mk_hidden()))
+    lcsc = LCSC.get(ref) or symprops.get("LCSC") or symprops.get("LCSC Part")
+    if lcsc:
+        hidden_prop("LCSC", lcsc)
+    if PURPOSE.get(ref):
+        hidden_prop("Description", PURPOSE[ref])
+    mpn = None if standin else (symprops.get("MPN") or symprops.get("Part"))
+    if mpn:
+        hidden_prop("MPN", mpn)
+    ds = None if standin else symprops.get("Datasheet")
+    if ds and ds != "~":
+        hidden_prop("Datasheet", ds)
     inst.pins = {p.number: U() for u in sym.units for p in u.pins}
     inst.instances = [SymbolProjectInstance(name=PROJECT,
                       paths=[SymbolProjectPath(sheetInstancePath="/"+ROOT, reference=designator, unit=unit)])]
@@ -476,7 +497,7 @@ def title(text, x, y):
     sch.texts.append(Text(text=text, position=Position(x, y, 0), effects=e))
 
 group_box(13.5, 13, 95.5, 91);      title("USB-C", 15, 16)
-group_box(98, 13, 156, 113.5);      title("POWER", 99.5, 16)
+group_box(98, 13, 156, 105);        title("POWER", 99.5, 16)
 group_box(160, 13, 277, 95.5);      title("ESP32-C6 MCU", 162, 16)
 group_box(279, 38, 368, 207);       title("RELAY DRIVERS", 281, 41)
 group_box(313, 15.5, 366, 30.5);    title("POWER LED", 313.5, 18)

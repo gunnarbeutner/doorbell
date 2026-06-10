@@ -27,7 +27,7 @@ REF = {
 # component table: internal key -> (symbol-lib nickname, symbol entry, value)
 COMP = {
     "U1": ("PCM_Espressif", "ESP32-C6-WROOM-1", "ESP32-C6-WROOM-1-N8"),  # 28-pad + EPAD; pads 1-14 = left col, 15-28 = right col
-    "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "SGM2212-3.3"),   # low-dropout; LCSC C3294699 (EXTRA_LCSC)
+    "U2": ("PCM_JLCPCB-Power", "LDO, 3.3V, 1A", "SGM2212-3.3"),   # low-dropout; LCSC C3294699 (LCSC dict below)
     "U3": ("ES8311", "ES8311", "ES8311"),                         # mono audio codec (ADC+DAC); LCSC C962342. Symbol+fp via easyeda2kicad -> kicad/lib_audio/. PROVISIONAL front-end.
     "T1": ("SM_LP_5001", "SM-LP-5001", "SM-LP-5001"),   # Bourns 600:600 1:1 line/audio iso xfmr; LCSC C7503474. Symbol+fp imported via easyeda2kicad -> kicad/lib_audio/
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4085)"),
@@ -97,6 +97,98 @@ COMP = {
     "FLAGG": ("power", "PWR_FLAG", ""),
 }
 
+# LCSC part numbers (internal key -> C-number) for parts whose symbol carries no usable
+# "LCSC" field (stock KiCad / easyeda symbols) or whose JLCPCB-library symbol is a stand-in
+# for a different part. gen_schematic.py embeds these in the schematic (they override the
+# symbol's own LCSC field); jlcpcb_files.py derives its BOM overrides from this dict.
+# Parts not listed here get their LCSC number from the JLCPCB library symbol itself.
+LCSC = {
+    "J1": "C7095263",    # GCT USB4085 USB-C receptacle (THT)
+    "J2": "C5290323",    # DORABO DB125-3.5-6P-GN-S screw terminal (THT)
+    "K1": "C397193",     # Omron G6K-2F-Y-TR DC4.5 DPDT relay (4.5V coil; must-operate 3.6V, more VBUS-sag margin)
+    "K2": "C397193",
+    "K3": "C397193",
+    "U1": "C5366877",    # ESP32-C6-WROOM-1-N8 (8MB, PCB antenna)
+    "U2": "C3294699",    # SGM2212-3.3 low-dropout LDO (symbol is an AMS1117 stand-in -> override its LCSC)
+    "U3": "C962342",     # ES8311 mono audio codec (QFN-20)
+    "T1": "C7503474",    # Bourns SM-LP-5001 600:600 audio isolation transformer
+    "SW_OC1": "C2921541",   # NIDEC CAS-220TB1 DPDT slide switch
+    "SW_OC2": "C2921541",
+    "SW_OC3": "C2921541",
+}
+# symbols borrowed from a *different* part (value/LCSC overridden above): their MPN/datasheet
+# fields describe the stand-in, not the real part -> gen_schematic.py must not embed them.
+SYMBOL_STANDIN = {"U2"}
+
+# one-line role of every part, embedded as the schematic symbol's "Description" field
+PURPOSE = {
+    "U1": "Wi-Fi/BLE MCU (ESPHome); native USB on GPIO12/13",
+    "U2": "5V->3.3V LDO; low dropout rides out WiFi-TX VBUS sag",
+    "U3": "Mono audio codec (ADC+DAC): I2S data + I2C control; half-duplex intercom audio",
+    "T1": "600:600 1:1 audio isolation transformer; winding A across bus P1/P5, winding B to codec",
+    "J1": "USB-C receptacle: 5V power + native-USB programming",
+    "J2": "WF26 intercom bus tap: P1-P3, P4/IN_P4 (line-4 break-in), P5",
+    "K1": "Virtual-PTT relay: bridges IN_P4<->P2 (talk); gate drive runs through K3's interlock contact",
+    "K2": "Door-opener relay: bridges P2<->P3 via R16, emulating the WF26 ÖT button",
+    "K3": "Chime-suppress relay: breaks line 4 (IN_P4->P4); pole B interlocks K1's gate",
+    "Q1": "K1 coil driver, low-side NMOS",
+    "Q2": "K2 coil driver, low-side NMOS",
+    "Q3": "K3 coil driver, low-side NMOS",
+    "D1": "K1 coil flyback diode",
+    "D2": "K2 coil flyback diode",
+    "D3": "K3 coil flyback diode",
+    "D_vbus": "VBUS reverse-polarity protection Schottky (~0.45V drop to +5V rail)",
+    "D_esd": "USB ESD clamp array (D+/D-, VBUS)",
+    "D_oc1": "OK1 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)",
+    "D_oc2": "OK2 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)",
+    "D_oc3": "OK3 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)",
+    "OC1": "Session-active sense opto: conducts when the WF26 talk relay is energised (P5->P2)",
+    "OC2": "House-bell (Türruf) sense opto across P1<->IN_P4",
+    "OC3": "Apartment-bell (Etagenruf) sense opto across P1<->P5",
+    "SW_OC1": "OK1 polarity selector (DPDT slide flips LED feed + return together)",
+    "SW_OC2": "OK2 polarity selector (DPDT slide flips LED feed + return together)",
+    "SW_OC3": "OK3 polarity selector (DPDT slide flips LED feed + return together)",
+    "R_lim1": "OK2 LED current limiter (per-channel, unshared to avoid cross-talk)",
+    "R_lim2": "OK3 LED current limiter (per-channel, unshared to avoid cross-talk)",
+    "R_lim3": "OK1 LED current limiter (value TBD pending measured session voltage)",
+    "R_em": "Shared opto emitter resistor to GND (uA only)",
+    "R_g1": "K1 gate series resistor",
+    "R_g2": "K2 gate series resistor",
+    "R_g3": "K3 gate series resistor",
+    "R_pd1": "K1 gate pull-down: relay stays off while the GPIO floats at boot",
+    "R_pd2": "K2 gate pull-down: relay stays off while the GPIO floats at boot",
+    "R_pd3": "K3 gate pull-down: relay stays off while the GPIO floats at boot",
+    "R_en": "EN pull-up",
+    "R_boot": "BOOT (GPIO9) pull-up",
+    "R_io8": "GPIO8 strapping pull-up",
+    "R_cc1": "USB-C CC1 sink pull-down (advertises 5V device)",
+    "R_cc2": "USB-C CC2 sink pull-down (advertises 5V device)",
+    "R_led": "Power-LED current limiter",
+    "R_ot": "ÖT bridge series R; matches the WF26's genuine 2.2k button resistor",
+    "R_sda": "I2C SDA pull-up (codec control bus)",
+    "R_scl": "I2C SCL pull-up (codec control bus)",
+    "R_ce": "ES8311 CE address pull-down -> I2C addr 0x18",
+    "C_in": "LDO input capacitor",
+    "C_3v3": "ESP32 module bulk decoupling (at U1 pad 2)",
+    "C_out": "LDO output capacitor",
+    "C_en": "EN reset RC (Espressif-spec 1uF)",
+    "C_dec": "ESP32 module HF decoupling",
+    "C_dv": "ES8311 DVDD decoupling",
+    "C_pv": "ES8311 PVDD decoupling",
+    "C_av": "ES8311 AVDD decoupling",
+    "C_avb": "ES8311 AVDD bulk",
+    "C_vref": "ES8311 DACVREF reservoir",
+    "C_vmid": "ES8311 VMID bypass",
+    "C_aref": "ES8311 ADCVREF bypass",
+    "C_op": "DAC OUTP AC-coupling to T1 secondary",
+    "C_on": "DAC OUTN AC-coupling to T1 secondary",
+    "C_mp": "T1 secondary -> MIC1P AC-coupling",
+    "C_mn": "T1 secondary -> MIC1N AC-coupling",
+    "LED1": "Power-on indicator LED (+3V3)",
+    "SW_boot": "BOOT button (hold through reset -> USB download mode)",
+    "SW_en": "Reset button",
+}
+
 # footprint per component (lib:name). Power flags carry no footprint.
 FOOTPRINT = {
     "U1": "PCM_Espressif:ESP32-C6-WROOM-1",
@@ -128,7 +220,7 @@ for _c in ("C_in","C_3v3","C_out","C_en","C_dec",
     FOOTPRINT[_c] = "PCM_JLCPCB:C_0603"
 
 # FP override used by the schematic generator (stock symbols carry no footprint)
-FP_OVERRIDE = {r: FOOTPRINT[r] for r in ("J1", "J2", "K2", "K3", "U3", "T1",
+FP_OVERRIDE = {r: FOOTPRINT[r] for r in ("J1", "J2", "K1", "K2", "K3", "U3", "T1",
                                           "SW_OC1", "SW_OC2", "SW_OC3")}
 
 # nets: name -> [(ref, pad), ...]    (G6K-2 relay: coil 1,8 | COM=3 NC=2 NO=4)

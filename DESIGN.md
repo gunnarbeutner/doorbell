@@ -2,7 +2,10 @@
 
 **V4 source of truth: `kicad/doorbell_design.py`** (nets, parts, footprints; `gen_schematic.py`
 and `gen_pcb.py` generate the schematic and PCB from it — build with `./build.sh all-route`).
-V4 firmware: `doorbell-v4.yaml`. LCSC part numbers: `kicad/jlcpcb_files.py` (`EXTRA_LCSC`).
+V4 firmware: `doorbell-v4.yaml`. LCSC part numbers: `kicad/doorbell_design.py` (`LCSC` dict for
+parts whose symbol carries none or a stand-in's; the JLCPCB library symbols supply the rest) —
+embedded in the schematic as hidden `LCSC`/`Description`/`MPN`/`Datasheet` fields and reused by
+`kicad/jlcpcb_files.py` for the BOM.
 Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
 Intercom system reference: `STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`.
 
