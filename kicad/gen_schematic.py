@@ -90,10 +90,9 @@ RIGHT_TEXT = {"Q1": 5.08, "Q2": 5.08, "Q3": 5.08,
               "K1": 16.5, "K2": 16.5, "K3": 16.5}
 # Refs whose ref/value stack to the LEFT of the body (right side is blocked),
 # mapped to the horizontal offset in mm (text right-justified at ox-offset).
-LEFT_TEXT = {"D_oc1": 1.78, "D_oc2": 1.78, "D_oc3": 1.78,
-             "SW_OC1": 10.5, "SW_OC2": 10.5, "SW_OC3": 10.5}
+LEFT_TEXT = {"SW_OC1": 10.5, "SW_OC2": 10.5, "SW_OC3": 10.5}
 # Refs whose ref/value stack ABOVE the body (below/inside is blocked).
-TEXT_ABOVE = {"U2", "J1", "T1"}
+TEXT_ABOVE = {"U2", "J1", "T1", "D_oc1", "D_oc2", "D_oc3"}
 # Refs whose ref/value stack BELOW the body (sides are blocked by wires/ports).
 BELOW_TEXT = {"SW_en", "SW_boot"}
 # Symbol rotation (deg, KiCad convention). Lets 2-pin parts lie inline with the
@@ -156,13 +155,13 @@ SCHEM_POS = {
     "R_ot": (132, 41.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
     # --- bell-sense rows: J2 | clamp diode | polarity switch | opto | limiter ---
     "J2": (14, 83),
-    # clamp diodes sit between the switch and the opto (gx46), nudged +0.5 row so the
-    # flipped cathode lands on the opto-anode/JP row; optos moved right to gx52.
+    # clamp diodes sit between the switch and the opto (gx46), centred on the opto-LED
+    # midpoint (same row) so JP/CATH wire symmetrically; optos at gx54 for clearance.
     # R_lim* laid horizontal at X=92.71mm (gx 36.5, on the 1.27 grid; ~93mm),
     # dropped onto their RET wire rows (gy 72.5/91/111)
-    "D_oc2": (46, 63.5), "SW_OC2": (32, 63), "OC2": (52, 63), "R_lim1": (36.5, 72.5),
-    "D_oc3": (46, 83.5), "SW_OC3": (32, 83), "OC3": (52, 83), "R_lim2": (36.5, 91),
-    "D_oc1": (46, 103.5), "SW_OC1": (32, 103), "OC1": (52, 103), "R_lim3": (36.5, 111),
+    "D_oc2": (46, 63), "SW_OC2": (32, 63), "OC2": (54, 63), "R_lim1": (36.5, 72.5),
+    "D_oc3": (46, 83), "SW_OC3": (32, 83), "OC3": (54, 83), "R_lim2": (36.5, 91),
+    "D_oc1": (46, 103), "SW_OC1": (32, 103), "OC1": (54, 103), "R_lim3": (36.5, 111),
     "R_em": (64, 103),
     # --- audio codec: I2C pull-ups above U3, xfmr + coupling caps below;
     #     single-use parts wired straight to the U3 pin they serve: VREF/VMID
@@ -427,20 +426,21 @@ for _sw, _oc, _rl, _d, _jp, _drop in (("SW_OC2", "OC2", "R_lim1", "D_oc2", "OC2_
     oc1, oc2 = PX(_oc, "1"), PX(_oc, "2")     # opto LED: pin1 anode (JP), pin2 cathode (CATH)
     d1, d2 = PX(_d, "1"), PX(_d, "2")         # clamp: pin1 cathode (top, JP), pin2 anode (bot, CATH)
     rl2, rl1 = PX(_rl, "2"), PX(_rl, "1")
-    jt = sw5[1] - 12.7                        # above the top pin-label texts
-    # JP / opto anode: SW pin5 up & over, down the x=101.6 trunk to the clamp cathode
-    # (on the opto-anode row), then a short hop right into the opto anode.
-    wire(sw5, (sw5[0], jt), (101.6, jt), (101.6, d1[1]), d1, oc1)
-    junction(*d1)
-    add_label(_jp, 86.36, jt, 0, stub=0)      # name sits on the top run
-    # RET: SW pin2 down & across into the limiter return (pin 2).
-    rb = sw2[1] + _drop                       # below the bottom pin-label texts
+    jt = sw5[1] - 12.7                        # JP rail height: clears the switch top labels
+    yc = rl1[1]                               # CATH rail = limiter row (limiter sits inline)
+    # Each node is one horizontal rail with the clamp and opto hanging off it.
+    # JP: SW pin5 leads straight up to the rail, then right; clamp + opto drop down.
+    wire(sw5, (sw5[0], jt), (oc1[0], jt), oc1)
+    wire((d1[0], jt), d1)
+    junction(d1[0], jt)
+    add_label(_jp, 86.36, jt, 0, stub=0)      # name sits on the rail
+    # RET: SW pin2 down & across into the limiter return (pin 2), inline on the CATH row.
+    rb = sw2[1] + _drop
     wire(sw2, (sw2[0], rb), (rl2[0], rb), rl2)
-    # CATH / opto cathode: limiter pin 1 up into the clamp anode (pin 2), then a short
-    # hop right & up into the opto cathode (kept clear of the diode body).
-    wire(rl1, (rl1[0], d2[1]), d2)
-    wire(d2, (oc2[0], d2[1]), oc2)
-    junction(*d2)
+    # CATH: limiter pin 1 leads right along the rail; clamp + opto hang up (mirror of JP).
+    wire(rl1, (oc2[0], yc), oc2)
+    wire((d2[0], yc), d2)
+    junction(d2[0], yc)
 
 sch.libSymbols = lib_symbols
 
