@@ -91,7 +91,9 @@ RIGHT_TEXT = {"Q1": 5.08, "Q2": 5.08, "Q3": 5.08,
               "K1": 16.5, "K2": 16.5, "K3": 16.5}
 # Refs whose ref/value stack to the LEFT of the body (right side is blocked),
 # mapped to the horizontal offset in mm (text right-justified at ox-offset).
-LEFT_TEXT = {"SW_OC1": 10.5, "SW_OC2": 10.5, "SW_OC3": 10.5}
+LEFT_TEXT = {"SW_OC1": 10.5, "SW_OC2": 10.5, "SW_OC3": 10.5,
+             "R_em": 2.54,    # emitter trunk runs along the right side
+             "R_sda": 2.54}   # right side crowds the audio group-box edge
 # Refs whose ref/value stack ABOVE the body (below/inside is blocked).
 TEXT_ABOVE = {"U2", "J1", "T1", "D_oc1", "D_oc2", "D_oc3"}
 # Refs whose ref/value stack BELOW the body (sides are blocked by wires/ports).
@@ -107,7 +109,10 @@ ROT = {"R_io8": 90, "R_g1": 90, "R_led": 270, "LED1": 270,
        # opto reverse-clamp diodes flipped 180 so cathode (pin 1) sits at the top
        # (opto-anode/JP node) and anode (pin 2) at the bottom (opto-cathode/CATH);
        # placed between the switch and the opto, anti-parallel to the LED.
-       "D_oc1": 180, "D_oc2": 180, "D_oc3": 180}
+       "D_oc1": 180, "D_oc2": 180, "D_oc3": 180,
+       # VBUS Schottky laid horizontal inline on J1's VBUS row: SS14 pin 2 (anode)
+       # faces left toward J1, pin 1 (cathode/+5V) right.
+       "D_vbus": 90}
 def screen_offset(px, py, ang):
     """Symbol-coord pin position -> screen offset for a symbol rotated by ang."""
     x, y = px, -py                      # screen y is down
@@ -130,10 +135,14 @@ SCHEM_POS = {
     # --- USB-C: ESD array left of J1, CC terminators wired off the CC pins ---
     "J1": (19, 20), "D_esd": (10, 20),
     "R_cc1": (34, 17.5), "R_cc2": (31, 18.5),   # hang from short wires off A5/B5
-    "D_vbus": (32, 11), "FLAG5": (35, 11),
-    # --- LDO + its in/out caps (the ESP32/ES8311 decouplers live with their ICs) ---
-    "U2": (47, 18), "FLAG3": (52, 12), "FLAGG": (59, 36),
-    "C_in": (40, 30), "C_out": (45, 30),
+    # Schottky laid horizontal inline on J1's VBUS row (anode/pin 2 left, toward J1);
+    # +5V port hangs off the cathode. The ESD VP pin taps the row via a run over J1.
+    "D_vbus": (30, 14), "FLAG5": (35, 11),
+    # --- LDO + its in/out caps (the ESP32/ES8311 decouplers live with their ICs):
+    #     caps flank U2 with pin 1 on the VIN/VOUT pin row, wired straight across;
+    #     the +5V/+3V3 ports ride the cap tops. ERC power flags tucked in right. ---
+    "U2": (47, 18), "FLAG3": (56, 14.5), "FLAGG": (56, 21),
+    "C_in": (42, 18.5), "C_out": (52, 18.5),
     "R_led": (137, 9), "LED1": (131, 9),   # horizontal chain right of the relay column
     # --- MCU straps below the MCU box: R/C tap a short EN/BOOT rail wired
     #     into the button, EN group left, BOOT group right ---
@@ -151,21 +160,22 @@ SCHEM_POS = {
     # --- relay drivers, three rows right of the MCU ---
     # row 1 (K1, PTT): gate net split by the K3 interlock -> R_pd1 carries the
     # GATE1 label (R_g1 lives at U1, see above).
-    "Q1": (114, 23), "R_pd1": (112, 30), "D1": (120, 22.5), "K1": (131, 23),
+    "Q1": (116, 23), "R_pd1": (114, 30), "D1": (122, 22.5), "K1": (133, 23),
     # rows 2 (K2, door opener) and 3 (K3, chime suppress): gate trunk wired directly.
-    "R_g2": (112, 42), "Q2": (114, 47), "R_pd2": (112, 52), "D2": (120, 46.5), "K2": (131, 47),
-    "R_g3": (112, 66), "Q3": (114, 71), "R_pd3": (112, 76), "D3": (120, 70.5), "K3": (131, 71),
-    "R_ot": (132, 41.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
+    "R_g2": (114, 42), "Q2": (116, 47), "R_pd2": (114, 52), "D2": (122, 46.5), "K2": (133, 47),
+    "R_g3": (114, 66), "Q3": (116, 71), "R_pd3": (114, 76), "D3": (122, 70.5), "K3": (133, 71),
+    "R_ot": (134, 41.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
     # --- bell-sense rows: J2 | clamp diode | polarity switch | opto | limiter ---
     "J2": (14, 83),
-    # clamp diodes sit between the switch and the opto (gx46), centred on the opto-LED
-    # midpoint (same row) so JP/CATH wire symmetrically; optos at gx54 for clearance.
+    # rows ordered OK1/OK2/OK3 top->bottom on a uniform 20-unit pitch. Clamp diodes
+    # sit between the switch and the opto (gx46), centred on the opto-LED midpoint
+    # (same row) so JP/CATH wire symmetrically; optos at gx54 for clearance.
     # R_lim* laid horizontal at X=92.71mm (gx 36.5, on the 1.27 grid; ~93mm),
-    # dropped onto their RET wire rows (gy 72.5/91/111)
-    "D_oc2": (46, 63), "SW_OC2": (32, 63), "OC2": (54, 63), "R_lim1": (36.5, 72.5),
-    "D_oc3": (46, 83), "SW_OC3": (32, 83), "OC3": (54, 83), "R_lim2": (36.5, 91),
-    "D_oc1": (46, 103), "SW_OC1": (32, 103), "OC1": (54, 103), "R_lim3": (36.5, 111),
-    "R_em": (64, 103),
+    # dropped onto their RET wire rows (limiter row = SW row + 4.5 + drop/2.54)
+    "D_oc1": (46, 63), "SW_OC1": (32, 63), "OC1": (54, 63), "R_lim3": (36.5, 71),
+    "D_oc2": (46, 83), "SW_OC2": (32, 83), "OC2": (54, 83), "R_lim1": (36.5, 92.5),
+    "D_oc3": (46, 103), "SW_OC3": (32, 103), "OC3": (54, 103), "R_lim2": (36.5, 111),
+    "R_em": (66, 107),   # shared emitter R, hangs off a vertical trunk right of the optos
     # --- audio codec: I2C pull-ups above U3, xfmr + coupling caps below;
     #     single-use parts wired straight to the U3 pin they serve: VREF/VMID
     #     reservoirs hang from staggered wires off pins 14/15/16 (clear of the
@@ -173,9 +183,13 @@ SCHEM_POS = {
     #     supply decoupling row (PCB group "Audio codec") above U3, I2C pull-ups
     #     shifted right to make room:
     "C_dv": (75, 72), "C_pv": (80, 72), "C_av": (85, 72), "C_avb": (90, 72),
-    "R_sda": (96, 72), "R_scl": (101, 72), "R_ce": (129, 83.5),
+    # I2C pull-ups flank U3 so each wires straight down onto its codec pin:
+    # SCL -> pin 1 (left column), SDA -> pin 19 (right column)
+    "R_scl": (70, 72), "R_sda": (109, 72), "R_ce": (129, 83.5),
     "U3": (92, 86), "T1": (83, 106),
-    "C_op": (92, 104), "C_on": (96, 104), "C_mp": (100, 104), "C_mn": (104, 104),
+    # AC-coupling caps between U3's analog pins and T1 winding B; column order
+    # matches the bend-row order so the pin->cap drops don't cross (see audio wiring)
+    "C_op": (89, 98), "C_on": (93, 98), "C_mn": (97, 98), "C_mp": (101, 98),
     "C_vref": (113, 89.5), "C_aref": (118, 88.5), "C_vmid": (123, 87.5),
 }
 GRID2 = dict(GRID); GRID2.update(SCHEM_POS)
@@ -243,9 +257,9 @@ for ref, (nick, entry, value) in COMP.items():
     elif ref in BELOW_TEXT:
         body_bot = oy - min((p.position.Y for u in sym.units for p in u.pins), default=0)
         ref_prop = Property(key="Reference", value=designator,
-                            position=Position(ox - 1.27, body_bot + 3.81, 0))
-        val_prop = Property(key="Value", value=value,
                             position=Position(ox - 1.27, body_bot + 6.35, 0))
+        val_prop = Property(key="Value", value=value,
+                            position=Position(ox - 1.27, body_bot + 8.89, 0))
     elif rx_off is not None:
         rx = ox + rx_off
         ref_prop = Property(key="Reference", value=designator,
@@ -341,6 +355,10 @@ def place_power(entry, x, y, outdir=90):
 
 LABEL_STUB = 2.54   # short wire from pin to label, so the text clears the pin number
 STUB_BY_REF = {"U1": 5.08, "U3": 5.08}   # big ICs: pin numbers need more clearance
+# Per-pin stub overrides: a longer stub pushes that one label clear of its neighbours.
+STUB_BY_PIN = {("Q1", "1"): 5.08,     # GATE1 clear of Q1's gate junction
+               ("R_g2", "1"): 5.08,   # GATE2_DRV raised off R_g2's body
+               ("R_g3", "1"): 5.08}   # GATE3_DRV raised off R_g3's body
 # Power pins rendered as a plain net label instead of a power port: U3's supplies sit
 # between signal pins at 2.54 pitch, where rotated port graphics overlap everything;
 # R_io8 lies inline with U1's dense pin column, so its rail end gets a label too.
@@ -422,6 +440,72 @@ wire(PX("U3", "15"), PX("C_aref", "1"))   # ADCVREF reservoir
 wire(PX("U3", "16"), PX("C_vmid", "1"))   # VMID reservoir
 wire(PX("U3", "20"), PX("R_ce", "1"))     # CE address pull-down
 
+# ---- LDO: C_in/C_out wired inline on the VIN/VOUT pin row. U2's own rail pins are
+#      skipped so the +5V/+3V3 ports sit on the cap tops instead of riding the wires.
+SKIP_LABEL_PINS.update({("U2", "3"), ("U2", "2"), ("U2", "4")})
+wire(PX("U2", "3"), PX("C_in", "1"))      # VIN  <- input cap
+wire(PX("U2", "2"), PX("C_out", "1"))     # VOUT -> output cap (pins 2/4 stack)
+
+# ---- USB-C: VBUS wired through the Schottky inline on J1's VBUS row; the ESD
+#      array's VP pin taps it via a run over the top of J1. D+/D- A/B pin pairs
+#      bussed together and run under J1 into the ESD array; U1 keeps its labels.
+WIRED_NETS.add("VBUS")
+_vb = PX("J1", "A4")                          # A4/B4/A9/B9 stack on one point
+wire(_vb, PX("D_vbus", "2"))                  # straight run into the Schottky anode
+wire((66.04, _vb[1]), (66.04, 17.78), (25.4, 17.78), PX("D_esd", "5"))
+junction(66.04, _vb[1])                       # T where the ESD branch leaves the row
+add_label("VBUS", 40.64, 17.78, 0, stub=0)    # name sits on the over-the-top run
+SKIP_LABEL_PINS.update({("J1", "A6"), ("J1", "B6"), ("D_esd", "1"),
+                        ("J1", "A7"), ("J1", "B7"), ("D_esd", "3")})
+for _pa, _pb, _esd, _net, _bx, _by, _lx in (
+        ("A6", "B6", "1", "USB_DP", 66.04, 83.82, 43.18),
+        ("A7", "B7", "3", "USB_DM", 68.58, 86.36, 48.26)):
+    pa, pb, pe = PX("J1", _pa), PX("J1", _pb), PX("D_esd", _esd)
+    wire(pa, (_bx, pa[1]), (_bx, _by), (pe[0], _by), pe)   # under J1 into the array
+    wire(pb, (_bx, pb[1]))                                 # stacked-pair tie
+    junction(_bx, pb[1])
+    add_label(_net, _lx, _by, 0, stub=0)                   # name sits on the run
+
+# ---- audio AC-coupling: U3's analog pins bend right/down on staggered columns and
+#      rows, drop through the coupling caps, and land on two horizontal rails on
+#      T1's winding-B pin rows (SEC_B = pin 6 top, SEC_A = pin 4 bottom). Cap
+#      columns are ordered by bend row so none of the runs cross each other.
+WIRED_NETS.update(("ES_OUTP", "ES_OUTN", "ES_MICP", "ES_MICN", "SEC_A", "SEC_B"))
+for _pin, _cap, _bx, _by in (("12", "C_op", 264.16, 236.22),   # OUTP
+                             ("13", "C_on", 269.24, 238.76),   # OUTN
+                             ("17", "C_mn", 271.78, 241.3),    # MIC1N
+                             ("18", "C_mp", 274.32, 243.84)):  # MIC1P
+    _p, _c1 = PX("U3", _pin), PX(_cap, "1")
+    wire(_p, (_bx, _p[1]), (_bx, _by), (_c1[0], _by), _c1)
+_t4, _t6 = PX("T1", "4"), PX("T1", "6")
+wire(_t6, (PX("C_mn", "2")[0], _t6[1]))       # SEC_B rail on T1 pin 6's row
+for _cap in ("C_on", "C_mn"):
+    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t6[1]))
+junction(PX("C_on", "2")[0], _t6[1])
+wire(_t4, (PX("C_mp", "2")[0], _t4[1]))       # SEC_A rail on T1 pin 4's row
+for _cap in ("C_op", "C_mp"):
+    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t4[1]))
+junction(PX("C_op", "2")[0], _t4[1])
+
+# I2C pull-ups wired straight down onto their codec pins; the wire carries the net
+# name (U1's pins keep their labels, binding the rest of the net).
+SKIP_LABEL_PINS.update({("U3", "19"), ("R_sda", "2"), ("U3", "1"), ("R_scl", "2")})
+_sda2, _scl2 = PX("R_sda", "2"), PX("R_scl", "2")
+wire(PX("U3", "19"), (_sda2[0], PX("U3", "19")[1]), _sda2)
+add_label("I2C_SDA", _sda2[0], 196.85, 90, stub=0)
+wire(PX("U3", "1"), (_scl2[0], PX("U3", "1")[1]), _scl2)
+add_label("I2C_SCL", 182.88, PX("U3", "1")[1], 0, stub=0)
+
+# ---- shared opto emitter: one vertical trunk right of the optos drops into R_em ----
+WIRED_NETS.add("OC_EMIT")
+_re1 = PX("R_em", "1")
+for _oc in ("OC1", "OC2", "OC3"):
+    _p3 = PX(_oc, "3")
+    wire(_p3, (_re1[0], _p3[1]))              # each emitter taps the trunk
+wire((_re1[0], PX("OC1", "3")[1]), _re1)
+junction(_re1[0], PX("OC2", "3")[1])
+junction(_re1[0], PX("OC3", "3")[1])
+
 # GATE1: pull-down wired onto the FET gate (net keeps labels at Q1 gate + K3.6)
 wire(PX("Q1", "1"), PX("R_pd1", "1"))
 junction(*PX("Q1", "1"))
@@ -440,9 +524,9 @@ add_label("BOOT", 255.27, PX("SW_boot", "1")[1], outdir=0, stub=0)
 # pin-label texts (rise/drop per row sized to the longest label).
 WIRED_NETS.update(("OC2_RET", "OC3_RET", "OC1_RET",
                    "OC2_CATH", "OC3_CATH", "OC1_CATH"))
-for _sw, _oc, _rl, _d, _jp, _drop in (("SW_OC2", "OC2", "R_lim1", "D_oc2", "OC2_JP", 12.7),
-                                      ("SW_OC3", "OC3", "R_lim2", "D_oc3", "OC3_JP", 8.89),
-                                      ("SW_OC1", "OC1", "R_lim3", "D_oc1", "OC1_JP", 8.89)):
+for _sw, _oc, _rl, _d, _jp, _drop in (("SW_OC1", "OC1", "R_lim3", "D_oc1", "OC1_JP", 8.89),
+                                      ("SW_OC2", "OC2", "R_lim1", "D_oc2", "OC2_JP", 12.7),
+                                      ("SW_OC3", "OC3", "R_lim2", "D_oc3", "OC3_JP", 8.89)):
     sw5, sw2 = PX(_sw, "5"), PX(_sw, "2")
     oc1, oc2 = PX(_oc, "1"), PX(_oc, "2")     # opto LED: pin1 anode (JP), pin2 cathode (CATH)
     d1, d2 = PX(_d, "1"), PX(_d, "2")         # clamp: pin1 cathode (top, JP), pin2 anode (bot, CATH)
@@ -478,7 +562,8 @@ for net, pins in NETS.items():
         if net in POWER_SYMS and (ref, pad) not in POWER_AS_LABEL:
             place_power(POWER_SYMS[net], x, y, outdir)
         else:
-            add_label(net, x, y, outdir, stub=STUB_BY_REF.get(ref, LABEL_STUB))
+            add_label(net, x, y, outdir,
+                      stub=STUB_BY_PIN.get((ref, pad), STUB_BY_REF.get(ref, LABEL_STUB)))
 
 for (ref, pad) in NOCONN:
     if (ref, pad) in pin_xy:
@@ -497,11 +582,11 @@ def title(text, x, y):
     sch.texts.append(Text(text=text, position=Position(x, y, 0), effects=e))
 
 group_box(13.5, 13, 95.5, 91);      title("USB-C", 15, 16)
-group_box(98, 13, 156, 105);        title("POWER", 99.5, 16)
+group_box(98, 28, 148, 63);         title("POWER", 99.5, 31)
 group_box(160, 13, 277, 95.5);      title("ESP32-C6 MCU", 162, 16)
-group_box(279, 38, 368, 207);       title("RELAY DRIVERS", 281, 41)
+group_box(279, 38, 372, 207);       title("RELAY DRIVERS", 281, 41)
 group_box(313, 15.5, 366, 30.5);    title("POWER LED", 313.5, 18)
-group_box(186.5, 171.5, 273, 284);  title("AUDIO  ES8311 + LINE XFMR", 188, 281.3)
+group_box(174, 171.5, 280, 284);    title("AUDIO  ES8311 + LINE XFMR", 176, 281.3)
 group_box(166.5, 98, 277, 130);     title("RESET / BOOT", 168, 101)
 group_box(16, 132.5, 170, 285);     title("BELL SENSE", 18, 136)
 
