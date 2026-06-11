@@ -93,6 +93,7 @@ VALUE_DY = {"OC1": 3.81, "OC2": 3.81, "OC3": 3.81, "J2": 8.89}
 # mapped to the horizontal offset in mm.  Vertical passives get this automatically.
 RIGHT_TEXT = {"Q1": 5.08, "Q2": 5.08, "Q3": 5.08,
               "K1": 16.5, "K2": 16.5, "K3": 16.5,
+              "D1": 2.54, "D2": 2.54, "D3": 2.54,   # flyback ref/value right of the body
               "D_esd": 36.5}  # clear of its right-pin net labels (end ~x82)
 # Refs whose ref/value stack to the LEFT of the body (right side is blocked),
 # mapped to the horizontal offset in mm (text right-justified at ox-offset).
@@ -115,6 +116,9 @@ ROT = {"R_io8": 90, "R_led": 270, "LED1": 270,
        # opto LED limiters laid horizontal (clockwise) so they sit inline on the
        # RET return wire: pin 2 (RET) faces left into the wire, pin 1 (CATH) right.
        "R_lim1": 270, "R_lim2": 270, "R_lim3": 270,
+       # relay flyback diodes flipped 180 (cathode/pin 1 up) and centered on the
+       # relay's row, so both stub symmetrically onto the +5V/drain lines
+       "D1": 180, "D2": 180, "D3": 180,
        # opto reverse-clamp diodes flipped 180 so cathode (pin 1) sits at the top
        # (opto-anode/JP node) and anode (pin 2) at the bottom (opto-cathode/CATH);
        # placed between the switch and the opto, anti-parallel to the LED.
@@ -182,10 +186,10 @@ SCHEM_POS = {
     # GATE1_PRE (from K3's interlock contact); the GPIO (GATE1_DRV) goes to K3.5.
     # rows sit 7 units lower than the natural top so GATE1_PRE's vertical label
     # (R_g1 pin 1, ~13 mm of 90°-text) stays inside the group box
-    "R_g1": (114, 25), "Q1": (116, 30), "R_pd1": (114, 37), "D1": (122, 29.5), "K1": (133, 30),
-    "R_g2": (114, 49), "Q2": (116, 54), "R_pd2": (114, 59), "D2": (122, 53.5), "K2": (133, 54),
-    "R_g3": (114, 73), "Q3": (116, 78), "R_pd3": (114, 83), "D3": (122, 77.5), "K3": (133, 78),
-    "R_ot": (134, 48.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
+    "R_g1": (114, 25), "Q1": (116, 30), "R_pd1": (114, 37), "D1": (122, 23), "K1": (133, 23),
+    "R_g2": (114, 49), "Q2": (116, 54), "R_pd2": (114, 59), "D2": (122, 47), "K2": (133, 47),
+    "R_g3": (114, 73), "Q3": (116, 78), "R_pd3": (114, 83), "D3": (122, 71), "K3": (133, 71),
+    "R_ot": (134, 41.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
     # --- bell-sense rows: J2 | clamp diode | polarity switch | opto | limiter ---
     "J2": (17, 83),   # pulled toward the switches; its P*-labels end ~3 mm short of theirs
     # rows ordered OK1/OK2/OK3 top->bottom on a uniform 20-unit pitch. Clamp diodes
@@ -329,10 +333,13 @@ for ref, (nick, entry, value) in COMP.items():
                             position=Position(ox - 1.27, body_bot + 8.89, 0))
     elif rx_off is not None:
         rx = ox + rx_off
+        # KiCad mirrors property-text anchors on 180-rotated symbols, so a
+        # "left" anchor would extend the text leftward across the body there.
+        rj = "right" if rang == 180 else "left"
         ref_prop = Property(key="Reference", value=designator,
-                            position=Position(rx, oy - 1.27, 0), effects=just("left"))
+                            position=Position(rx, oy - 1.27, 0), effects=just(rj))
         val_prop = Property(key="Value", value=value,
-                            position=Position(rx, oy + 1.27, 0), effects=just("left"))
+                            position=Position(rx, oy + 1.27, 0), effects=just(rj))
     else:
         ref_prop = Property(key="Reference", value=designator,
                             position=Position(ox, oy - 2.54, 0))
@@ -484,14 +491,31 @@ def wire_relay_driver(rg, q, rpd, d, k, wire_gate=True):
     if wire_gate:
         wire(PX(rg, "2"), PX(rpd, "1"))        # gate pin taps this segment
         junction(*PX(q, "1"))                  # T where the FET gate taps the node
-    # DRAIN node: FET drain -> (under flyback diode) -> relay coil pin 8.
-    drain, dtop, k8 = PX(q, "3"), PX(d, "2"), PX(k, "8")
-    wire(drain, (k8[0], drain[1]), k8)         # diode top pin taps the run
-    junction(*dtop)                            # T where the diode taps the node
+    # DRAIN line: FET drain -> east below the relay -> rises vertically onto coil
+    # pin 8. The diode (sharing the relay's row, so both sit centered between the
+    # +5V and drain lines) stubs its anode down onto the line.
+    drain, danode, k8 = PX(q, "3"), PX(d, "2"), PX(k, "8")
+    wire(drain, (k8[0], drain[1]), k8)         # vertical landing onto pin 8
+    wire(danode, (danode[0], drain[1]))        # diode anode stub down to the line
+    junction(danode[0], drain[1])              # T where the diode taps the node
+    # +5V line: runs 5.08 above the coil-pin row and drops vertically onto pin 1;
+    # the diode cathode stubs up to it, mirroring the anode side. One shared
+    # power port mid-line, raised off the wire on a short stub.
+    dcath, k1 = PX(d, "1"), PX(k, "1")
+    ytop = k1[1] - 5.08
+    wire(dcath, (dcath[0], ytop), (k1[0], ytop), k1)
+    midx = round(((dcath[0] + k1[0]) / 2) / 1.27) * 1.27
+    wire((midx, ytop), (midx, ytop - 2.54))
+    place_power("+5V", midx, ytop - 2.54, 90)
+    junction(midx, ytop)                       # T where the port stub taps the line
 # K1's gate node (GATE1 = R_g1.2 + Q1 gate + R_pd1) is a standard trunk now that the
 # series R sits gate-side of the K3 interlock; GATE1_PRE (K3.6 -> R_g1.1) and
 # GATE1_DRV (U1.19 -> K3.5) connect by auto-labels.
 WIRED_NETS.update(("K1_DRAIN", "GATE1", "GATE2", "K2_DRAIN", "GATE3", "K3_DRAIN"))
+# coil+/flyback-cathode +5V pins are tied by the drawn wire above and share its
+# mid-run power port; suppress their individual auto-ports
+SKIP_LABEL_PINS.update({("K1", "1"), ("K2", "1"), ("K3", "1"),
+                        ("D1", "1"), ("D2", "1"), ("D3", "1")})
 wire_relay_driver("R_g1", "Q1", "R_pd1", "D1", "K1")
 wire_relay_driver("R_g2", "Q2", "R_pd2", "D2", "K2")
 wire_relay_driver("R_g3", "Q3", "R_pd3", "D3", "K3")
@@ -682,6 +706,9 @@ def group_box(x0, y0, x1, y1):
 def title(text, x, y):
     e = just("left"); e.font = Font(height=2.0, width=2.0, bold=True)
     sch.texts.append(Text(text=text, position=Position(x, y, 0), effects=e))
+def note(text, x, y, j="left"):
+    e = just(j); e.font = Font(height=1.27, width=1.27, italic=True)
+    sch.texts.append(Text(text=text, position=Position(x, y, 0), effects=e))
 
 # Box edges are tidied to a common frame: the four top-row boxes share top=13,
 # the two bottom-row boxes share bottom=252.5, RESET/BOOT and AUDIO share their
@@ -690,10 +717,20 @@ group_box(13.5, 13, 95.5, 95.5);    title("USB-C", 15, 16)
 group_box(97.5, 13, 215, 95.5);     title("ESP32-C6 MCU", 99, 16)
 group_box(217.5, 13, 267.5, 49);    title("POWER", 219, 16)
 group_box(217.5, 51, 267.5, 86);    title("POWER LED", 219, 54)
-group_box(272.5, 13, 365.5, 202.5); title("RELAY DRIVERS", 274, 16)
+group_box(272.5, 13, 395, 202.5);  title("RELAY DRIVERS", 274, 16)
+# per-relay function notes, right of each relay's contact-net labels
+note(r"VIRTUAL PTT\nbridges IN_P4<->P2 (talk);\ngate runs via K3 interlock", 361, 54.61)
+note(r"DOOR OPENER\nbridges P2<->P3 via R16,\nemulating the WF26 OeT button", 361, 115.57)
+note(r"CHIME SUPPRESS\nbreaks line 4 (IN_P4->P4);\npole B interlocks K1 gate", 361, 176.53)
 group_box(158.5, 139.5, 269.5, 252.5); title("AUDIO  ES8311 + LINE XFMR", 160, 142.5)
 group_box(158.5, 99, 269.5, 131.5); title("RESET / BOOT", 160, 102)
 group_box(13.5, 99, 156, 252.5);    title("BELL SENSE", 15, 102.5)
+# what each opto sub-assembly senses: right-justified left of each polarity
+# switch (ends at the switches' ref-text column), dropped below the row so the
+# middle note clears J2's body and value text
+note("SESSION ACTIVE (talk relay, P5->P2)", 56, 144.5, j="right")
+note("HOUSE BELL / Tuerruf (P1->IN_P4)", 56, 195.3, j="right")
+note("APARTMENT BELL / Etagenruf (P1->P5)", 56, 246.1, j="right")
 
 out = os.path.join(HERE, "doorbell.kicad_sch")
 sch.to_file(out)
