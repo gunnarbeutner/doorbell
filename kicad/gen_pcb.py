@@ -37,8 +37,8 @@ PCB_PLACE = {
                                  # tapping the C_dec/C_3v3 power rail (pre-routed).
     "C_in":   (43.25, 48.25, 0), # LDO input cap (C2)
     "C_out":  (41.5, 38.75, 270), # LDO output cap (C4)
-    "LED1":   (48.0, 18.5, 90), # power LED; right of J2
-    "R_led":  (48.0, 15.5, 270), # LED series resistor; right of J2
+    "LED1":   (48.0, 16.5, 90), # power LED; right of J2
+    "R_led":  (48.0, 13.5, 270), # LED series resistor; right of J2
     "C_dec":  (24.2, 61.2, 270),  # 100nF decoupling; just clear of U1's east courtyard
     "C_3v3":  (25.75, 61.2, 270),  # 10uF decoupling; same row, next to C_dec
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
@@ -52,14 +52,14 @@ PCB_PLACE = {
     "D_tvs":  (43, 54, 180), # SMF5.0A VBUS TVS
     "F_vbus": (46.5, 55.25, 90), # 1A VBUS fuse
     # === TOP edge: WF26 terminal, centred above the bus interface ===
-    "J2":     (28, 17, 180),  # WF26 6-way screw terminal, top edge (down, closing gap to relays)
+    "J2":     (44.15, 15, 180),  # WF26 6-way screw terminal, top edge, right side
     # === Polarity switches: DPDT SMD slide switches, 9 mm pitch, Y=18 left of J2.
     #     Y=18 keeps the ±4.3 mm-extent SMD footprint inside the board outline. ===
     # rotated 180°: pads map 1↔6/2↔5/3↔4 onto the same spots, matching the JP/RET
     # pin swap in doorbell_design.py — copper layout identical to rot 0.
-    "SW_OC3": (3,  18, 180),
-    "SW_OC2": (9,  18, 180),
-    "SW_OC1": (15, 18, 180),
+    "SW_OC3": (3,  16, 180),
+    "SW_OC2": (9,  16, 180),
+    "SW_OC1": (15, 16, 180),
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
     "OC3":    (2.74, 33.5, 270),   # apartment bell sense; opto block centered in UL quadrant
     "OC2":    (6.74, 33.5, 270),   # house bell sense; opto block centered in UL quadrant
@@ -83,7 +83,7 @@ PCB_PLACE = {
     "R_g2":   (26.25, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
     "R_pd2":  (27, 34, 90),   # gate pulldown, swapped with Q2 + rotated 180°
     "D2":     (30.3, 33.6, 0),# flyback, moved north (toward K2 coil)
-    "R_ot":   (21.25, 20.5, 270), # ÖT bridge 2.2k: above K3 (top of relay body)
+    "R_ot":   (28.0, 21.25, 180), # ÖT bridge 2.2k: below J2, between pins 6/5
     # === K1 (PTT placeholder) relay + driver: same spacing as K3→K2 (11.5 mm) ===
     "K1":     (42.5, 27, 270),
     "Q1":     (46.5, 34, 180),
@@ -759,6 +759,43 @@ for _net, _swp, _t1p, _ylane, _jog in (
                pcbnew.B_Cu, _BUSW, nets[_net])
     _pre_track(vmm(_sx_, _ylane - _BCH), _sv, pcbnew.B_Cu, _BUSW, nets[_net])
 
+# --- Opto LED cathode + emitter nets: geometry lifted from a clean Freerouting
+#     solution, normalized and locked. Per CATH channel (opto pin 2 -> clamp diode
+#     pad 2 -> limiter pad 1, bus width): 45° jog west off the opto pad (the vertical
+#     sits 0.9934 west of the diode column, clearing the diode's anode pad by 0.29),
+#     down, 45° into the diode pad, 45° across into the limiter. OC_EMIT (0.2 mm)
+#     daisy-chains the opto pin 3s, hopping over the pad row at y=35.64 between
+#     channels, and runs straight into R_em pad 1 (entering 0.05 off-centre).
+def _pxy(_key, _num):
+    _p = _padpos(_key, _num)
+    return _TOMM(_p.x), _TOMM(_p.y)
+def _chain(_net, _pts, _w):
+    for _a, _b in zip(_pts, _pts[1:]):
+        _pre_track(vmm(*_a), vmm(*_b), pcbnew.F_Cu, _w, nets[_net])
+for _cnet, _ok, _do, _rl in (("OC1_CATH", "OC1", "D_oc1", "R_lim3"),
+                             ("OC2_CATH", "OC2", "D_oc2", "R_lim1"),
+                             ("OC3_CATH", "OC3", "D_oc3", "R_lim2")):
+    _o, _d, _r = _pxy(_ok, "2"), _pxy(_do, "2"), _pxy(_rl, "1")
+    _vx = _d[0] - 0.9934
+    _chain(_cnet, [_o,
+                   (_vx, _o[1] - (_o[0] - _vx)),
+                   (_vx, _d[1] + (_d[0] - _vx)),
+                   _d,
+                   (_r[0], _d[1] - (_d[0] - _r[0])),
+                   _r], _BUSW)
+_e1, _e2, _e3 = _pxy("OC1", "3"), _pxy("OC2", "3"), _pxy("OC3", "3")
+_rem = _pxy("R_em", "1")
+_YH = 35.64
+# descents land 0.148 short of the pad row + vertical stub: keeps the 45° leg
+# 0.178 clear of the neighbouring pad 4's rounded corner (straight-in clips it)
+_chain("OC_EMIT", [_e1, (_e1[0] - (_e1[1] - _YH), _YH),
+                   (_e2[0] + (_e2[1] - 0.1483 - _YH), _YH),
+                   (_e2[0], _e2[1] - 0.1483), _e2], _BW)
+_chain("OC_EMIT", [_e2, (_e2[0] - (_e2[1] - _YH), _YH),
+                   (_e3[0] + (_e3[1] - 0.1483 - _YH), _YH),
+                   (_e3[0], _e3[1] - 0.1483), _e3], _BW)
+_chain("OC_EMIT", [_e3, (_rem[0], _e3[1])], _BW)
+
 # --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
 #     straight east on their pad rows into B.Cu vias in line with the pads — DM's via
 #     (23.85, 46.72) sits on its vertical, DP's (24.43, 45.45) 0.58 east of DM's line
@@ -944,12 +981,6 @@ print(f"  fiducials: disabled")
 # J1 must leave the escape fan room and D+/D- want to drop to B.Cu over the GND plane;
 # verify Freerouting copes after any reshuffle near the bottom edge.
 
-# Place J2 (WF26 screw terminal) toward the LEFT: align its left edge ~2 mm to the right of R16
-# (R_ot), with clearance. (Previously pinned to the board's right edge.)
-_r16l, _r16r, _r16t, _r16b = fext(fps["R_ot"])
-_jl, _jr, _jt, _jb = fext(fps["J2"])
-_pj = fps["J2"].GetPosition()
-fps["J2"].SetPosition(pcbnew.VECTOR2I(_pj.x + pcbnew.FromMM((_r16r + 2.0) - _jl), _pj.y))
 
 # J2 (WF26 terminal) per-screw labels on the front silk so the bus lines are unambiguous when
 # wiring in the wall: pad n -> net Pn; pad 6 = IN-P4, the line-4 return to the WF26's terminal 4.
@@ -995,7 +1026,7 @@ for _swk in ("SW_OC1", "SW_OC2", "SW_OC3"):
 _pol_lbl = pcbnew.PCB_TEXT(board)
 _pol_lbl.SetText("POLARITY")
 _pol_lbl.SetLayer(pcbnew.F_SilkS)
-_pol_lbl.SetPosition(vmm(8, 14.0))
+_pol_lbl.SetPosition(vmm(8, 12.0))
 _pol_lbl.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
 _pol_lbl.SetTextThickness(pcbnew.FromMM(0.12))
 _pol_lbl.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER)
@@ -1004,13 +1035,14 @@ board.Add(_pol_lbl)
 # Default-position markers: short vertical tick at the pin-1 column (x = sw_x − 1.75) of
 # each switch, in the gap between the top pad row (y≈15.35) and the body silk (y≈16.05).
 # Slider left = pin 1↔2 + 4↔5 = normal/default polarity (matches pre-switch direct wiring).
-for _swx in (2.0, 8.0, 14.0):
+for _swk in ("SW_OC1", "SW_OC2", "SW_OC3"):
+    _swp = fps[_swk].GetPosition()
     _dm = pcbnew.PCB_SHAPE(board)
     _dm.SetShape(pcbnew.SHAPE_T_SEGMENT)
     _dm.SetLayer(pcbnew.F_SilkS)
     _dm.SetWidth(pcbnew.FromMM(0.25))
-    _dm.SetStart(vmm(_swx - 1.75, 21.6))
-    _dm.SetEnd(vmm(_swx - 1.75, 22.3))
+    _dm.SetStart(vmm(_TOMM(_swp.x) - 1.75, _TOMM(_swp.y) + 3.6))
+    _dm.SetEnd(vmm(_TOMM(_swp.x) - 1.75, _TOMM(_swp.y) + 4.3))
     board.Add(_dm)
 
 # Relays sit close together; the default side-placed refdes overlaps the neighbour's body
