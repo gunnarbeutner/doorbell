@@ -25,11 +25,11 @@ from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
 PCB_PLACE = {
     # === LOWER-LEFT: ESP32 + its power / boot / LED support ===
     "U1":     (13, 53.7, 180),  # WROOM, rot 180° (antenna faces south, flush bottom)
-    "SW_boot":(8.500, 40, 180),  # BOOT button, CW from vertical → horizontal, above U1
-    "R_boot": (13.500, 40, 180),  # BOOT pullup, right of SW_boot (was above → right after CW)
-    "SW_en":  (22, 40, 0),    # RST button, right of BOOT group
-    "R_en":   (17, 39, 0),    # EN pullup, above SW_en
-    "C_en":   (17, 41, 180),  # EN cap, below SW_en
+    "SW_boot":(8.500, 41, 180),  # BOOT button, CW from vertical → horizontal, above U1
+    "R_boot": (13.500, 41, 180),  # BOOT pullup, right of SW_boot (was above → right after CW)
+    "SW_en":  (22, 41, 0),    # RST button, right of BOOT group
+    "R_en":   (17, 40, 0),    # EN pullup, above SW_en
+    "C_en":   (17, 42, 180),  # EN cap, below SW_en
     "U2":     (44.5, 44.0, 180), # SGM2212 LDO; rotated CW
     "R_io8":  (24.2, 52.05, 270), # GPIO8 pull-up; right of U1 east face
     "C_in":   (43.25, 48.25, 0), # LDO input cap (C2)
@@ -378,6 +378,97 @@ for _gnum, _shi in (("A1", 0), ("A12", 2)):   # _sh order: 0=left-rear, 2=right-
     for _lay in (pcbnew.F_Cu, pcbnew.B_Cu):
         _pre_track(_g, _gmid, _lay, w=0.5, net=nets["GND"])
         _pre_track(_gmid, _s, _lay, w=0.5, net=nets["GND"])
+
+# --- GPIO escape bundle: the six MCU lines into the opto/relay-driver block (OC*_OUT
+#     sense inputs + GATE*_DRV relay gates) leave U1's left pad column as parallel
+#     vertical lanes hugging the module's left edge (0.329 mm pitch = 0.2 mm track +
+#     0.129 mm gap; rightmost lane keeps 0.129 mm to the pad ends). Lanes nest in pad
+#     order (lowest pad -> leftmost lane), so the pad stubs and 45° corners never cross.
+#     Every line follows the same pattern: vertical lane -> 45° NE diagonal -> finish.
+#     OC3_OUT (leftmost lane) finishes by landing on OC3's collector pad 4 (its diagonal
+#     clears OK3 pad 3's rounded corner); the other five flatten east into horizontal
+#     runs instead. Their 45° diagonals nest parallel to OC3's at 0.4625 mm vertical
+#     steps (= 0.327 mm perpendicular); the horizontals stack from just clear of the
+#     opto pad row (OC2 on top at pad-row+0.15 mm copper gap) downward at one lane
+#     pitch, and all stop just west of OK2 pad 3 — Freerouting continues them east.
+#     With the GATE pad swap (18=K2, 19=K3, 20=K1) the lane stack's targets are ordered
+#     strictly west->east (OK2, OK1, R_g1, R_g3, R_g2), so every north-bend out of the
+#     stack is crossing-free and the whole bundle hand-routes with no vias: each line
+#     leaves its run with a 45° rise into its target (opto pad 4 / gate R pad 1).
+_BPITCH, _BCORNER, _BW = 0.329, 0.49, 0.2
+_u1px = _TOMM(next(p for p in fps["U1"].Pads() if p.GetNumber() == "18").GetPosition().x)
+_oc3p4 = next(p for p in fps["OC3"].Pads() if p.GetNumber() == "4").GetPosition()
+_tx, _ty = _TOMM(_oc3p4.x), _TOMM(_oc3p4.y)
+_lane5 = _u1px - 0.75 - 0.129 - _BW / 2   # U1 pads are 1.5 mm long: edge at centre-0.75
+_diag_c = _tx + _ty + 0.1042              # OC3's 45° approach line: x + y = const
+for _net, _pnum, _k, _dst in (
+        # _dst: "direct"  = land on OC3 pad 4 straight off the 45° diagonal;
+        #       OC* key   = flatten east, then 45° back up into that opto's pad 4;
+        #       R_g* key  = flatten east, then rise north into that gate R's pad 1.
+        ("OC3_OUT",   "27", 0, "direct"),
+        ("OC2_OUT",   "26", 1, "OC2"),
+        ("OC1_OUT",   "21", 2, "OC1"),
+        ("GATE1_DRV", "20", 3, "R_g1"),
+        ("GATE3_DRV", "19", 4, "R_g3"),
+        ("GATE2_DRV", "18", 5, "R_g2")):
+    _lx = _lane5 - (5 - _k) * _BPITCH
+    _pp = next(p for p in fps["U1"].Pads() if p.GetNumber() == _pnum).GetPosition()
+    _py = _TOMM(_pp.y)
+    _pre_track(_pp, vmm(_lx + _BCORNER, _py), pcbnew.F_Cu, _BW, nets[_net])
+    _pre_track(vmm(_lx + _BCORNER, _py), vmm(_lx, _py - _BCORNER),
+               pcbnew.F_Cu, _BW, nets[_net])
+    if _dst == "direct":
+        # vertical to the 45° line, diagonal to just above the pad, stub into its centre
+        _pre_track(vmm(_lx, _py - _BCORNER), vmm(_lx, _diag_c - _lx),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_lx, _diag_c - _lx), vmm(_tx, _ty + 0.1042),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_tx, _ty + 0.1042), _oc3p4, pcbnew.F_Cu, _BW, nets[_net])
+    else:
+        # vertical to this lane's 45° line (parallel to OC3's, 0.4625 mm/lane further
+        # SE), diagonal NE, then flatten into an eastward horizontal: OC2 tops the stack
+        # just clear of the opto pad row, each following lane one pitch lower.
+        _c = _diag_c + 0.4625 * _k             # this lane's 45° line: x + y = _c
+        _yh = _ty + 1.0625 + (_k - 1) * _BPITCH   # horizontal level (OC2: pad row+1.06)
+        _pre_track(vmm(_lx, _py - _BCORNER), vmm(_lx, _c - _lx),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_lx, _c - _lx), vmm(_c - _yh, _yh),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        if _dst.startswith("OC"):
+            # run east, 45° back up (mirroring the OC3 landing; clears the neighbouring
+            # pad 3's rounded corner by the same margin), vertical stub into pad 4
+            _t4 = next(p for p in fps[_dst].Pads() if p.GetNumber() == "4").GetPosition()
+            _tpx = _TOMM(_t4.x)
+            _dxr = _yh - (_ty + 0.1042)        # 45° rise from run level to pad approach
+            _pre_track(vmm(_c - _yh, _yh), vmm(_tpx - _dxr, _yh),
+                       pcbnew.F_Cu, _BW, nets[_net])
+            _pre_track(vmm(_tpx - _dxr, _yh), vmm(_tpx, _ty + 0.1042),
+                       pcbnew.F_Cu, _BW, nets[_net])
+            _pre_track(vmm(_tpx, _ty + 0.1042), _t4, pcbnew.F_Cu, _BW, nets[_net])
+        else:
+            # gate resistor landing: run east, 45° chamfer, rise north into pad 1 from
+            # the south. R_g1's pad sits 0.2 mm right of the safe rise lane (R_g3's
+            # pad 1 limits it), so it rises beside the pad and finishes with a 45° jog
+            # into the centre; R_g3/R_g2 rise straight into their pads.
+            _t1 = next(p for p in fps[_dst].Pads() if p.GetNumber() == "1").GetPosition()
+            _tpx, _tpy = _TOMM(_t1.x), _TOMM(_t1.y)
+            if _dst == "R_g1":
+                _rg3p1 = next(p for p in fps["R_g3"].Pads()
+                              if p.GetNumber() == "1").GetPosition()
+                _rx = _TOMM(_rg3p1.x) - 0.4 - 0.24   # clear R_g3 pad 1's left edge
+            else:
+                _rx = _tpx
+            _pre_track(vmm(_c - _yh, _yh), vmm(_rx - 0.245, _yh),
+                       pcbnew.F_Cu, _BW, nets[_net])
+            _pre_track(vmm(_rx - 0.245, _yh), vmm(_rx, _yh - 0.245),
+                       pcbnew.F_Cu, _BW, nets[_net])
+            if _dst == "R_g1":
+                _jy = _tpy + (_tpx - _rx)            # 45° entry start: on-pad, SW corner
+                _pre_track(vmm(_rx, _yh - 0.245), vmm(_rx, _jy),
+                           pcbnew.F_Cu, _BW, nets[_net])
+                _pre_track(vmm(_rx, _jy), _t1, pcbnew.F_Cu, _BW, nets[_net])
+            else:
+                _pre_track(vmm(_rx, _yh - 0.245), _t1, pcbnew.F_Cu, _BW, nets[_net])
 
 
 # --- board outline: tight bbox + margin on free edges, pinned on flush edges ---

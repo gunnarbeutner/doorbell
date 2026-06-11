@@ -229,8 +229,8 @@ over.
 |------|---------------|-----------|----------|----|
 | 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC3 collector (P5 / Etagenruf) | IO2 |
 | 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (IN-P4 / Türruf) | IO3 |
-| 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K2 (ÖT bridge) | IO21 |
-| 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K3 (chime suppress) | IO22 |
+| 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K2 (ÖT bridge) | IO20 |
+| 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K3 (chime suppress) | IO21 |
 
 V3 netlist verified against `build/netlist.txt` (nets `WF26-P4`/`WF26-P5`, `N9`–`N12`;
 V3's `WF26-IN-P4` is V4's `IN_P4`).
@@ -272,9 +272,9 @@ rectified).
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
-| IO21 | 19 | K2 gate — front door buzzer / ÖT (bridge P2+P3) | out | 10 k gate pull-down ⇒ off at boot |
-| IO22 | 20 | K3 gate — chime suppress (break IN_P4→P4) | out | 10 k gate pull-down ⇒ off at boot |
-| IO20 | 18 | K1 gate — virtual PTT (IN_P4↔P2) | out | drive routed through K3's pole-B interlock contact |
+| IO20 | 18 | K2 gate — front door buzzer / ÖT (bridge P2+P3) | out | 10 k gate pull-down ⇒ off at boot |
+| IO21 | 19 | K3 gate — chime suppress (break IN_P4→P4) | out | 10 k gate pull-down ⇒ off at boot |
+| IO22 | 20 | K1 gate — virtual PTT (IN_P4↔P2) | out | drive routed through K3's pole-B interlock contact |
 | IO3  | 26 | OC2 collector — house bell (Türruf, IN_P4) | in | internal pull-up (firmware) |
 | IO2  | 27 | OC3 collector — apartment bell (Etagenruf, P5) | in | internal pull-up (firmware) |
 | IO23 | 21 | OC1 collector — session-active sense (P5↔P2) | in | internal pull-up (firmware) |
@@ -478,6 +478,24 @@ sense legs up to the LED (`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor 
 (`OCx_OUT`, `OC_EMIT`), the transformer secondary (`SEC_A/SEC_B`), and K3's interlock pole
 (`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. The widths live only in
 the DSN injection; KiCad's DRC does not enforce them.
+
+**GPIO escape bundle** (`gen_pcb.py`, locked pre-routes like the VBUS star): the six MCU
+lines into the opto/relay-driver block (`OC1/2/3_OUT`, `GATE1/2/3_DRV`) leave U1's left
+pad column as six parallel vertical lanes hugging the module's left edge (0.329 mm pitch,
+nested in pad order so stubs/corners never cross; geometry derived from U1/OK3 pad
+positions, not absolute coordinates). `OC3_OUT` (leftmost lane) is completed into OK3
+pad 4 via a 45° diagonal; the other five follow the same vertical → 45° → finish pattern
+but flatten east instead: their diagonals nest parallel to OC3's (0.4625 mm vertical
+steps = 0.327 mm perpendicular), and the horizontal runs stack from just clear of the
+opto pad row (OC2 on top at 0.15 mm copper gap) downward at one lane pitch. OC2_OUT and
+OC1_OUT are completed: each runs east under the opto pad row, rises 45° (clearing the
+neighbouring pad 3's rounded corner by the same margin as OC3's landing) and drops into
+OK2/OK1 pad 4. The GATE pad assignment (pad 18=K2, 19=K3, 20=K1) orders the lane stack's
+targets strictly west→east (OK2, OK1, R6, R5, R4), so every north-bend is crossing-free
+and the bundle hand-routes completely, via-free: the GATE lanes run east below the opto
+row and rise north into their gate resistors' pad 1 (GATE1 rises beside R6 — R5's pad
+limits the lane — and finishes with a 45° jog into the pad centre; GATE3/GATE2 rise
+straight into R5/R4).
 
 **DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published
 capabilities (e.g. 0.127 mm spacing, 0.3 mm board-edge copper).

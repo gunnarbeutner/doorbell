@@ -8,8 +8,8 @@
 #   3. GPIO pins remapped to the V4 hardware (C6-WROOM-1 pad assignments differ from C3):
 #        House Doorbell    (OC2 / Türruf  sense) : GPIO3  -> GPIO3   (right col pad 26)
 #        Apartment Doorbell(OC3 / Etagenruf sense): GPIO1  -> GPIO2   (right col pad 27)
-#        front_door_buzzer (K2 / ÖT door opener) : GPIO20 -> GPIO21  (right col pad 19)
-#        suppress_sound    (K3 / chime suppress) : GPIO10 -> GPIO22  (right col pad 20)
+#        front_door_buzzer (K2 / ÖT door opener) : GPIO20 -> GPIO20  (right col pad 18)
+#        suppress_sound    (K3 / chime suppress) : GPIO10 -> GPIO21  (right col pad 19)
 #   4. *** relay outputs are ACTIVE-HIGH (unchanged from C3 version) ***
 #   5. Audio added (ES8311 mono codec, U3; half-duplex PTT via K1; session-sense via OC1):
 #        I2C_SDA  (ES8311 control)               : GPIO6             (pad  6)
@@ -18,7 +18,7 @@
 #        I2S_WS   (LRCK)                         : GPIO11            (pad 12)
 #        I2S_MCLK (master clock)                 : GPIO18            (pad 16)
 #        I2S_BCLK (bit clock, SCLK)              : GPIO19            (pad 17)
-#        K1       (PTT relay, talk=energised)    : GPIO20            (pad 18)
+#        K1       (PTT relay, talk=energised)    : GPIO22            (pad 20)
 #        I2S_DOUT (DAC / playback, DSDIN)        : GPIO10            (pad 11)
 #        OC1      (session-sense, P5↔P2 coil)   : GPIO23            (pad 21)
 #
@@ -243,13 +243,13 @@ switch:
 # V3 (turn_on = relay energised); only the physical polarity flipped.
 output:
   - platform: gpio
-    pin: GPIO20              # K1 — PTT relay (NO=talk/P4↔P2, NC=listen/idle)  [C6 pad 18]
+    pin: GPIO22              # K1 — PTT relay (NO=talk/P4↔P2, NC=listen/idle)  [C6 pad 20]
     id: ptt_relay_bin
   - platform: gpio
-    pin: GPIO22              # K3 — chime suppress (break P4)            [V3: 25; C3: GPIO10; C6 pad 20]
+    pin: GPIO21              # K3 — chime suppress (break P4)            [V3: 25; C3: GPIO10; C6 pad 19]
     id: suppress_doorbell_sound_bin
   - platform: gpio
-    pin: GPIO21              # K2 — front-door buzzer / ÖT (bridge P2+P3) [V3: 26; C6 pad 19]
+    pin: GPIO20              # K2 — front-door buzzer / ÖT (bridge P2+P3) [V3: 26; C6 pad 18]
     id: front_door_buzzer_bin
 
 button:
