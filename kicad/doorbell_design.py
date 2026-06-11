@@ -19,6 +19,8 @@ REF = {
     "R_en":"R10","R_boot":"R11","R_io8":"R12","R_cc1":"R13","R_cc2":"R14","R_led":"R15","R_ot":"R16",
     "R_lim3":"R17","R_sda":"R18","R_scl":"R19","R_ce":"R20",
     "R_pu1":"R21","R_pu2":"R22","R_pu3":"R23",   # opto collector pull-ups to +3V3
+    # audio front-end series resistors (one per transformer leg, both directions)
+    "R_op":"R24","R_on":"R25","R_mp":"R26","R_mn":"R27",
     # --- audio codec (ES8388) support caps ---
     "C_dv":"C7","C_pv":"C8","C_av":"C9","C_avb":"C10","C_vref":"C11",
     "C_vmid":"C12","C_aref":"C13","C_op":"C14","C_on":"C15","C_mp":"C16","C_mn":"C17",
@@ -81,6 +83,20 @@ COMP = {
     "R_pu1": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "R_pu2": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "R_pu3": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
+    # Audio front-end fixes (VERIFICATION.md findings 2+3):
+    # - R_op/R_on (1k, DAC legs): the idle DAC's low output impedance shunted the
+    #   shared T1 winding and shelved RECEIVED audio ~5-12 dB toward 4 kHz; 1k per
+    #   leg also drops the TX high-pass corner (0.5uF eff. into the 16R-dominated
+    #   line) from >1 kHz to ~160 Hz. TX level loss is irrelevant: the line expects
+    #   speaker-as-mic millivolts.
+    # - R_mp/R_mn (10k, mic legs): divider against the ES8311's 6k differential
+    #   input (6/26 = -12.7 dB). The PGA cannot attenuate (min 0 dB, FS 2 Vrms);
+    #   a loud gong on the 16R speaker pair (~2.8-5.7 Vrms) clipped the ADC and
+    #   brushed the pins' absolute-max excursion. Now <=1.4 Vrms at the pins.
+    "R_op": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
+    "R_on": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
+    "R_mp": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
+    "R_mn": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "C_in": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_3v3": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_out": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),    # SGM2212 wants COUT 1-10uF (was 22uF for AMS1117)
@@ -186,6 +202,10 @@ PURPOSE = {
     "R_pu1": "OC1 collector pull-up: defined sense level without the ESP32's internal pull-up",
     "R_pu2": "OC2 collector pull-up: defined sense level without the ESP32's internal pull-up",
     "R_pu3": "OC3 collector pull-up: defined sense level without the ESP32's internal pull-up",
+    "R_op": "DAC OUTP series R: keeps the idle DAC from shunting RX audio; lowers TX HPF corner",
+    "R_on": "DAC OUTN series R: keeps the idle DAC from shunting RX audio; lowers TX HPF corner",
+    "R_mp": "MIC1P series R: -12.7dB divider vs the 6k input, headroom for loud gongs (PGA min 0dB)",
+    "R_mn": "MIC1N series R: -12.7dB divider vs the 6k input, headroom for loud gongs (PGA min 0dB)",
     "C_in": "LDO input capacitor",
     "C_3v3": "ESP32 module bulk decoupling (at U1 pad 2)",
     "C_out": "LDO output capacitor",
@@ -233,7 +253,7 @@ FOOTPRINT = {
     "LED1": "PCM_JLCPCB:D_0603",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
 }
-for _r in ("R_lim1","R_lim2","R_lim3","R_em","R_g2","R_g3","R_g1","R_pd2","R_pd3","R_pd1","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot","R_sda","R_scl","R_ce","R_pu1","R_pu2","R_pu3"):
+for _r in ("R_lim1","R_lim2","R_lim3","R_em","R_g2","R_g3","R_g1","R_pd2","R_pd3","R_pd1","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot","R_sda","R_scl","R_ce","R_pu1","R_pu2","R_pu3","R_op","R_on","R_mp","R_mn"):
     FOOTPRINT[_r] = "PCM_JLCPCB:R_0603"
 for _c in ("C_in","C_3v3","C_out","C_en","C_dec",
            "C_dv","C_pv","C_av","C_avb","C_vref","C_vmid","C_aref","C_op","C_on","C_mp","C_mn"):
@@ -397,10 +417,15 @@ NETS = {
     # leg<->pin assignment chosen for clean PCB routing; the swap only flips absolute
     # audio polarity, which is inaudible (mono path, no phase-sensitive summing).
     # Winding swap (2026-06-11): bus winding on the EAST pads (6/4, facing its B.Cu
-    # launch vias), secondary on the WEST pads (1/3) so SEC_A/SEC_B leave T1 as a
-    # tight 0.33 mm differential pair wrapping the transformer's NE corner.
-    "SEC_A":   [("T1","1"),("C_op","2"),("C_mp","2")],   # secondary leg A: OUTP & MIC1P
-    "SEC_B":   [("T1","3"),("C_on","2"),("C_mn","2")],   # secondary leg B: OUTN & MIC1N
+    # launch vias), secondary on the WEST pads (1/3).
+    # Each leg carries series resistors in both directions (see R_op/R_mp comments
+    # in COMP): cap -> resistor (pad 1 = cap side) -> transformer.
+    "OUT_A":   [("C_op","2"),("R_op","1")],
+    "OUT_B":   [("C_on","2"),("R_on","1")],
+    "MIC_A":   [("C_mp","2"),("R_mp","1")],
+    "MIC_B":   [("C_mn","2"),("R_mn","1")],
+    "SEC_A":   [("T1","1"),("R_op","2"),("R_mp","2")],   # secondary leg A: OUTP & MIC1P
+    "SEC_B":   [("T1","3"),("R_on","2"),("R_mn","2")],   # secondary leg B: OUTN & MIC1N
 }
 
 # Subassembly groups (KiCad PCB_GROUP) -> internal keys. Each functional block selects/moves as a
@@ -421,7 +446,8 @@ GROUPS = {
     "K3 chime-suppress relay": ["K3", "Q3", "D3", "R_g3", "R_pd3"],
     "K1 PTT relay":            ["K1", "Q1", "D1", "R_g1", "R_pd1"],
     "Audio codec (ES8311)":    ["U3", "T1", "C_dv", "C_pv", "C_av", "C_avb", "C_vref", "C_vmid",
-                                "C_aref", "C_op", "C_on", "C_mp", "C_mn", "R_sda", "R_scl", "R_ce"],
+                                "C_aref", "C_op", "C_on", "C_mp", "C_mn", "R_sda", "R_scl", "R_ce",
+                                "R_op", "R_on", "R_mp", "R_mn"],
 }
 
 # intentionally-unused pins -> No-Connect markers (schematic) / unconnected (PCB)
@@ -467,6 +493,7 @@ GRID = {
     "C_dv": (78, 80), "C_pv": (82, 80), "C_av": (86, 80), "C_avb": (90, 80),
     "C_vref": (98, 86), "C_vmid": (98, 90), "C_aref": (98, 94),
     "C_op": (78, 104), "C_on": (82, 104), "C_mp": (86, 104), "C_mn": (90, 104),
+    "R_op": (78, 108), "R_on": (82, 108), "R_mp": (86, 108), "R_mn": (90, 108),
     "R_ce": (98, 78), "R_sda": (98, 80), "R_scl": (98, 82),
     "R_led": (66, 84), "LED1": (66, 90),
 }

@@ -30,7 +30,11 @@ PCB_PLACE = {
     "SW_en":  (22, 41, 0),    # RST button, right of BOOT group
     "R_en":   (17, 40, 0),    # EN pullup, above SW_en
     "C_en":   (17, 42, 180),  # EN cap, below SW_en
-    "U2":     (44.5, 44.0, 180), # SGM2212 LDO; rotated CW
+    "U2":     (45.5, 44.0, 180), # SGM2212 LDO; rotated CW. Shifted 1.0 east (was 44.5)
+                                 # so the +5V spine's descent (x=40.6) clears the
+                                 # MIC_A/MIC_B NE wrap verticals west of the pad toes;
+                                 # the tab's PTH pads keep 0.127 to P1's east-strip
+                                 # B.Cu vertical, which moved east in step.
     "R_io8":  (27.0, 61.2, 90),  # GPIO8 pull-up, SE of U1 beside C_3v3. GPIO8 pad (1)
                                  # faces south onto its B.Cu via (GPIO8 crosses under
                                  # the I2S fan corridor); +3V3 pad (2) faces north,
@@ -138,8 +142,22 @@ PCB_PLACE = {
     "C_on":   (79.7, 27.2, 270), "C_vref": (80.9, 27.2, 270), "C_aref": (82.1, 27.2, 270),
     # isolation transformer to the LEFT of U3, rotated clockwise (vertical). Bus winding (P1/P5)
     # on the east pads (B.Cu launch vias in the courtyard); secondary on the west pads, leaving
-    # as a pair around T1's NE corner to the OUT/MIC coupling caps.
+    # as a pair south to the series-resistor row below T1 (R_op/R_on/R_mn/R_mp).
     "T1":     (69, 30, 270),
+    # Audio front-end series resistors (final-frame coordinates, NOT in _AUDIO_BLK —
+    # the repack rotates that block about its centroid, so adding parts there would
+    # shift every locked audio route). One row SOUTH of T1 (0.45 mm courtyard gap),
+    # rot 270 so pad 1 faces north: each pad-1 launches a vertical that runs straight
+    # north under T1's body (the 9 mm pad-free channel between its pad columns) into
+    # the locked OUT_*/MIC_* lanes; pad 2 (south) carries the SEC_* tie back to T1's
+    # west pads. The W->E order R_op/R_on/R_mn/R_mp is forced by the crossing-free
+    # lane nesting (see the SEC/OUT/MIC route section): OUT legs take the inner NE
+    # verticals, MIC legs the outer ones, and the interleaved order puts SEC_A on
+    # the outer pads (linked through the resistors' own pad gaps) with SEC_B inside.
+    "R_op":   (31.5, 60.5, 270),
+    "R_on":   (32.8, 60.5, 270),
+    "R_mn":   (34.1, 60.5, 270),
+    "R_mp":   (35.4, 60.5, 270),
 }
 MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
 
@@ -226,10 +244,10 @@ fps["R_ce"].SetPosition(vmm(_TOMM(_rscl_p.x), _TOMM(_rscl_p.y) - 1.2))
 
 # Nudge the north cap/pull-up row (R_sda + the MIC/VMID coupling caps) 0.1 mm
 # further north, AFTER the block transforms (touching the placement table would
-# move the block's bbox and shift everything). This opens the C_vmid <-> C_aref
-# corridor just enough for SEC_A's west lane to run at a single level (y=40.783,
-# no mid-run jog): the lane needs >=0.127 to C_vmid's GND pad on one side and to
-# C_aref's signal pad on the other. SEC_B's lane north of the row moves up with it.
+# move the block's bbox and shift everything). Historically this opened the
+# C_vmid <-> C_aref corridor for a since-removed SEC lane; it is kept because the
+# locked MIC_*/SEC_* routes assume the nudged pad positions (MIC_B's westbound
+# lane at y=39.361 keeps 0.133 to C_vmid's pad-2 north edge).
 for _k in ("R_sda", "C_mp", "C_mn", "C_vmid"):
     _p = fps[_k].GetPosition()
     fps[_k].SetPosition(pcbnew.VECTOR2I(_p.x, _p.y - pcbnew.FromMM(0.1)))
@@ -809,8 +827,10 @@ for _net, _t1p in (("P1", _t1p6), ("P5", _t1p4)):
 #     and P1 nests inside — zero crossings.
 _j2p1, _j2p5 = _padpos("J2", "1"), _padpos("J2", "5")
 for _net, _t1p, _jp, _vx2, _ytop in (
-        ("P1", _t1p6, _j2p1, 48.64, 13.2),
-        ("P5", _t1p4, _j2p5, 49.3, 12.54)):
+        # verticals moved 0.49 east (were 48.64/49.3) with U2's 1.0 mm shift: P1
+        # keeps 0.127 to the tab's PTH pads (barrels are all-layer copper)
+        ("P1", _t1p6, _j2p1, 49.13, 13.2),
+        ("P5", _t1p4, _j2p5, 49.79, 12.54)):
     _ty2 = _TOMM(_t1p.y)
     _jx = _TOMM(_jp.x)
     for _a, _b in (
@@ -1087,16 +1107,21 @@ _chainl("GND", [_pxy("C_vmid", "2"), (35.385, 40.044)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(35.385, 40.044), net=nets["GND"])
 
 # --- +5V distribution, fully hand-routed (0.5 mm, F.Cu). One spine: D4 (Schottky
-#     cathode) -> C_in -> U2.3 (LDO in), then down the west side of the LDO/C_out
-#     column on a single straight vertical at x=37.64 — with R_g1 nudged 0.07 left
-#     this threads BOTH R_g1's pad gap (0.13) and R_pd1's pad 1 (0.135) with no
-#     jog — onto D1's flyback row and 45° up/over to K1's coil pin; from the
-#     (41.688,27.099) tee a west leg crosses the relay block on y=27.099 / the 45°
-#     staircase, tapping each coil pin (K2, K3) with a short stub off the y=24.779
-#     row and each flyback anode (D2, D3) dead-centre from above.
+#     cathode) -> C_in -> U2.3 (LDO in), then west out of the pad and north on a
+#     vertical at x=40.6 — threading the 0.22/0.175 gap between the MIC_A/MIC_B NE
+#     wrap (x=40.03) and U2's pad toes / C_out's pad column (this thread is why U2
+#     sits 1.0 mm east of its old spot) — ducks west at y=38.55 (0.132 north of the
+#     MIC return lanes, clear of C_out's south pad in x), and lands on the straight
+#     vertical at x=37.64, which (with R_g1 nudged 0.07 left) threads BOTH R_g1's
+#     pad gap (0.13) and R_pd1's pad 1 (0.135) with no jog — onto D1's flyback row
+#     and 45° up/over to K1's coil pin; from the (41.688,27.099) tee a west leg
+#     crosses the relay block on y=27.099 / the 45° staircase, tapping each coil
+#     pin (K2, K3) with a short stub off the y=24.779 row and each flyback anode
+#     (D2, D3) dead-centre from above.
 _chainl("+5V", [_pxy("D_vbus", "1"), (42.47, 50.78), _pxy("C_in", "1")], pcbnew.F_Cu)
-_chainl("+5V", [_pxy("C_in", "1"), (42.47, 47.24), _pxy("U2", "3")], pcbnew.F_Cu)
-_chainl("+5V", [_pxy("U2", "3"), (39.735, 44.505), (39.735, 40.512), (37.64, 38.417),
+_chainl("+5V", [_pxy("C_in", "1"), _pxy("U2", "3")], pcbnew.F_Cu)  # near-vertical slant
+_chainl("+5V", [_pxy("U2", "3"), (41.225, 46.3), (40.6, 45.675), (40.6, 38.795),
+                (40.355, 38.55), (37.773, 38.55), (37.64, 38.417),
                 (37.64, 34.372), (38.012, 34.0),
                 (39.75, 34.0), _pxy("D1", "1")], pcbnew.F_Cu)
 _chainl("+5V", [_pxy("D1", "1"), (41.688, 32.062), (41.688, 27.099)], pcbnew.F_Cu)
@@ -1139,12 +1164,12 @@ _tapvia("GND", "R_cc2", "2", [(47.93, 59.2), (47.38, 59.75)])
 _tapvia("GND", "C_in", "2", [(44.03, 49.155)])
 _tapvia("GND", "LED1", "1", [(47.955, 18.169)])      # near-vertical slant, one segment
 _tapvia("+3V3", "R_led", "1", [(47.455, 12.135), (47.455, 11.857)])
-# LDO column: U2.1 and C_out share one GND via on their common centreline;
-# U2.2 / C_out.1 take their own +3V3 vias
-_chainl("GND", [_pxy("U2", "1"), (41.5, 40.446)], pcbnew.F_Cu, _BW)  # near-vertical slant
+# LDO column: U2.1 and C_out share one GND via on C_out's centreline (45° + stub
+# off U2.1 since U2's 1.0 mm east shift); U2.2 / C_out.1 take their own +3V3 vias
+_chainl("GND", [_pxy("U2", "1"), (41.5, 40.67), (41.5, 40.446)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(41.5, 40.446), net=nets["GND"])
 _chainl("GND", [(41.5, 40.446), _pxy("C_out", "2")], pcbnew.F_Cu, _BW)
-_tapvia("+3V3", "U2", "2", [(41.53, 43.006)])
+_tapvia("+3V3", "U2", "2", [(42.53, 43.006)])
 _tapvia("+3V3", "C_out", "1", [(41.5, 37.085)])
 # R_en's pull-up supply: single (near-45°) slant onto R_boot's locked +3V3 via
 _chainl("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
@@ -1164,29 +1189,56 @@ _chainl("GATE1_PRE", [(17.9, 31.839), (23.966, 31.839), (26.886, 34.759),
                       (34.259, 34.759), (36.0, 36.5)], pcbnew.B_Cu, _BW)
 _pre_via(vmm(36.0, 36.5), net=nets["GATE1_PRE"])
 _chainl("GATE1_PRE", [(36.0, 36.5), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
-_chainl("SEC_A", [_pxy("C_mp", "2"), (32.624, 40.783), (37.151, 40.783),
-                  (37.585, 41.218), (37.585, 44.444), _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
-# T1 secondary -> OUT coupling caps as a tight 0.329 mm differential pair (the
-# secondary owns T1's WEST pads after the winding swap). The pair splits as late as
-# possible, right above T1's pads: the two 45° descents off the lanes nest one
-# bundle pitch apart (SEC_A inside), SEC_A flattening onto pad 1's row at x=32.218
-# — just short of where SEC_B's diagonal crosses that row (x=32.68) — and running
-# west into the pad, while SEC_B continues the long 45° down to pad 3's row (under
-# T1's body, clear of the netless CT pads and the relocated P1/P5 launch vias).
-# Northbound the pair runs east over T1's north edge (0.16 mm clear of the bus
-# pad 6), wraps the NE corner onto nested verticals at x=39.701/40.03, and lands
-# 45° into C_op/C_on pad 2 — SEC_A peels off first, SEC_B passes one pitch east and
-# drops into the next cap. Pairing the two secondary legs (a floating differential
-# audio pair) minimises the pickup loop.
-_chainl("SEC_A", [_pxy("T1", "1"), (32.218, 51.959), (34.306, 49.871),
-                  (39.372, 49.871), (39.701, 49.542), (39.701, 46.56),
-                  _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
-_chainl("SEC_B", [_pxy("C_mn", "2"), (33.868, 39.361), (37.869, 39.361),
-                  (38.953, 40.445), (38.953, 43.236), _pxy("C_on", "2")],
+# --- T1 secondary <-> series resistors <-> coupling caps (SEC_*/OUT_*/MIC_*),
+#     hand-routed and locked (restores the pre-resistor hand routes, adapted to the
+#     net split). The resistors sit in a row south of T1 (see PCB_PLACE); every
+#     route is F.Cu, 0.2 mm, no vias.
+#     SEC pair: T1's west pads exit east and drop south past the pad column as a
+#     0.329 mm pair (SEC_B west at x=28.6 from pad 3, SEC_A east at x=28.929 from
+#     pad 1 — pad 1's exit row is north of pad 3's, so the nested 45°s never cross).
+#     SEC_A (outer resistor pads) enters R_op.2 from the west on the pad-2 row and
+#     links R_op.2 -> R_mp.2 through the resistors' own inter-pad gaps (one track at
+#     y=60.5 crossing under R_on/R_mn's bodies); SEC_B dives under SEC_A's entry to
+#     y=62.2, runs east below the row and rises into R_on.2 from the south, then
+#     ties R_on.2 -> R_mn.2 straight along the pad-2 row.
+#     OUT/MIC legs: each resistor's pad 1 launches a vertical straight north under
+#     T1's body, peels east on its own lane between T1's pads and courtyard top
+#     (y=49.871/50.2/50.529/50.858, 0.329 pitch, innermost vertical <-> northmost
+#     lane), and wraps T1's NE corner on nested verticals x=39.043/39.372 (OUT pair)
+#     and x=39.701/40.03 (MIC pair, the pre-split SEC wrap x's; 0.15 to U2's pad
+#     toes). OUT_A lands 45° NW into C_op.2; OUT_B drops to y=44.169 and enters
+#     C_on.2 between the C_op/C_on pad-2 rows (a direct 45° off its vertical would
+#     brush C_op.2's corner). The MIC pair continues north past the cap field and
+#     returns west on lanes y=39.032/39.361 north of the C_mp/C_mn/C_vmid pad-2 row
+#     (MIC_B's lane + 45° drop into C_mn.2 reuse the pre-split link geometry
+#     verbatim; MIC_A runs one pitch north and drops into C_mp.2). Keeping each
+#     direction's two legs paired at 0.329 mm preserves the small pickup loop the
+#     floating differential pair had before the split.
+_chainl("SEC_A", [_pxy("T1", "1"), (28.684, 51.959), (28.929, 52.204),
+                  (28.929, 61.075), (29.174, 61.32), _pxy("R_op", "2")],
         pcbnew.F_Cu, _BW)
-_chainl("SEC_B", [_pxy("T1", "3"), (27.6, 57.039), (34.439, 50.2),
-                  (39.701, 50.2), (40.03, 49.871), (40.03, 45.689),
-                  _pxy("C_on", "2")], pcbnew.F_Cu, _BW)
+_chainl("SEC_A", [_pxy("R_op", "2"), (31.5, 60.745), (31.745, 60.5),
+                  (35.155, 60.5), (35.4, 60.745), _pxy("R_mp", "2")],
+        pcbnew.F_Cu, _BW)
+_chainl("SEC_B", [_pxy("T1", "3"), (28.355, 57.039), (28.6, 57.284),
+                  (28.6, 61.955), (28.845, 62.2), (32.555, 62.2),
+                  (32.8, 61.955), _pxy("R_on", "2")], pcbnew.F_Cu, _BW)
+_chainl("SEC_B", [_pxy("R_on", "2"), _pxy("R_mn", "2")], pcbnew.F_Cu, _BW)
+_chainl("OUT_A", [_pxy("R_op", "1"), (31.5, 50.116), (31.745, 49.871),
+                  (38.798, 49.871), (39.043, 49.626), (39.043, 45.902),
+                  _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
+_chainl("OUT_B", [_pxy("R_on", "1"), (32.8, 50.445), (33.045, 50.2),
+                  (39.127, 50.2), (39.372, 49.955), (39.372, 44.414),
+                  (39.127, 44.169), (38.51, 44.169), _pxy("C_on", "2")],
+        pcbnew.F_Cu, _BW)
+_chainl("MIC_B", [_pxy("R_mn", "1"), (34.1, 50.774), (34.345, 50.529),
+                  (39.456, 50.529), (39.701, 50.284), (39.701, 39.606),
+                  (39.456, 39.361), (33.868, 39.361), _pxy("C_mn", "2")],
+        pcbnew.F_Cu, _BW)
+_chainl("MIC_A", [_pxy("R_mp", "1"), (35.4, 51.103), (35.645, 50.858),
+                  (39.785, 50.858), (40.03, 50.613), (40.03, 39.277),
+                  (39.785, 39.032), (32.897, 39.032), _pxy("C_mp", "2")],
+        pcbnew.F_Cu, _BW)
 
 # --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
 #     straight east on their pad rows into B.Cu vias in line with the pads — DM's via

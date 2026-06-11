@@ -453,9 +453,11 @@ Placement around J1 must leave the escape fan room (verify Freerouting copes aft
 reshuffle).
 
 **Power routing** (`gen_pcb.py`, locked — the power nets are fully hand-routed): +5V
-is one 0.5 mm F.Cu spine, D4 → C_in → U2.3 (LDO in), then down the west side of the
-LDO/C_out column on a single straight vertical at x=37.64 — R6 (R_g1) sits nudged
-0.07 mm left so the one vertical threads both its pad gap and R9 (R_pd1) without a
+is one 0.5 mm F.Cu spine, D4 → C_in → U2.3 (LDO in), then north on a vertical at
+x=40.6 threading between the MIC_A/MIC_B NE wrap and U2's pad toes (the thread is
+why U2 sits at x=45.5), ducking west at y=38.55 just north of the MIC return lanes
+onto the straight vertical at x=37.64 — R6 (R_g1) sits nudged
+0.07 mm left so that vertical threads both its pad gap and R9 (R_pd1) without a
 jog — onto D1's flyback row and up/over to K1's coil pin; from the
 (41.688, 27.099) tee a west leg crosses the relay block, tapping K2/K3 coil pins off
 the y=24.779 row and dropping into D2/D3 dead-centre. GND/+3V3 reach their In2/In1
@@ -467,12 +469,10 @@ one GND via on their centreline); U2's tab and J1's shield stakes are PTH
 pre-wiring the U3 EP vias to the pad centre (the DSN export doesn't credit EP pad
 copper as wiring). GATE1_PRE crosses under the relay-driver block on B.Cu (K3.6 →
 via → east → 45° staircase) and stays there to a via just left of R6 (R_g1) pad 1,
-surfacing into the pad with one straight stub. SEC_A/SEC_B are hand-designed as a
-differential pair off T1's west pads (see the T1 tie-in description); their west
-legs onward to C16/C17 thread the cap field as single tracks — the north
-cap/pull-up row (R18 + C16/C17/C12) sits nudged 0.1 mm north of the block grid so
-SEC_A's lane runs jog-free at one level (y=40.783) between C12's GND pad and
-C13's signal pad.
+surfacing into the pad with one straight stub. The audio front-end (SEC_A/SEC_B off
+T1's west pads, through the R24–R27 series-resistor row south of T1, and on as
+OUT_*/MIC_* legs to the coupling caps) is hand-designed as nested 0.329 mm pairs —
+see the T1 tie-in description.
 
 **The board is 100% hand-routed** — every net is locked pre-route geometry in
 `gen_pcb.py`. `route.py` checks the ratsnest after filling the inner planes and,
@@ -532,7 +532,7 @@ current-carrying nets to **0.5 mm**: `+5V` (LDO input — ESP32 WiFi-TX peaks ~3
 three relay coils) and every net at WF26-bus potential — `P1/P2/P3/P4/P5/IN_P4` (the chime
 solenoid current crosses the board through K3's NC contact), `OT_BRIDGE`, and the opto
 sense legs up to the LED (`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor sides
-(`OCx_OUT`, `OC_EMIT`), the transformer secondary (`SEC_A/SEC_B`), and K3's interlock pole
+(`OCx_OUT`, `OC_EMIT`), the transformer secondary (`SEC_*`/`OUT_*`/`MIC_*`), and K3's interlock pole
 (`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. The widths live only in
 the DSN injection; KiCad's DRC does not enforce them.
 
@@ -605,18 +605,28 @@ T1's bus winding ties in
 on B.Cu at bus width (0.5 mm): the bus owns T1's EAST pads (6/4) after the winding
 swap, with launch vias tucked inside T1's courtyard 2.4 mm west of the pads (east of
 them they'd collide with D4) and straight F.Cu stubs into the pads, then east and up
-the east strip (verticals x=48.64/49.3, B.Cu free under the LED block), west above
+the east strip (verticals x=49.13/49.79, B.Cu free under the LED block and 0.127
+clear of U2's tab PTH pads), west above
 J2's pad row (lanes y=13.2/12.54) and down into J2 pins 1/5 from the top — PTH pads
 connect on B.Cu, so no extra vias. The pad assignment (P1 = pad 6 north, P5 = pad 4
 south; winding swap and polarity are inaudible) makes P5 the outer loop with P1
-nested inside, zero crossings. The secondary owns the WEST pads (1/3) and leaves T1
-as a tight 0.329 mm differential pair: the two 45° descents off the lanes nest one
-bundle pitch apart and split only right above T1's pads — SEC_A flattens onto pad
-1's row and runs west into the pad, SEC_B continues the long diagonal under T1's
-body down to pad 3 — then the pair runs east over T1's north edge, wraps the NE
-corner on nested verticals (x=39.701/40.03), and lands 45° into C14/C15 pad 2
-(SEC_A peels off first). Pairing the secondary legs minimises the floating audio
-pair's pickup loop.
+nested inside, zero crossings. The secondary owns the WEST pads (1/3): SEC_A/SEC_B
+exit the pads east and drop south past the pad column as a tight 0.329 mm pair
+(x=28.929/28.6) into the series-resistor row south of T1 (R24–R27, pad 1 north).
+The W→E resistor order R_op/R_on/R_mn/R_mp is what makes the whole front-end route
+crossing-free: SEC_A ties the two outer pads — entering R_op.2 from the west and
+linking on to R_mp.2 through the resistors' own inter-pad gaps (one track at
+y=60.5 under R_on/R_mn's bodies) — while SEC_B dives below the row to y=62.2 and
+rises into R_on.2 from the south, tying R_on.2→R_mn.2 along the pad-2 row. Each
+pad 1 then launches a vertical straight north under T1's body (the pad-free
+channel between its pad columns), peels east on its own lane between T1's pads
+and courtyard top (y=49.871–50.858, 0.329 pitch), and wraps T1's NE corner on
+nested verticals: the OUT pair inside (x=39.043/39.372), landing 45° into C14 pad
+2 and via a y=44.169 jog into C15 pad 2; the MIC pair outside (x=39.701/40.03,
+the pre-split SEC wrap x's), continuing north past the cap field and returning
+west on lanes y=39.032/39.361 to drop 45° into C16/C17 pad 2 (the C17 lane and
+drop reuse the pre-split link geometry verbatim). Keeping each direction's legs
+paired at 0.329 mm preserves the floating audio pair's small pickup loop.
 
 The entire WF26 bus group — **P1–P5 and IN_P4 — is hand-routed and locked** in
 `gen_pcb.py` (geometry lifted from a clean Freerouting solution and normalized, plus
@@ -778,11 +788,12 @@ station hears; (b) in RX incoming audio blares from the handset; (c) the amp was
 into 16 Ω.
 
 **Bench-gated / open (analog front-end):**
-- **Ring-tone overdrive:** the Etagenruf tone is the speaker drive across P1/P5 — it hits
-  T1 (a −10 dBm-class telecom transformer, primary DCR 115 Ω) and arrives 1:1 at ES8311
-  MIC1P/N through the 1 µF caps with **no series limiting**. Every apartment ring
-  overdrives the mic path; risk of codec input overstress. Add series R / divider / clamp
-  on the MIC side (or attenuate at the primary) when finalising the front-end.
+- **Ring-tone overdrive: addressed** with R26/R27 (10 k) in series with each MIC leg —
+  a −12.7 dB divider against the ES8311's 6 kΩ differential input, so a loud gong
+  (~2.8–5.7 Vrms on the speaker pair) arrives at ≤1.4 Vrms (FS 2 Vrms, PGA min 0 dB).
+  R24/R25 (1 k) in the DAC legs stop the idle DAC's low output impedance from shunting
+  received audio off the shared winding and drop the TX high-pass corner to ~160 Hz.
+  Verify levels on the bench; values are 0603 swaps if the attenuation needs trimming.
 - Coupling-cap values, MIC1P/N input **biasing**, and whether to tie unused analog to
   AGND — all datasheet-typical, unverified on hardware.
 - The **P1/P5-vs-lines-2/3** reconciliation (see "WF26 internal circuit — open items"):

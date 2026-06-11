@@ -163,7 +163,8 @@ The JLCPCB symbols draw pin 1 as cathode, matching the KiCad footprint conventio
    would still make the hardware self-sufficient. (R3 contributes little — it adds
    ~70 mV to the low level.)
 
-2. **ES8311 input headroom on loud signals.** Confirmed relevant by the WF26
+2. **ES8311 input headroom on loud signals.** *(Addressed: R26/R27, 10 k series
+   in the mic legs — a −12.7 dB divider against the 6 kΩ input.)* Confirmed relevant by the WF26
    schematic: the transformer pair P5–P1 *is* the amp-driven 16 Ω speaker line. The
    MIC1 PGA's minimum gain is 0 dB (it cannot attenuate) and full-scale input is
    2 Vrms differential; a loud gong (~0.5–2 W ≈ 2.8–5.7 Vrms across the speaker)
@@ -175,7 +176,8 @@ The JLCPCB symbols draw pin 1 as cathode, matching the KiCad footprint conventio
    guide also formally notes the mic input "isn't recommended for line input" (it
    works at 0 dB; this is vendor hedging).
 
-3. **Shared-winding hybrid quality (transmit corner + DAC shunting).** Transmit
+3. **Shared-winding hybrid quality (transmit corner + DAC shunting).** *(Addressed:
+   R24/R25, 1 k series in the DAC legs — TX corner ~160 Hz, idle-DAC shunting gone.)* Transmit
    level is *not* a problem — during talk the WF26 speaker acts as a dynamic
    microphone, so the TV20S expects mV-level signals on P5–P1, and even the ~24 dB
    loss through the 2 × 115 Ω winding DCR into the 16 Ω speaker leaves the DAC
