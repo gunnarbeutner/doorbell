@@ -450,6 +450,18 @@ copper as wiring). GATE1_PRE and SEC_A/SEC_B are locked along their proven paths
 the same reason as OC3_RET: the corridors exist, but the greedy router stopped
 finding them once the power walls around them became protected wiring.
 
+**The board is 100% hand-routed** — every net is locked pre-route geometry in
+`gen_pcb.py`; Freerouting's pass adds nothing (it only confirms the netlist).
+The last stragglers: GATE1/GATE2 share one pattern per channel — a near-vertical
+slant ties the pull-down's pad 1 into the gate resistor's pad 2, then a straight
+run east on the y=36.5 resistor row with a 45° drop into the FET gate; GATE3's FET
+leg instead ducks under on B.Cu west of the relay block (GATE1_DRV's locked escape
+channel crosses the y=36.5 row at x=16.34). EN leaves U1 pad 3 onto a vertical at
+x=19.713 between U1's pad column and MCLK's riser, hops the locked SDA/SCL lane
+stack on a short B.Cu slant between two vias, then fans into C_en, the RST button,
+and R_en. OT_BRIDGE is a single near-vertical slant K2.4 → R16.2; LED_A is a
+dead-straight vertical.
+
 **Routing + plane recipe.** Freerouting routes on all four layers freely (no `LT_POWER`
 designation, no pre-stitch vias). After the SES is imported, `route.py` pours +3V3 on In1
 and GND on In2 as copper-fill zones; the filler leaves clearance gaps around any signal
@@ -583,7 +595,14 @@ back to J2.6; P1 from J2.1 on a B.Cu trunk along y=23.613 under the relay contac
 to vias feeding SW_OC2 pads 4/3 and SW_OC3 pads 4/3. OC3_RET (SW_OC3's centre pad 2 →
 R2) is locked along its proven path too — 45° onto the y=12.321 lane and down the
 far-west column x=0.316 — because with the bus walls locked, Freerouting (greedy, no
-rip-up through protected wiring) no longer finds that escape on its own. Branches in
+rip-up through protected wiring) no longer finds that escape on its own. The rest of
+the opto block is hand-routed as well: each JP net drops from its switch's centre
+pad 5 down a vertical between the switch columns, 45°s into the clamp diode's anode
+pad and hops 45° onward into the opto's pad 1 (three near-identical channels);
+OC1_RET/OC2_RET run their switch's centre pad 2 down a vertical beside the cathode
+channel into the limiter's pad 2; OC_EMIT's west tail lands on R3's pad with one
+near-horizontal slant. Together with the locked CATH/EMIT chains and the OC*_OUT
+escape bundle, every opto net is hand-routed. Branches in
 the locked wiring only meet at segment endpoints or pad centres (Freerouting
 mishandles mid-segment T-junctions in protected wiring).
 To free the NE corridor, the ESP-side USB pair takes a south

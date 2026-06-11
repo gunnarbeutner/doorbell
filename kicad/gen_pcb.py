@@ -801,7 +801,7 @@ _chain("OC_EMIT", [_e1, (_e1[0] - (_e1[1] - _YH), _YH),
 _chain("OC_EMIT", [_e2, (_e2[0] - (_e2[1] - _YH), _YH),
                    (_e3[0] + (_e3[1] - 0.1483 - _YH), _YH),
                    (_e3[0], _e3[1] - 0.1483), _e3], _BW)
-_chain("OC_EMIT", [_e3, (_rem[0], _e3[1])], _BW)
+_chain("OC_EMIT", [_e3, _rem], _BW)   # single near-horizontal slant into R_em pad 1
 
 # --- Relay coil drain nets (K*_DRAIN), geometry lifted from Freerouting and
 #     normalized (its K3 solution even contained a 0.1 um micro-segment): from the
@@ -903,6 +903,29 @@ _chainl("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.
 # P1 column), 45° SE into R_lim2 pad 2. All F.Cu, bus width (bus potential).
 _chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
                     (0.316, 12.546), (0.316, 20.006), _pxy("R_lim2", "2")], pcbnew.F_Cu)
+# Remaining opto switch-pad nets (bus width, F.Cu; geometry lifted from a clean
+# Freerouting solution). Each JP net drops from its switch's centre pad 5 down a
+# vertical between the switch columns, 45°s into the clamp diode's pad 1 and hops
+# 45° onward into the opto's anode (pad 1) — the three channels are near-identical,
+# OC1/OC3 with a 45° entry into the vertical, OC2's pad 5 already on its column.
+# The RET nets run their switch's centre pad 2 down a vertical beside the cathode
+# channel into the limiter's pad 2 (OC3_RET is locked further above).
+_chainl("OC1_JP", [_pxy("SW_OC1", "5"), (13.212, 20.438), (13.212, 25.678),
+                   _pxy("D_oc1", "1")], pcbnew.F_Cu)
+_chainl("OC1_JP", [_pxy("D_oc1", "1"), (11.375, 28.785), _pxy("OC1", "1")],
+        pcbnew.F_Cu)
+_chainl("OC2_JP", [_pxy("SW_OC2", "5"), (9.0, 25.89), _pxy("D_oc2", "1")],
+        pcbnew.F_Cu)
+_chainl("OC2_JP", [_pxy("D_oc2", "1"), (7.375, 28.785), _pxy("OC2", "1")],
+        pcbnew.F_Cu)
+_chainl("OC3_JP", [_pxy("SW_OC3", "5"), (4.378, 20.028), (4.378, 26.512),
+                   _pxy("D_oc3", "1")], pcbnew.F_Cu)
+_chainl("OC3_JP", [_pxy("D_oc3", "1"), (3.375, 28.785), _pxy("OC3", "1")],
+        pcbnew.F_Cu)
+_chainl("OC1_RET", [_pxy("R_lim3", "2"), (11.629, 23.181), (11.629, 16.721),
+                    _pxy("SW_OC1", "2")], pcbnew.F_Cu)
+_chainl("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
+                    (6.371, 22.061), _pxy("R_lim1", "2")], pcbnew.F_Cu)
 
 # --- ES8311 (U3) analog / CE / supply hookups, fully hand-routed (0.2 mm, F.Cu).
 #     The I2C/I2S nets into U3 are locked above; this completes every U3 net.
@@ -924,8 +947,8 @@ _chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
 #     (C_av/C_avb, C_vref/C_aref, C_dv/C_pv) each get a pad-2 column tie + In2 via;
 #     C_vmid's GND pad taps a via 0.9 mm east. R_sda's +3V3 pad stubs north into its
 #     own In1 via (the FR-proven spot).
-_chainl("ES_OUTP", [_pxy("U3", "12"), (33.835, 45.974), (35.855, 45.974),
-                    _pxy("C_op", "1")], pcbnew.F_Cu, _BW)
+_chainl("ES_OUTP", [_pxy("U3", "12"), (33.845, 45.964), (35.865, 45.964),
+                    _pxy("C_op", "1")], pcbnew.F_Cu, _BW)   # 0.06 jog: > the 0.05 guard
 _chainl("ES_OUTN", [_pxy("U3", "13"), (35.005, 45.624), _pxy("C_on", "1")],
         pcbnew.F_Cu, _BW)
 _chainl("ES_DACVREF", [_pxy("U3", "14"), (34.805, 45.224), (34.805, 44.624),
@@ -1136,6 +1159,47 @@ _chainl("USB_CC1", [_pxy("J1", "A5"), (42.85, 62.979), (44.566, 64.695),
 _chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
                     (48.756, 64.31), (49.153, 63.913), (49.153, 61.793),
                     _pxy("R_cc2", "1")], pcbnew.F_Cu, _BW)
+
+# --- Last nets, hand-routed — the board is now 100% hand-routed (Freerouting only
+#     verifies). GATE1/2/3 share one pattern per channel: a near-vertical slant ties
+#     the pull-down's pad 1 into the gate resistor's pad 2 (the pads sit 0.07 mm
+#     apart in x), then a straight run east on the y=36.5 resistor row and a 45°
+#     drop into the FET's gate pad — all F.Cu, no vias (replaces Freerouting's
+#     two-via B.Cu detour on GATE3). EN leaves U1 pad 3 west, 45°s onto a vertical
+#     at x=19.713 (between U1's pad column and MCLK's riser), and hops the locked
+#     SDA/SCL lane stack on a short B.Cu slant between two vias; from the north via
+#     it runs west into C_en pad 1 (45° landing) and branches 45° into the RST
+#     button; R_en's EN pad ties to C_en with one near-vertical slant. OT_BRIDGE is
+#     a single near-vertical slant K2.4 -> R16.2 (bus width); LED_A's dead-straight
+#     vertical is kept as the autorouter laid it.
+for _gq, _gpd, _grg, _gx45 in (("Q1", "R_pd1", "R_g1", 45.89),
+                               ("Q2", "R_pd2", "R_g2", 34.39)):
+    _gnet = "GATE" + _gq[1]
+    _chainl(_gnet, [_pxy(_gpd, "1"), _pxy(_grg, "2")], pcbnew.F_Cu, _BW)
+    _chainl(_gnet, [_pxy(_grg, "2"), (_gx45, 36.5), _pxy(_gq, "1")], pcbnew.F_Cu, _BW)
+# GATE3 can't run the y=36.5 row east — GATE1_DRV's locked escape channel crosses it
+# at x=16.34 — so its FET leg ducks under on B.Cu west of the relay block instead:
+# Q3 gate west on y=34.95, 45° down to a via, B.Cu west + 45° up to a second via,
+# and a 45° F.Cu landing into R_pd3's pad 1.
+_chainl("GATE3", [_pxy("R_pd3", "1"), _pxy("R_g3", "2")], pcbnew.F_Cu, _BW)
+_chainl("GATE3", [_pxy("Q3", "1"), (20.552, 34.95), (19.377, 33.774),
+                  (19.377, 33.11)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(19.377, 33.11), net=nets["GATE3"])
+_chainl("GATE3", [(19.377, 33.11), (15.811, 33.11), (14.8, 34.121)],
+        pcbnew.B_Cu, _BW)
+_pre_via(vmm(14.8, 34.121), net=nets["GATE3"])
+_chainl("GATE3", [(14.8, 34.121), _pxy("R_pd3", "1")], pcbnew.F_Cu, _BW)
+_chainl("EN", [_pxy("U1", "3"), (20.772, 59.42), (19.713, 58.361),
+               (19.713, 43.894)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(19.713, 43.894), net=nets["EN"])
+_chainl("EN", [(19.713, 43.894), (19.644, 42.36)], pcbnew.B_Cu, _BW)
+_pre_via(vmm(19.644, 42.36), net=nets["EN"])
+_chainl("EN", [(19.644, 42.36), (18.14, 42.36), _pxy("C_en", "1")], pcbnew.F_Cu, _BW)
+_chainl("EN", [(19.644, 42.36), (19.925, 42.079), _pxy("SW_en", "1")],
+        pcbnew.F_Cu, _BW)
+_chainl("EN", [_pxy("C_en", "1"), _pxy("R_en", "2")], pcbnew.F_Cu, _BW)
+_chainl("OT_BRIDGE", [_pxy("K2", "4"), _pxy("R_ot", "2")], pcbnew.F_Cu)
+_chainl("LED_A", [_pxy("R_led", "2"), _pxy("LED1", "2")], pcbnew.F_Cu, _BW)
 
 # --- board outline: tight bbox + margin on free edges, pinned on flush edges ---
 L = edge_line.get("left",   min(fext(f)[0] for f in fps.values()) - MARGIN)
