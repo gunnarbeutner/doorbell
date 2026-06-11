@@ -123,8 +123,7 @@ binary_sensor:
       number: GPIO2            # OC3 collector — Etagenruf (P5) sense   [V3: 32; C3: GPIO1; C6 pad 27]
       inverted: true           # opto pulls the pin LOW when the bell rings
       mode:
-        input: true
-        pullup: true           # C3 internal pull-up holds it HIGH at idle
+        input: true            # R23 (10k to +3V3) holds it HIGH at idle
     filters:
       # OC3 sits across the speaker pair (P5<->P1), so it pulses on ANY loud speaker
       # audio: the Etagenruf tone, the Türruf 3-Klang gong and session speech alike.
@@ -155,8 +154,7 @@ binary_sensor:
       number: GPIO3            # OC2 collector — Türruf (P4 / IN-P4) sense   [V3: 33; C3: GPIO3; C6 pad 26]
       inverted: true
       mode:
-        input: true
-        pullup: true
+        input: true            # R22 (10k to +3V3) holds it HIGH at idle
     filters:
       # Mask while line 4 can be bridged to P2 — two cases collapse the sense pair:
       #  * board PTT: K1 ties IN_P4 to P2;
@@ -201,8 +199,7 @@ binary_sensor:
       number: GPIO23        # OC1 collector — session-active sense (P5↔P2 coil)  [C6 pad 21]
       inverted: true
       mode:
-        input: true
-        pullup: true
+        input: true         # R21 (10k to +3V3) holds it HIGH at idle
     filters:
       # Mask while the apartment bell rings: the Etagenruf tone driven onto P5 appears
       # across OC1's sense pair (P5<->P2, via the WF26's coil/C1 network) and would fake a

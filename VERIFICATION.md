@@ -8,7 +8,7 @@ STR TV20S service documentation (`STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`) and
 reverse-engineered WF26 station schematic (`wf26/wf26.kicad_sch`).
 
 **Verdict: no polarity errors, no pin-mapping errors, no unusable-pin problems.**
-Schematic and PCB agree on all 67 components; ERC reports 0 errors (64 warnings, all
+Schematic and PCB agree on all 74 components; ERC reports 0 errors (64 warnings, all
 benign "Unspecified pin type" noise from the converted JLCPCB symbols plus
 library-path warnings). Three lower-severity items are listed at the end.
 
@@ -155,7 +155,9 @@ The JLCPCB symbols draw pin 1 as cathode, matching the KiCad footprint conventio
 
 ## Findings (decide before ordering)
 
-1. **Opto outputs have no pull-up resistors.** OC1_OUT/OC2_OUT/OC3_OUT collectors go
+1. **Opto outputs have no pull-up resistors.** *(Addressed: R21–R23, 10 k collector
+   pull-ups to +3V3 — the sense inputs no longer depend on the ESP32's internal
+   pull-ups.)* OC1_OUT/OC2_OUT/OC3_OUT collectors go
    straight to GPIO23/GPIO3/GPIO2 with nothing else on the net (emitters share R3,
    1 k, to GND). The circuit works *only* if firmware enables the internal ~45 k
    pull-ups — otherwise the inputs float. `doorbell-v4.yaml` sets `pullup: true` on
