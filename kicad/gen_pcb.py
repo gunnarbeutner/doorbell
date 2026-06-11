@@ -1112,6 +1112,30 @@ for _a, _b in (
         ((42.7, 60.45), (_TOMM(_d5p1.x), _TOMM(_d5p1.y)))):
     _pre_track(vmm(*_a), vmm(*_b), pcbnew.F_Cu, _BW, nets["USB_DM_ESP"])
 
+# --- USB-C connector side, fully hand-routed (0.2 mm, F.Cu; geometry lifted from a
+#     clean Freerouting solution). D+/D− each tie their A/B pad pair together and
+#     rise into the TPD2S017 inputs: DP joins A6<->B6 with a shallow U just south of
+#     the pad row and runs B6 -> 45° -> vertical at x=45.5 -> 45° into D5 pin 4;
+#     DM tees at (44.152, 61.598) — B7 and A7 join there and one 45° leads into
+#     D5 pin 3. The CC lines wrap around J1's south side as two nested staircases
+#     (CC2 inside, CC1 outside via y=64.695) up into their pulldowns' pad 1.
+_chainl("USB_DP", [_pxy("J1", "B6"), (44.85, 61.697), (45.5, 61.047), (45.5, 58.6),
+                   _pxy("D_esd", "4")], pcbnew.F_Cu, _BW)
+_chainl("USB_DP", [_pxy("J1", "A6"), (43.85, 62.961), (44.162, 63.273),
+                   (44.537, 63.273), (44.85, 62.96), _pxy("J1", "B6")],
+        pcbnew.F_Cu, _BW)
+_chainl("USB_DM", [_pxy("J1", "B7"), (43.35, 61.873), (43.625, 61.598),
+                   (44.152, 61.598)], pcbnew.F_Cu, _BW)
+_chainl("USB_DM", [(44.152, 61.598), (44.35, 61.796), _pxy("J1", "A7")],
+        pcbnew.F_Cu, _BW)
+_chainl("USB_DM", [(44.152, 61.598), (44.95, 60.8), _pxy("D_esd", "3")],
+        pcbnew.F_Cu, _BW)
+_chainl("USB_CC1", [_pxy("J1", "A5"), (42.85, 62.979), (44.566, 64.695),
+                    (48.836, 64.695), (49.539, 63.993), (49.539, 60.899),
+                    _pxy("R_cc1", "1")], pcbnew.F_Cu, _BW)
+_chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
+                    (48.756, 64.31), (49.153, 63.913), (49.153, 61.793),
+                    _pxy("R_cc2", "1")], pcbnew.F_Cu, _BW)
 
 # --- board outline: tight bbox + margin on free edges, pinned on flush edges ---
 L = edge_line.get("left",   min(fext(f)[0] for f in fps.values()) - MARGIN)

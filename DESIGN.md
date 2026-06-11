@@ -610,7 +610,13 @@ at x=24.5, across B.Cu (over the In2 GND plane) as a tight pair — 0.327 mm
 perpendicular on the 45° diagonals, 0.329 mm on straights — surfacing in a second via
 pair west of the TPD2S017 and fanning into D5 pins 6/1. Via pairs sit 0.8 mm apart; the
 partner trace stays on a wider offset past each via (0.166 mm trace-to-via copper gap)
-before converging.
+before converging. The connector side is hand-routed too (locked, F.Cu): D+/D− each
+tie their A/B pad pair together and rise into the TPD2S017 inputs — DP joins A6↔B6
+with a shallow U just south of the pad row and climbs a vertical at x=45.5 into D5
+pin 4; DM tees at (44.152, 61.598), joining B7/A7 and running one 45° into D5 pin 3 —
+and the CC lines wrap around J1's south side as two nested staircases (CC2 inside,
+CC1 outside) up into their pulldowns. With these, every USB net (VBUS, VBUS_F, D±
+both sides, CC1/CC2) is hand-routed.
 
 **DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published
 capabilities (e.g. 0.127 mm spacing, 0.3 mm board-edge copper).
@@ -751,8 +757,6 @@ contact arrangement (COM = pins 2/5) and rating; ES8311 full pinout; SM-LP-5001 
 rating; every U1 pad↔GPIO assignment against the Espressif C6-WROOM-1 symbol.
 
 **Known minor items (accepted):**
-- USB D+/D− is autorouted; for a guaranteed coupled pair, hand-route on B.Cu and lock —
-  FS USB (12 Mbps) doesn't strictly require it.
 - One 0.388 mm bus↔logic clearance spot (<0.5 mm aspiration; fine for 12 V).
 - A benign plane-stitch warning on U1's EPAD.
 - No mounting holes, no dedicated test points (see "Build / test notes").
