@@ -353,13 +353,21 @@ NETS = {
     # both AC-coupled to T1 winding B (sec). Out and mic share the secondary; firmware mutes the
     # idle direction (DAC off in listen, ADC off in talk) — standard ES8311 half-duplex, so the
     # K1 pole-B audio switch is no longer needed (K1 reverts to PTT-only on pole A).
-    "I2S_MCLK": [("U3","2"),("U1","16")],    # MCLK  <- GPIO18 (pad 16)
-    "I2S_BCLK": [("U3","6"),("U1","17")],    # SCLK  <- GPIO19 (pad 17)
-    "I2S_WS":   [("U3","8"),("U1","12")],    # LRCK  <-> GPIO11 (pad 12)
-    "I2S_DOUT": [("U3","9"),("U1","11")],    # DSDIN <- ESP (GPIO10, pad 11) — playback data
-    "I2S_DIN":  [("U3","7"),("U1","8")],     # ASDOUT -> ESP (GPIO0, pad 8) — capture data
-    "I2C_SDA":  [("U3","19"),("U1","6"),("R_sda","2")],   # CDATA <-> GPIO6 (pad 6)
-    "I2C_SCL":  [("U3","1"),("U1","7"),("R_scl","2")],    # CCLK  <-> GPIO7 (pad 7)
+    # I2C on pads 16/17 (west col) and I2S MCLK on pad 6 (east col) — all GPIO-matrix-
+    # routable on the C6; this assignment makes the three-lane bundle into U3 come out
+    # in SDA, SCL, MCLK order without crossings (west-column lines own the upper
+    # lanes, the east-column riser slots in beneath).
+    # I2S data/clock pad order (12=BCLK, 11=DIN, 8=WS, 7=DOUT, top to bottom on U1's
+    # east column) matches U3's south-row pin order west->east (SCLK=6, ASDOUT=7,
+    # LRCK=8, DSDIN=9), so the four-line fan to the codec routes without crossings.
+    # All I2S signals are GPIO-matrix-routable on the C6 — pure permutation.
+    "I2S_MCLK": [("U3","2"),("U1","6")],     # MCLK  <- GPIO6 (pad 6)
+    "I2S_BCLK": [("U3","6"),("U1","12")],    # SCLK  <- GPIO11 (pad 12)
+    "I2S_WS":   [("U3","8"),("U1","8")],     # LRCK  <-> GPIO0 (pad 8)
+    "I2S_DOUT": [("U3","9"),("U1","7")],     # DSDIN <- ESP (GPIO7, pad 7) — playback data
+    "I2S_DIN":  [("U3","7"),("U1","11")],    # ASDOUT -> ESP (GPIO10, pad 11) — capture data
+    "I2C_SDA":  [("U3","19"),("U1","16"),("R_sda","2")],  # CDATA <-> GPIO18 (pad 16)
+    "I2C_SCL":  [("U3","1"),("U1","17"),("R_scl","2")],   # CCLK  <-> GPIO19 (pad 17)
     "ES_CE":    [("U3","20"),("R_ce","1")],               # CE addr-select: U3 pin 20 -> pull-down -> GND
     "ES_DACVREF": [("U3","14"),("C_vref","1")],
     "ES_ADCVREF": [("U3","15"),("C_aref","1")],

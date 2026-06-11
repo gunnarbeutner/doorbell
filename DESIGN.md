@@ -279,9 +279,9 @@ rectified).
 | IO2  | 27 | OC3 collector — apartment bell (Etagenruf, P5) | in | internal pull-up (firmware) |
 | IO23 | 21 | OC1 collector — session-active sense (P5↔P2) | in | internal pull-up (firmware) |
 | IO12 / IO13 | 13 / 14 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
-| IO18 / IO19 | 16 / 17 | I²S MCLK / BCLK → U3 | out | ES8311 |
-| IO11 / IO10 / IO0 | 12 / 11 / 8 | I²S WS / DOUT(DSDIN) / DIN(ASDOUT) | — | ES8311 |
-| IO6 / IO7 | 6 / 7 | I²C SDA / SCL (10 k pull-ups R18/R19) | — | ES8311 control, addr 0x18 |
+| IO18 / IO19 | 16 / 17 | I²C SDA / SCL (10 k pull-ups R18/R19) | — | ES8311 control, addr 0x18 |
+| IO11 / IO10 / IO0 | 12 / 11 / 8 | I²S BCLK / DIN(ASDOUT) / WS | — | ES8311; pad order matches U3's south-row pins for a crossing-free fan |
+| IO6 / IO7 | 6 / 7 | I²S MCLK / DOUT(DSDIN) → U3 | out | ES8311 |
 | IO9 | 15 | BOOT strap | — | 10 kΩ pull-up + button to GND |
 | EN | 3 | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec) + button |
 | IO8 | 10 | strap | — | 10 kΩ pull-up (R12) |
@@ -496,6 +496,67 @@ and the bundle hand-routes completely, via-free: the GATE lanes run east below t
 row and rise north into their gate resistors' pad 1 (GATE1 rises beside R6 — R5's pad
 limits the lane — and finishes with a 45° jog into the pad centre; GATE3/GATE2 rise
 straight into R5/R4).
+
+**I2C/I2S escape bundle** (`gen_pcb.py`, locked pre-routes, north of U1): BOOT leads
+from U1 pad 15 east + 45° NE to its switch and on to R_boot (its proven autoroute path,
+locked). I2C SDA/SCL (pads 16/17 — a GPIO-matrix pin swap with I2S, free on the C6)
+follow as nested parallel diagonals (0.327 mm perpendicular) flattening east at
+y = 43.0/43.329, just north of the module; I2S MCLK/BCLK (pads 6/7) run north on inner
+verticals 0.129 mm off U1's east pad column and join the stack with eastward turns at
+y = 43.658/43.987 (MCLK, the outer vertical, takes the upper of the two so its turn
+clears BCLK's vertical). The pin swap exists to make the lane order into U3 come out
+**SDA, SCL, MCLK, BCLK** (top→bottom) without crossings: west-column lines own the
+upper lanes, east-column risers slot in beneath. SDA, SCL and MCLK are completed. SCL
+and MCLK drop 45° SE west of the R20/R19 stack (MCLK, the lower lane, turns first; SCL
+nests 0.4625 mm behind; both clear R19's +3V3 pad corner) and run east through the
+R19↔C8 gap (~1.0 mm; R19 moved north, R20 to y=42.25) sitting exactly on U3 pin 1's and
+pin 2's rows — 0.4 mm apart, the QFN pad pitch — straight into CCLK and MCLK; SCL taps
+R19 pad 2 (its pull-up) with a stub on the way. R20 sits stacked directly above R19 at
+the C7↔C8 pitch (1.2 mm), its GND pad on a dedicated via 0.88 mm west (to the In2
+plane); since its pads straddle the old top lane, SDA hops north over R20 — bending up
+in the same column as the SCL/MCLK down-turns, clear of the EN switch's pads and the
+GND via — rises to R18 pad 2's row and runs straight east into the pull-up dead
+centre, then exits 45° SE and descends into CDATA (pin 19) from the north, threading
+the 0.175 mm gaps to pins 20/18. The stack carries only SDA/SCL/MCLK: the I2S data/clock group (BCLK/DIN/WS/DOUT,
+U1 pads 12/11/8/7 top→bottom by GPIO-matrix permutation) instead fans east through the
+gap between C7's pad row and T1 as four lanes (0.329 mm pitch, top lane 0.165 mm under
+C7's pads, bottom lane ~1.0 mm clear of T1), rising north into U3's south row (SCLK 6 /
+ASDOUT 7 / LRCK 8 / DSDIN 9) whose pin order matches the pad order — each line's lane
+sits below the previous one's, so the long 45° rises from the lower pads top out before
+reaching any upper lane — BCLK/DIN via short shallow 45°s, WS/DOUT on aggressive
+vertical risers beside U1's pad column (east of GPIO8's via), clear of T1's west pads.
+T1 sits 2.35 mm below U3 (its south edge clear of R12 below). T1's bus winding ties in
+on B.Cu at bus width (0.5 mm): vias just east of T1 pads 1/3 (P5/P1), the pair running
+north up the corridor east of U3's pad column, turning west just north of the BOOT/RST
+buttons (F.Cu there stays clear for EN) on lanes y=39.1/38.44 (0.66 pitch, 0.175 mm
+clear of R_en's pads), then dropping into vias between SW5's pad rows (north of pins
+6/4). P1 jogs east off its via so its northbound run clears P5's via and the +3V3 taps.
+This T1 tie-in is the ONLY hand-routed P1/P5 copper — the switch crossovers and the
+J2 runs are Freerouting's. To free the NE corridor, the ESP-side USB pair takes a south
+detour on B.Cu: straight stubs on the pad rows into vias in line with U1 pads 14/13
+(DM's on its vertical at x=23.85; DP's 0.58 mm east so its drop clears DM's via,
+converging to the 0.329 pair pitch just below), south beside GPIO8's B.Cu wall, then
+45° SE into the eastbound pair at y=58.85/59.179 under T1 to the TPD2S017-side vias.
+
+**Freerouting requirement:** stock Freerouting v2.2.4 crashes on this board
+(`NullPointerException` in `insert_forced_trace_polyline`: located connections with
+consecutive duplicate corners collapse to an empty polyline whose `first_corner()` is
+null). `tools/freerouting` wraps a patched build (`tools/freerouting-patched.jar`,
+guard in `InsertFoundConnectionAlgo.insert_trace` — see
+`tools/freerouting-npe-fix.patch`, worth upstreaming); `route.py` prefers it
+automatically. Result: 0 errors, 0 unconnected, DRC clean (2 intentional
+thieving-zone warnings). R12 (GPIO8 strap
+pull-up) lives SE of U1 beside C3, GPIO8 pad south onto a B.Cu via — GPIO8 crosses
+under the I2S fan corridor from a via next to U1 pad 10 — and +3V3 pad north, tapping
+the power rail that now runs in-line from U1 pad 2 through C6's and C3's +3V3 pads
+into R12 (U1 pad 1 likewise feeds C6/C3's GND pads). The audio block anchors off U1's
+east edge (constant chosen to preserve its position from the R12-anchored era).
+The ESP-side USB pair (U1 pads 14/13) is fully hand-routed: east into a B.Cu via pair
+at x=24.5, across B.Cu (over the In2 GND plane) as a tight pair — 0.327 mm
+perpendicular on the 45° diagonals, 0.329 mm on straights — surfacing in a second via
+pair west of the TPD2S017 and fanning into D5 pins 6/1. Via pairs sit 0.8 mm apart; the
+partner trace stays on a wider offset past each via (0.166 mm trace-to-via copper gap)
+before converging.
 
 **DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published
 capabilities (e.g. 0.127 mm spacing, 0.3 mm board-edge copper).

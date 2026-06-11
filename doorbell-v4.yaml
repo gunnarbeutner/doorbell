@@ -12,14 +12,14 @@
 #        suppress_sound    (K3 / chime suppress) : GPIO10 -> GPIO21  (right col pad 19)
 #   4. *** relay outputs are ACTIVE-HIGH (unchanged from C3 version) ***
 #   5. Audio added (ES8311 mono codec, U3; half-duplex PTT via K1; session-sense via OC1):
-#        I2C_SDA  (ES8311 control)               : GPIO6             (pad  6)
-#        I2C_SCL  (ES8311 control)               : GPIO7             (pad  7)
-#        I2S_DIN  (ADC / capture, ASDOUT)        : GPIO0             (pad  8)
-#        I2S_WS   (LRCK)                         : GPIO11            (pad 12)
-#        I2S_MCLK (master clock)                 : GPIO18            (pad 16)
-#        I2S_BCLK (bit clock, SCLK)              : GPIO19            (pad 17)
+#        I2C_SDA  (ES8311 control)               : GPIO18            (pad 16)
+#        I2C_SCL  (ES8311 control)               : GPIO19            (pad 17)
+#        I2S_DIN  (capture, ASDOUT)              : GPIO10            (pad 11)
+#        I2S_WS   (LRCK)                         : GPIO0             (pad  8)
+#        I2S_MCLK (master clock)                 : GPIO6             (pad  6)
+#        I2S_BCLK (bit clock, SCLK)              : GPIO11            (pad 12)
 #        K1       (PTT relay, talk=energised)    : GPIO22            (pad 20)
-#        I2S_DOUT (DAC / playback, DSDIN)        : GPIO10            (pad 11)
+#        I2S_DOUT (DAC / playback, DSDIN)        : GPIO7             (pad  7)
 #        OC1      (session-sense, P5↔P2 coil)   : GPIO23            (pad 21)
 #
 # The api encryption key, OTA password and static IP are kept identical to V3 so the existing
@@ -65,15 +65,15 @@ wifi:
     dns1: 192.168.3.53
 
 i2c:
-  sda: GPIO6               # I2C_SDA — ES8311 (U3) control bus  [C6 pad 6]
-  scl: GPIO7               # I2C_SCL — ES8311 (U3) control bus  [C6 pad 7]
+  sda: GPIO18              # I2C_SDA — ES8311 (U3) control bus  [C6 pad 16]
+  scl: GPIO19              # I2C_SCL — ES8311 (U3) control bus  [C6 pad 17]
   scan: false
 
 i2s_audio:
   id: i2s_bus
-  i2s_lrclk_pin: GPIO11   # I2S_WS / LRCK   [C6 pad 12]
-  i2s_bclk_pin: GPIO19    # I2S_BCLK / SCLK [C6 pad 17]
-  i2s_mclk_pin: GPIO18    # I2S_MCLK        [C6 pad 16]
+  i2s_lrclk_pin: GPIO0    # I2S_WS / LRCK   [C6 pad 8]
+  i2s_bclk_pin: GPIO11    # I2S_BCLK / SCLK [C6 pad 12]
+  i2s_mclk_pin: GPIO6     # I2S_MCLK        [C6 pad 6]
 
 es8311:
   address: 0x18            # CE → R_ce (10k) → GND on U3 → I2C addr 0x18
@@ -83,13 +83,13 @@ speaker:
     id: intercom_speaker
     i2s_audio_id: i2s_bus
     dac_type: external
-    i2s_dout_pin: GPIO10   # I2S_DOUT / DSDIN (ESP→codec, playback)  [C6 pad 11]
+    i2s_dout_pin: GPIO7    # I2S_DOUT / DSDIN (ESP→codec, playback)  [C6 pad 7]
 
 microphone:
   - platform: i2s_audio
     id: intercom_mic
     i2s_audio_id: i2s_bus
-    i2s_din_pin: GPIO0     # I2S_DIN / ASDOUT (codec→ESP, capture)  [C6 pad 8]
+    i2s_din_pin: GPIO10    # I2S_DIN / ASDOUT (codec→ESP, capture)  [C6 pad 11]
 
 # Optional on the C3 (BLE works, but uses resources on the single core). Remove this and
 # esp32_ble_tracker if you don't use the Bluetooth proxy.

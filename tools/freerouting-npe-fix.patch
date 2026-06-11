@@ -1,0 +1,19 @@
+diff --git a/src/main/java/app/freerouting/autoroute/InsertFoundConnectionAlgo.java b/src/main/java/app/freerouting/autoroute/InsertFoundConnectionAlgo.java
+index 505f5d3..d7f04d8 100644
+--- a/src/main/java/app/freerouting/autoroute/InsertFoundConnectionAlgo.java
++++ b/src/main/java/app/freerouting/autoroute/InsertFoundConnectionAlgo.java
+@@ -139,6 +139,14 @@ public class InsertFoundConnectionAlgo {
+     for (int i = 1; i < p_trace.corners.length; i++) {
+       Point[] curr_corner_arr = Arrays.copyOfRange(p_trace.corners, from_corner_no, i + 1);
+       Polyline insert_polyline = new Polyline(curr_corner_arr);
++      if (insert_polyline.arr.length == 0) {
++        // Degenerate slice: the located connection contained consecutive duplicate
++        // corners, which Polygon deduplicates to a single point. There is nothing to
++        // insert; advance past the duplicate instead of NPE-ing in
++        // insert_forced_trace_polyline (first_corner() is null on an empty polyline).
++        from_corner_no = i;
++        continue;
++      }
+       int maxItemIdBeforeSeg = board.communication.id_no_generator.max_generated_no();
+       Point ok_point = board.insert_forced_trace_polyline(insert_polyline, ctrl.trace_half_width[p_trace.layer], p_trace.layer, net_no_arr, ctrl.trace_clearance_class_no,
+           ctrl.max_shove_trace_recursion_depth, ctrl.max_shove_via_recursion_depth, ctrl.max_spring_over_recursion_depth, Integer.MAX_VALUE, ctrl.pull_tight_accuracy, true, null);

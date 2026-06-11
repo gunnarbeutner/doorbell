@@ -31,7 +31,10 @@ PCB_PLACE = {
     "R_en":   (17, 40, 0),    # EN pullup, above SW_en
     "C_en":   (17, 42, 180),  # EN cap, below SW_en
     "U2":     (44.5, 44.0, 180), # SGM2212 LDO; rotated CW
-    "R_io8":  (24.2, 52.05, 270), # GPIO8 pull-up; right of U1 east face
+    "R_io8":  (27.0, 61.2, 90),  # GPIO8 pull-up, SE of U1 beside C_3v3. GPIO8 pad (1)
+                                 # faces south onto its B.Cu via (GPIO8 crosses under
+                                 # the I2S fan corridor); +3V3 pad (2) faces north,
+                                 # tapping the C_dec/C_3v3 power rail (pre-routed).
     "C_in":   (43.25, 48.25, 0), # LDO input cap (C2)
     "C_out":  (41.5, 38.75, 270), # LDO output cap (C4)
     "LED1":   (48.0, 18.5, 90), # power LED; right of J2
@@ -54,9 +57,9 @@ PCB_PLACE = {
     #     Y=18 keeps the ±4.3 mm-extent SMD footprint inside the board outline. ===
     # rotated 180°: pads map 1↔6/2↔5/3↔4 onto the same spots, matching the JP/RET
     # pin swap in doorbell_design.py — copper layout identical to rot 0.
-    "SW_OC3": (2,  18, 180),
-    "SW_OC2": (8,  18, 180),
-    "SW_OC1": (14, 18, 180),
+    "SW_OC3": (3,  18, 180),
+    "SW_OC2": (9,  18, 180),
+    "SW_OC1": (15, 18, 180),
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
     "OC3":    (2.74, 33.5, 270),   # apartment bell sense; opto block centered in UL quadrant
     "OC2":    (6.74, 33.5, 270),   # house bell sense; opto block centered in UL quadrant
@@ -95,9 +98,20 @@ PCB_PLACE = {
     # E=CE/CDATA/MIC1P/MIC1N/VMID, S=AVDD/OUTP/OUTN/DACVREF/ADCVREF.
     "U3":     (78, 22, 180),
     # Passives sit ~2 mm off U3's pad toes -- a clear ring for the pin escapes/vias -- then ring out.
-    # NORTH row: PVDD/DVDD decoupling + SCL pull-up (pad-to-U3 faces south)
-    "C_dv":   (76.8, 17.3, 90), "C_pv": (78.0, 17.3, 90), "R_scl": (79.2, 17.3, 270),
-    "R_ce":   (27.25, 43.25, 180), # CE addr pull-down (10k to GND)
+    # NORTH row: PVDD/DVDD decoupling + SCL pull-up (pad-to-U3 faces south).
+    # C_dv/C_pv shifted -0.5 and R_scl +0.36 in table-x; after the repack's centroid
+    # feedback C_pv/C_dv land ~0.46 board-south and R_scl ~0.40 board-north of the
+    # nominal row, opening the R_scl<->C_pv gap to ~1.0 mm — it carries the SCL and
+    # MCLK runs (on U3 pin 1's / pin 2's rows, 0.4 mm apart) into the codec, with
+    # R_scl's pad row clear above SCL's run (the pull-up taps it via a stub).
+    # R_scl rotated 180° (90 instead of 270): +3V3 pad (1) faces east onto its own
+    # In1 via; SCL pad (2) faces west toward the incoming lane.
+    "C_dv":   (76.37, 17.3, 90), "C_pv": (77.57, 17.3, 90), "R_scl": (79.57, 17.3, 90),
+    "R_ce":   (27.25, 42.854, 180), # CE addr pull-down (10k to GND). NOMINAL ONLY:
+                                    # snapped after the audio repack to sit directly
+                                    # above R_scl (same x, 1.2 mm pitch). Its pads
+                                    # straddle the SDA lane, so SDA hops north over it
+                                    # (pre-routed).
     # EAST column: VMID + MIC coupling + SDA pull-up (pad-to-U3 faces west)
     "R_sda": (82.7, 20.3, 180), "C_mp": (82.7, 21.6, 0), "C_mn": (82.7, 22.9, 0), "C_vmid": (82.7, 24.2, 0),
     # SOUTH row: AVDD decoupling/bulk + OUT coupling + DAC/ADC refs (pad-to-U3 faces north),
@@ -179,18 +193,29 @@ for k in _FULL_AUDIO:
     fps[k].SetPosition(vmm(_fcx - (_py - _fcy), _fcy + (_px - _fcx)))
     fps[k].SetOrientationDegrees((fps[k].GetOrientationDegrees() + 270) % 360)
 _audio_left = min(_bbx(k)[0] for k in _FULL_AUDIO)
-_audio_shift = (_bbx("R_io8")[1] + 1.0) - _audio_left
+# Anchored to U1's east edge (was R_io8's, but that resistor now lives in the SE
+# corner); the +3.3 constant preserves the block position from the R_io8-anchored era.
+_audio_shift = (_bbx("U1")[1] + 3.3) - _audio_left
 for k in _FULL_AUDIO:
     _p = fps[k].GetPosition()
     fps[k].SetPosition(pcbnew.VECTOR2I(_p.x + pcbnew.FromMM(_audio_shift), _p.y))
+
+# R_ce tracks R_scl wherever the repack lands it: stacked directly above, same x,
+# C_dv<->C_pv pitch (1.2 mm). (Its PCB_PLACE entry is only the nominal spot.)
+_rscl_p = fps["R_scl"].GetPosition()
+fps["R_ce"].SetPosition(vmm(_TOMM(_rscl_p.x), _TOMM(_rscl_p.y) - 1.2))
 
 # Place T1 below U3 with 2 mm clearance, rotated 180° from its group orientation.
 fps["T1"].SetOrientationDegrees((fps["T1"].GetOrientationDegrees() + 180) % 360)
 _u3bb = _bbx("U3")
 _t1bb = _bbx("T1")
 fps["T1"].SetPosition(vmm(
-    (_u3bb[0] + _u3bb[1]) / 2.0 + 1.0,
-    _u3bb[3] + 2.0 + (_t1bb[3] - _t1bb[2]) / 2.0,
+    32.75,  # fixed x; west pads keep 0.6+ mm to the I2S fan's DOUT vertical
+    # 2.35 mm gap (was 2.0): T1's 3.9 mm-long pads reach west to x≈25.2; the I2S
+    # fan's WS/DOUT lines rise on verticals beside U1's pad column (not shallow
+    # diagonals), so only a small extra gap is needed — and 2.35 keeps T1's south
+    # edge clear of R_io8 below.
+    _u3bb[3] + 2.35 + (_t1bb[3] - _t1bb[2]) / 2.0,
 ))
 
 # On 4 layers the LDO's GND/heat reaches the inner GND plane through its thermal vias, so its
@@ -283,14 +308,40 @@ for _a, _b, _lay in ((_sh[0], _sh[1], pcbnew.B_Cu),
 #     (45°/90° turns only) -> via beside D5 pin 5 (TPD2S017 VCC bias) -> F.Cu into the
 #     pin. Locked so Freerouting keeps it as protected wiring.
 _vbus_net = nets["VBUS"]
+# Debug gate for bisecting Freerouting crashes: PRE_RANGE="lo:hi" places only the
+# pre-route calls with index lo <= i < hi (default: all). Each _pre_track/_pre_via
+# call consumes one index in deterministic order.
+_PRE_RANGE = os.environ.get("PRE_RANGE")
+_PRE_LO, _PRE_HI = (tuple(int(v) for v in _PRE_RANGE.split(":"))
+                    if _PRE_RANGE else (None, None))
+_PRE_N = [0]
+_PRE_SKIP = {int(v) for v in os.environ.get("PRE_SKIP", "").split(",") if v}
+def _pre_enabled(_what=""):
+    _i = _PRE_N[0]
+    _PRE_N[0] += 1
+    if os.environ.get("PRE_DEBUG"):
+        print(f"pre[{_i}] {_what}")
+    if _i in _PRE_SKIP:
+        return False
+    return _PRE_RANGE is None or (_PRE_LO <= _i < _PRE_HI)
+
 def _pre_track(a, b, layer, w=0.3, net=None):
-    if (a.x, a.y) == (b.x, b.y):
+    if not _pre_enabled(f"track {(net or _vbus_net).GetNetname()} "
+                        f"({pcbnew.ToMM(a.x):.3f},{pcbnew.ToMM(a.y):.3f})->"
+                        f"({pcbnew.ToMM(b.x):.3f},{pcbnew.ToMM(b.y):.3f}) w={w}"):
+        return
+    # skip degenerate/micro segments: Freerouting NPEs on locked polylines that
+    # collapse to a point at DSN resolution
+    if abs(a.x - b.x) < pcbnew.FromMM(0.02) and abs(a.y - b.y) < pcbnew.FromMM(0.02):
         return
     t = pcbnew.PCB_TRACK(board)
     t.SetStart(a); t.SetEnd(b); t.SetLayer(layer)
     t.SetWidth(pcbnew.FromMM(w)); t.SetNet(net or _vbus_net); t.SetLocked(True)
     board.Add(t)
 def _pre_via(pos, net=None):
+    if not _pre_enabled(f"via {(net or _vbus_net).GetNetname()} "
+                        f"({pcbnew.ToMM(pos.x):.3f},{pcbnew.ToMM(pos.y):.3f})"):
+        return
     v = pcbnew.PCB_VIA(board)
     v.SetPosition(pos)
     v.SetDrill(pcbnew.FromMM(0.3)); v.SetWidth(pcbnew.FromMM(0.6))
@@ -469,6 +520,290 @@ for _net, _pnum, _k, _dst in (
                 _pre_track(vmm(_rx, _jy), _t1, pcbnew.F_Cu, _BW, nets[_net])
             else:
                 _pre_track(vmm(_rx, _yh - 0.245), _t1, pcbnew.F_Cu, _BW, nets[_net])
+
+# --- I2C/I2S escape bundle (north of U1): BOOT leads from U1 pad 15 east + 45° NE up
+#     to its switch and on to R_boot (its proven autoroute path, now locked). I2C
+#     SDA/SCL (pads 16/17 — GPIO-matrix swap, see doorbell_design.py) follow as nested
+#     parallel diagonals (0.4625 mm/lane = 0.327 mm perpendicular) and flatten east
+#     just north of the module at y=43.0 / 43.329. I2S MCLK (pad 6, east column) runs
+#     north on an inner vertical 0.129 mm off the east pad column and joins the stack
+#     with an eastward turn at y=43.658. Resulting lane order into U3: SDA, SCL, MCLK
+#     (top to bottom); the I2S data/clock group (BCLK/DIN/WS/DOUT on pads 12/11/8/7)
+#     does not enter the stack — it fans east to U3's south row.
+def _padpos(_key, _num):
+    return next(p for p in fps[_key].Pads() if p.GetNumber() == _num).GetPosition()
+_b15, _sw1, _rb2 = _padpos("U1", "15"), _padpos("SW_boot", "1"), _padpos("R_boot", "2")
+_bC = _TOMM(_sw1.x) + _TOMM(_sw1.y)            # BOOT's 45° line: x + y = _bC
+_pre_track(_b15, vmm(_bC - _TOMM(_b15.y), _TOMM(_b15.y)), pcbnew.F_Cu, _BW, nets["BOOT"])
+_pre_track(vmm(_bC - _TOMM(_b15.y), _TOMM(_b15.y)), _sw1, pcbnew.F_Cu, _BW, nets["BOOT"])
+_pre_track(_sw1, _rb2, pcbnew.F_Cu, _BW, nets["BOOT"])
+# R_boot's +3V3 pad sits right against the locked BOOT wire; Freerouting NPEs trying
+# to drop a plane via at a pad hemmed in by locked wiring (degenerate connection), so
+# pre-place its In1 tap.
+_rb1 = _padpos("R_boot", "1")
+_v_rb1 = vmm(_TOMM(_rb1.x) + 0.88, _TOMM(_rb1.y))
+_pre_track(_rb1, _v_rb1, pcbnew.F_Cu, _BW, nets["+3V3"])
+_pre_via(_v_rb1, net=nets["+3V3"])
+_I2S_Y0 = 43.0                                  # SDA's eastward lane; +1 pitch per line
+for _net, _pnum, _j in (("I2C_SDA", "16", 1), ("I2C_SCL", "17", 2)):
+    _pp = _padpos("U1", _pnum)
+    _c = _bC + 0.4625 * _j
+    _ye = _I2S_Y0 + (_j - 1) * _BPITCH
+    _pre_track(_pp, vmm(_c - _TOMM(_pp.y), _TOMM(_pp.y)), pcbnew.F_Cu, _BW, nets[_net])
+    _pre_track(vmm(_c - _TOMM(_pp.y), _TOMM(_pp.y)), vmm(_c - _ye, _ye),
+               pcbnew.F_Cu, _BW, nets[_net])
+    _pre_track(vmm(_c - _ye, _ye), vmm(21.5, _ye), pcbnew.F_Cu, _BW, nets[_net])
+# I2S MCLK: the only east-column riser (the I2S data/clock group on pads 12/11/8/7
+# fans east directly to U3's south row instead). Inner vertical just west of U1's
+# east pad column (pads are 1.5 mm long); joins the stack beneath the SDA/SCL lanes.
+_p6 = _padpos("U1", "6")
+_vx_mclk = _TOMM(_p6.x) - 0.75 - 0.129 - _BW / 2   # hugs the pad column
+_y_mclk = _I2S_Y0 + 2 * _BPITCH
+_pre_track(_p6, vmm(_vx_mclk, _TOMM(_p6.y)), pcbnew.F_Cu, _BW, nets["I2S_MCLK"])
+_pre_track(vmm(_vx_mclk, _TOMM(_p6.y)), vmm(_vx_mclk, _y_mclk + 0.245),
+           pcbnew.F_Cu, _BW, nets["I2S_MCLK"])
+_pre_track(vmm(_vx_mclk, _y_mclk + 0.245), vmm(_vx_mclk + 0.245, _y_mclk),
+           pcbnew.F_Cu, _BW, nets["I2S_MCLK"])
+_pre_track(vmm(_vx_mclk + 0.245, _y_mclk), vmm(21.5, _y_mclk), pcbnew.F_Cu, _BW,
+           nets["I2S_MCLK"])
+
+# --- SDA/SCL/MCLK landings on the audio block (the I2S data/clock fan to U3's south
+#     row is routed separately).  SCL and MCLK leave their lanes WEST of the R_ce/R_scl stack
+#     and drop 45° SE past R_scl pad 1's SW corner — MCLK (the lower lane) turns
+#     first, SCL's diagonal nests 0.4625 mm behind, GPIO-bundle style — then run east
+#     through the R_scl<->C_pv gap, each dead on its U3 pad row: SCL on pin 1's row,
+#     tapping R_scl pad 2 (the pull-up) with a stub on the way; MCLK on pin 2's row
+#     (0.4 mm pitch = the QFN pad pitch, fits the ~1.0 mm gap with 0.18/0.33 mm pad
+#     clearances).  SDA stays on the top lane — between R_ce's and R_scl's pad rows —
+#     and drops onto CDATA (pin 19) from the north, between pins 20 and 18.
+_u3p1, _u3p2, _u3p19 = _padpos("U3", "1"), _padpos("U3", "2"), _padpos("U3", "19")
+_r19p1, _r19p2 = _padpos("R_scl", "1"), _padpos("R_scl", "2")
+_p1y, _p2y = _TOMM(_u3p1.y), _TOMM(_u3p2.y)
+_yl_sda, _yl_scl, _yl_mclk = _I2S_Y0, _I2S_Y0 + _BPITCH, _I2S_Y0 + 2 * _BPITCH
+# 45° lines (x - y = c): SCL passes the R_scl stack's SW pad corner at 0.36 mm
+# (western pad regardless of numbering — R_scl is rotated 180°); MCLK one diagonal
+# pitch further west.
+_r19w = min(_TOMM(_r19p1.x), _TOMM(_r19p2.x))
+_c_scl = (_r19w - 0.4) - (_TOMM(_r19p1.y) + 0.475) - 0.505
+_c_mclk = _c_scl - 0.4625
+_pre_track(vmm(21.5, _yl_scl), vmm(_yl_scl + _c_scl, _yl_scl),
+           pcbnew.F_Cu, _BW, nets["I2C_SCL"])
+_pre_track(vmm(_yl_scl + _c_scl, _yl_scl), vmm(_p1y + _c_scl, _p1y),
+           pcbnew.F_Cu, _BW, nets["I2C_SCL"])
+# run split at the pull-up tap so the stub joins at segment ENDPOINTS (Freerouting
+# mishandles mid-segment T-junctions in protected wiring)
+_pre_track(vmm(_p1y + _c_scl, _p1y), vmm(_TOMM(_r19p2.x), _p1y),
+           pcbnew.F_Cu, _BW, nets["I2C_SCL"])
+_pre_track(vmm(_TOMM(_r19p2.x), _p1y), _u3p1, pcbnew.F_Cu, _BW, nets["I2C_SCL"])
+_pre_track(vmm(_TOMM(_r19p2.x), _p1y), _r19p2,
+           pcbnew.F_Cu, _BW, nets["I2C_SCL"])   # stub up into the pull-up pad
+_pre_track(vmm(21.5, _yl_mclk), vmm(_yl_mclk + _c_mclk, _yl_mclk),
+           pcbnew.F_Cu, _BW, nets["I2S_MCLK"])
+_pre_track(vmm(_yl_mclk + _c_mclk, _yl_mclk), vmm(_p2y + _c_mclk, _p2y),
+           pcbnew.F_Cu, _BW, nets["I2S_MCLK"])
+_pre_track(vmm(_p2y + _c_mclk, _p2y), _u3p2, pcbnew.F_Cu, _BW, nets["I2S_MCLK"])
+# +3V3 In1-plane taps: vias just east of R_scl pad 1 (its pull-up supply, pad faces
+# east after the 180° rotation) and east of C_dv pad 1 (DVDD/PVDD decoupling supply)
+for _key in ("R_scl", "C_dv"):
+    _pp3 = _padpos(_key, "1")
+    _v3 = vmm(_TOMM(_pp3.x) + 0.88, _TOMM(_pp3.y))
+    _pre_track(_pp3, _v3, pcbnew.F_Cu, _BW, nets["+3V3"])
+    _pre_via(_v3, net=nets["+3V3"])
+
+# R_ce's GND return: dedicated via just west of pad 2 (drops to the In2 plane)
+_rce2 = _padpos("R_ce", "2")
+_rcex, _rcey = _TOMM(_rce2.x), _TOMM(_rce2.y)
+_gv_rce = vmm(_rcex - 0.88, _rcey)
+_pre_track(_rce2, _gv_rce, pcbnew.F_Cu, _BW, nets["GND"])
+_pre_via(_gv_rce, net=nets["GND"])
+# SDA: R_ce's pads now straddle the top lane, so SDA hops NORTH over it — the upward
+# bend sits at SCL's turn x (one bend column with the SCL/MCLK down-turns), which
+# keeps the rise clear of the EN switch's pad corner AND of R_ce's GND via. It rises
+# all the way to R_sda pad 2's row and runs straight east into the pull-up dead
+# centre, then exits 45° SE + vertical into CDATA (pin 19) from the north, between
+# pins 20 and 18.
+_p19x = _TOMM(_u3p19.x)
+_r18p2 = _padpos("R_sda", "2")
+_r18x, _r18y = _TOMM(_r18p2.x), _TOMM(_r18p2.y)
+_xa = _yl_scl + _c_scl                     # rise starts in the SCL/MCLK bend column
+_pre_track(vmm(21.5, _yl_sda), vmm(_xa, _yl_sda), pcbnew.F_Cu, _BW, nets["I2C_SDA"])
+_pre_track(vmm(_xa, _yl_sda), vmm(_xa + (_yl_sda - _r18y), _r18y),
+           pcbnew.F_Cu, _BW, nets["I2C_SDA"])
+_pre_track(vmm(_xa + (_yl_sda - _r18y), _r18y), _r18p2,
+           pcbnew.F_Cu, _BW, nets["I2C_SDA"])
+_pre_track(_r18p2, vmm(_p19x, _r18y + (_p19x - _r18x)),
+           pcbnew.F_Cu, _BW, nets["I2C_SDA"])
+_pre_track(vmm(_p19x, _r18y + (_p19x - _r18x)), _u3p19,
+           pcbnew.F_Cu, _BW, nets["I2C_SDA"])
+
+# GPIO8 strap pull-up: R_io8 lives SE of U1 beside C_3v3, GPIO8 pad (1) facing south.
+# GPIO8 leaves U1 pad 10 east into a B.Cu via close to the pad, crosses UNDER the I2S
+# fan corridor on B.Cu (parallel to the USB pair's diagonals), and resurfaces in a via
+# just SOUTH of R_io8. Its +3V3 pad (2, north) taps the C_dec/C_3v3 rail below.
+_p10 = _padpos("U1", "10")
+_rio1, _rio2 = _padpos("R_io8", "1"), _padpos("R_io8", "2")
+_v8a = vmm(23.0, _TOMM(_p10.y))
+_pre_track(_p10, _v8a, pcbnew.F_Cu, _BW, nets["GPIO8"])
+_pre_via(_v8a, net=nets["GPIO8"])
+_v8b = vmm(_TOMM(_rio1.x), _TOMM(_rio1.y) + 0.88)
+_dogleg(_v8a, _v8b, pcbnew.B_Cu, w=_BW, net=nets["GPIO8"])
+_pre_via(_v8b, net=nets["GPIO8"])
+_pre_track(_v8b, _rio1, pcbnew.F_Cu, _BW, nets["GPIO8"])
+
+# U1 power pins: pad 2 (+3V3) and pad 1 (GND) run east in-line through C_dec's and
+# C_3v3's pad rows; the +3V3 rail continues into R_io8 pad 2 (its pull-up supply).
+for _unum, _cnet, _cpad in (("2", "+3V3", "1"), ("1", "GND", "2")):
+    _up = _padpos("U1", _unum)
+    _c6p, _c3p = _padpos("C_dec", _cpad), _padpos("C_3v3", _cpad)
+    _jog = abs(_TOMM(_c6p.y) - _TOMM(_up.y))
+    if _jog >= 0.1:
+        _pre_track(_up, vmm(_TOMM(_c6p.x) - _jog, _TOMM(_up.y)),
+                   pcbnew.F_Cu, _BW, nets[_cnet])
+        _pre_track(vmm(_TOMM(_c6p.x) - _jog, _TOMM(_up.y)), _c6p,
+                   pcbnew.F_Cu, _BW, nets[_cnet])
+    else:
+        # rows nearly collinear: one slightly slanted segment, no micro-45° jog
+        _pre_track(_up, _c6p, pcbnew.F_Cu, _BW, nets[_cnet])
+    _pre_track(_c6p, _c3p, pcbnew.F_Cu, _BW, nets[_cnet])
+_c3v3 = _padpos("C_3v3", "1")
+# pad rows differ by only ~0.05 mm: one straight (slightly slanted) segment instead
+# of a micro-45° jog, which Freerouting chokes on
+_pre_track(_c3v3, _rio2, pcbnew.F_Cu, _BW, nets["+3V3"])
+# In1-plane tap for the rail: via just east of R_io8 pad 2
+_v_io8b = vmm(_TOMM(_rio2.x) + 0.88, _TOMM(_rio2.y))
+_pre_track(_rio2, _v_io8b, pcbnew.F_Cu, _BW, nets["+3V3"])
+_pre_via(_v_io8b, net=nets["+3V3"])
+# In2-plane tap for the GND rail: via just south of C_3v3 pad 2 (east is blocked by
+# R_io8's GPIO8 pad)
+_c3g = _padpos("C_3v3", "2")
+_v_c3g = vmm(_TOMM(_c3g.x), _TOMM(_c3g.y) + 0.88)
+_pre_track(_c3g, _v_c3g, pcbnew.F_Cu, _BW, nets["GND"])
+_pre_via(_v_c3g, net=nets["GND"])
+
+# --- I2S data/clock fan: BCLK/DIN/WS/DOUT (U1 pads 12/11/8/7) run east through the
+#     gap between C_dv's pad row and T1 as four lanes (0.329 mm pitch, top lane
+#     0.265 mm below C_dv's pads), then rise north into U3's south row (SCLK 6 /
+#     ASDOUT 7 / LRCK 8 / DSDIN 9). Pad order matches pin order, so the set nests
+#     crossing-free: each line's lane sits BELOW the previous line's, so the long 45°
+#     rises from the lower pads top out before reaching any upper lane; the pad stubs
+#     are staggered so the rises clear them.
+# Top lane sits exactly on U1 pad 12's row, so BCLK runs dead straight (C_dv/C_pv
+# are nudged 0.064 north in the table so the lane keeps 0.16 to C_dv's pads).
+_lane0 = _TOMM(_padpos("U1", "12").y)
+for _net, _pnum, _u3pin, _k, _xp, _vert in (
+        # BCLK/DIN sit near their lanes already: short stub + shallow 45°.
+        # WS/DOUT rise "aggressively" (OC2/OC3_OUT style) on verticals just east of
+        # GPIO8's via (x=23.73 / +1 pitch), clear of T1's west pads.
+        ("I2S_BCLK", "12", "6", 0, 25.0,   False),
+        ("I2S_DIN",  "11", "7", 1, 22.6,   False),
+        ("I2S_WS",   "8",  "8", 2, 23.73,  True),
+        ("I2S_DOUT", "7",  "9", 3, 24.059, True)):
+    _pp, _tp = _padpos("U1", _pnum), _padpos("U3", _u3pin)
+    _py, _lane, _tx = _TOMM(_pp.y), _lane0 + _k * _BPITCH, _TOMM(_tp.x)
+    if _vert:
+        _pre_track(_pp, vmm(_xp - 0.245, _py), pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_xp - 0.245, _py), vmm(_xp, _py - 0.245),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_xp, _py - 0.245), vmm(_xp, _lane + 0.245),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_xp, _lane + 0.245), vmm(_xp + 0.245, _lane),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        _xl = _xp + 0.245
+    else:
+        _pre_track(_pp, vmm(_xp, _py), pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_xp, _py), vmm(_xp + abs(_lane - _py), _lane),
+                   pcbnew.F_Cu, _BW, nets[_net])
+        _xl = _xp + abs(_lane - _py)
+    _pre_track(vmm(_xl, _lane), vmm(_tx - 0.245, _lane),
+               pcbnew.F_Cu, _BW, nets[_net])
+    _pre_track(vmm(_tx - 0.245, _lane), vmm(_tx, _lane - 0.245),
+               pcbnew.F_Cu, _BW, nets[_net])
+    _pre_track(vmm(_tx, _lane - 0.245), _tp, pcbnew.F_Cu, _BW, nets[_net])
+
+# --- T1 bus winding tie-in (P1/P5 are 0.5 mm bus power nets): vias EAST of T1 pads
+#     1 (P5) / 3 (P1), then the pair runs NORTH on B.Cu up the corridor east of U3's
+#     pad column (freed by the USB pair's south detour), turns west just north of the
+#     BOOT/RST buttons (keeping the F.Cu around them clear for EN), crosses the board
+#     on lanes y=39.1/38.44 (0.66 pitch; 0.175 mm clear of R_en's pads, which reach up
+#     to y=39.525) and drops south-to-north into vias north of
+#     SW_OC3 pins 6/4, between the switch's pad rows. P1 (southern pad) jogs 0.7 east
+#     off its via so its northbound run clears P5's via by 0.15 mm copper; the turn
+#     nesting gives P5 (west vertical) the southern lane.
+_BUSW, _BCH = 0.5, 0.33
+_sw6p, _sw4p = _padpos("SW_OC3", "6"), _padpos("SW_OC3", "4")
+_t1p1, _t1p3 = _padpos("T1", "1"), _padpos("T1", "3")
+for _net, _swp, _t1p, _ylane, _jog in (
+        # jogs shifted +0.9 east so the northbound verticals clear the +3V3 vias
+        # east of R_scl/C_dv (0.37+ mm)
+        ("P5", _sw6p, _t1p1, 39.1, 0.9),
+        ("P1", _sw4p, _t1p3, 38.44, 1.6)):
+    _ty_ = _TOMM(_t1p.y)
+    _tvx = _TOMM(_t1p.x) + 2.4
+    _tv = vmm(_tvx, _ty_)
+    _sx_ = _TOMM(_swp.x)
+    _sv = vmm(_sx_, _TOMM(_swp.y) - 1.25)
+    _pre_track(_swp, _sv, pcbnew.F_Cu, _BUSW, nets[_net])
+    _pre_via(_sv, net=nets[_net])
+    _pre_track(_tv, vmm(_tvx - 0.9, _ty_), pcbnew.F_Cu, _BUSW, nets[_net])
+    _pre_via(_tv, net=nets[_net])
+    _vx = _tvx + _jog
+    if _jog:
+        _pre_track(_tv, vmm(_vx, _ty_ - _jog), pcbnew.B_Cu, _BUSW, nets[_net])
+    _pre_track(vmm(_vx, _ty_ - _jog), vmm(_vx, _ylane + _BCH),
+               pcbnew.B_Cu, _BUSW, nets[_net])
+    _pre_track(vmm(_vx, _ylane + _BCH), vmm(_vx - _BCH, _ylane),
+               pcbnew.B_Cu, _BUSW, nets[_net])
+    _pre_track(vmm(_vx - _BCH, _ylane), vmm(_sx_ + _BCH, _ylane),
+               pcbnew.B_Cu, _BUSW, nets[_net])
+    _pre_track(vmm(_sx_ + _BCH, _ylane), vmm(_sx_, _ylane - _BCH),
+               pcbnew.B_Cu, _BUSW, nets[_net])
+    _pre_track(vmm(_sx_, _ylane - _BCH), _sv, pcbnew.B_Cu, _BUSW, nets[_net])
+
+# --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
+#     straight east on their pad rows into B.Cu vias in line with the pads — DM's via
+#     (23.85, 46.72) sits on its vertical, DP's (24.43, 45.45) 0.58 east of DM's line
+#     so its drop passes DM's via at 0.18 mm copper, converging via a 45° jog to the
+#     0.329 pair pitch (same as the horizontal runs). The pair takes the SOUTH detour
+#     (freeing the NE corridor for P1/P5): south beside GPIO8's B.Cu wall, 45° SE,
+#     east at y=58.85/59.179 under T1 into the via pair west of the TPD2S017, fanning
+#     F.Cu into D5 pins 6/1 (CH2_OUT/CH1_OUT).
+_d5p6, _d5p1 = _padpos("D_esd", "6"), _padpos("D_esd", "1")
+_p14, _p13 = _padpos("U1", "14"), _padpos("U1", "13")
+# USB_DP_ESP (leader): straight stub on pad 14's row -> via (24.43,45.45) -> drop
+# past DM's via (0.18 copper) -> 45° converge to the 0.329 pair -> south -> 45° ->
+# east -> via (41.9,58.85) -> 45° -> D5 pad 6
+_pre_track(vmm(_TOMM(_p14.x), _TOMM(_p14.y)), vmm(24.43, 45.45),
+           pcbnew.F_Cu, _BW, nets["USB_DP_ESP"])
+_pre_via(vmm(24.43, 45.45), net=nets["USB_DP_ESP"])
+for _a, _b in (
+        ((24.43, 45.45), (24.43, 47.3)),
+        ((24.43, 47.3), (24.179, 47.551)),
+        ((24.179, 47.551), (24.179, 57.1955)),
+        ((24.179, 57.1955), (25.8335, 58.85)),
+        ((25.8335, 58.85), (41.9, 58.85))):
+    _pre_track(vmm(*_a), vmm(*_b), pcbnew.B_Cu, _BW, nets["USB_DP_ESP"])
+_pre_via(vmm(41.9, 58.85), net=nets["USB_DP_ESP"])
+for _a, _b in (
+        ((41.9, 58.85), (42.7, 58.05)),
+        ((42.7, 58.05), (_TOMM(_d5p6.x), _TOMM(_d5p6.y)))):
+    _pre_track(vmm(*_a), vmm(*_b), pcbnew.F_Cu, _BW, nets["USB_DP_ESP"])
+# USB_DM_ESP (follower): straight stub on pad 13's row -> via (23.85,46.72), in line
+# with its vertical -> straight south -> 45° -> east at 0.329 -> diverge into via
+# (41.9,59.65) -> 45° -> D5 pad 1
+_pre_track(vmm(_TOMM(_p13.x), _TOMM(_p13.y)), vmm(23.85, 46.72),
+           pcbnew.F_Cu, _BW, nets["USB_DM_ESP"])
+_pre_via(vmm(23.85, 46.72), net=nets["USB_DM_ESP"])
+for _a, _b in (
+        ((23.85, 46.72), (23.85, 57.329)),
+        ((23.85, 57.329), (25.7, 59.179)),
+        ((25.7, 59.179), (41.429, 59.179)),
+        ((41.429, 59.179), (41.9, 59.65))):
+    _pre_track(vmm(*_a), vmm(*_b), pcbnew.B_Cu, _BW, nets["USB_DM_ESP"])
+_pre_via(vmm(41.9, 59.65), net=nets["USB_DM_ESP"])
+for _a, _b in (
+        ((41.9, 59.65), (42.7, 60.45)),
+        ((42.7, 60.45), (_TOMM(_d5p1.x), _TOMM(_d5p1.y)))):
+    _pre_track(vmm(*_a), vmm(*_b), pcbnew.F_Cu, _BW, nets["USB_DM_ESP"])
 
 
 # --- board outline: tight bbox + margin on free edges, pinned on flush edges ---
@@ -740,4 +1075,5 @@ board.BuildConnectivity()
 out = os.path.join(HERE, "doorbell.kicad_pcb")
 pcbnew.SaveBoard(out, board)
 print(f"wrote {out} | footprints: {len(board.GetFootprints())} | nets: {board.GetNetCount()} "
-      f"| board {x1-x0:.0f}x{y1-y0:.0f} mm")
+      f"| board {x1-x0:.0f}x{y1-y0:.0f} mm | pre-route calls: {_PRE_N[0]}"
+      + (f" (PRE_RANGE={_PRE_RANGE})" if _PRE_RANGE else ""))

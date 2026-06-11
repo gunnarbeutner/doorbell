@@ -19,8 +19,13 @@ from doorbell_design import GROUPS, REF
 BOARD = os.path.join(HERE, "doorbell.kicad_pcb")
 DSN = os.path.join(HERE, "doorbell.dsn")
 SES = os.path.join(HERE, "doorbell.ses")
-FREEROUTING = os.environ.get("FREEROUTING",
-                             "/Applications/freerouting.app/Contents/MacOS/freerouting")
+# Default to the repo's patched build (v2.2.4 + degenerate-polyline guard, see
+# tools/freerouting-npe-fix.patch): stock v2.2.4 NPEs on this board's locked wiring.
+_TOOLS_FR = os.path.join(HERE, "..", "tools", "freerouting")
+FREEROUTING = os.environ.get(
+    "FREEROUTING",
+    _TOOLS_FR if os.path.exists(_TOOLS_FR)
+    else "/Applications/freerouting.app/Contents/MacOS/freerouting")
 PASSES = os.environ.get("FR_PASSES", "20")
 
 board = pcbnew.LoadBoard(BOARD)
