@@ -513,7 +513,7 @@ FP_LIB_DIRS = {
     "PCM_Espressif": f"{_DOC}/com_github_espressif_kicad-libraries/Espressif.pretty",
     "Relay_SMD": f"{_STOCK}/Relay_SMD.pretty",
     "Connector_USB": f"{_STOCK}/Connector_USB.pretty",
-    "TerminalBlock_4Ucon": f"{_STOCK}/TerminalBlock_4Ucon.pretty",
+    "TerminalBlock_4Ucon": f"{_HERE}/lib_terminal/TerminalBlock_4Ucon.pretty",  # local copy of stock fp; Phoenix PT-1,5-6-3.5-H 3D stand-in (no 4Ucon/DB125 model exists)
     "ES8311": f"{_HERE}/lib_audio/ES8311.pretty",   # ES8311 mono codec (easyeda2kicad import, C962342)
     "SM_LP_5001": f"{_HERE}/lib_audio/SM_LP_5001.pretty",    # Bourns SM-LP-5001 (easyeda2kicad import, C7503474)
     "cas220tb1": f"{_HERE}/lib_switches/cas220tb1.pretty",
