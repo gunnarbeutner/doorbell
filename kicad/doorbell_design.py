@@ -18,6 +18,7 @@ REF = {
     "R_pd2":"R7","R_pd3":"R8","R_pd1":"R9",
     "R_en":"R10","R_boot":"R11","R_io8":"R12","R_cc1":"R13","R_cc2":"R14","R_led":"R15","R_ot":"R16",
     "R_lim3":"R17","R_sda":"R18","R_scl":"R19","R_ce":"R20",
+    "R_pu1":"R21","R_pu2":"R22","R_pu3":"R23",   # opto collector pull-ups to +3V3
     # --- audio codec (ES8388) support caps ---
     "C_dv":"C7","C_pv":"C8","C_av":"C9","C_avb":"C10","C_vref":"C11",
     "C_vmid":"C12","C_aref":"C13","C_op":"C14","C_on":"C15","C_mp":"C16","C_mn":"C17",
@@ -33,9 +34,9 @@ COMP = {
     "T1": ("SM_LP_5001", "SM-LP-5001", "SM-LP-5001"),   # Bourns 600:600 1:1 line/audio iso xfmr; LCSC C7503474. Symbol+fp imported via easyeda2kicad -> kicad/lib_audio/
     "J1": ("Connector", "USB_C_Receptacle_USB2.0_16P", "USB-C (USB4105)"),
     "J2": ("Connector_Generic", "Conn_01x06", "WF26 (6-way screw)"),
-    "SW_OC1": ("cas220tb1", "CAS-220TB1", "Polarity"),
-    "SW_OC2": ("cas220tb1", "CAS-220TB1", "Polarity"),
-    "SW_OC3": ("cas220tb1", "CAS-220TB1", "Polarity"),
+    "SW_OC1": ("cas220tb1", "CAS-220TB1", "CAS-220TB1"),
+    "SW_OC2": ("cas220tb1", "CAS-220TB1", "CAS-220TB1"),
+    "SW_OC3": ("cas220tb1", "CAS-220TB1", "CAS-220TB1"),
     "K2": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),   # 4.5V coil: must-operate 3.6V, margin on the ~4.5V post-Schottky rail
     "K3": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),
     "K1": ("Relay", "G6K-2", "G6K-2F-Y 4.5V"),   # PTT relay — contacts TBD (audio circuit not yet defined)
@@ -74,6 +75,12 @@ COMP = {
     "R_sda": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # I2C SDA pull-up to +3V3 (codec)
     "R_scl": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # I2C SCL pull-up to +3V3 (codec)
     "R_ce":  ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # CE I2C address pull-down to GND → addr 0x18
+    # Opto collector pull-ups: the sense level no longer depends on the ESP32's weak
+    # internal ~45k pull-up being enabled in firmware (VERIFICATION.md finding 1).
+    # 10k + the 1k shared emitter R gives V_OL ≈ 0.4 V — still well under V_IL 0.825 V.
+    "R_pu1": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
+    "R_pu2": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
+    "R_pu3": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
     "C_in": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_3v3": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),
     "C_out": ("PCM_JLCPCB-Capacitors", "0603,10uF", "10uF"),    # SGM2212 wants COUT 1-10uF (was 22uF for AMS1117)
@@ -176,6 +183,9 @@ PURPOSE = {
     "R_sda": "I2C SDA pull-up (codec control bus)",
     "R_scl": "I2C SCL pull-up (codec control bus)",
     "R_ce": "ES8311 CE address pull-down -> I2C addr 0x18",
+    "R_pu1": "OC1 collector pull-up: defined sense level without the ESP32's internal pull-up",
+    "R_pu2": "OC2 collector pull-up: defined sense level without the ESP32's internal pull-up",
+    "R_pu3": "OC3 collector pull-up: defined sense level without the ESP32's internal pull-up",
     "C_in": "LDO input capacitor",
     "C_3v3": "ESP32 module bulk decoupling (at U1 pad 2)",
     "C_out": "LDO output capacitor",
@@ -223,7 +233,7 @@ FOOTPRINT = {
     "LED1": "PCM_JLCPCB:D_0603",
     "SW_boot": "PCM_JLCPCB:SW_TS-1088-AR02016", "SW_en": "PCM_JLCPCB:SW_TS-1088-AR02016",
 }
-for _r in ("R_lim1","R_lim2","R_lim3","R_em","R_g2","R_g3","R_g1","R_pd2","R_pd3","R_pd1","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot","R_sda","R_scl","R_ce"):
+for _r in ("R_lim1","R_lim2","R_lim3","R_em","R_g2","R_g3","R_g1","R_pd2","R_pd3","R_pd1","R_en","R_boot","R_cc1","R_cc2","R_led","R_io8","R_ot","R_sda","R_scl","R_ce","R_pu1","R_pu2","R_pu3"):
     FOOTPRINT[_r] = "PCM_JLCPCB:R_0603"
 for _c in ("C_in","C_3v3","C_out","C_en","C_dec",
            "C_dv","C_pv","C_av","C_avb","C_vref","C_vmid","C_aref","C_op","C_on","C_mp","C_mn"):
@@ -248,7 +258,9 @@ NETS = {
              # ES8311 supplies (PVDD/DVDD/AVDD) + their decoupling + I2C pull-ups
              ("U3","3"),("U3","4"),("U3","11"),
              ("C_dv","1"),("C_pv","1"),("C_av","1"),("C_avb","1"),
-             ("R_sda","1"),("R_scl","1")],
+             ("R_sda","1"),("R_scl","1"),
+             # opto collector pull-ups (pad 2 = +3V3 side, own In1 via each)
+             ("R_pu1","2"),("R_pu2","2"),("R_pu3","2")],
     # U1 (ESP32-C6-WROOM-1) GND: castellated pads 1, 28 + EPAD (pad 29) -- all must tie to GND.
     "GND": [("J1","A1"),("J1","B1"),("J1","A12"),("J1","B12"),("J1","SH"),
             ("C_in","2"),("C_out","2"),("C_3v3","2"),("C_dec","2"),("U2","1"),
@@ -344,9 +356,11 @@ NETS = {
     "OC2_RET": [("SW_OC2","2"),("R_lim1","2")],
     "OC3_RET": [("SW_OC3","2"),("R_lim2","2")],
     "OC1_RET": [("SW_OC1","2"),("R_lim3","2")],
-    "OC2_OUT": [("OC2","4"),("U1","26")],   # GPIO3  / pad 26 (C6 right col) — house bell (Türruf)
-    "OC3_OUT": [("OC3","4"),("U1","27")],   # GPIO2  / pad 27 (C6 right col) — apartment bell (Etagenruf)
-    "OC1_OUT": [("OC1","4"),("U1","21")],   # GPIO23 / pad 21 (C6 right col) — session-active in
+    # Each collector also carries its 10k pull-up to +3V3 (R_pu*, pad 1 on the
+    # collector column) — the escape lane routes through the pull-up's pad 1.
+    "OC2_OUT": [("OC2","4"),("R_pu2","1"),("U1","26")],   # GPIO3  / pad 26 (C6 right col) — house bell (Türruf)
+    "OC3_OUT": [("OC3","4"),("R_pu3","1"),("U1","27")],   # GPIO2  / pad 27 (C6 right col) — apartment bell (Etagenruf)
+    "OC1_OUT": [("OC1","4"),("R_pu1","1"),("U1","21")],   # GPIO23 / pad 21 (C6 right col) — session-active in
     "OC_EMIT": [("OC2","3"),("OC3","3"),("OC1","3"),("R_em","1")],
     "LED_A": [("R_led","2"),("LED1","2")],
 
@@ -400,7 +414,8 @@ GROUPS = {
     "USB-C":                   ["J1", "D_esd", "D_tvs", "F_vbus", "R_cc1", "R_cc2"],
     "Power (LDO)":             ["U2", "C_in", "C_out", "D_vbus"],
     "Power LED":               ["LED1", "R_led"],
-    "Bell sense (optos)":      ["OC2", "OC3", "OC1", "R_lim1", "R_lim2", "R_lim3", "R_em", "D_oc1", "D_oc2", "D_oc3"],
+    "Bell sense (optos)":      ["OC2", "OC3", "OC1", "R_lim1", "R_lim2", "R_lim3", "R_em", "D_oc1", "D_oc2", "D_oc3",
+                                "R_pu1", "R_pu2", "R_pu3"],
     "Polarity switches":       ["SW_OC3", "SW_OC2", "SW_OC1"],
     "K2 door-opener relay":    ["K2", "Q2", "D2", "R_g2", "R_pd2", "R_ot"],
     "K3 chime-suppress relay": ["K3", "Q3", "D3", "R_g3", "R_pd3"],
@@ -442,6 +457,7 @@ GRID = {
     "R_g1": (104, 98), "Q1": (109, 98), "R_pd1": (109, 104), "D1": (116, 94), "K1": (126, 98),
     "OC2": (36, 82), "OC3": (36, 96), "R_lim1": (50, 85), "R_lim2": (50, 90), "R_em": (50, 96), "J2": (16, 86),
     "OC1": (36, 110), "R_lim3": (50, 110),   # session-sense opto + limiter (schematic placement; reorganise later)
+    "R_pu2": (58, 82), "R_pu3": (58, 96), "R_pu1": (58, 110),  # collector pull-ups, right of each opto
     "D_oc2": (22, 82), "D_oc3": (22, 96), "D_oc1": (22, 110),  # opto LED clamp diodes (schematic)
     "SW_OC2": (28, 82),   # OC2 polarity switch
     "SW_OC3": (28, 96),   # OC3 polarity switch

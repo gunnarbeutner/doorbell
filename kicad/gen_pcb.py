@@ -61,18 +61,31 @@ PCB_PLACE = {
     "SW_OC2": (9,  16, 180),
     "SW_OC1": (15, 16, 180),
     # === Bus interface above U1: optos (left) side-by-side with relays + drivers (right) ===
-    "OC3":    (2.74, 33.5, 270),   # apartment bell sense; opto block centered in UL quadrant
-    "OC2":    (6.74, 33.5, 270),   # house bell sense; opto block centered in UL quadrant
-    "OC1":    (10.74, 33.5, 270),  # session-sense opto; right of OC2 in the bell-sense row
-    "R_lim1": (6.74, 23.25, 0),    # R1, OC2's own LED limiter (above OC2) -- unshared
-    "R_lim2": (2.74, 23.25, 0),    # R2, OC3's own LED limiter (above OC3) -- unshared
-    "R_lim3": (10.74, 23.25, 0),   # R17, OC1's LED limiter (above OC1)
+    # The whole opto sub-assembly sits 1.9 mm further north (y -1.9) than it used to:
+    # far enough north to fit the collector pull-up row (R_pu*) + escape-lane stack
+    # between the opto pad row and the BOOT/RST cluster, while keeping a 1.6 mm
+    # pad-free band south of the polarity switches for their silkscreen markings.
+    # (A 3 mm shift pulled the RET-net 45° entries into the switch pad row.)
+    "OC3":    (2.74, 31.6, 270),   # apartment bell sense; opto block centered in UL quadrant
+    "OC2":    (6.74, 31.6, 270),   # house bell sense; opto block centered in UL quadrant
+    "OC1":    (10.74, 31.6, 270),  # session-sense opto; right of OC2 in the bell-sense row
+    "R_lim1": (6.74, 21.35, 0),    # R1, OC2's own LED limiter (above OC2) -- unshared
+    "R_lim2": (2.74, 21.35, 0),    # R2, OC3's own LED limiter (above OC3) -- unshared
+    "R_lim3": (10.74, 21.35, 0),   # R17, OC1's LED limiter (above OC1)
     # Opto LED reverse-voltage clamps (1N4148W anti-parallel): between R_lim and opto, same column.
     # Rotated 270->90 with the 2026-06-10 net-pin swap (pads keep their previous XY positions).
-    "D_oc3":  (2.74, 26.5, 90),
-    "D_oc2":  (6.74, 26.5, 90),
-    "D_oc1":  (10.74, 26.5, 90),
-    "R_em":   (0, 35.82, 90),      # R3, emitter common resistor
+    "D_oc3":  (2.74, 24.6, 90),
+    "D_oc2":  (6.74, 24.6, 90),
+    "D_oc1":  (10.74, 24.6, 90),
+    "R_em":   (0, 33.92, 90),      # R3, emitter common resistor
+    # Collector pull-ups, horizontal, 0.185 west of their opto columns so pad 1
+    # (east, rot 180) sits DEAD ON the collector pad-4 column — the OC*_OUT stub from
+    # pad 1 up into the collector is perfectly vertical. Pad 2 (west) taps +3V3 via
+    # its own In1 via 0.88 further west (out of the escape-lane corridor; the lane
+    # verticals/diagonals all live east of x=1.63 and below y~39.2).
+    "R_pu3":  (2.555, 36.9, 180),
+    "R_pu2":  (6.555, 36.9, 180),
+    "R_pu1":  (10.555, 36.9, 180),
     "K3":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
     "Q3":     (23.5, 34, 180),# NMOS, swapped with R_pd3 + rotated 180°
     "R_g3":   (14.68, 36.5, 0),   # gate series R; x puts pad 2 dead above R_pd3.1
@@ -475,8 +488,17 @@ _BPITCH, _BCORNER, _BW = 0.329, 0.49, 0.2
 _u1px = _TOMM(next(p for p in fps["U1"].Pads() if p.GetNumber() == "18").GetPosition().x)
 _oc3p4 = next(p for p in fps["OC3"].Pads() if p.GetNumber() == "4").GetPosition()
 _tx, _ty = _TOMM(_oc3p4.x), _TOMM(_oc3p4.y)
+# Collector pull-ups (R_pu*) sit in-line directly south of the opto pad row; each OC
+# lane lands on its pull-up's pad 1 (through-pad) and a short stub continues north
+# into the opto's collector pad 4. All lane geometry rebases off the pull-up pad-1
+# row (_tyr) instead of the opto pad row; the GATE lanes shift down with it.
+_pu3p1 = next(p for p in fps["R_pu3"].Pads() if p.GetNumber() == "1").GetPosition()
+_tyr = _TOMM(_pu3p1.y)                    # pull-up pad-1 row (pad 1 x = collector column)
+_APPR = 0.55                              # diagonal->vertical approach offset below pad-1
+                                          # centre (pad half-height 0.475 -> the 45° ends
+                                          # 0.075 off the pad edge: tight landing)
 _lane5 = _u1px - 0.75 - 0.129 - _BW / 2   # U1 pads are 1.5 mm long: edge at centre-0.75
-_diag_c = _tx + _ty + 0.1042              # OC3's 45° approach line: x + y = const
+_diag_c = _TOMM(_pu3p1.x) + _tyr + _APPR  # OC3's 45° approach line: x + y = const
 for _net, _pnum, _k, _dst in (
         # _dst: "direct"  = land on OC3 pad 4 straight off the 45° diagonal;
         #       OC* key   = flatten east, then 45° back up into that opto's pad 4;
@@ -494,33 +516,43 @@ for _net, _pnum, _k, _dst in (
     _pre_track(vmm(_lx + _BCORNER, _py), vmm(_lx, _py - _BCORNER),
                pcbnew.F_Cu, _BW, nets[_net])
     if _dst == "direct":
-        # vertical to the 45° line, diagonal to just above the pad, stub into its centre
+        # vertical to the 45° line, diagonal to just below the pull-up's pad 1, stub
+        # into its centre, then through-pad north into the opto's collector pad 4
         _pre_track(vmm(_lx, _py - _BCORNER), vmm(_lx, _diag_c - _lx),
                    pcbnew.F_Cu, _BW, nets[_net])
-        _pre_track(vmm(_lx, _diag_c - _lx), vmm(_tx, _ty + 0.1042),
+        _pre_track(vmm(_lx, _diag_c - _lx), vmm(_tx, _tyr + _APPR),
                    pcbnew.F_Cu, _BW, nets[_net])
-        _pre_track(vmm(_tx, _ty + 0.1042), _oc3p4, pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(vmm(_tx, _tyr + _APPR), _pu3p1, pcbnew.F_Cu, _BW, nets[_net])
+        _pre_track(_pu3p1, _oc3p4, pcbnew.F_Cu, _BW, nets[_net])
     else:
         # vertical to this lane's 45° line (parallel to OC3's, 0.4625 mm/lane further
         # SE), diagonal NE, then flatten into an eastward horizontal: OC2 tops the stack
-        # just clear of the opto pad row, each following lane one pitch lower.
+        # just clear of the pull-up pad row, each following lane one pitch lower.
+        # Base 1.00 keeps the 45° rises into the pull-ups short (OC2: 0.45 mm) and the
+        # k=5 corner non-degenerate (_c - _yh >= _lx by ~0.65). The bottom lane runs
+        # over SW_boot's courtyard (legal for tracks) but keeps 0.21 to R_en's pads
+        # (top edge y=39.525) and 0.78 to SW_boot's (y=40.1) — the binding limits if
+        # the opto assembly ever moves further south.
         _c = _diag_c + 0.4625 * _k             # this lane's 45° line: x + y = _c
-        _yh = _ty + 1.0625 + (_k - 1) * _BPITCH   # horizontal level (OC2: pad row+1.06)
+        _yh = _tyr + 1.00 + (_k - 1) * _BPITCH   # horizontal level (OC2: pull-up row+1.00)
         _pre_track(vmm(_lx, _py - _BCORNER), vmm(_lx, _c - _lx),
                    pcbnew.F_Cu, _BW, nets[_net])
         _pre_track(vmm(_lx, _c - _lx), vmm(_c - _yh, _yh),
                    pcbnew.F_Cu, _BW, nets[_net])
         if _dst.startswith("OC"):
-            # run east, 45° back up (mirroring the OC3 landing; clears the neighbouring
-            # pad 3's rounded corner by the same margin), vertical stub into pad 4
+            # run east, 45° back up (mirroring the OC3 landing), stub into the pull-up's
+            # pad 1, then through-pad north into the opto's collector pad 4
             _t4 = next(p for p in fps[_dst].Pads() if p.GetNumber() == "4").GetPosition()
-            _tpx = _TOMM(_t4.x)
-            _dxr = _yh - (_ty + 0.1042)        # 45° rise from run level to pad approach
+            _rp1 = next(p for p in fps[{"OC2": "R_pu2", "OC1": "R_pu1"}[_dst]].Pads()
+                        if p.GetNumber() == "1").GetPosition()
+            _tpx = _TOMM(_rp1.x)               # pull-up pad 1 = collector column
+            _dxr = _yh - (_tyr + _APPR)        # 45° rise from run level to pad approach
             _pre_track(vmm(_c - _yh, _yh), vmm(_tpx - _dxr, _yh),
                        pcbnew.F_Cu, _BW, nets[_net])
-            _pre_track(vmm(_tpx - _dxr, _yh), vmm(_tpx, _ty + 0.1042),
+            _pre_track(vmm(_tpx - _dxr, _yh), vmm(_tpx, _tyr + _APPR),
                        pcbnew.F_Cu, _BW, nets[_net])
-            _pre_track(vmm(_tpx, _ty + 0.1042), _t4, pcbnew.F_Cu, _BW, nets[_net])
+            _pre_track(vmm(_tpx, _tyr + _APPR), _rp1, pcbnew.F_Cu, _BW, nets[_net])
+            _pre_track(_rp1, _t4, pcbnew.F_Cu, _BW, nets[_net])
         else:
             # gate landings: R_g3/R_g2 rise north straight into their pad 1.
             # GATE1_DRV (_dst "K3") instead rises through the R_pd3<->D3 channel and
@@ -547,6 +579,15 @@ for _net, _pnum, _k, _dst in (
                 _pre_track(vmm(_rx - 0.245, _yh), vmm(_rx, _yh - 0.245),
                            pcbnew.F_Cu, _BW, nets[_net])
                 _pre_track(vmm(_rx, _yh - 0.245), _t1, pcbnew.F_Cu, _BW, nets[_net])
+
+# R_pu* +3V3 taps (R_boot pattern): stub straight west off pad 2 onto an In1-plane
+# via. West keeps the barrel clear of the whole escape-lane corridor (verticals and
+# diagonals all sit east of x=1.63 / below y~38.4) and of the opto pad row above.
+for _rp in ("R_pu1", "R_pu2", "R_pu3"):
+    _p2 = next(p for p in fps[_rp].Pads() if p.GetNumber() == "2").GetPosition()
+    _vp = vmm(_TOMM(_p2.x) - 0.88, _TOMM(_p2.y))
+    _pre_track(_p2, _vp, pcbnew.F_Cu, _BW, nets["+3V3"])
+    _pre_via(_vp, net=nets["+3V3"])
 
 # --- I2C/I2S escape bundle (north of U1): BOOT leads from U1 pad 15 east + 45° NE up
 #     to its switch and on to R_boot (its proven autoroute path, now locked). I2C
@@ -808,7 +849,7 @@ for _cnet, _ok, _do, _rl in (("OC1_CATH", "OC1", "D_oc1", "R_lim3"),
                    _r], _BUSW)
 _e1, _e2, _e3 = _pxy("OC1", "3"), _pxy("OC2", "3"), _pxy("OC3", "3")
 _rem = _pxy("R_em", "1")
-_YH = 35.64
+_YH = _e1[1] - 1.05   # hop lane 1.05 above the emitter pad row (under the packages)
 # descents land 0.148 short of the pad row + vertical stub: keeps the 45° leg
 # 0.178 clear of the neighbouring pad 4's rounded corner (straight-in clips it)
 _chain("OC_EMIT", [_e1, (_e1[0] - (_e1[1] - _YH), _YH),
@@ -871,9 +912,16 @@ _chainl("P4", [_j2p["4"], (31.967, 13.317), (25.908, 13.317), (17.9, 21.325),
 _chainl("P2", [_j2p["2"], (40.65, 20.271), (38.7, 22.221), _pxy("K1", "4")], pcbnew.F_Cu)
 _chainl("P2", [(38.7, 22.221), (38.07, 21.593), (30.783, 21.593), (30.154, 22.221),
                (29.4, 22.221), _pxy("K2", "3")], pcbnew.F_Cu)
-_chainl("P2", [_pxy("K2", "3"), (29.4, 24.779), (26.636, 24.779), (24.079, 22.221),
-               (22.683, 22.221), (21.548, 23.356), (21.548, 23.889), (20.648, 24.789),
-               (17.341, 24.789), (16.75, 24.197), _pxy("SW_OC1", "4")], pcbnew.F_Cu)
+# K2.3 -> SW_OC1.4: the old freerouting-derived weave shaved K2.4 / K3.1 / K3.2 /
+# K3.3 at 0.13 (the DRC floor). Reworked: under-body runs at y=25.0 (0.35 clear of
+# the pad row), the row crossing on the single 45° line (x - y = 1.75) that clears
+# BOTH K2.4's SW corner and K3.1's NE corner at 0.21, a short y=21.9 lane north of
+# K3.1 (0.45), and the pad-1/2 gap vertical at x=21.548 with chamfered 90s (0.8 to
+# either pad). West of K3.1 the y=25.0 lane stays clear of the +5V coil spine
+# (which enters K3.1 at x=23.3 from the south-east).
+_chainl("P2", [_pxy("K2", "3"), (29.4, 25.0), (26.75, 25.0), (23.65, 21.9),
+               (21.798, 21.9), (21.548, 22.15), (21.548, 24.75), (21.298, 25.0),
+               (17.4, 25.0), (16.75, 24.35), _pxy("SW_OC1", "4")], pcbnew.F_Cu)
 _chainl("P2", [_pxy("SW_OC1", "4"), (16.75, 17.172)], pcbnew.F_Cu)
 _pre_via(vmm(16.75, 17.172), net=nets["P2"])
 _chainl("P2", [(16.75, 17.172), (14.311, 17.172), (11.869, 14.731)], pcbnew.B_Cu)
@@ -885,7 +933,11 @@ _chainl("IN_P4", [_j2p["6"], (13.176, 15.0), (11.721, 13.545)], pcbnew.B_Cu)
 _pre_via(vmm(11.721, 13.545), net=nets["IN_P4"])
 _chainl("IN_P4", [(11.721, 13.545), (11.526, 13.35), _pxy("SW_OC2", "1")], pcbnew.F_Cu)
 _chainl("IN_P4", [_pxy("SW_OC2", "1"), (7.25, 16.85), _pxy("SW_OC2", "6")], pcbnew.F_Cu)
-_chainl("IN_P4", [_pxy("K1", "3"), (40.9, 24.779), (38.116, 24.779), (37.262, 23.924),
+# K1.3 -> J2.6 return: under-body run dropped to y=25.0 (was 24.779 = 0.13 from
+# K1.4's pad bottom; now 0.35) and the 45° up to the x=37.262 riser starts at
+# y=24.54 so its diagonal passes K1.4's SW corner at 0.39 (a 45° straight off the
+# old horizontal clipped it).
+_chainl("IN_P4", [_pxy("K1", "3"), (40.9, 25.0), (37.722, 25.0), (37.262, 24.54),
                   (37.262, 22.908)], pcbnew.F_Cu)
 _pre_via(vmm(37.262, 22.908), net=nets["IN_P4"])
 _chainl("IN_P4", [(37.262, 22.908), (34.558, 22.908), _j2p["6"]], pcbnew.B_Cu)
@@ -917,8 +969,16 @@ _chainl("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.
 # its previously-proven path is locked as well — 45° NW onto the y=12.321 lane,
 # west, down the far-west column at x=0.316 (between the board edge and the SW_OC3 /
 # P1 column), 45° SE into R_lim2 pad 2. All F.Cu, bus width (bus potential).
+# OC3_RET's final approach: with the opto cluster 2.5 mm further north, a single 45°
+# from the far-west column into R_lim2 pad 2 would cut straight through SW_OC3's
+# south pad row (pads 6/5/4 at y 18.0-19.3). Thread the 0.975 mm channel between the
+# switch pad row and the limiter pad row instead: down the x=0.316 column, 45° onto
+# the channel centreline (y=19.7875), east past the switch, 45° NE up into pad 2.
+_rl2 = _pxy("R_lim2", "2")
+_YCH = 19.7875                     # channel centre: SW pad row bottom 19.3 + 0.4875
 _chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
-                    (0.316, 12.546), (0.316, 20.006), _pxy("R_lim2", "2")], pcbnew.F_Cu)
+                    (0.316, 12.546), (0.316, _YCH - 0.25), (0.566, _YCH),
+                    (_rl2[0] - (_rl2[1] - _YCH), _YCH), _rl2], pcbnew.F_Cu)
 # Remaining opto switch-pad nets (bus width, F.Cu; geometry lifted from a clean
 # Freerouting solution). Each JP net drops from its switch's centre pad 5 down a
 # vertical between the switch columns, 45°s into the clamp diode's pad 1 and hops
@@ -926,22 +986,34 @@ _chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
 # OC1/OC3 with a 45° entry into the vertical, OC2's pad 5 already on its column.
 # The RET nets run their switch's centre pad 2 down a vertical beside the cathode
 # channel into the limiter's pad 2 (OC3_RET is locked further above).
-_chainl("OC1_JP", [_pxy("SW_OC1", "5"), (13.212, 20.438), (13.212, 25.678),
-                   _pxy("D_oc1", "1")], pcbnew.F_Cu)
-_chainl("OC1_JP", [_pxy("D_oc1", "1"), (11.375, 28.785), _pxy("OC1", "1")],
+_d1p, _d2p, _d3p = _pxy("D_oc1", "1"), _pxy("D_oc2", "1"), _pxy("D_oc3", "1")
+_o1p, _o2p, _o3p = _pxy("OC1", "1"), _pxy("OC2", "1"), _pxy("OC3", "1")
+# OC1/OC3 JP exits: leave the switch's centre pad 5 straight south for 0.4 mm BEFORE
+# the 45° toward the clamp-diode column — a 45° straight off the pad passes only
+# ~0.17 from the neighbouring throw pad's corner (SW_OC1 pad 6 / SW_OC3 pad 4).
+# OC3's vertical runs at x=4.6 (not 4.378): 0.39 clear of R_lim2 pad 2's east edge
+# instead of 0.17.
+_sw1p5, _sw3p5 = _pxy("SW_OC1", "5"), _pxy("SW_OC3", "5")
+_chainl("OC1_JP", [_sw1p5, (_sw1p5[0], _sw1p5[1] + 0.4),
+                   (13.212, _sw1p5[1] + 0.4 + (_sw1p5[0] - 13.212)),
+                   (13.212, _d1p[1] - (13.212 - _d1p[0])), _d1p], pcbnew.F_Cu)
+_chainl("OC1_JP", [_d1p, (_o1p[0], _d1p[1] + (_o1p[0] - _d1p[0])), _o1p],
         pcbnew.F_Cu)
-_chainl("OC2_JP", [_pxy("SW_OC2", "5"), (9.0, 25.89), _pxy("D_oc2", "1")],
+_chainl("OC2_JP", [_pxy("SW_OC2", "5"), (9.0, _d2p[1] - (9.0 - _d2p[0])), _d2p],
         pcbnew.F_Cu)
-_chainl("OC2_JP", [_pxy("D_oc2", "1"), (7.375, 28.785), _pxy("OC2", "1")],
+_chainl("OC2_JP", [_d2p, (_o2p[0], _d2p[1] + (_o2p[0] - _d2p[0])), _o2p],
         pcbnew.F_Cu)
-_chainl("OC3_JP", [_pxy("SW_OC3", "5"), (4.378, 20.028), (4.378, 26.512),
-                   _pxy("D_oc3", "1")], pcbnew.F_Cu)
-_chainl("OC3_JP", [_pxy("D_oc3", "1"), (3.375, 28.785), _pxy("OC3", "1")],
+_chainl("OC3_JP", [_sw3p5, (_sw3p5[0], _sw3p5[1] + 0.4),
+                   (4.6, _sw3p5[1] + 0.4 + (4.6 - _sw3p5[0])),
+                   (4.6, _d3p[1] - (4.6 - _d3p[0])), _d3p], pcbnew.F_Cu)
+_chainl("OC3_JP", [_d3p, (_o3p[0], _d3p[1] + (_o3p[0] - _d3p[0])), _o3p],
         pcbnew.F_Cu)
-_chainl("OC1_RET", [_pxy("R_lim3", "2"), (11.629, 23.181), (11.629, 16.721),
-                    _pxy("SW_OC1", "2")], pcbnew.F_Cu)
+_rl3 = _pxy("R_lim3", "2")
+_chainl("OC1_RET", [_rl3, (_rl3[0] + 0.1015, _rl3[1] - 0.069),
+                    (_rl3[0] + 0.1015, 16.721), _pxy("SW_OC1", "2")], pcbnew.F_Cu)
+_rl1 = _pxy("R_lim1", "2")
 _chainl("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
-                    (6.371, 22.061), _pxy("R_lim1", "2")], pcbnew.F_Cu)
+                    (6.371, _rl1[1] - (_rl1[0] - 6.371)), _rl1], pcbnew.F_Cu)
 
 # --- ES8311 (U3) analog / CE / supply hookups, fully hand-routed (0.2 mm, F.Cu).
 #     The I2C/I2S nets into U3 are locked above; this completes every U3 net.
@@ -1054,7 +1126,7 @@ _tapvia("GND", "Q3", "2", [(24.44, 33.785)])
 _tapvia("GND", "R_pd1", "2", [(38.5, 32.345)])
 _tapvia("GND", "R_pd2", "2", [(27.0, 32.345)])
 _tapvia("GND", "R_pd3", "2", [(15.5, 32.345)])
-_tapvia("GND", "R_em", "2", [(0.0, 34.15)])
+_tapvia("GND", "R_em", "2", [(_pxy("R_em", "2")[0], _pxy("R_em", "2")[1] - 0.85)])
 # BOOT/RST cluster + U1's far GND castellation (pad 28)
 _tapvia("GND", "C_en", "2", [(16.927, 41.293)])
 _tapvia("GND", "SW_en", "2", [(24.075, 42.356)])
@@ -1411,7 +1483,7 @@ for _swk in ("SW_OC1", "SW_OC2", "SW_OC3"):
 _pol_lbl = pcbnew.PCB_TEXT(board)
 _pol_lbl.SetText("POLARITY")
 _pol_lbl.SetLayer(pcbnew.F_SilkS)
-_pol_lbl.SetPosition(vmm(8, 12.0))
+_pol_lbl.SetPosition(vmm(8, 11.6))
 _pol_lbl.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
 _pol_lbl.SetTextThickness(pcbnew.FromMM(0.12))
 _pol_lbl.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER)
