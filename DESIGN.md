@@ -525,7 +525,26 @@ ASDOUT 7 / LRCK 8 / DSDIN 9) whose pin order matches the pad order — each line
 sits below the previous one's, so the long 45° rises from the lower pads top out before
 reaching any upper lane — BCLK/DIN via short shallow 45°s, WS/DOUT on aggressive
 vertical risers beside U1's pad column (east of GPIO8's via), clear of T1's west pads.
-T1 sits 2.35 mm below U3 (its south edge clear of R12 below). T1's bus winding ties in
+T1 sits 2.35 mm below U3 (its south edge clear of R12 below).
+
+**U3 analog / CE / supply hookups** (`gen_pcb.py`, locked — with the I2C/I2S bundles
+this makes every U3 net fully hand-routed, all on F.Cu): on the east column, OUTN /
+DACVREF / ADCVREF drop into their caps' pad-1 centres on three nested parallel 45°
+diagonals (0.85 mm apart; DACVREF/ADCVREF via short staircase verticals at
+x=34.805/34.405 so the diagonals land dead-on). OUTP can't cross OUTN, so it jogs
+0.05 mm onto the lane between its own pad row and pad 13's toe (0.15 mm clear), runs
+east past the column and rises 45° into C_op. On the north row, MIC1P/MIC1N rise as a
+symmetric pair into C_mp/C_mn, VMID does the same one column over, and CE rises off
+pad 20 and 45°s onto R_ce's row — nested parallel to the locked SDA drop one pad
+over. Supplies: DVDD/PVDD (pads 3/4) tie west onto a shared rail with an In1 via
+mid-rail, continuing straight into C_pv pad 1 and up the pad-1 column into C_dv;
+AVDD (pad 11) runs straight east into C_avb pad 1 and up into C_av with an In1 via
+below. GND: pad 5 stubs west into an In2 via, pad 10 runs straight north into the
+via-stitched exposed pad, each cap GND column (C_av/C_avb, C_vref/C_aref, C_dv/C_pv)
+gets a pad-2 column tie + In2 via, C_vmid taps a via 0.9 mm east, and R_sda's +3V3
+pad stubs north into its own In1 via.
+
+T1's bus winding ties in
 on B.Cu at bus width (0.5 mm): vias just east of T1 pads 1/3 with straight F.Cu stubs
 into the pads, then east and up the east strip (verticals x=48.64/49.3, B.Cu free under
 the LED block), west above J2's pad row (lanes y=13.2/12.54) and down into J2 pins 1/5

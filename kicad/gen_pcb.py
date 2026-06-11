@@ -895,6 +895,77 @@ _chainl("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.
 _chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
                     (0.316, 12.546), (0.316, 20.006), _pxy("R_lim2", "2")], pcbnew.F_Cu)
 
+# --- ES8311 (U3) analog / CE / supply hookups, fully hand-routed (0.2 mm, F.Cu).
+#     The I2C/I2S nets into U3 are locked above; this completes every U3 net.
+#     East column: OUTN / DACVREF / ADCVREF leave their pad rows and drop into their
+#     caps' pad-1 centres on three nested parallel 45° diagonals (0.85 mm apart);
+#     DACVREF/ADCVREF take short verticals first (x=34.805/34.405, one staircase step
+#     apart) so the long diagonals land dead-on. OUTP can't cross OUTN, so it jogs
+#     0.05 onto the lane between its own pad row and pad 13's toe (0.15 clear), runs
+#     east past the column and rises 45° NE into C_op. North row: MIC1P/MIC1N rise as
+#     a symmetric pair off pads 18/17 and 45° outward into C_mp/C_mn; VMID does the
+#     same one column over (1.4 mm 45° into C_vmid). CE rises off pad 20, 45°s NW
+#     onto R_ce's row and runs straight into the pull-down — nested parallel to the
+#     locked SDA drop one pad over. Supplies: pads 3/4 (DVDD/PVDD) tie west onto a
+#     shared rail with an In1-plane via mid-rail, continuing straight into C_pv pad 1
+#     and up the pad-1 column into C_dv; pad 11 (AVDD) runs straight east into
+#     C_avb pad 1 (entering 0.1 off-centre) and up the column into C_av, with an
+#     In1 via below C_av. GND: pad 5 stubs west + 45° into an In2 via; pad 10 runs
+#     straight north into the (via-stitched) exposed pad; the cap GND columns
+#     (C_av/C_avb, C_vref/C_aref, C_dv/C_pv) each get a pad-2 column tie + In2 via;
+#     C_vmid's GND pad taps a via 0.9 mm east. R_sda's +3V3 pad stubs north into its
+#     own In1 via (the FR-proven spot).
+_chainl("ES_OUTP", [_pxy("U3", "12"), (33.835, 45.974), (35.855, 45.974),
+                    _pxy("C_op", "1")], pcbnew.F_Cu, _BW)
+_chainl("ES_OUTN", [_pxy("U3", "13"), (35.005, 45.624), _pxy("C_on", "1")],
+        pcbnew.F_Cu, _BW)
+_chainl("ES_DACVREF", [_pxy("U3", "14"), (34.805, 45.224), (34.805, 44.624),
+                       _pxy("C_vref", "1")], pcbnew.F_Cu, _BW)
+_chainl("ES_ADCVREF", [_pxy("U3", "15"), (34.405, 44.824), (34.405, 43.824),
+                       _pxy("C_aref", "1")], pcbnew.F_Cu, _BW)
+_chainl("ES_VMID", [_pxy("U3", "16"), (33.085, 43.104), _pxy("C_vmid", "1")],
+        pcbnew.F_Cu, _BW)
+_chainl("ES_MICN", [_pxy("U3", "17"), (32.685, 42.204), _pxy("C_mn", "1")],
+        pcbnew.F_Cu, _BW)
+_chainl("ES_MICP", [_pxy("U3", "18"), (32.285, 42.104), _pxy("C_mp", "1")],
+        pcbnew.F_Cu, _BW)
+_chainl("ES_CE", [_pxy("U3", "20"), (31.485, 43.495), (30.844, 42.854),
+                  _pxy("R_ce", "1")], pcbnew.F_Cu, _BW)
+# +3V3 east (AVDD): pad 11 -> C_avb -> C_av -> plane via
+_chainl("+3V3", [_pxy("U3", "11"), (36.605, 46.424), _pxy("C_avb", "1")],
+        pcbnew.F_Cu, _BW)
+_chainl("+3V3", [_pxy("C_avb", "1"), _pxy("C_av", "1"), (36.705, 48.457)],
+        pcbnew.F_Cu, _BW)
+_pre_via(vmm(36.705, 48.457), net=nets["+3V3"])
+# +3V3 west (DVDD/PVDD): pads 3/4 onto the shared rail at x=29.885, via mid-rail,
+# straight on into C_pv pad 1, pad-1 column up into C_dv
+_chainl("+3V3", [_pxy("U3", "3"), (29.885, 45.624), (29.885, 45.824)],
+        pcbnew.F_Cu, _BW)
+_pre_via(vmm(29.885, 45.824), net=nets["+3V3"])
+_chainl("+3V3", [_pxy("U3", "4"), (29.885, 46.024), (29.885, 45.824)],
+        pcbnew.F_Cu, _BW)
+_chainl("+3V3", [(29.885, 46.024), (28.365, 46.024)], pcbnew.F_Cu, _BW)
+_chainl("+3V3", [_pxy("C_pv", "1"), _pxy("C_dv", "1")], pcbnew.F_Cu, _BW)
+# R_sda pull-up supply: stub north + plane via
+_chainl("+3V3", [_pxy("R_sda", "1"), (30.585, 39.252)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(30.585, 39.252), net=nets["+3V3"])
+# GND: U3 pad 5 + west cap column + via; pad 10 into the EP; east cap columns + vias
+_chainl("GND", [_pxy("U3", "5"), (30.185, 46.424), (29.935, 46.674)],
+        pcbnew.F_Cu, _BW)
+_pre_via(vmm(29.935, 46.674), net=nets["GND"])
+_chainl("GND", [_pxy("C_pv", "2"), _pxy("C_dv", "2"), (25.925, 47.254)],
+        pcbnew.F_Cu, _BW)
+_pre_via(vmm(25.925, 47.254), net=nets["GND"])
+_chainl("GND", [_pxy("U3", "10"), (33.085, 46.274)], pcbnew.F_Cu, _BW)
+_chainl("GND", [_pxy("C_avb", "2"), _pxy("C_av", "2"), (38.265, 48.454)],
+        pcbnew.F_Cu, _BW)
+_pre_via(vmm(38.265, 48.454), net=nets["GND"])
+_chainl("GND", [_pxy("C_vref", "2"), _pxy("C_aref", "2"), (38.265, 40.612)],
+        pcbnew.F_Cu, _BW)
+_pre_via(vmm(38.265, 40.612), net=nets["GND"])
+_chainl("GND", [_pxy("C_vmid", "2"), (35.385, 40.144)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(35.385, 40.144), net=nets["GND"])
+
 # --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
 #     straight east on their pad rows into B.Cu vias in line with the pads — DM's via
 #     (23.85, 46.72) sits on its vertical, DP's (24.43, 45.45) 0.58 east of DM's line
