@@ -51,8 +51,26 @@ _add_plane(pcbnew.In2_Cu, "GND")
 board.BuildConnectivity()
 pcbnew.ZONE_FILLER(board).Fill(board.Zones())
 
-if not pcbnew.ExportSpecctraDSN(board, DSN):
-    sys.exit("DSN export failed")
+# Fully hand-routed? If the locked pre-routes + inner planes already satisfy every
+# connection, skip Freerouting entirely — there is nothing for it to add, and the
+# DSN -> Freerouting -> SES round-trip is the flakiest part of the pipeline.
+board.BuildConnectivity()
+try:
+    _unrouted = board.GetConnectivity().GetUnconnectedCount(False)
+except TypeError:                       # older API: no aVisibleOnly argument
+    _unrouted = board.GetConnectivity().GetUnconnectedCount()
+
+def _autoroute():
+    if not pcbnew.ExportSpecctraDSN(board, DSN):
+        sys.exit("DSN export failed")
+    _patch_and_route()
+    if not pcbnew.ImportSpecctraSES(board, SES):
+        sys.exit("SES import failed")
+
+def _patch_and_route():
+    _inject_net_classes()
+    subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da", "-mt", "1",
+                    "--router.optimizer.enabled=true"], check=True)
 
 # Inject net class rules into the DSN so Freerouting knows which layers each net
 # belongs on. GND/+3V3 are restricted to their inner-plane layers — Freerouting
@@ -89,59 +107,61 @@ NET_CLASSES = [
 ]
 RECLASSED = {n for _, nets, _, _ in NET_CLASSES for n in nets}
 
-with open(DSN) as f: dsn = f.read()
+def _inject_net_classes():
+    with open(DSN) as f: dsn = f.read()
 
-# Relax the routing clearance/track that Freerouting honours from KiCad's default 0.2mm/0.2mm to
-# JLCPCB's published fine-pitch capability (0.127mm clearance / 0.15mm track) -- the same fab
-# limit the board already allows for J1. The default 0.2mm clearance acts as a too-wide keepout
-# halo around every pad and makes the 0.40mm-pitch ES8311 (U3) un-escapable (a 0.6mm via can't
-# sit beside a fine-pitch pin). The (clearance 50 (type smd_smd)) entry is left untouched.
-dsn = re.sub(r'\(clearance 200\)', '(clearance 127)', dsn)
+    # Relax the routing clearance/track that Freerouting honours from KiCad's default 0.2mm/0.2mm
+    # to JLCPCB's published fine-pitch capability (0.127mm clearance / 0.15mm track) -- the same
+    # fab limit the board already allows for J1. The default 0.2mm clearance acts as a too-wide
+    # keepout halo around every pad and makes the 0.40mm-pitch ES8311 (U3) un-escapable (a 0.6mm
+    # via can't sit beside a fine-pitch pin). The (clearance 50 (type smd_smd)) entry is left
+    # untouched.
+    dsn = re.sub(r'\(clearance 200\)', '(clearance 127)', dsn)
 
-# Remove reclassed nets (USB_DP/USB_DM) from kicad_default, and restrict ALL nets
-# (including GND/+3V3) to the outer copper layers only.  In1.Cu (+3V3) and In2.Cu
-# (GND) are filled as solid copper pours after routing; Freerouting must not place
-# signal traces there.  Through-hole vias still drill through all 4 layers, so their
-# barrels connect GND/+3V3 pads to the inner-plane pours automatically.
-def _patch_default(m):
-    block = m.group(0)
-    for net in RECLASSED:
-        block = re.sub(r'(?<=\s)' + re.escape(net) + r'(?=[\s\n])', '', block)
-    # Prepend use_layer directives before the existing use_via entry.
-    block = re.sub(
-        r'(\s*)\(use_via ',
-        r'\1(use_layer "F.Cu")\1(use_layer "B.Cu")\1(use_via ',
-        block,
-    )
-    return block
-dsn = re.sub(r'\(class kicad_default.*?\)', _patch_default, dsn, flags=re.DOTALL)
+    # Remove reclassed nets (USB_DP/USB_DM) from kicad_default, and restrict ALL nets
+    # (including GND/+3V3) to the outer copper layers only.  In1.Cu (+3V3) and In2.Cu
+    # (GND) are filled as solid copper pours after routing; Freerouting must not place
+    # signal traces there.  Through-hole vias still drill through all 4 layers, so their
+    # barrels connect GND/+3V3 pads to the inner-plane pours automatically.
+    def _patch_default(m):
+        block = m.group(0)
+        for net in RECLASSED:
+            block = re.sub(r'(?<=\s)' + re.escape(net) + r'(?=[\s\n])', '', block)
+        # Prepend use_layer directives before the existing use_via entry.
+        block = re.sub(
+            r'(\s*)\(use_via ',
+            r'\1(use_layer "F.Cu")\1(use_layer "B.Cu")\1(use_via ',
+            block,
+        )
+        return block
+    dsn = re.sub(r'\(class kicad_default.*?\)', _patch_default, dsn, flags=re.DOTALL)
 
-# Build new class entries (net names unquoted, matching kicad_default style)
-via_m = re.search(r'\(use_via "([^"]+)"', dsn)
-via_name = via_m.group(1) if via_m else "Via[0-3]_600:300_um"
-def _class_entry(name, nets, layers, width_um=None):
-    nets_str = " ".join(nets)
-    layers_str = "\n        ".join(f'(use_layer "{l}")' for l in layers)
-    rule_str = f'\n      (rule (width {width_um}))' if width_um else ''
-    return (f'    (class {name} {nets_str}\n'
-            f'      (circuit\n'
-            f'        {layers_str}\n'
-            f'        (use_via "{via_name}")\n'
-            f'      ){rule_str}\n'
-            f'    )')
+    # Build new class entries (net names unquoted, matching kicad_default style)
+    via_m = re.search(r'\(use_via "([^"]+)"', dsn)
+    via_name = via_m.group(1) if via_m else "Via[0-3]_600:300_um"
+    def _class_entry(name, nets, layers, width_um=None):
+        nets_str = " ".join(nets)
+        layers_str = "\n        ".join(f'(use_layer "{l}")' for l in layers)
+        rule_str = f'\n      (rule (width {width_um}))' if width_um else ''
+        return (f'    (class {name} {nets_str}\n'
+                f'      (circuit\n'
+                f'        {layers_str}\n'
+                f'        (use_via "{via_name}")\n'
+                f'      ){rule_str}\n'
+                f'    )')
 
-injection = "\n".join(_class_entry(*c) for c in NET_CLASSES)
-# Insert inside the (network ...) block, before its closing ) which sits just
-# before the (wiring ...) section.
-dsn = re.sub(r'(\n  \)\n\s*\(wiring)', "\n" + injection + r'\1', dsn)
-with open(DSN, 'w') as f: f.write(dsn)
-print(f"exported {DSN} (injected {len(NET_CLASSES)} net class rule(s))")
+    injection = "\n".join(_class_entry(*c) for c in NET_CLASSES)
+    # Insert inside the (network ...) block, before its closing ) which sits just
+    # before the (wiring ...) section.
+    dsn = re.sub(r'(\n  \)\n\s*\(wiring)', "\n" + injection + r'\1', dsn)
+    with open(DSN, 'w') as f: f.write(dsn)
+    print(f"exported {DSN} (injected {len(NET_CLASSES)} net class rule(s))")
 
-subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da", "-mt", "1",
-                "--router.optimizer.enabled=true"], check=True)
-
-if not pcbnew.ImportSpecctraSES(board, SES):
-    sys.exit("SES import failed")
+if _unrouted == 0:
+    print("0 unrouted connections -- board is fully hand-routed; skipping Freerouting")
+else:
+    print(f"{_unrouted} unrouted connection(s) -> Freerouting")
+    _autoroute()
 
 # --- Subassembly groups: created HERE (post-route) so they never reach the Specctra DSN export --
 #     groups on the board confuse the DSN export and break the autoroute. Add them to the routed

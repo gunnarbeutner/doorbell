@@ -451,7 +451,10 @@ the same reason as OC3_RET: the corridors exist, but the greedy router stopped
 finding them once the power walls around them became protected wiring.
 
 **The board is 100% hand-routed** — every net is locked pre-route geometry in
-`gen_pcb.py`; Freerouting's pass adds nothing (it only confirms the netlist).
+`gen_pcb.py`. `route.py` checks the ratsnest after filling the inner planes and,
+when there are 0 unrouted connections, skips the DSN → Freerouting → SES
+round-trip entirely (the flakiest part of the pipeline); the autoroute path only
+engages if a future edit leaves something unrouted.
 The last stragglers: GATE1/GATE2 share one pattern per channel — a near-vertical
 slant ties the pull-down's pad 1 into the gate resistor's pad 2, then a straight
 run east on the y=36.5 resistor row with a 45° drop into the FET gate; GATE3's FET
