@@ -449,7 +449,11 @@ pre-wiring the U3 EP vias to the pad centre (the DSN export doesn't credit EP pa
 copper as wiring). GATE1_PRE crosses under the relay-driver block on B.Cu (K3.6 →
 via → east → 45° staircase) and stays there to a via just left of R6 (R_g1) pad 1,
 surfacing into the pad with one straight stub. SEC_A/SEC_B are hand-designed as a
-differential pair off T1's west pads (see the T1 tie-in description).
+differential pair off T1's west pads (see the T1 tie-in description); their west
+legs onward to C16/C17 thread the cap field as single tracks — the north
+cap/pull-up row (R18 + C16/C17/C12) sits nudged 0.1 mm north of the block grid so
+SEC_A's lane runs jog-free at one level (y=40.783) between C12's GND pad and
+C13's signal pad.
 
 **The board is 100% hand-routed** — every net is locked pre-route geometry in
 `gen_pcb.py`. `route.py` checks the ratsnest after filling the inner planes and,
@@ -461,10 +465,10 @@ vertical drop ties the pull-down's pad 1 into the gate resistor's pad 2 (R4/R5/R
 sit x-aligned over their pull-downs), then a straight run east on the y=36.5
 resistor row with a 45° drop into the FET gate; GATE3's FET
 leg instead ducks under on B.Cu west of the relay block (GATE1_DRV's locked escape
-channel crosses the y=36.5 row at x=16.34). EN leaves U1 pad 3 onto a vertical at
-x=19.713 between U1's pad column and MCLK's riser, hops the locked SDA/SCL lane
-stack on a short B.Cu slant between two vias, then fans into C_en, the RST button,
-and R_en. OT_BRIDGE is a single near-vertical slant K2.4 → R16.2; LED_A is a
+channel crosses the y=36.5 row at x=16.34). EN leaves U1 pad 3 and 45°s onto the
+RST button's pad column (x=19.925, clear of MCLK's riser), running one straight
+line — F.Cu vertical, via, B.Cu hop under the locked SDA/SCL lane stack, via,
+stub into the button — and branches west into C_en and R_en. OT_BRIDGE is a single near-vertical slant K2.4 → R16.2; LED_A is a
 dead-straight vertical.
 
 **Routing + plane recipe.** Freerouting routes on all four layers freely (no `LT_POWER`
@@ -565,9 +569,9 @@ T1 sits 2.35 mm below U3 (its south edge clear of R12 below).
 this makes every U3 net fully hand-routed, all on F.Cu): on the east column, OUTN /
 DACVREF / ADCVREF drop into their caps' pad-1 centres on three nested parallel 45°
 diagonals (0.85 mm apart; DACVREF/ADCVREF via short staircase verticals at
-x=34.805/34.405 so the diagonals land dead-on). OUTP can't cross OUTN, so it jogs
-0.05 mm onto the lane between its own pad row and pad 13's toe (0.15 mm clear), runs
-east past the column and rises 45° into C_op. On the north row, MIC1P/MIC1N rise as a
+x=34.805/34.405 so the diagonals land dead-on). OUTP runs dead on its own pad row
+(0.2 mm clear of OUTN's stub one row below), east past the column, and rises 45°
+into C_op. On the north row, MIC1P/MIC1N rise as a
 symmetric pair into C_mp/C_mn, VMID does the same one column over, and CE rises off
 pad 20 and 45°s onto R_ce's row — nested parallel to the locked SDA drop one pad
 over. Supplies: DVDD/PVDD (pads 3/4) tie west onto a shared rail with an In1 via

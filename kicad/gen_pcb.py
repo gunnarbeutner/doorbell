@@ -211,6 +211,16 @@ for k in _FULL_AUDIO:
 _rscl_p = fps["R_scl"].GetPosition()
 fps["R_ce"].SetPosition(vmm(_TOMM(_rscl_p.x), _TOMM(_rscl_p.y) - 1.2))
 
+# Nudge the north cap/pull-up row (R_sda + the MIC/VMID coupling caps) 0.1 mm
+# further north, AFTER the block transforms (touching the placement table would
+# move the block's bbox and shift everything). This opens the C_vmid <-> C_aref
+# corridor just enough for SEC_A's west lane to run at a single level (y=40.783,
+# no mid-run jog): the lane needs >=0.127 to C_vmid's GND pad on one side and to
+# C_aref's signal pad on the other. SEC_B's lane north of the row moves up with it.
+for _k in ("R_sda", "C_mp", "C_mn", "C_vmid"):
+    _p = fps[_k].GetPosition()
+    fps[_k].SetPosition(pcbnew.VECTOR2I(_p.x, _p.y - pcbnew.FromMM(0.1)))
+
 # Place T1 below U3 with 2 mm clearance, rotated 180° from its group orientation.
 fps["T1"].SetOrientationDegrees((fps["T1"].GetOrientationDegrees() + 180) % 360)
 _u3bb = _bbx("U3")
@@ -938,9 +948,9 @@ _chainl("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
 #     East column: OUTN / DACVREF / ADCVREF leave their pad rows and drop into their
 #     caps' pad-1 centres on three nested parallel 45° diagonals (0.85 mm apart);
 #     DACVREF/ADCVREF take short verticals first (x=34.805/34.405, one staircase step
-#     apart) so the long diagonals land dead-on. OUTP can't cross OUTN, so it jogs
-#     0.05 onto the lane between its own pad row and pad 13's toe (0.15 clear), runs
-#     east past the column and rises 45° NE into C_op. North row: MIC1P/MIC1N rise as
+#     apart) so the long diagonals land dead-on. OUTP runs dead on its own pad row
+#     (0.2 clear of OUTN's stub one row below) east past the column and rises 45°
+#     NE into C_op. North row: MIC1P/MIC1N rise as
 #     a symmetric pair off pads 18/17 and 45° outward into C_mp/C_mn; VMID does the
 #     same one column over (1.4 mm 45° into C_vmid). CE rises off pad 20, 45°s NW
 #     onto R_ce's row and runs straight into the pull-down — nested parallel to the
@@ -953,19 +963,19 @@ _chainl("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
 #     (C_av/C_avb, C_vref/C_aref, C_dv/C_pv) each get a pad-2 column tie + In2 via;
 #     C_vmid's GND pad taps a via 0.9 mm east. R_sda's +3V3 pad stubs north into its
 #     own In1 via (the FR-proven spot).
-_chainl("ES_OUTP", [_pxy("U3", "12"), (33.845, 45.964), (35.865, 45.964),
-                    _pxy("C_op", "1")], pcbnew.F_Cu, _BW)   # 0.06 jog: > the 0.05 guard
+_chainl("ES_OUTP", [_pxy("U3", "12"), (35.805, 46.024), _pxy("C_op", "1")],
+        pcbnew.F_Cu, _BW)
 _chainl("ES_OUTN", [_pxy("U3", "13"), (35.005, 45.624), _pxy("C_on", "1")],
         pcbnew.F_Cu, _BW)
 _chainl("ES_DACVREF", [_pxy("U3", "14"), (34.805, 45.224), (34.805, 44.624),
                        _pxy("C_vref", "1")], pcbnew.F_Cu, _BW)
 _chainl("ES_ADCVREF", [_pxy("U3", "15"), (34.405, 44.824), (34.405, 43.824),
                        _pxy("C_aref", "1")], pcbnew.F_Cu, _BW)
-_chainl("ES_VMID", [_pxy("U3", "16"), (33.085, 43.104), _pxy("C_vmid", "1")],
+_chainl("ES_VMID", [_pxy("U3", "16"), (33.085, 43.004), _pxy("C_vmid", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("ES_MICN", [_pxy("U3", "17"), (32.685, 42.204), _pxy("C_mn", "1")],
+_chainl("ES_MICN", [_pxy("U3", "17"), (32.685, 42.104), _pxy("C_mn", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("ES_MICP", [_pxy("U3", "18"), (32.285, 42.104), _pxy("C_mp", "1")],
+_chainl("ES_MICP", [_pxy("U3", "18"), (32.285, 42.004), _pxy("C_mp", "1")],
         pcbnew.F_Cu, _BW)
 _chainl("ES_CE", [_pxy("U3", "20"), (31.485, 43.495), (30.844, 42.854),
                   _pxy("R_ce", "1")], pcbnew.F_Cu, _BW)
@@ -985,8 +995,8 @@ _chainl("+3V3", [_pxy("U3", "4"), (29.885, 46.024), (29.885, 45.824)],
 _chainl("+3V3", [(29.885, 46.024), (28.365, 46.024)], pcbnew.F_Cu, _BW)
 _chainl("+3V3", [_pxy("C_pv", "1"), _pxy("C_dv", "1")], pcbnew.F_Cu, _BW)
 # R_sda pull-up supply: stub north + plane via
-_chainl("+3V3", [_pxy("R_sda", "1"), (30.585, 39.252)], pcbnew.F_Cu, _BW)
-_pre_via(vmm(30.585, 39.252), net=nets["+3V3"])
+_chainl("+3V3", [_pxy("R_sda", "1"), (30.585, 39.152)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(30.585, 39.152), net=nets["+3V3"])
 # GND: U3 pad 5 + west cap column + via; pad 10 into the EP; east cap columns + vias
 _chainl("GND", [_pxy("U3", "5"), (30.185, 46.424), (29.935, 46.674)],
         pcbnew.F_Cu, _BW)
@@ -1001,8 +1011,8 @@ _pre_via(vmm(38.265, 48.454), net=nets["GND"])
 _chainl("GND", [_pxy("C_vref", "2"), _pxy("C_aref", "2"), (38.265, 40.612)],
         pcbnew.F_Cu, _BW)
 _pre_via(vmm(38.265, 40.612), net=nets["GND"])
-_chainl("GND", [_pxy("C_vmid", "2"), (35.385, 40.144)], pcbnew.F_Cu, _BW)
-_pre_via(vmm(35.385, 40.144), net=nets["GND"])
+_chainl("GND", [_pxy("C_vmid", "2"), (35.385, 40.044)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(35.385, 40.044), net=nets["GND"])
 
 # --- +5V distribution, fully hand-routed (0.5 mm, F.Cu). One spine: D4 (Schottky
 #     cathode) -> C_in -> U2.3 (LDO in), then down the west side of the LDO/C_out
@@ -1082,9 +1092,8 @@ _chainl("GATE1_PRE", [(17.9, 31.839), (23.966, 31.839), (26.886, 34.759),
                       (34.259, 34.759), (36.0, 36.5)], pcbnew.B_Cu, _BW)
 _pre_via(vmm(36.0, 36.5), net=nets["GATE1_PRE"])
 _chainl("GATE1_PRE", [(36.0, 36.5), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
-_chainl("SEC_A", [_pxy("C_mp", "2"), (32.578, 40.837), (36.012, 40.837),
-                  (36.066, 40.783), (37.151, 40.783), (37.585, 41.218),
-                  (37.585, 44.444), _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
+_chainl("SEC_A", [_pxy("C_mp", "2"), (32.624, 40.783), (37.151, 40.783),
+                  (37.585, 41.218), (37.585, 44.444), _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
 # T1 secondary -> OUT coupling caps as a tight 0.329 mm differential pair (the
 # secondary owns T1's WEST pads after the winding swap). The pair splits as late as
 # possible, right above T1's pads: the two 45° descents off the lanes nest one
@@ -1100,8 +1109,8 @@ _chainl("SEC_A", [_pxy("C_mp", "2"), (32.578, 40.837), (36.012, 40.837),
 _chainl("SEC_A", [_pxy("T1", "1"), (32.218, 51.959), (34.306, 49.871),
                   (39.372, 49.871), (39.701, 49.542), (39.701, 46.56),
                   _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
-_chainl("SEC_B", [_pxy("C_mn", "2"), (33.868, 39.461), (37.869, 39.461),
-                  (38.953, 40.545), (38.953, 43.236), _pxy("C_on", "2")],
+_chainl("SEC_B", [_pxy("C_mn", "2"), (33.868, 39.361), (37.869, 39.361),
+                  (38.953, 40.445), (38.953, 43.236), _pxy("C_on", "2")],
         pcbnew.F_Cu, _BW)
 _chainl("SEC_B", [_pxy("T1", "3"), (27.6, 57.039), (34.439, 50.2),
                   (39.701, 50.2), (40.03, 49.871), (40.03, 45.689),
@@ -1183,11 +1192,12 @@ _chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
 #     ties the pull-down's pad 1 into the gate resistor's pad 2 (the R_g* sit
 #     x-aligned over their pull-downs), then a straight run east on the y=36.5
 #     resistor row and a 45° drop into the FET's gate pad — all F.Cu, no vias
-#     (replaces Freerouting's two-via B.Cu detour on GATE3). EN leaves U1 pad 3 west, 45°s onto a vertical
-#     at x=19.713 (between U1's pad column and MCLK's riser), and hops the locked
-#     SDA/SCL lane stack on a short B.Cu slant between two vias; from the north via
-#     it runs west into C_en pad 1 (45° landing) and branches 45° into the RST
-#     button; R_en's EN pad ties to C_en with one near-vertical slant. OT_BRIDGE is
+#     (replaces Freerouting's two-via B.Cu detour on GATE3). EN leaves U1 pad 3
+#     west and 45°s onto the RST button's pad column (x=19.925, clear of MCLK's
+#     riser), running one straight line — F.Cu vertical, via, B.Cu hop under the
+#     locked SDA/SCL lane stack, via, stub into the button; from the north via it
+#     also runs west into C_en pad 1 (45° landing); R_en's EN pad ties to C_en
+#     with one near-vertical slant. OT_BRIDGE is
 #     a single near-vertical slant K2.4 -> R16.2 (bus width); LED_A's dead-straight
 #     vertical is kept as the autorouter laid it.
 for _gq, _gpd, _grg, _gx45 in (("Q1", "R_pd1", "R_g1", 45.89),
@@ -1207,14 +1217,13 @@ _chainl("GATE3", [(19.377, 33.11), (15.811, 33.11), (14.8, 34.121)],
         pcbnew.B_Cu, _BW)
 _pre_via(vmm(14.8, 34.121), net=nets["GATE3"])
 _chainl("GATE3", [(14.8, 34.121), _pxy("R_pd3", "1")], pcbnew.F_Cu, _BW)
-_chainl("EN", [_pxy("U1", "3"), (20.772, 59.42), (19.713, 58.361),
-               (19.713, 43.894)], pcbnew.F_Cu, _BW)
-_pre_via(vmm(19.713, 43.894), net=nets["EN"])
-_chainl("EN", [(19.713, 43.894), (19.644, 42.36)], pcbnew.B_Cu, _BW)
-_pre_via(vmm(19.644, 42.36), net=nets["EN"])
-_chainl("EN", [(19.644, 42.36), (18.14, 42.36), _pxy("C_en", "1")], pcbnew.F_Cu, _BW)
-_chainl("EN", [(19.644, 42.36), (19.925, 42.079), _pxy("SW_en", "1")],
-        pcbnew.F_Cu, _BW)
+_chainl("EN", [_pxy("U1", "3"), (20.984, 59.42), (19.925, 58.361),
+               (19.925, 43.894)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(19.925, 43.894), net=nets["EN"])
+_chainl("EN", [(19.925, 43.894), (19.925, 42.36)], pcbnew.B_Cu, _BW)
+_pre_via(vmm(19.925, 42.36), net=nets["EN"])
+_chainl("EN", [(19.925, 42.36), (18.14, 42.36), _pxy("C_en", "1")], pcbnew.F_Cu, _BW)
+_chainl("EN", [(19.925, 42.36), _pxy("SW_en", "1")], pcbnew.F_Cu, _BW)
 _chainl("EN", [_pxy("C_en", "1"), _pxy("R_en", "2")], pcbnew.F_Cu, _BW)
 _chainl("OT_BRIDGE", [_pxy("K2", "4"), _pxy("R_ot", "2")], pcbnew.F_Cu)
 _chainl("LED_A", [_pxy("R_led", "2"), _pxy("LED1", "2")], pcbnew.F_Cu, _BW)
