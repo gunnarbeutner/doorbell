@@ -526,13 +526,31 @@ sits below the previous one's, so the long 45° rises from the lower pads top ou
 reaching any upper lane — BCLK/DIN via short shallow 45°s, WS/DOUT on aggressive
 vertical risers beside U1's pad column (east of GPIO8's via), clear of T1's west pads.
 T1 sits 2.35 mm below U3 (its south edge clear of R12 below). T1's bus winding ties in
-on B.Cu at bus width (0.5 mm): vias just east of T1 pads 1/3 (P5/P1), the pair running
-north up the corridor east of U3's pad column, turning west just north of the BOOT/RST
-buttons (F.Cu there stays clear for EN) on lanes y=39.1/38.44 (0.66 pitch, 0.175 mm
-clear of R_en's pads), then dropping into vias between SW5's pad rows (north of pins
-6/4). P1 jogs east off its via so its northbound run clears P5's via and the +3V3 taps.
-This T1 tie-in is the ONLY hand-routed P1/P5 copper — the switch crossovers and the
-J2 runs are Freerouting's. To free the NE corridor, the ESP-side USB pair takes a south
+on B.Cu at bus width (0.5 mm): vias just east of T1 pads 1/3 with straight F.Cu stubs
+into the pads, then east and up the east strip (verticals x=48.64/49.3, B.Cu free under
+the LED block), west above J2's pad row (lanes y=13.2/12.54) and down into J2 pins 1/5
+from the top — PTH pads connect on B.Cu, so no extra vias. T1 pins 1/3 are swapped in
+the netlist (winding polarity is inaudible) so P5 takes the outer loop and P1 nests
+inside, zero crossings.
+
+The entire WF26 bus group — **P1–P5 and IN_P4 — is hand-routed and locked** in
+`gen_pcb.py` (geometry lifted from a clean Freerouting solution and normalized, plus
+the one link Freerouting consistently failed to close: P5 from the polarity-switch
+cluster to J2.5, which branches the locked J2 loop at its (30.48, 12.54) corner and
+runs west above the J2 pad row on B.Cu into a via clear east of SW_OC1 pad 1, 45° into
+the pad). The rest: P3 west off J2.3 into R16; P4 45° over the J2 pad row (y=13.317)
+and a long 45° down into K3 COM; P2 from J2.2 into K1.4 with a branch west along
+y=21.593 into K2.3, then a weave between K3 and the J2 row into SW_OC1 pad 4 and a
+B.Cu via pair under the switch row to pad 3; IN_P4 from J2.6 into K3.2 (NC), west
+along y=15 on B.Cu up to SW_OC2 pads 1/6, and a loop north of K1 from its COM (pad 3)
+back to J2.6; P1 from J2.1 on a B.Cu trunk along y=23.613 under the relay contact row
+to vias feeding SW_OC2 pads 4/3 and SW_OC3 pads 4/3. OC3_RET (SW_OC3's centre pad 2 →
+R2) is locked along its proven path too — 45° onto the y=12.321 lane and down the
+far-west column x=0.316 — because with the bus walls locked, Freerouting (greedy, no
+rip-up through protected wiring) no longer finds that escape on its own. Branches in
+the locked wiring only meet at segment endpoints or pad centres (Freerouting
+mishandles mid-segment T-junctions in protected wiring).
+To free the NE corridor, the ESP-side USB pair takes a south
 detour on B.Cu: straight stubs on the pad rows into vias in line with U1 pads 14/13
 (DM's on its vertical at x=23.85; DP's 0.58 mm east so its drop clears DM's via,
 converging to the 0.329 pair pitch just below), south beside GPIO8's B.Cu wall, then
@@ -544,8 +562,8 @@ consecutive duplicate corners collapse to an empty polyline whose `first_corner(
 null). `tools/freerouting` wraps a patched build (`tools/freerouting-patched.jar`,
 guard in `InsertFoundConnectionAlgo.insert_trace` — see
 `tools/freerouting-npe-fix.patch`, worth upstreaming); `route.py` prefers it
-automatically. Result: 0 errors, 0 unconnected, DRC clean (2 intentional
-thieving-zone warnings). R12 (GPIO8 strap
+automatically. Result: 0 errors, 0 unconnected, DRC clean (only the intentional
+thieving-zone isolated-copper warning). R12 (GPIO8 strap
 pull-up) lives SE of U1 beside C3, GPIO8 pad south onto a B.Cu via — GPIO8 crosses
 under the I2S fan corridor from a via next to U1 pad 10 — and +3V3 pad north, tapping
 the power rail that now runs in-line from U1 pad 2 through C6's and C3's +3V3 pads

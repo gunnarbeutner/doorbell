@@ -732,7 +732,7 @@ _t1p1, _t1p3 = _padpos("T1", "1"), _padpos("T1", "3")
 for _net, _t1p in (("P1", _t1p1), ("P5", _t1p3)):
     _tvx = _TOMM(_t1p.x) + 2.4
     _tv = vmm(_tvx, _TOMM(_t1p.y))
-    _pre_track(_tv, vmm(_tvx - 0.9, _TOMM(_t1p.y)), pcbnew.F_Cu, _BUSW, nets[_net])
+    _pre_track(_tv, _t1p, pcbnew.F_Cu, _BUSW, nets[_net])   # straight into the pad
     _pre_via(_tv, net=nets[_net])
 
 # --- P1/P5 bus: T1 -> east -> north up the east strip (B.Cu free under the LED
@@ -808,6 +808,92 @@ for _dnet, _q, _k, _d in (("K1_DRAIN", "Q1", "K1", "D1"),
     _chain(_dnet, [(_vx, _dp[1]), _dp], _BW)
     _chain(_dnet, [(_vx, _dp[1]),
                    (_kp[0], _dp[1] - (_kp[0] - _vx)), _kp], _BW)
+
+# --- WF26 bus nets (P1-P5, IN_P4), fully hand-routed at bus width. Geometry lifted
+#     from a clean Freerouting solution and normalized, PLUS the one link Freerouting
+#     consistently failed to close (P5: switch cluster -> J2.5). The T1/J2 sections
+#     above already land P1/P5 from T1 around J2 into the J2 pins; this section does
+#     the rest:
+#       P3    J2.3 west + 45° SW into R_ot pad 1 (F.Cu).
+#       P4    J2.4 45° NW over the J2 pad row (y=13.317), west, long 45° SW past
+#             J2.6, drop into K3 COM (pad 3) — all F.Cu.
+#       P2    J2.2 south + 45° into K1.4; branch west along y=21.593 into K2.3; from
+#             K2.3 weave west between K3 and the J2 pad row into SW_OC1 pad 4; via
+#             pair under the switch row (B.Cu) up into pad 3.
+#       IN_P4 J2.6 45° SW into K3.2 (NC) on F.Cu; J2.6 west along y=15 on B.Cu +
+#             via up into SW_OC2 pad 1, 45° to pad 6; K1.3 (COM) loops north of K1
+#             into a via and returns to J2.6 on a B.Cu 45°.
+#       P1    J2.1 south on B.Cu, 45° SW, trunk west along y=23.613 (under the relay
+#             contact row), 45° NW up into a via on SW_OC2 pad 4's column; F.Cu stub
+#             into pad 4; B.Cu spurs west with vias up into SW_OC2 pad 3 and
+#             SW_OC3 pads 4 and 3.
+#       P5    branch the locked J2-loop corner at (30.48,12.54): B.Cu west above the
+#             J2 pad row, via at x=17.85 (clear east of SW_OC1 pad 1), 45° F.Cu drop
+#             into pad 1; cluster runs on F.Cu: 45° to SW_OC1 pad 6, the y=12.321
+#             lane north of the switch pad rows to SW_OC3 pad 1, 45° to its pad 6.
+#     Branches only ever meet at segment ENDPOINTS or pad centres (Freerouting
+#     mishandles mid-segment T-junctions in protected wiring).
+def _chainl(_net, _pts, _lay, _w=0.5):
+    for _a, _b in zip(_pts, _pts[1:]):
+        _pre_track(vmm(*_a), vmm(*_b), _lay, _w, nets[_net])
+_j2p = {n: _pxy("J2", n) for n in "123456"}
+# P3
+_chainl("P3", [_j2p["3"], (36.486, 15.0), (30.236, 21.25), _pxy("R_ot", "1")], pcbnew.F_Cu)
+# P4
+_chainl("P4", [_j2p["4"], (31.967, 13.317), (25.908, 13.317), (17.9, 21.325),
+               _pxy("K3", "3")], pcbnew.F_Cu)
+# P2
+_chainl("P2", [_j2p["2"], (40.65, 20.271), (38.7, 22.221), _pxy("K1", "4")], pcbnew.F_Cu)
+_chainl("P2", [(38.7, 22.221), (38.07, 21.593), (30.783, 21.593), (30.154, 22.221),
+               (29.4, 22.221), _pxy("K2", "3")], pcbnew.F_Cu)
+_chainl("P2", [_pxy("K2", "3"), (29.4, 24.779), (26.636, 24.779), (24.079, 22.221),
+               (22.683, 22.221), (21.548, 23.356), (21.548, 23.889), (20.648, 24.789),
+               (17.341, 24.789), (16.75, 24.197), _pxy("SW_OC1", "4")], pcbnew.F_Cu)
+_chainl("P2", [_pxy("SW_OC1", "4"), (16.75, 17.172)], pcbnew.F_Cu)
+_pre_via(vmm(16.75, 17.172), net=nets["P2"])
+_chainl("P2", [(16.75, 17.172), (14.311, 17.172), (11.869, 14.731)], pcbnew.B_Cu)
+_pre_via(vmm(11.869, 14.731), net=nets["P2"])
+_chainl("P2", [(11.869, 14.731), _pxy("SW_OC1", "3")], pcbnew.F_Cu)
+# IN_P4
+_chainl("IN_P4", [_j2p["6"], (20.1, 21.55), _pxy("K3", "2")], pcbnew.F_Cu)
+_chainl("IN_P4", [_j2p["6"], (13.176, 15.0), (11.721, 13.545)], pcbnew.B_Cu)
+_pre_via(vmm(11.721, 13.545), net=nets["IN_P4"])
+_chainl("IN_P4", [(11.721, 13.545), (11.526, 13.35), _pxy("SW_OC2", "1")], pcbnew.F_Cu)
+_chainl("IN_P4", [_pxy("SW_OC2", "1"), (7.25, 16.85), _pxy("SW_OC2", "6")], pcbnew.F_Cu)
+_chainl("IN_P4", [_pxy("K1", "3"), (40.9, 24.779), (38.116, 24.779), (37.262, 23.924),
+                  (37.262, 22.908)], pcbnew.F_Cu)
+_pre_via(vmm(37.262, 22.908), net=nets["IN_P4"])
+_chainl("IN_P4", [(37.262, 22.908), (34.558, 22.908), _j2p["6"]], pcbnew.B_Cu)
+# P1
+_chainl("P1", [_j2p["1"], (44.15, 17.091), (37.628, 23.613), (17.492, 23.613),
+               (10.75, 16.871)], pcbnew.B_Cu)
+_pre_via(vmm(10.75, 16.871), net=nets["P1"])
+_chainl("P1", [(10.75, 16.871), _pxy("SW_OC2", "4")], pcbnew.F_Cu)
+_chainl("P1", [(10.75, 16.871), (6.96, 16.871)], pcbnew.B_Cu)
+_chainl("P1", [(6.96, 16.871), (6.96, 14.489)], pcbnew.B_Cu)
+_pre_via(vmm(6.96, 14.489), net=nets["P1"])
+_chainl("P1", [(6.96, 14.489), (7.25, 14.199), _pxy("SW_OC2", "3")], pcbnew.F_Cu)
+_chainl("P1", [(6.96, 16.871), (4.923, 16.871), (4.75, 17.044)], pcbnew.B_Cu)
+_pre_via(vmm(4.75, 17.044), net=nets["P1"])
+_chainl("P1", [(4.75, 17.044), _pxy("SW_OC3", "4")], pcbnew.F_Cu)
+_chainl("P1", [(4.75, 17.044), (4.461, 17.044), (1.85, 14.432)], pcbnew.B_Cu)
+_pre_via(vmm(1.85, 14.432), net=nets["P1"])
+_chainl("P1", [(1.85, 14.432), (1.25, 13.832), _pxy("SW_OC3", "3")], pcbnew.F_Cu)
+# P5
+_chainl("P5", [(30.48, 12.54), (17.85, 12.54)], pcbnew.B_Cu)
+_pre_via(vmm(17.85, 12.54), net=nets["P5"])
+_chainl("P5", [(17.85, 12.54), (17.04, 13.35), _pxy("SW_OC1", "1")], pcbnew.F_Cu)
+_chainl("P5", [_pxy("SW_OC1", "1"), (13.25, 16.85), _pxy("SW_OC1", "6")], pcbnew.F_Cu)
+_chainl("P5", [_pxy("SW_OC1", "1"), (15.721, 12.321), (6.548, 12.321), (5.519, 13.35),
+               _pxy("SW_OC3", "1")], pcbnew.F_Cu)
+_chainl("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.F_Cu)
+# OC3_RET rides along: with the bus nets locked, Freerouting no longer finds the
+# escape for SW_OC3's centre pad 2 (greedy, no rip-up across protected wiring), so
+# its previously-proven path is locked as well — 45° NW onto the y=12.321 lane,
+# west, down the far-west column at x=0.316 (between the board edge and the SW_OC3 /
+# P1 column), 45° SE into R_lim2 pad 2. All F.Cu, bus width (bus potential).
+_chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
+                    (0.316, 12.546), (0.316, 20.006), _pxy("R_lim2", "2")], pcbnew.F_Cu)
 
 # --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
 #     straight east on their pad rows into B.Cu vias in line with the pads — DM's via
