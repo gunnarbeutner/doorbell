@@ -294,7 +294,7 @@ NETS = {
     "K3_DRAIN": [("Q3","3"),("K3","8"),("D3","2")],
     # T1 leg<->pin assignment routing-driven, like the secondary: flipping winding A
     # only inverts absolute audio polarity (inaudible)
-    "P1": [("J2","1"),("T1","3"),
+    "P1": [("J2","1"),("T1","1"),
            ("SW_OC2","3"),("SW_OC2","4"),   # SW pins 3+4 = P1 side (OC2)
            ("SW_OC3","3"),("SW_OC3","4")],  # SW pins 3+4 = P1 side (OC3)
     # K1 = virtual PTT, pure TX relay (pole A). COM=IN_P4, NO->P2 (talk, energised).
@@ -317,7 +317,7 @@ NETS = {
     "P4": [("J2","4"),("K3","3")],                           # WF26 terminal 4: J2.4, K3 COM
     "IN_P4": [("K3","2"),("J2","6"),("K1","3"),
               ("SW_OC2","1"),("SW_OC2","6")],  # SW pins 1+6 = IN_P4 side (OC2)
-    "P5": [("J2","5"),("T1","1"),
+    "P5": [("J2","5"),("T1","3"),
            ("SW_OC3","1"),("SW_OC3","6"),   # SW pins 1+6 = P5 side (OC3)
            ("SW_OC1","1"),("SW_OC1","6")],  # SW pins 1+6 = P5 side (OC1)
     # opto LED limiters UNSHARED: each opto gets its own cathode->P1 resistor. The single

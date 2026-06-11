@@ -724,44 +724,38 @@ for _net, _pnum, _u3pin, _k, _xp, _vert in (
                pcbnew.F_Cu, _BW, nets[_net])
     _pre_track(vmm(_tx, _lane - 0.245), _tp, pcbnew.F_Cu, _BW, nets[_net])
 
-# --- T1 bus winding tie-in (P1/P5 are 0.5 mm bus power nets): vias EAST of T1 pads
-#     1 (P5) / 3 (P1), then the pair runs NORTH on B.Cu up the corridor east of U3's
-#     pad column (freed by the USB pair's south detour), turns west just north of the
-#     BOOT/RST buttons (keeping the F.Cu around them clear for EN), crosses the board
-#     on lanes y=39.1/38.44 (0.66 pitch; 0.175 mm clear of R_en's pads, which reach up
-#     to y=39.525) and drops south-to-north into vias north of
-#     SW_OC3 pins 6/4, between the switch's pad rows. P1 (southern pad) jogs 0.7 east
-#     off its via so its northbound run clears P5's via by 0.15 mm copper; the turn
-#     nesting gives P5 (west vertical) the southern lane.
+# --- T1 bus winding vias (P1/P5, 0.5 mm bus nets): vias just east of T1 pads 1/3
+#     with short pad stubs. The bus runs T1 -> around J2 (below); the switch
+#     crossover maze is entirely Freerouting's.
 _BUSW, _BCH = 0.5, 0.33
-_sw6p, _sw4p = _padpos("SW_OC3", "6"), _padpos("SW_OC3", "4")
 _t1p1, _t1p3 = _padpos("T1", "1"), _padpos("T1", "3")
-for _net, _swp, _t1p, _ylane, _jog in (
-        # jogs shifted +0.9 east so the northbound verticals clear the +3V3 vias
-        # east of R_scl/C_dv (0.37+ mm)
-        ("P5", _sw6p, _t1p1, 39.1, 0.9),
-        ("P1", _sw4p, _t1p3, 38.44, 1.6)):
-    _ty_ = _TOMM(_t1p.y)
+for _net, _t1p in (("P1", _t1p1), ("P5", _t1p3)):
     _tvx = _TOMM(_t1p.x) + 2.4
-    _tv = vmm(_tvx, _ty_)
-    _sx_ = _TOMM(_swp.x)
-    _sv = vmm(_sx_, _TOMM(_swp.y) - 1.25)
-    _pre_track(_swp, _sv, pcbnew.F_Cu, _BUSW, nets[_net])
-    _pre_via(_sv, net=nets[_net])
-    _pre_track(_tv, vmm(_tvx - 0.9, _ty_), pcbnew.F_Cu, _BUSW, nets[_net])
+    _tv = vmm(_tvx, _TOMM(_t1p.y))
+    _pre_track(_tv, vmm(_tvx - 0.9, _TOMM(_t1p.y)), pcbnew.F_Cu, _BUSW, nets[_net])
     _pre_via(_tv, net=nets[_net])
-    _vx = _tvx + _jog
-    if _jog:
-        _pre_track(_tv, vmm(_vx, _ty_ - _jog), pcbnew.B_Cu, _BUSW, nets[_net])
-    _pre_track(vmm(_vx, _ty_ - _jog), vmm(_vx, _ylane + _BCH),
-               pcbnew.B_Cu, _BUSW, nets[_net])
-    _pre_track(vmm(_vx, _ylane + _BCH), vmm(_vx - _BCH, _ylane),
-               pcbnew.B_Cu, _BUSW, nets[_net])
-    _pre_track(vmm(_vx - _BCH, _ylane), vmm(_sx_ + _BCH, _ylane),
-               pcbnew.B_Cu, _BUSW, nets[_net])
-    _pre_track(vmm(_sx_ + _BCH, _ylane), vmm(_sx_, _ylane - _BCH),
-               pcbnew.B_Cu, _BUSW, nets[_net])
-    _pre_track(vmm(_sx_, _ylane - _BCH), _sv, pcbnew.B_Cu, _BUSW, nets[_net])
+
+# --- P1/P5 bus: T1 -> east -> north up the east strip (B.Cu free under the LED
+#     block) -> west above J2's pad row -> down into the pins from the top (PTH pads
+#     connect on B.Cu; no extra vias). T1 pins 1/3 are SWAPPED in the netlist
+#     (P5 = pad 3 south, P1 = pad 1 north; winding polarity is inaudible) so P5 is
+#     the outer loop (souther row, easter vertical, norther lane to the wester pin)
+#     and P1 nests inside — zero crossings.
+_j2p1, _j2p5 = _padpos("J2", "1"), _padpos("J2", "5")
+for _net, _t1p, _jp, _vx2, _ytop in (
+        ("P1", _t1p1, _j2p1, 48.64, 13.2),
+        ("P5", _t1p3, _j2p5, 49.3, 12.54)):
+    _ty2 = _TOMM(_t1p.y)
+    _jx = _TOMM(_jp.x)
+    for _a, _b in (
+            ((_TOMM(_t1p.x) + 2.4, _ty2), (_vx2 - _BCH, _ty2)),
+            ((_vx2 - _BCH, _ty2), (_vx2, _ty2 - _BCH)),
+            ((_vx2, _ty2 - _BCH), (_vx2, _ytop + _BCH)),
+            ((_vx2, _ytop + _BCH), (_vx2 - _BCH, _ytop)),
+            ((_vx2 - _BCH, _ytop), (_jx + _BCH, _ytop)),
+            ((_jx + _BCH, _ytop), (_jx, _ytop + _BCH)),
+            ((_jx, _ytop + _BCH), (_jx, _TOMM(_jp.y)))):
+        _pre_track(vmm(*_a), vmm(*_b), pcbnew.B_Cu, _BUSW, nets[_net])
 
 # --- Opto LED cathode + emitter nets: geometry lifted from a clean Freerouting
 #     solution, normalized and locked. Per CATH channel (opto pin 2 -> clamp diode
