@@ -75,21 +75,24 @@ PCB_PLACE = {
     "R_em":   (0, 35.82, 90),      # R3, emitter common resistor
     "K3":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
     "Q3":     (23.5, 34, 180),# NMOS, swapped with R_pd3 + rotated 180°
-    "R_g3":   (14.75, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
+    "R_g3":   (14.68, 36.5, 0),   # gate series R; x puts pad 2 dead above R_pd3.1
+                                  # so GATE3 drops perfectly vertical
     "R_pd3":  (15.5, 34, 90), # gate pulldown, swapped with Q3 + rotated 180°
     "D3":     (18.8, 33.6, 0),# flyback, moved north (toward K3 coil)
     "K2":     (31, 27, 270),  # door-opener relay, rotated CW
     "Q2":     (35, 34, 180),  # NMOS, swapped with R_pd2 + rotated 180°
-    "R_g2":   (26.25, 36.5, 0),   # gate series R; rotated 180°, Y adjusted
+    "R_g2":   (26.18, 36.5, 0),   # gate series R; x puts pad 2 dead above R_pd2.1
+                                  # so GATE2 drops perfectly vertical
     "R_pd2":  (27, 34, 90),   # gate pulldown, swapped with Q2 + rotated 180°
     "D2":     (30.3, 33.6, 0),# flyback, moved north (toward K2 coil)
     "R_ot":   (28.0, 21.25, 180), # ÖT bridge 2.2k: below J2, between pins 6/5
     # === K1 (PTT placeholder) relay + driver: same spacing as K3→K2 (11.5 mm) ===
     "K1":     (42.5, 27, 270),
     "Q1":     (46.5, 34, 180),
-    "R_g1":   (37.75, 36.5, 0), # K1 gate series R, gate-side of the interlock; same
+    "R_g1":   (37.68, 36.5, 0), # K1 gate series R, gate-side of the interlock; same
                                 # position/orientation relative to R_pd1 as R_g2 has
-                                # to R_pd2 (horizontal, x-0.75/y+2.5 from the pulldown)
+                                # to R_pd2 (pad 2 dead above the pulldown's pad 1 so
+                                # GATE1 drops perfectly vertical)
     "R_pd1":  (38.5, 34, 90),
     "D1":     (41.8, 33.6, 0),
     # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
@@ -1003,16 +1006,16 @@ _pre_via(vmm(35.385, 40.144), net=nets["GND"])
 
 # --- +5V distribution, fully hand-routed (0.5 mm, F.Cu). One spine: D4 (Schottky
 #     cathode) -> C_in -> U2.3 (LDO in), then down the west side of the LDO/C_out
-#     column, threading the R_g1 and R_pd1 pad gaps (the 0.127 jog between them is
-#     load-bearing: x=37.709 fits R_g1's gap, x=37.582 clears R_pd1's pad), onto
-#     D1's flyback row and 45° up/over to K1's coil pin; from the (41.688,27.099)
-#     tee a west leg crosses the relay block on y=27.099 / the 45° staircase,
-#     tapping each coil pin (K2, K3) with a short stub off the y=24.779 row and each
-#     flyback anode (D2, D3) dead-centre from above.
+#     column on a single straight vertical at x=37.64 — with R_g1 nudged 0.07 left
+#     this threads BOTH R_g1's pad gap (0.13) and R_pd1's pad 1 (0.135) with no
+#     jog — onto D1's flyback row and 45° up/over to K1's coil pin; from the
+#     (41.688,27.099) tee a west leg crosses the relay block on y=27.099 / the 45°
+#     staircase, tapping each coil pin (K2, K3) with a short stub off the y=24.779
+#     row and each flyback anode (D2, D3) dead-centre from above.
 _chainl("+5V", [_pxy("D_vbus", "1"), (42.47, 50.78), _pxy("C_in", "1")], pcbnew.F_Cu)
 _chainl("+5V", [_pxy("C_in", "1"), (42.47, 47.24), _pxy("U2", "3")], pcbnew.F_Cu)
-_chainl("+5V", [_pxy("U2", "3"), (39.735, 44.505), (39.735, 40.512), (37.709, 38.486),
-                (37.709, 35.323), (37.582, 35.196), (37.582, 34.43), (38.012, 34.0),
+_chainl("+5V", [_pxy("U2", "3"), (39.735, 44.505), (39.735, 40.512), (37.64, 38.417),
+                (37.64, 34.372), (38.012, 34.0),
                 (39.75, 34.0), _pxy("D1", "1")], pcbnew.F_Cu)
 _chainl("+5V", [_pxy("D1", "1"), (41.688, 32.062), (41.688, 27.099)], pcbnew.F_Cu)
 _chainl("+5V", [(41.688, 27.099), (43.98, 27.099), (46.3, 24.779), _pxy("K1", "1")],
@@ -1070,16 +1073,15 @@ _chainl("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
 #     coexisted with identical +5V geometry — but Freerouting (greedy, no rip-up
 #     through protected wiring) stops finding them on its own.
 #     GATE1_PRE ducks onto B.Cu to cross under the relay-driver block (K3.6 -> via
-#     -> east -> 45° staircase -> via -> F.Cu into R_g1); SEC_A/SEC_B wrap around
-#     the audio cap column east into T1's secondary pads, each passing through its
-#     coupling-cap pad 2 on the way.
+#     -> east -> 45° staircase) and stays there all the way to a via just LEFT of
+#     R_g1 pad 1, surfacing into the pad with one straight stub; SEC_A/SEC_B leave
+#     T1's west pads as a 0.329 mm pair (see their section below).
 _chainl("GATE1_PRE", [_pxy("K3", "6"), (17.9, 31.839)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(17.9, 31.839), net=nets["GATE1_PRE"])
 _chainl("GATE1_PRE", [(17.9, 31.839), (23.966, 31.839), (26.886, 34.759),
-                      (34.769, 34.759)], pcbnew.B_Cu, _BW)
-_pre_via(vmm(34.769, 34.759), net=nets["GATE1_PRE"])
-_chainl("GATE1_PRE", [(34.769, 34.759), (35.157, 34.371), (36.693, 34.371),
-                      (36.93, 34.608), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
+                      (34.259, 34.759), (36.0, 36.5)], pcbnew.B_Cu, _BW)
+_pre_via(vmm(36.0, 36.5), net=nets["GATE1_PRE"])
+_chainl("GATE1_PRE", [(36.0, 36.5), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
 _chainl("SEC_A", [_pxy("C_mp", "2"), (32.578, 40.837), (36.012, 40.837),
                   (36.066, 40.783), (37.151, 40.783), (37.585, 41.218),
                   (37.585, 44.444), _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
@@ -1177,11 +1179,11 @@ _chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
                     _pxy("R_cc2", "1")], pcbnew.F_Cu, _BW)
 
 # --- Last nets, hand-routed — the board is now 100% hand-routed (Freerouting only
-#     verifies). GATE1/2/3 share one pattern per channel: a near-vertical slant ties
-#     the pull-down's pad 1 into the gate resistor's pad 2 (the pads sit 0.07 mm
-#     apart in x), then a straight run east on the y=36.5 resistor row and a 45°
-#     drop into the FET's gate pad — all F.Cu, no vias (replaces Freerouting's
-#     two-via B.Cu detour on GATE3). EN leaves U1 pad 3 west, 45°s onto a vertical
+#     verifies). GATE1/2/3 share one pattern per channel: a perfectly vertical drop
+#     ties the pull-down's pad 1 into the gate resistor's pad 2 (the R_g* sit
+#     x-aligned over their pull-downs), then a straight run east on the y=36.5
+#     resistor row and a 45° drop into the FET's gate pad — all F.Cu, no vias
+#     (replaces Freerouting's two-via B.Cu detour on GATE3). EN leaves U1 pad 3 west, 45°s onto a vertical
 #     at x=19.713 (between U1's pad column and MCLK's riser), and hops the locked
 #     SDA/SCL lane stack on a short B.Cu slant between two vias; from the north via
 #     it runs west into C_en pad 1 (45° landing) and branches 45° into the RST

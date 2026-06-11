@@ -435,9 +435,9 @@ reshuffle).
 
 **Power routing** (`gen_pcb.py`, locked — the power nets are fully hand-routed): +5V
 is one 0.5 mm F.Cu spine, D4 → C_in → U2.3 (LDO in), then down the west side of the
-LDO/C_out column threading the R_g1 and R_pd1 pad gaps (the 0.127 mm jog between
-x=37.709 and x=37.582 is load-bearing: the first fits R_g1's gap, the second clears
-R_pd1's pad), onto D1's flyback row and up/over to K1's coil pin; from the
+LDO/C_out column on a single straight vertical at x=37.64 — R6 (R_g1) sits nudged
+0.07 mm left so the one vertical threads both its pad gap and R9 (R_pd1) without a
+jog — onto D1's flyback row and up/over to K1's coil pin; from the
 (41.688, 27.099) tee a west leg crosses the relay block, tapping K2/K3 coil pins off
 the y=24.779 row and dropping into D2/D3 dead-centre. GND/+3V3 reach their In2/In1
 planes through locked 0.2 mm stubs + vias at every SMD pad (FET/pull-down row, the
@@ -446,9 +446,9 @@ vias dodge P1's/P5's B.Cu verticals — and the LDO column, where U2.1 and C_out
 one GND via on their centreline); U2's tab and J1's shield stakes are PTH
 (barrel-connected), and the U1/U3 exposed-pad via arrays are locked with 45° spokes
 pre-wiring the U3 EP vias to the pad centre (the DSN export doesn't credit EP pad
-copper as wiring). GATE1_PRE is locked along its proven path for the same reason as
-OC3_RET: the corridor exists, but the greedy router stopped finding it once the
-power walls around it became protected wiring. SEC_A/SEC_B are hand-designed as a
+copper as wiring). GATE1_PRE crosses under the relay-driver block on B.Cu (K3.6 →
+via → east → 45° staircase) and stays there to a via just left of R6 (R_g1) pad 1,
+surfacing into the pad with one straight stub. SEC_A/SEC_B are hand-designed as a
 differential pair off T1's west pads (see the T1 tie-in description).
 
 **The board is 100% hand-routed** — every net is locked pre-route geometry in
@@ -456,9 +456,10 @@ differential pair off T1's west pads (see the T1 tie-in description).
 when there are 0 unrouted connections, skips the DSN → Freerouting → SES
 round-trip entirely (the flakiest part of the pipeline); the autoroute path only
 engages if a future edit leaves something unrouted.
-The last stragglers: GATE1/GATE2 share one pattern per channel — a near-vertical
-slant ties the pull-down's pad 1 into the gate resistor's pad 2, then a straight
-run east on the y=36.5 resistor row with a 45° drop into the FET gate; GATE3's FET
+The last stragglers: GATE1/GATE2 share one pattern per channel — a perfectly
+vertical drop ties the pull-down's pad 1 into the gate resistor's pad 2 (R4/R5/R6
+sit x-aligned over their pull-downs), then a straight run east on the y=36.5
+resistor row with a 45° drop into the FET gate; GATE3's FET
 leg instead ducks under on B.Cu west of the relay block (GATE1_DRV's locked escape
 channel crosses the y=36.5 row at x=16.34). EN leaves U1 pad 3 onto a vertical at
 x=19.713 between U1's pad column and MCLK's riser, hops the locked SDA/SCL lane
