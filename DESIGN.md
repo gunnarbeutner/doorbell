@@ -446,9 +446,10 @@ vias dodge P1's/P5's B.Cu verticals — and the LDO column, where U2.1 and C_out
 one GND via on their centreline); U2's tab and J1's shield stakes are PTH
 (barrel-connected), and the U1/U3 exposed-pad via arrays are locked with 45° spokes
 pre-wiring the U3 EP vias to the pad centre (the DSN export doesn't credit EP pad
-copper as wiring). GATE1_PRE and SEC_A/SEC_B are locked along their proven paths for
-the same reason as OC3_RET: the corridors exist, but the greedy router stopped
-finding them once the power walls around them became protected wiring.
+copper as wiring). GATE1_PRE is locked along its proven path for the same reason as
+OC3_RET: the corridor exists, but the greedy router stopped finding it once the
+power walls around it became protected wiring. SEC_A/SEC_B are hand-designed as a
+differential pair off T1's west pads (see the T1 tie-in description).
 
 **The board is 100% hand-routed** — every net is locked pre-route geometry in
 `gen_pcb.py`. `route.py` checks the ratsnest after filling the inner planes and,
@@ -577,12 +578,21 @@ gets a pad-2 column tie + In2 via, C_vmid taps a via 0.9 mm east, and R_sda's +3
 pad stubs north into its own In1 via.
 
 T1's bus winding ties in
-on B.Cu at bus width (0.5 mm): vias just east of T1 pads 1/3 with straight F.Cu stubs
-into the pads, then east and up the east strip (verticals x=48.64/49.3, B.Cu free under
-the LED block), west above J2's pad row (lanes y=13.2/12.54) and down into J2 pins 1/5
-from the top — PTH pads connect on B.Cu, so no extra vias. T1 pins 1/3 are swapped in
-the netlist (winding polarity is inaudible) so P5 takes the outer loop and P1 nests
-inside, zero crossings.
+on B.Cu at bus width (0.5 mm): the bus owns T1's EAST pads (6/4) after the winding
+swap, with launch vias tucked inside T1's courtyard 2.4 mm west of the pads (east of
+them they'd collide with D4) and straight F.Cu stubs into the pads, then east and up
+the east strip (verticals x=48.64/49.3, B.Cu free under the LED block), west above
+J2's pad row (lanes y=13.2/12.54) and down into J2 pins 1/5 from the top — PTH pads
+connect on B.Cu, so no extra vias. The pad assignment (P1 = pad 6 north, P5 = pad 4
+south; winding swap and polarity are inaudible) makes P5 the outer loop with P1
+nested inside, zero crossings. The secondary owns the WEST pads (1/3) and leaves T1
+as a tight 0.329 mm differential pair: the two 45° descents off the lanes nest one
+bundle pitch apart and split only right above T1's pads — SEC_A flattens onto pad
+1's row and runs west into the pad, SEC_B continues the long diagonal under T1's
+body down to pad 3 — then the pair runs east over T1's north edge, wraps the NE
+corner on nested verticals (x=39.701/40.03), and lands 45° into C14/C15 pad 2
+(SEC_A peels off first). Pairing the secondary legs minimises the floating audio
+pair's pickup loop.
 
 The entire WF26 bus group — **P1–P5 and IN_P4 — is hand-routed and locked** in
 `gen_pcb.py` (geometry lifted from a clean Freerouting solution and normalized, plus

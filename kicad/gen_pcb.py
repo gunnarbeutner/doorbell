@@ -120,8 +120,9 @@ PCB_PLACE = {
     # nudged right to clear T1 on the left.
     "C_av":   (76.1, 27.2, 270), "C_avb": (77.3, 27.2, 270), "C_op": (78.5, 27.2, 270),
     "C_on":   (79.7, 27.2, 270), "C_vref": (80.9, 27.2, 270), "C_aref": (82.1, 27.2, 270),
-    # isolation transformer to the LEFT of U3, rotated clockwise (vertical). Winding A faces the
-    # bus (P1/P5) to the west; secondary reaches the OUT/MIC coupling caps.
+    # isolation transformer to the LEFT of U3, rotated clockwise (vertical). Bus winding (P1/P5)
+    # on the east pads (B.Cu launch vias in the courtyard); secondary on the west pads, leaving
+    # as a pair around T1's NE corner to the OUT/MIC coupling caps.
     "T1":     (69, 30, 270),
 }
 MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge only)
@@ -733,31 +734,33 @@ for _net, _pnum, _u3pin, _k, _xp, _vert in (
                pcbnew.F_Cu, _BW, nets[_net])
     _pre_track(vmm(_tx, _lane - 0.245), _tp, pcbnew.F_Cu, _BW, nets[_net])
 
-# --- T1 bus winding vias (P1/P5, 0.5 mm bus nets): vias just east of T1 pads 1/3
-#     with short pad stubs. The bus runs T1 -> around J2 (below); the switch
-#     crossover maze is entirely Freerouting's.
+# --- T1 bus winding vias (P1/P5, 0.5 mm bus nets): the bus winding sits on T1's
+#     EAST pads (6 = P1 row, 4 = P5 row; the secondary owns the west pads so it can
+#     leave as a pair, see the SEC section). Launch vias tuck inside T1's courtyard
+#     2.4 mm WEST of the pads — east of the pads they would collide with D4 —
+#     with short pad stubs. The bus runs T1 -> around J2 (below).
 _BUSW, _BCH = 0.5, 0.33
-_t1p1, _t1p3 = _padpos("T1", "1"), _padpos("T1", "3")
-for _net, _t1p in (("P1", _t1p1), ("P5", _t1p3)):
-    _tvx = _TOMM(_t1p.x) + 2.4
+_t1p6, _t1p4 = _padpos("T1", "6"), _padpos("T1", "4")
+for _net, _t1p in (("P1", _t1p6), ("P5", _t1p4)):
+    _tvx = _TOMM(_t1p.x) - 2.4
     _tv = vmm(_tvx, _TOMM(_t1p.y))
     _pre_track(_tv, _t1p, pcbnew.F_Cu, _BUSW, nets[_net])   # straight into the pad
     _pre_via(_tv, net=nets[_net])
 
 # --- P1/P5 bus: T1 -> east -> north up the east strip (B.Cu free under the LED
 #     block) -> west above J2's pad row -> down into the pins from the top (PTH pads
-#     connect on B.Cu; no extra vias). T1 pins 1/3 are SWAPPED in the netlist
-#     (P5 = pad 3 south, P1 = pad 1 north; winding polarity is inaudible) so P5 is
+#     connect on B.Cu; no extra vias). T1 pins 6/4 are assigned in the netlist
+#     (P5 = pad 4 south, P1 = pad 6 north; winding polarity is inaudible) so P5 is
 #     the outer loop (souther row, easter vertical, norther lane to the wester pin)
 #     and P1 nests inside — zero crossings.
 _j2p1, _j2p5 = _padpos("J2", "1"), _padpos("J2", "5")
 for _net, _t1p, _jp, _vx2, _ytop in (
-        ("P1", _t1p1, _j2p1, 48.64, 13.2),
-        ("P5", _t1p3, _j2p5, 49.3, 12.54)):
+        ("P1", _t1p6, _j2p1, 48.64, 13.2),
+        ("P5", _t1p4, _j2p5, 49.3, 12.54)):
     _ty2 = _TOMM(_t1p.y)
     _jx = _TOMM(_jp.x)
     for _a, _b in (
-            ((_TOMM(_t1p.x) + 2.4, _ty2), (_vx2 - _BCH, _ty2)),
+            ((_TOMM(_t1p.x) - 2.4, _ty2), (_vx2 - _BCH, _ty2)),
             ((_vx2 - _BCH, _ty2), (_vx2, _ty2 - _BCH)),
             ((_vx2, _ty2 - _BCH), (_vx2, _ytop + _BCH)),
             ((_vx2, _ytop + _BCH), (_vx2 - _BCH, _ytop)),
@@ -1080,14 +1083,27 @@ _chainl("GATE1_PRE", [(34.769, 34.759), (35.157, 34.371), (36.693, 34.371),
 _chainl("SEC_A", [_pxy("C_mp", "2"), (32.578, 40.837), (36.012, 40.837),
                   (36.066, 40.783), (37.151, 40.783), (37.585, 41.218),
                   (37.585, 44.444), _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
-_chainl("SEC_A", [_pxy("C_op", "2"), (38.974, 45.833), (38.974, 51.735),
-                  _pxy("T1", "6")], pcbnew.F_Cu, _BW)
+# T1 secondary -> OUT coupling caps as a tight 0.329 mm differential pair (the
+# secondary owns T1's WEST pads after the winding swap). The pair splits as late as
+# possible, right above T1's pads: the two 45° descents off the lanes nest one
+# bundle pitch apart (SEC_A inside), SEC_A flattening onto pad 1's row at x=32.218
+# — just short of where SEC_B's diagonal crosses that row (x=32.68) — and running
+# west into the pad, while SEC_B continues the long 45° down to pad 3's row (under
+# T1's body, clear of the netless CT pads and the relocated P1/P5 launch vias).
+# Northbound the pair runs east over T1's north edge (0.16 mm clear of the bus
+# pad 6), wraps the NE corner onto nested verticals at x=39.701/40.03, and lands
+# 45° into C_op/C_on pad 2 — SEC_A peels off first, SEC_B passes one pitch east and
+# drops into the next cap. Pairing the two secondary legs (a floating differential
+# audio pair) minimises the pickup loop.
+_chainl("SEC_A", [_pxy("T1", "1"), (32.218, 51.959), (34.306, 49.871),
+                  (39.372, 49.871), (39.701, 49.542), (39.701, 46.56),
+                  _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
 _chainl("SEC_B", [_pxy("C_mn", "2"), (33.868, 39.461), (37.869, 39.461),
                   (38.953, 40.545), (38.953, 43.236), _pxy("C_on", "2")],
         pcbnew.F_Cu, _BW)
-_chainl("SEC_B", [_pxy("C_on", "2"), (39.409, 45.068), (39.409, 47.486),
-                  (40.479, 48.556), (40.479, 57.039), _pxy("T1", "4")],
-        pcbnew.F_Cu, _BW)
+_chainl("SEC_B", [_pxy("T1", "3"), (27.6, 57.039), (34.439, 50.2),
+                  (39.701, 50.2), (40.03, 49.871), (40.03, 45.689),
+                  _pxy("C_on", "2")], pcbnew.F_Cu, _BW)
 
 # --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
 #     straight east on their pad rows into B.Cu vias in line with the pads — DM's via

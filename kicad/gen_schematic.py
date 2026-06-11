@@ -105,6 +105,10 @@ BELOW_TEXT = {"SW_en", "SW_boot"}
 # 180 = vertical passive flipped, pin 1 at the bottom).
 ROT = {"R_io8": 90, "R_led": 270, "LED1": 270,
        "R_en": 90, "R_boot": 90,
+       # T1 flipped 180: the secondary now lives on pins 1/3 (winding swap, see
+       # doorbell_design.py), so winding A must face the coupling caps on the right
+       # and winding B (bus P1/P5 labels) the left.
+       "T1": 180,
        # opto LED limiters laid horizontal (clockwise) so they sit inline on the
        # RET return wire: pin 2 (RET) faces left into the wire, pin 1 (CATH) right.
        "R_lim1": 270, "R_lim2": 270, "R_lim3": 270,
@@ -476,7 +480,8 @@ for _pa, _pb, _net, _bx in (("A6", "B6", "USB_DP", 66.04),
 
 # ---- audio AC-coupling: U3's analog pins bend right/down on staggered columns and
 #      rows, drop through the coupling caps, and land on two horizontal rails on
-#      T1's winding-B pin rows (SEC_B = pin 6 top, SEC_A = pin 4 bottom). Cap
+#      T1's winding-A pin rows (the secondary owns pins 1/3 after the winding swap;
+#      T1 is drawn rotated 180 so those pins face the caps). Cap
 #      columns are ordered by bend row so none of the runs cross each other.
 WIRED_NETS.update(("ES_OUTP", "ES_OUTN", "ES_MICP", "ES_MICN", "SEC_A", "SEC_B"))
 for _pin, _cap, _bx, _by in (("12", "C_op", 264.16, 236.22),   # OUTP
@@ -485,15 +490,15 @@ for _pin, _cap, _bx, _by in (("12", "C_op", 264.16, 236.22),   # OUTP
                              ("18", "C_mp", 274.32, 243.84)):  # MIC1P
     _p, _c1 = PX("U3", _pin), PX(_cap, "1")
     wire(_p, (_bx, _p[1]), (_bx, _by), (_c1[0], _by), _c1)
-_t4, _t6 = PX("T1", "4"), PX("T1", "6")
-wire(_t6, (PX("C_mp", "2")[0], _t6[1]))       # SEC_A rail on T1 pin 6's row
+_t3, _t1p = PX("T1", "3"), PX("T1", "1")
+wire(_t1p, (PX("C_mp", "2")[0], _t1p[1]))     # SEC_A rail on T1 pin 1's row
 for _cap in ("C_op", "C_mp"):
-    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t6[1]))
-junction(PX("C_op", "2")[0], _t6[1])
-wire(_t4, (PX("C_mn", "2")[0], _t4[1]))       # SEC_B rail on T1 pin 4's row
+    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t1p[1]))
+junction(PX("C_op", "2")[0], _t1p[1])
+wire(_t3, (PX("C_mn", "2")[0], _t3[1]))       # SEC_B rail on T1 pin 3's row
 for _cap in ("C_on", "C_mn"):
-    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t4[1]))
-junction(PX("C_on", "2")[0], _t4[1])
+    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t3[1]))
+junction(PX("C_on", "2")[0], _t3[1])
 
 # I2C pull-ups wired straight down onto their codec pins; the wire carries the net
 # name (U1's pins keep their labels, binding the rest of the net).
