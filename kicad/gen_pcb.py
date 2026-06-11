@@ -239,7 +239,15 @@ for _dx in (pcbnew.FromMM(-0.35), pcbnew.FromMM(0.35)):
         _v = pcbnew.PCB_VIA(board)
         _v.SetPosition(pcbnew.VECTOR2I(_epx + _dx, _epy + _dy))
         _v.SetDrill(pcbnew.FromMM(0.3)); _v.SetWidth(pcbnew.FromMM(0.6))
-        _v.SetNet(nets["GND"]); board.Add(_v)
+        _v.SetNet(nets["GND"]); _v.SetLocked(True); board.Add(_v)
+        # pre-wire each via to the EP centre (45° spokes): the DSN export doesn't
+        # credit the EP pad copper as wiring, so Freerouting otherwise adds its own
+        # ad-hoc stubs to consider the vias connected
+        _t = pcbnew.PCB_TRACK(board)
+        _t.SetStart(pcbnew.VECTOR2I(_epx + _dx, _epy + _dy))
+        _t.SetEnd(pcbnew.VECTOR2I(_epx, _epy))
+        _t.SetLayer(pcbnew.F_Cu); _t.SetWidth(pcbnew.FromMM(0.3))
+        _t.SetNet(nets["GND"]); _t.SetLocked(True); board.Add(_t)
 
 # Strip U3's (ES8311) imported package-outline silkscreen: the EasyEDA footprint draws silk lines
 # across the QFN pads (silk_over_copper DRC). Drop the F.SilkS graphics; the reference designator
@@ -284,7 +292,7 @@ for _ep29 in (p for p in fps["U1"].Pads() if p.GetNumber() == "29"):
     _v = pcbnew.PCB_VIA(board)
     _v.SetPosition(_ep29.GetPosition())
     _v.SetDrill(pcbnew.FromMM(0.3)); _v.SetWidth(pcbnew.FromMM(0.7))
-    _v.SetNet(nets["GND"]); board.Add(_v)
+    _v.SetNet(nets["GND"]); _v.SetLocked(True); board.Add(_v)
 
 # --- J1 shield stitch: on each side of the USB4105, join the front and rear shell-stake
 #     pads (SH) with a short vertical B.Cu track, tying each side's stakes together.
@@ -333,8 +341,9 @@ def _pre_track(a, b, layer, w=0.3, net=None):
                         f"({pcbnew.ToMM(b.x):.3f},{pcbnew.ToMM(b.y):.3f}) w={w}"):
         return
     # skip degenerate/micro segments: Freerouting NPEs on locked polylines that
-    # collapse to a point at DSN resolution
-    if abs(a.x - b.x) < pcbnew.FromMM(0.02) and abs(a.y - b.y) < pcbnew.FromMM(0.02):
+    # collapse to a point at DSN resolution (0.05 mm guard; dropped stubs stay
+    # connected through the overlapping copper of the adjoining track/pad)
+    if abs(a.x - b.x) < pcbnew.FromMM(0.05) and abs(a.y - b.y) < pcbnew.FromMM(0.05):
         return
     t = pcbnew.PCB_TRACK(board)
     t.SetStart(a); t.SetEnd(b); t.SetLayer(layer)
@@ -965,6 +974,97 @@ _chainl("GND", [_pxy("C_vref", "2"), _pxy("C_aref", "2"), (38.265, 40.612)],
 _pre_via(vmm(38.265, 40.612), net=nets["GND"])
 _chainl("GND", [_pxy("C_vmid", "2"), (35.385, 40.144)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(35.385, 40.144), net=nets["GND"])
+
+# --- +5V distribution, fully hand-routed (0.5 mm, F.Cu). One spine: D4 (Schottky
+#     cathode) -> C_in -> U2.3 (LDO in), then down the west side of the LDO/C_out
+#     column, threading the R_g1 and R_pd1 pad gaps (the 0.127 jog between them is
+#     load-bearing: x=37.709 fits R_g1's gap, x=37.582 clears R_pd1's pad), onto
+#     D1's flyback row and 45° up/over to K1's coil pin; from the (41.688,27.099)
+#     tee a west leg crosses the relay block on y=27.099 / the 45° staircase,
+#     tapping each coil pin (K2, K3) with a short stub off the y=24.779 row and each
+#     flyback anode (D2, D3) dead-centre from above.
+_chainl("+5V", [_pxy("D_vbus", "1"), (42.47, 50.78), _pxy("C_in", "1")], pcbnew.F_Cu)
+_chainl("+5V", [_pxy("C_in", "1"), (42.47, 47.24), _pxy("U2", "3")], pcbnew.F_Cu)
+_chainl("+5V", [_pxy("U2", "3"), (39.735, 44.505), (39.735, 40.512), (37.709, 38.486),
+                (37.709, 35.323), (37.582, 35.196), (37.582, 34.43), (38.012, 34.0),
+                (39.75, 34.0), _pxy("D1", "1")], pcbnew.F_Cu)
+_chainl("+5V", [_pxy("D1", "1"), (41.688, 32.062), (41.688, 27.099)], pcbnew.F_Cu)
+_chainl("+5V", [(41.688, 27.099), (43.98, 27.099), (46.3, 24.779), _pxy("K1", "1")],
+        pcbnew.F_Cu)
+_chainl("+5V", [(41.688, 27.099), (37.12, 27.099), (34.8, 24.779)], pcbnew.F_Cu)
+_chainl("+5V", [(34.8, 24.779), _pxy("K2", "1")], pcbnew.F_Cu)
+_chainl("+5V", [(34.8, 24.779), (30.898, 28.681), (28.566, 28.681)], pcbnew.F_Cu)
+_chainl("+5V", [(28.566, 28.681), (28.566, 33.516), _pxy("D2", "1")], pcbnew.F_Cu)
+_chainl("+5V", [(28.566, 28.681), (24.664, 24.779), (23.3, 24.779)], pcbnew.F_Cu)
+_chainl("+5V", [(23.3, 24.779), _pxy("K3", "1")], pcbnew.F_Cu)
+_chainl("+5V", [(23.3, 24.779), (18.679, 29.4), (18.679, 32.071), _pxy("D3", "1")],
+        pcbnew.F_Cu)
+
+# --- GND / +3V3 plane taps for every remaining SMD pad, locked (0.2 mm stub +
+#     through-via to the In2 / In1 plane; via spots FR-proven, stubs normalized to a
+#     straight run or a single 45°). With these, the power nets are fully
+#     hand-routed: U2's tab and J1's shield stakes are PTH (barrel-connected to the
+#     planes), and the U1/U3 exposed pads carry their own pre-placed via arrays.
+def _tapvia(_net, _key, _num, _pts):
+    _chainl(_net, [_pxy(_key, _num)] + _pts, pcbnew.F_Cu, _BW)
+    _pre_via(vmm(*_pts[-1]), net=nets[_net])
+# FET / pull-down GND row (vias in line with the pads, clear of the drain wiring)
+_tapvia("GND", "Q1", "2", [(47.44, 33.785)])
+_tapvia("GND", "Q2", "2", [(35.94, 33.785)])
+_tapvia("GND", "Q3", "2", [(24.44, 33.785)])
+_tapvia("GND", "R_pd1", "2", [(38.5, 32.345)])
+_tapvia("GND", "R_pd2", "2", [(27.0, 32.345)])
+_tapvia("GND", "R_pd3", "2", [(15.5, 32.345)])
+_tapvia("GND", "R_em", "2", [(0.0, 34.15)])
+# BOOT/RST cluster + U1's far GND castellation (pad 28)
+_tapvia("GND", "C_en", "2", [(16.927, 41.293)])
+_tapvia("GND", "SW_en", "2", [(24.075, 42.356)])
+_tapvia("GND", "SW_boot", "2", [(6.425, 42.336)])
+_tapvia("GND", "U1", "28", [(5.35, 61.96)])
+# USB corner: CC pulldowns + input cap; LED block on the top edge (the LED via
+# dodges P1's B.Cu vertical, the R_led via ducks under P5's B.Cu lane corner)
+_tapvia("GND", "R_cc1", "2", [(49.21, 58.352), (48.944, 58.086)])
+_tapvia("GND", "R_cc2", "2", [(47.93, 59.2), (47.38, 59.75)])
+_tapvia("GND", "C_in", "2", [(44.03, 49.155)])
+_tapvia("GND", "LED1", "1", [(47.955, 18.169)])      # near-vertical slant, one segment
+_tapvia("+3V3", "R_led", "1", [(47.455, 12.135), (47.455, 11.857)])
+# LDO column: U2.1 and C_out share one GND via on their common centreline;
+# U2.2 / C_out.1 take their own +3V3 vias
+_chainl("GND", [_pxy("U2", "1"), (41.5, 40.446)], pcbnew.F_Cu, _BW)  # near-vertical slant
+_pre_via(vmm(41.5, 40.446), net=nets["GND"])
+_chainl("GND", [(41.5, 40.446), _pxy("C_out", "2")], pcbnew.F_Cu, _BW)
+_tapvia("+3V3", "U2", "2", [(41.53, 43.006)])
+_tapvia("+3V3", "C_out", "1", [(41.5, 37.085)])
+# R_en's pull-up supply: single (near-45°) slant onto R_boot's locked +3V3 via
+_chainl("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
+
+# --- GATE1_PRE + T1 secondary (SEC_A/SEC_B): locked along their proven paths.
+#     Like OC3_RET, these are casualties of the locked walls around them (the +5V
+#     spine and the U3/audio hookups): valid corridors exist — these exact routes
+#     coexisted with identical +5V geometry — but Freerouting (greedy, no rip-up
+#     through protected wiring) stops finding them on its own.
+#     GATE1_PRE ducks onto B.Cu to cross under the relay-driver block (K3.6 -> via
+#     -> east -> 45° staircase -> via -> F.Cu into R_g1); SEC_A/SEC_B wrap around
+#     the audio cap column east into T1's secondary pads, each passing through its
+#     coupling-cap pad 2 on the way.
+_chainl("GATE1_PRE", [_pxy("K3", "6"), (17.9, 31.839)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(17.9, 31.839), net=nets["GATE1_PRE"])
+_chainl("GATE1_PRE", [(17.9, 31.839), (23.966, 31.839), (26.886, 34.759),
+                      (34.769, 34.759)], pcbnew.B_Cu, _BW)
+_pre_via(vmm(34.769, 34.759), net=nets["GATE1_PRE"])
+_chainl("GATE1_PRE", [(34.769, 34.759), (35.157, 34.371), (36.693, 34.371),
+                      (36.93, 34.608), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
+_chainl("SEC_A", [_pxy("C_mp", "2"), (32.578, 40.837), (36.012, 40.837),
+                  (36.066, 40.783), (37.151, 40.783), (37.585, 41.218),
+                  (37.585, 44.444), _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
+_chainl("SEC_A", [_pxy("C_op", "2"), (38.974, 45.833), (38.974, 51.735),
+                  _pxy("T1", "6")], pcbnew.F_Cu, _BW)
+_chainl("SEC_B", [_pxy("C_mn", "2"), (33.868, 39.461), (37.869, 39.461),
+                  (38.953, 40.545), (38.953, 43.236), _pxy("C_on", "2")],
+        pcbnew.F_Cu, _BW)
+_chainl("SEC_B", [_pxy("C_on", "2"), (39.409, 45.068), (39.409, 47.486),
+                  (40.479, 48.556), (40.479, 57.039), _pxy("T1", "4")],
+        pcbnew.F_Cu, _BW)
 
 # --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
 #     straight east on their pad rows into B.Cu vias in line with the pads — DM's via

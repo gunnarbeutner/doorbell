@@ -433,6 +433,23 @@ together on B.Cu over the GND plane, and the remaining escapes fan out on F.Cu/B
 Placement around J1 must leave the escape fan room (verify Freerouting copes after any
 reshuffle).
 
+**Power routing** (`gen_pcb.py`, locked — the power nets are fully hand-routed): +5V
+is one 0.5 mm F.Cu spine, D4 → C_in → U2.3 (LDO in), then down the west side of the
+LDO/C_out column threading the R_g1 and R_pd1 pad gaps (the 0.127 mm jog between
+x=37.709 and x=37.582 is load-bearing: the first fits R_g1's gap, the second clears
+R_pd1's pad), onto D1's flyback row and up/over to K1's coil pin; from the
+(41.688, 27.099) tee a west leg crosses the relay block, tapping K2/K3 coil pins off
+the y=24.779 row and dropping into D2/D3 dead-centre. GND/+3V3 reach their In2/In1
+planes through locked 0.2 mm stubs + vias at every SMD pad (FET/pull-down row, the
+BOOT/RST cluster, U1 pad 28, the USB CC pulldowns and C_in, the LED block — its two
+vias dodge P1's/P5's B.Cu verticals — and the LDO column, where U2.1 and C_out share
+one GND via on their centreline); U2's tab and J1's shield stakes are PTH
+(barrel-connected), and the U1/U3 exposed-pad via arrays are locked with 45° spokes
+pre-wiring the U3 EP vias to the pad centre (the DSN export doesn't credit EP pad
+copper as wiring). GATE1_PRE and SEC_A/SEC_B are locked along their proven paths for
+the same reason as OC3_RET: the corridors exist, but the greedy router stopped
+finding them once the power walls around them became protected wiring.
+
 **Routing + plane recipe.** Freerouting routes on all four layers freely (no `LT_POWER`
 designation, no pre-stitch vias). After the SES is imported, `route.py` pours +3V3 on In1
 and GND on In2 as copper-fill zones; the filler leaves clearance gaps around any signal
