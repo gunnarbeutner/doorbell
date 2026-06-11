@@ -17,3 +17,78 @@ index 505f5d3..d7f04d8 100644
        int maxItemIdBeforeSeg = board.communication.id_no_generator.max_generated_no();
        Point ok_point = board.insert_forced_trace_polyline(insert_polyline, ctrl.trace_half_width[p_trace.layer], p_trace.layer, net_no_arr, ctrl.trace_clearance_class_no,
            ctrl.max_shove_trace_recursion_depth, ctrl.max_shove_via_recursion_depth, ctrl.max_spring_over_recursion_depth, Integer.MAX_VALUE, ctrl.pull_tight_accuracy, true, null);
+diff --git a/src/main/java/app/freerouting/board/BasicBoard.java b/src/main/java/app/freerouting/board/BasicBoard.java
+index de63f31..8bb67c3 100644
+--- a/src/main/java/app/freerouting/board/BasicBoard.java
++++ b/src/main/java/app/freerouting/board/BasicBoard.java
+@@ -827,12 +827,18 @@ public class BasicBoard implements Serializable {
+         }
+         if (curr_item.contains_net(p_net_no) && curr_item instanceof PolylineTrace curr_trace
+             && curr_item.is_on_the_board()) {
+-          if (curr_trace.normalize(null)) {
+-            something_changed = true;
+-            result = true;
+-          } else if (!curr_trace.is_user_fixed() && this.remove_if_cycle(curr_trace)) {
+-            something_changed = true;
+-            result = true;
++          try {
++            if (curr_trace.normalize(null)) {
++              something_changed = true;
++              result = true;
++            } else if (!curr_trace.is_user_fixed() && this.remove_if_cycle(curr_trace)) {
++              something_changed = true;
++              result = true;
++            }
++          } catch (RuntimeException e) {
++            // Defensive: degenerate traces can still trip normalize/split internals.
++            // Skip this trace rather than aborting the whole routing pass.
++            FRLogger.warn("normalize_traces: skipping trace after " + e);
+           }
+         }
+       }
+diff --git a/src/main/java/app/freerouting/board/Item.java b/src/main/java/app/freerouting/board/Item.java
+index 4c4a3a2..b8f5c80 100644
+--- a/src/main/java/app/freerouting/board/Item.java
++++ b/src/main/java/app/freerouting/board/Item.java
+@@ -190,6 +190,10 @@ public abstract class Item implements Drawable, SearchTreeObject, ObjectInfoPane
+       return null;
+     }
+     TileShape[] precalculated_tree_shapes = this.get_precalculated_tree_shapes(p_tree);
++    if (p_index < 0 || p_index >= precalculated_tree_shapes.length) {
++      // degenerate item (e.g. trace whose polyline collapsed): no shape at this index
++      return null;
++    }
+     return precalculated_tree_shapes[p_index];
+   }
+ 
+diff --git a/src/main/java/app/freerouting/board/PolylineTrace.java b/src/main/java/app/freerouting/board/PolylineTrace.java
+index 7484858..3aeeee1 100644
+--- a/src/main/java/app/freerouting/board/PolylineTrace.java
++++ b/src/main/java/app/freerouting/board/PolylineTrace.java
+@@ -437,6 +437,10 @@ public class PolylineTrace extends Trace implements Serializable {
+         }
+       }
+       TileShape curr_shape = this.get_tree_shape(default_tree, i);
++      if (curr_shape == null) {
++        // degenerate trace: no precalculated shape for this segment
++        continue;
++      }
+       LineSegment curr_line_segment = new LineSegment(this.lines, i + 1);
+       Collection<ShapeSearchTree.TreeEntry> overlapping_tree_entries = new LinkedList<>();
+       // look for intersecting traces with the i-th line segment
+diff --git a/src/main/java/app/freerouting/board/ShapeSearchTree.java b/src/main/java/app/freerouting/board/ShapeSearchTree.java
+index aea37dc..a973ec8 100644
+--- a/src/main/java/app/freerouting/board/ShapeSearchTree.java
++++ b/src/main/java/app/freerouting/board/ShapeSearchTree.java
+@@ -171,6 +171,11 @@ public class ShapeSearchTree extends MinAreaTree {
+     }
+     Leaf[] from_trace_entries = p_from_trace.get_search_tree_entries(this);
+     Leaf[] to_trace_entries = p_to_trace.get_search_tree_entries(this);
++    if (from_trace_entries == null || to_trace_entries == null) {
++      // One of the traces has no tree entries (degenerate trace that never got
++      // registered, e.g. built from an empty polyline). Nothing to merge.
++      return;
++    }
+     remove_leaf(from_trace_entries[remove_no]);
+     remove_leaf(to_trace_entries[0]);
+     int new_shape_count = from_trace_entries.length + link_shapes.length + to_trace_entries.length - 2;

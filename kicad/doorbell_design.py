@@ -271,22 +271,25 @@ NETS = {
     "EN": [("U1","3"),("R_en","2"),("C_en","1"),("SW_en","1")],        # C6 pad 3 = EN
     "BOOT": [("U1","15"),("R_boot","2"),("SW_boot","1")],  # GPIO9/BOOT on C6 pad 15
     "GPIO8": [("U1","10"),("R_io8","1")],  # C6 strapping pin GPIO8 on pad 10; 10k pull-up
-    # GATE*_DRV pad order (18=K2, 19=K3, 20=K1) is chosen so the GPIO escape bundle's
+    # GATE*_DRV pad order (18=K2, 19=K1, 20=K3) is chosen so the GPIO escape bundle's
     # lane stack fans out to its targets west->east without crossings:
-    # OK2, OK1, R_g1 (K1), R_g3 (K3), R_g2 (K2).
-    "GATE1_DRV": [("U1","20"),("R_g1","1")],   # GPIO22 / pad 20 — PTT relay K1
+    # OK2, OK1, R_g3 (K3 gate R), K3 pin 5 (K1 drive into the interlock), R_g2 (K2).
+    "GATE1_DRV": [("U1","19"),("K3","5")],     # GPIO21 / pad 19 — PTT K1 drive, straight
+                                               # into K3 pole-B NO (pin 5): the interlock
+                                               # contact comes FIRST, the series R after
     # K3 pole-B (pins 5/6/7) is wired as a hardware interlock: K1's gate drive is broken by K3's
     # spare pole-B contact so Q1 cannot turn on unless K3 is already energised. This prevents the
     # hazard where K1-talk (P4<->P2) without K3 open would short P2<->P3 via the WF26's S2 strap.
     # Pole-B pinout: COM=6, NC=7, NO=5 (symmetric with pole-A: COM=3, NC=2, NO=4).
     # NO (pin 5) is used so the path is OPEN at rest and only closes when K3 energises.
-    "GATE1_PRE": [("R_g1","2"),("K3","5")],    # R_g1 out -> K3 pole-B NO (pin 5)
-    "GATE1": [("K3","6"),("Q1","1"),("R_pd1","1")],  # K3 pole-B COM (pin 6) -> Q1 gate + pull-down
+    "GATE1_PRE": [("K3","6"),("R_g1","1")],    # K3 pole-B COM (pin 6) -> R_g1 (series R
+                                               # now sits gate-side, beside R_pd1/Q1)
+    "GATE1": [("R_g1","2"),("Q1","1"),("R_pd1","1")],  # R_g1 out -> Q1 gate + pull-down
     "K1_DRAIN": [("Q1","3"),("K1","8"),("D1","2")],
     "GATE2_DRV": [("U1","18"),("R_g2","1")],   # GPIO20 / pad 18 — door-opener K2
     "GATE2": [("R_g2","2"),("Q2","1"),("R_pd2","1")],
     "K2_DRAIN": [("Q2","3"),("K2","8"),("D2","2")],
-    "GATE3_DRV": [("U1","19"),("R_g3","1")],   # GPIO21 / pad 19 — chime-suppress K3
+    "GATE3_DRV": [("U1","20"),("R_g3","1")],   # GPIO22 / pad 20 — chime-suppress K3
     "GATE3": [("R_g3","2"),("Q3","1"),("R_pd3","1")],
     "K3_DRAIN": [("Q3","3"),("K3","8"),("D3","2")],
     # T1 leg<->pin assignment routing-driven, like the secondary: flipping winding A

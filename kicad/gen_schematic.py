@@ -103,7 +103,7 @@ BELOW_TEXT = {"SW_en", "SW_boot"}
 # Symbol rotation (deg, KiCad convention). Lets 2-pin parts lie inline with the
 # pin row they are wired to (90 = vertical passive turned horizontal, pin 1 left;
 # 180 = vertical passive flipped, pin 1 at the bottom).
-ROT = {"R_io8": 90, "R_g1": 90, "R_led": 270, "LED1": 270,
+ROT = {"R_io8": 90, "R_led": 270, "LED1": 270,
        "R_en": 90, "R_boot": 90,
        # opto LED limiters laid horizontal (clockwise) so they sit inline on the
        # RET return wire: pin 2 (RET) faces left into the wire, pin 1 (CATH) right.
@@ -163,14 +163,11 @@ SCHEM_POS = {
     "C_3v3": (100, 12), "C_dec": (105, 12),
     # single-use parts wired directly to the U1 pin they serve (right pin column):
     "R_io8": (98, 19),     # GPIO8 pull-up, rotated inline with pad 10's row
-    "R_g1": (98, 26),      # K1 gate series R, horizontal under R_io8 (same X), pin 1
-                           # inline with pad 18's row; GATE1_PRE side (pin 2) runs to
-                           # the K3 interlock by label
     # --- relay drivers, three rows right of the MCU ---
-    # row 1 (K1, PTT): gate net split by the K3 interlock -> R_pd1 carries the
-    # GATE1 label (R_g1 lives at U1, see above).
-    "Q1": (116, 23), "R_pd1": (114, 30), "D1": (122, 22.5), "K1": (133, 23),
-    # rows 2 (K2, door opener) and 3 (K3, chime suppress): gate trunk wired directly.
+    # All three rows share the same cluster: gate series R on top (GATE*_PRE/DRV label
+    # on pin 1), FET + pulldown on the wired gate trunk below. K1's gate R input is
+    # GATE1_PRE (from K3's interlock contact); the GPIO (GATE1_DRV) goes to K3.5.
+    "R_g1": (114, 18), "Q1": (116, 23), "R_pd1": (114, 30), "D1": (122, 22.5), "K1": (133, 23),
     "R_g2": (114, 42), "Q2": (116, 47), "R_pd2": (114, 52), "D2": (122, 46.5), "K2": (133, 47),
     "R_g3": (114, 66), "Q3": (116, 71), "R_pd3": (114, 76), "D3": (122, 70.5), "K3": (133, 71),
     "R_ot": (134, 41.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
@@ -365,7 +362,7 @@ def place_power(entry, x, y, outdir=90):
 LABEL_STUB = 2.54   # short wire from pin to label, so the text clears the pin number
 STUB_BY_REF = {"U1": 5.08, "U3": 5.08}   # big ICs: pin numbers need more clearance
 # Per-pin stub overrides: a longer stub pushes that one label clear of its neighbours.
-STUB_BY_PIN = {("Q1", "1"): 5.08,     # GATE1 clear of Q1's gate junction
+STUB_BY_PIN = {("R_g1", "1"): 5.08,   # GATE1_PRE raised off R_g1's body
                ("R_g2", "1"): 5.08,   # GATE2_DRV raised off R_g2's body
                ("R_g3", "1"): 5.08}   # GATE3_DRV raised off R_g3's body
 # Power pins rendered as a plain net label instead of a power port: U3's supplies sit
@@ -400,7 +397,7 @@ def L(a, b, horiz_first=True):
 WIRED_NETS = set()
 # Individual pins of label-connected nets that are wired explicitly instead
 # (the rest of the net still carries labels).
-SKIP_LABEL_PINS = {("R_pd1", "1"),                                  # GATE1 wired to Q1 gate
+SKIP_LABEL_PINS = {
                    ("R_en", "2"), ("C_en", "1"), ("SW_en", "1"),    # EN rail
                    ("R_boot", "2"), ("SW_boot", "1"),               # BOOT rail
                    ("SW_OC2", "5"), ("OC2", "1"),                   # JP wired over the switch
@@ -426,10 +423,11 @@ def wire_relay_driver(rg, q, rpd, d, k, wire_gate=True):
     drain, dtop, k8 = PX(q, "3"), PX(d, "2"), PX(k, "8")
     wire(drain, (k8[0], drain[1]), k8)         # diode top pin taps the run
     junction(*dtop)                            # T where the diode taps the node
-# K1 gate is split into GATE1_PRE (R_g1 side) and GATE1 (Q1/R_pd1 side) by the K3 interlock;
-# auto-labels handle both sub-nets — neither goes into WIRED_NETS.
-WIRED_NETS.update(("K1_DRAIN", "GATE2", "K2_DRAIN", "GATE3", "K3_DRAIN"))
-wire_relay_driver("R_g1", "Q1", "R_pd1", "D1", "K1", wire_gate=False)
+# K1's gate node (GATE1 = R_g1.2 + Q1 gate + R_pd1) is a standard trunk now that the
+# series R sits gate-side of the K3 interlock; GATE1_PRE (K3.6 -> R_g1.1) and
+# GATE1_DRV (U1.19 -> K3.5) connect by auto-labels.
+WIRED_NETS.update(("K1_DRAIN", "GATE1", "GATE2", "K2_DRAIN", "GATE3", "K3_DRAIN"))
+wire_relay_driver("R_g1", "Q1", "R_pd1", "D1", "K1")
 wire_relay_driver("R_g2", "Q2", "R_pd2", "D2", "K2")
 wire_relay_driver("R_g3", "Q3", "R_pd3", "D3", "K3")
 
@@ -438,10 +436,9 @@ WIRED_NETS.add("LED_A")
 wire(PX("R_led", "2"), PX("LED1", "2"))
 
 # ---- single-use parts wired straight to the one pin they serve ----
-WIRED_NETS.update(("GPIO8", "GATE1_DRV", "USB_CC1", "USB_CC2", "OT_BRIDGE",
+WIRED_NETS.update(("GPIO8", "USB_CC1", "USB_CC2", "OT_BRIDGE",
                    "ES_DACVREF", "ES_ADCVREF", "ES_VMID", "ES_CE"))
 wire(PX("U1", "10"), PX("R_io8", "1"))    # GPIO8 pull-up inline with pad 10
-wire(PX("U1", "18"), PX("R_g1", "1"))     # K1 gate series R off pad 18
 wire(PX("J1", "A5"), PX("R_cc1", "1"))    # CC terminators hang off the CC pins
 wire(PX("J1", "B5"), PX("R_cc2", "1"))
 wire(PX("K2", "4"), PX("R_ot", "2"))      # ÖT bridge R sits on K2's NO contact
@@ -517,9 +514,6 @@ wire((_re1[0], PX("OC1", "3")[1]), _re1)
 junction(_re1[0], PX("OC2", "3")[1])
 junction(_re1[0], PX("OC3", "3")[1])
 
-# GATE1: pull-down wired onto the FET gate (net keeps labels at Q1 gate + K3.6)
-wire(PX("Q1", "1"), PX("R_pd1", "1"))
-junction(*PX("Q1", "1"))
 # EN rail: R_en + C_en tap a short wire into the EN button; one EN label binds
 # the rail to U1's EN pin label.
 wire(PX("R_en", "2"), PX("SW_en", "1"))

@@ -273,8 +273,8 @@ rectified).
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
 | IO20 | 18 | K2 gate — front door buzzer / ÖT (bridge P2+P3) | out | 10 k gate pull-down ⇒ off at boot |
-| IO21 | 19 | K3 gate — chime suppress (break IN_P4→P4) | out | 10 k gate pull-down ⇒ off at boot |
-| IO22 | 20 | K1 gate — virtual PTT (IN_P4↔P2) | out | drive routed through K3's pole-B interlock contact |
+| IO21 | 19 | K1 drive — virtual PTT (IN_P4↔P2) | out | straight into K3's pole-B interlock contact; series R (R6) sits gate-side |
+| IO22 | 20 | K3 gate — chime suppress (break IN_P4→P4) | out | 10 k gate pull-down ⇒ off at boot |
 | IO3  | 26 | OC2 collector — house bell (Türruf, IN_P4) | in | internal pull-up (firmware) |
 | IO2  | 27 | OC3 collector — apartment bell (Etagenruf, P5) | in | internal pull-up (firmware) |
 | IO23 | 21 | OC1 collector — session-active sense (P5↔P2) | in | internal pull-up (firmware) |

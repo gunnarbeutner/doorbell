@@ -87,7 +87,9 @@ PCB_PLACE = {
     # === K1 (PTT placeholder) relay + driver: same spacing as K3→K2 (11.5 mm) ===
     "K1":     (42.5, 27, 270),
     "Q1":     (46.5, 34, 180),
-    "R_g1":   (13.5, 34, 90),
+    "R_g1":   (37.75, 36.5, 0), # K1 gate series R, gate-side of the interlock; same
+                                # position/orientation relative to R_pd1 as R_g2 has
+                                # to R_pd2 (horizontal, x-0.75/y+2.5 from the pulldown)
     "R_pd1":  (38.5, 34, 90),
     "D1":     (41.8, 33.6, 0),
     # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
@@ -459,8 +461,8 @@ for _net, _pnum, _k, _dst in (
         ("OC3_OUT",   "27", 0, "direct"),
         ("OC2_OUT",   "26", 1, "OC2"),
         ("OC1_OUT",   "21", 2, "OC1"),
-        ("GATE1_DRV", "20", 3, "R_g1"),
-        ("GATE3_DRV", "19", 4, "R_g3"),
+        ("GATE3_DRV", "20", 3, "R_g3"),
+        ("GATE1_DRV", "19", 4, "K3"),
         ("GATE2_DRV", "18", 5, "R_g2")):
     _lx = _lane5 - (5 - _k) * _BPITCH
     _pp = next(p for p in fps["U1"].Pads() if p.GetNumber() == _pnum).GetPosition()
@@ -497,28 +499,30 @@ for _net, _pnum, _k, _dst in (
                        pcbnew.F_Cu, _BW, nets[_net])
             _pre_track(vmm(_tpx, _ty + 0.1042), _t4, pcbnew.F_Cu, _BW, nets[_net])
         else:
-            # gate resistor landing: run east, 45° chamfer, rise north into pad 1 from
-            # the south. R_g1's pad sits 0.2 mm right of the safe rise lane (R_g3's
-            # pad 1 limits it), so it rises beside the pad and finishes with a 45° jog
-            # into the centre; R_g3/R_g2 rise straight into their pads.
-            _t1 = next(p for p in fps[_dst].Pads() if p.GetNumber() == "1").GetPosition()
-            _tpx, _tpy = _TOMM(_t1.x), _TOMM(_t1.y)
-            if _dst == "R_g1":
-                _rg3p1 = next(p for p in fps["R_g3"].Pads()
-                              if p.GetNumber() == "1").GetPosition()
-                _rx = _TOMM(_rg3p1.x) - 0.4 - 0.24   # clear R_g3 pad 1's left edge
-            else:
-                _rx = _tpx
-            _pre_track(vmm(_c - _yh, _yh), vmm(_rx - 0.245, _yh),
-                       pcbnew.F_Cu, _BW, nets[_net])
-            _pre_track(vmm(_rx - 0.245, _yh), vmm(_rx, _yh - 0.245),
-                       pcbnew.F_Cu, _BW, nets[_net])
-            if _dst == "R_g1":
-                _jy = _tpy + (_tpx - _rx)            # 45° entry start: on-pad, SW corner
-                _pre_track(vmm(_rx, _yh - 0.245), vmm(_rx, _jy),
+            # gate landings: R_g3/R_g2 rise north straight into their pad 1.
+            # GATE1_DRV (_dst "K3") instead rises through the R_pd3<->D3 channel and
+            # 45°s NW into K3 pin 5 (the interlock's NO contact comes before the
+            # series resistor now).
+            if _dst == "K3":
+                _t5 = next(p for p in fps["K3"].Pads() if p.GetNumber() == "5").GetPosition()
+                _tpx, _tpy = _TOMM(_t5.x), _TOMM(_t5.y)
+                _d3p1 = next(p for p in fps["D3"].Pads() if p.GetNumber() == "1").GetPosition()
+                _rx = _TOMM(_d3p1.x) - 0.45 - 0.36   # channel between R_pd3 and D3
+                _pre_track(vmm(_c - _yh, _yh), vmm(_rx - 0.245, _yh),
                            pcbnew.F_Cu, _BW, nets[_net])
-                _pre_track(vmm(_rx, _jy), _t1, pcbnew.F_Cu, _BW, nets[_net])
+                _pre_track(vmm(_rx - 0.245, _yh), vmm(_rx, _yh - 0.245),
+                           pcbnew.F_Cu, _BW, nets[_net])
+                _pre_track(vmm(_rx, _yh - 0.245), vmm(_rx, _tpy + (_rx - _tpx)),
+                           pcbnew.F_Cu, _BW, nets[_net])
+                _pre_track(vmm(_rx, _tpy + (_rx - _tpx)), _t5,
+                           pcbnew.F_Cu, _BW, nets[_net])
             else:
+                _t1 = next(p for p in fps[_dst].Pads() if p.GetNumber() == "1").GetPosition()
+                _rx = _TOMM(_t1.x)
+                _pre_track(vmm(_c - _yh, _yh), vmm(_rx - 0.245, _yh),
+                           pcbnew.F_Cu, _BW, nets[_net])
+                _pre_track(vmm(_rx - 0.245, _yh), vmm(_rx, _yh - 0.245),
+                           pcbnew.F_Cu, _BW, nets[_net])
                 _pre_track(vmm(_rx, _yh - 0.245), _t1, pcbnew.F_Cu, _BW, nets[_net])
 
 # --- I2C/I2S escape bundle (north of U1): BOOT leads from U1 pad 15 east + 45° NE up
@@ -795,6 +799,21 @@ _chain("OC_EMIT", [_e2, (_e2[0] - (_e2[1] - _YH), _YH),
                    (_e3[0] + (_e3[1] - 0.1483 - _YH), _YH),
                    (_e3[0], _e3[1] - 0.1483), _e3], _BW)
 _chain("OC_EMIT", [_e3, (_rem[0], _e3[1])], _BW)
+
+# --- Relay coil drain nets (K*_DRAIN), geometry lifted from Freerouting and
+#     normalized (its K3 solution even contained a 0.1 um micro-segment): from the
+#     FET drain (Q pad 3) west, 45° down onto the flyback diode's row, T-junction at
+#     x = K-pin-8 - 1.65; from there west into D pad 2, and 45° NE + vertical north
+#     into K pin 8 (the coil).
+for _dnet, _q, _k, _d in (("K1_DRAIN", "Q1", "K1", "D1"),
+                          ("K2_DRAIN", "Q2", "K2", "D2"),
+                          ("K3_DRAIN", "Q3", "K3", "D3")):
+    _qp, _kp, _dp = _pxy(_q, "3"), _pxy(_k, "8"), _pxy(_d, "2")
+    _vx = _kp[0] - 1.65
+    _chain(_dnet, [_qp, (_vx + (_qp[1] - _dp[1]), _qp[1]), (_vx, _dp[1])], _BW)
+    _chain(_dnet, [(_vx, _dp[1]), _dp], _BW)
+    _chain(_dnet, [(_vx, _dp[1]),
+                   (_kp[0], _dp[1] - (_kp[0] - _vx)), _kp], _BW)
 
 # --- ESP-side USB pair, fully hand-routed: U1 pads 14/13 (USB_DP/DM_ESP) run
 #     straight east on their pad rows into B.Cu vias in line with the pads — DM's via
