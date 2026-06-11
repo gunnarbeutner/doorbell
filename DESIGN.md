@@ -331,12 +331,31 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
 - **OC1 (session sense)** parallels the WF26's internal relay coil (P5↔P2, ~320 Ω,
   energised by the TV20/S only during a live session). R_lim3 = 5.1 k provisional pending
   the measured session voltage.
-- **Cross-talk masking** (`doorbell-v4.yaml`, lambda filters ahead of the debounce): the
-  **House Doorbell** input is forced off while PTT is engaged (K1 ties IN_P4 to P2, so
-  speech audio appears across OC2's sense pair); the **Intercom Session** input is forced
-  off while the Apartment Doorbell is ringing (the Etagenruf tone on P5 appears across
-  OC1's P5↔P2 pair via the WF26's coil/C1 network). Both interferers are AC, so the raw
-  input keeps toggling and the mask re-evaluates continuously while active.
+- **Cross-talk masking** (`doorbell-v4.yaml`, lambda filters ahead of the debounce):
+  - **House Doorbell (OC2)** is forced off while PTT is engaged **or a session is
+    active**: K1 ties IN_P4 to P2, and during an armed session the resident's own S2 +
+    WF26 relay do the same, so OC2 sees the P1↔P2 standing voltage and would report a
+    phantom ring — which can pulse the door buzzer via auto-open. A real ring during a
+    talk bridge is hardware-indistinguishable from the bridge, so masking the whole
+    session loses nothing.
+  - **Apartment Doorbell (OC3)** taps the speaker pair, so it pulses on *any* loud
+    speaker audio — Etagenruf tone, Türruf gong and session speech alike. It is forced
+    off while House Doorbell / session / PTT are active; what remains is a genuine floor
+    call.
+  - **Intercom Session (OC1)** is forced off while the Apartment Doorbell is ringing
+    (the Etagenruf tone appears across OC1's P5↔P2 pair via the WF26's coil/C1 network).
+  - All masked interferers are AC, so the raw input keeps toggling and the masks
+    re-evaluate continuously while active. The masks must never gate a *steady-DC*
+    signal that outlives the mask window — the lambda only re-runs on raw-input edges.
+- **OC3 tone detection** (`doorbell-v4.yaml`): the opto conducts only on positive
+  half-cycles above the LED threshold, so OC3's raw input toggles at audio rate
+  (~1 ms low / ~1.4 ms high) and a plain `delayed_on` would never latch. The filter
+  chain stretches the conduction pulses into a level first (`delayed_off: 50ms`), then
+  requires it to persist (`delayed_on: 150ms` — also outlasts House Doorbell's 50 ms
+  latch so a gong starting together with a house ring cannot beat the mask), then holds
+  the result (`delayed_off: 2s`). OC2 and OC1 sense steady DC and keep the plain
+  `delayed_on: 50ms` debounce, which doubles as their AC-interference reject (no
+  audio-rate pulsing can hold them low for 50 ms).
 
 ### Relays
 
@@ -778,7 +797,13 @@ into 16 Ω.
 Automated gates (run by `./build.sh all-route`): **ERC 0 errors, DRC 0/0, routes
 0 unrouted, `check_pcb.py` PASS**. The generated board must be rebuilt whenever
 `doorbell_design.py` / `gen_pcb.py` change — the committed `.kicad_pcb`/gerbers are
-outputs, not sources.
+outputs, not sources. The firmware config passes `esphome config doorbell-v4.yaml`
+(ESPHome 2026.5.3; needs a `secrets.yaml` with `wifi_ssid`/`wifi_password` alongside).
+
+An independent blind review (no DESIGN.md / generator scripts; netlist re-extracted from
+the routed PCB, every pinout re-checked against manufacturer datasheets) is recorded in
+`VERIFICATION.md` — it found no polarity, pin-mapping or pin-usability errors and
+converged with this document on all system-level conclusions.
 
 **Cross-checked against the WF26** (netlist extracted from `wf26/wf26.kicad_sch` with
 `kicad-cli`): J2 pin map; K2's ÖT bridge mirrors the handset's S1+R1 path; K3's series

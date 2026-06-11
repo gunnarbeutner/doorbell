@@ -21,6 +21,13 @@
 #        K1       (PTT relay, talk=energised)    : GPIO21            (pad 19)
 #        I2S_DOUT (DAC / playback, DSDIN)        : GPIO7             (pad  7)
 #        OC1      (session-sense, P5↔P2 coil)   : GPIO23            (pad 21)
+#   6. Sense disambiguation reworked for the V4 sense points (departs from V3 logic):
+#        - OC3 taps the speaker pair (P5↔P1) and pulses at audio rate on ANY loud
+#          speaker audio (floor tone, door gong, speech). Its filter chain stretches
+#          the half-cycle pulses into a level (delayed_off before delayed_on) and is
+#          masked by house_doorbell / session / PTT — see the sensor for details.
+#        - OC2 is masked during sessions too, not just board PTT: the resident's own
+#          talk button bridges P4↔P2 just like K1 and would fake a house ring.
 #
 # The api encryption key, OTA password and static IP are kept identical to V3 so the existing
 # Home Assistant integration keeps working without re-pairing.
@@ -75,20 +82,27 @@ i2s_audio:
   i2s_bclk_pin: GPIO11    # I2S_BCLK / SCLK [C6 pad 12]
   i2s_mclk_pin: GPIO6     # I2S_MCLK        [C6 pad 6]
 
-es8311:
-  address: 0x18            # CE → R_ce (10k) → GND on U3 → I2C addr 0x18
+audio_dac:
+  - platform: es8311
+    id: es8311_codec
+    address: 0x18          # CE → R20 (10k) → GND on U3 → I2C addr 0x18
+    use_microphone: true   # enable the ADC path (analog MIC1P/MIC1N, fed from T1 via C16/C17)
+    mic_gain: 0DB          # the PGA cannot attenuate and the line carries speaker-level
+                           # audio (gong peaks > 2Vrms full-scale) — keep all the headroom
 
 speaker:
   - platform: i2s_audio
     id: intercom_speaker
     i2s_audio_id: i2s_bus
     dac_type: external
+    audio_dac: es8311_codec
     i2s_dout_pin: GPIO7    # I2S_DOUT / DSDIN (ESP→codec, playback)  [C6 pad 7]
 
 microphone:
   - platform: i2s_audio
     id: intercom_mic
     i2s_audio_id: i2s_bus
+    adc_type: external     # ES8311 does the conversion; ESP only receives I2S
     i2s_din_pin: GPIO10    # I2S_DIN / ASDOUT (codec→ESP, capture)  [C6 pad 11]
 
 # Optional on the C3 (BLE works, but uses resources on the single core). Remove this and
@@ -112,7 +126,22 @@ binary_sensor:
         input: true
         pullup: true           # C3 internal pull-up holds it HIGH at idle
     filters:
-      - delayed_on: 25ms
+      # OC3 sits across the speaker pair (P5<->P1), so it pulses on ANY loud speaker
+      # audio: the Etagenruf tone, the Türruf 3-Klang gong and session speech alike.
+      # Only report a floor call when no house ring (gong) and no session/PTT (speech)
+      # explains the audio. All masked sources are AC, so the raw input keeps toggling
+      # and this filter re-evaluates continuously while masked.
+      - lambda: |-
+          if (id(house_doorbell).state || id(intercom_session_active).state || id(intercom_ptt).state) return false;
+          return x;
+      # The tone reaches the opto only on positive half-cycles above the LED threshold,
+      # so the raw input toggles at audio rate (~1ms low / ~1.4ms high) — a plain
+      # delayed_on can never latch on it. Stretch the conduction pulses into a
+      # continuous level first, then require that to persist. 150ms also outlasts
+      # house_doorbell's 50ms latch, so a gong that starts together with a house ring
+      # cannot beat the mask above.
+      - delayed_off: 50ms      # bridge the gaps between tone half-cycles
+      - delayed_on: 150ms      # require a sustained tone, and let house_doorbell latch first
       - delayed_off: 2s
     on_press:
       then:
@@ -121,6 +150,7 @@ binary_sensor:
   - platform: gpio
     name: "House Doorbell"
     icon: mdi:doorbell
+    id: house_doorbell
     pin:
       number: GPIO3            # OC2 collector — Türruf (P4 / IN-P4) sense   [V3: 33; C3: GPIO3; C6 pad 26]
       inverted: true
@@ -128,11 +158,16 @@ binary_sensor:
         input: true
         pullup: true
     filters:
-      # Mask while PTT is engaged: K1 ties IN_P4 to P2, so speech audio appears across
-      # OC2's sense pair (IN_P4<->P1) and would flicker this input. Speech is AC, so the
-      # raw input keeps toggling and this filter re-evaluates continuously while masked.
+      # Mask while line 4 can be bridged to P2 — two cases collapse the sense pair:
+      #  * board PTT: K1 ties IN_P4 to P2;
+      #  * resident talk: during an armed session (OC1 on) the WF26's S2 button plus its
+      #    internal relay also tie P4 to P2, so OC2 sees the P1<->P2 standing voltage and
+      #    would report a phantom ring.
+      # A phantom ring is worse than a missed one here — on_press can pulse the door
+      # buzzer (auto-open) — so OC2 stays masked for the whole session. A real ring
+      # during a talk bridge is hardware-indistinguishable from the bridge anyway.
       - lambda: |-
-          if (id(intercom_ptt).state) return false;
+          if (id(intercom_ptt).state || id(intercom_session_active).state) return false;
           return x;
       - delayed_on: 50ms
       - delayed_off: 2s
