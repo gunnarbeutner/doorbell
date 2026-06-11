@@ -7,15 +7,17 @@ local labels placed exactly on each pin endpoint (abs = inst + (pinX, -pinY) for
 unrotated symbol); power rails use power-port symbols. Validate with:
     kicad-cli sch erc kicad/doorbell.kicad_sch
 """
-import copy, re, uuid, os
+import copy, re, uuid, os, datetime
 from kiutils.schematic import Schematic, SchematicSymbol
 from kiutils.symbol import SymbolLib
 from kiutils.items.schitems import (LocalLabel, NoConnect, SymbolProjectInstance,
                                     SymbolProjectPath, Connection, Junction,
                                     Rectangle, Text)
-from kiutils.items.common import Position, Property, Effects, Stroke, Justify, Font
+from kiutils.items.common import (Position, Property, Effects, Stroke, Justify,
+                                  Font, TitleBlock)
 from doorbell_design import (REF, COMP, FP_OVERRIDE, NETS, NOCONN, GRID,
-                             LCSC, SYMBOL_STANDIN, PURPOSE)
+                             LCSC, SYMBOL_STANDIN, PURPOSE,
+                             TITLE, REVISION, COMPANY)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 P3 = os.path.expanduser("~/Documents/KiCad/10.0/3rdparty/symbols/com_github_CDFER_JLCPCB-Kicad-Library")
@@ -90,14 +92,15 @@ VALUE_DY = {"OC1": 3.81, "OC2": 3.81, "OC3": 3.81, "J2": 8.89}
 # Refs whose ref/value should stack to the right of the body (clear of pins),
 # mapped to the horizontal offset in mm.  Vertical passives get this automatically.
 RIGHT_TEXT = {"Q1": 5.08, "Q2": 5.08, "Q3": 5.08,
-              "K1": 16.5, "K2": 16.5, "K3": 16.5}
+              "K1": 16.5, "K2": 16.5, "K3": 16.5,
+              "D_esd": 36.5}  # clear of its right-pin net labels (end ~x82)
 # Refs whose ref/value stack to the LEFT of the body (right side is blocked),
 # mapped to the horizontal offset in mm (text right-justified at ox-offset).
 LEFT_TEXT = {"SW_OC1": 10.5, "SW_OC2": 10.5, "SW_OC3": 10.5,
              "R_em": 2.54,    # emitter trunk runs along the right side
              "R_sda": 2.54}   # right side crowds the audio group-box edge
 # Refs whose ref/value stack ABOVE the body (below/inside is blocked).
-TEXT_ABOVE = {"U2", "J1", "T1", "D_oc1", "D_oc2", "D_oc3", "D_esd"}
+TEXT_ABOVE = {"U2", "J1", "T1", "D_oc1", "D_oc2", "D_oc3"}
 # Refs whose ref/value stack BELOW the body (sides are blocked by wires/ports).
 BELOW_TEXT = {"SW_en", "SW_boot"}
 # Symbol rotation (deg, KiCad convention). Lets 2-pin parts lie inline with the
@@ -116,6 +119,9 @@ ROT = {"R_io8": 90, "R_led": 270, "LED1": 270,
        # (opto-anode/JP node) and anode (pin 2) at the bottom (opto-cathode/CATH);
        # placed between the switch and the opto, anti-parallel to the LED.
        "D_oc1": 180, "D_oc2": 180, "D_oc3": 180,
+       # opto collector pull-ups flipped so pin 1 (OC*_OUT) sits at the bottom,
+       # dead on the collector stub; pin 2 (+3V3) faces up.
+       "R_pu1": 180, "R_pu2": 180, "R_pu3": 180,
        # VBUS Schottky laid horizontal inline on J1's VBUS row: SS14 pin 2 (anode)
        # faces left toward J1, pin 1 (cathode/+5V) right.
        "D_vbus": 90,
@@ -137,15 +143,18 @@ def screen_offset(px, py, ang):
 # Schematic-only position overrides (grid units). GRID stays untouched so the PCB
 # generator keeps its clusters; the schematic re-lays everything for legibility.
 # Spacing is derived from symbol bboxes + label text length (~1.27mm/char + stub),
-# so labels clear neighbouring symbols.  Functional zones:
-#   top-left    USB-C + ESD           top-mid     LDO + rail caps + power LED
-#   centre      ESP32 + straps        right       three relay-driver rows
-#   bottom-left J2 + opto sense rows  bottom-mid  ES8311 codec + transformer
+# so labels clear neighbouring symbols.  Functional zones (top row, left to right:
+# USB-C | ESP32 + decoupling | LDO with the power LED below | relay drivers;
+# bottom row: J2 + opto sense | RESET/BOOT over the ES8311 + transformer):
+# the table keeps each zone's internal geometry; ZONE_SHIFT below moves the zones
+# as rigid bodies into this floorplan.
 G = 2.54
 SCHEM_POS = {
     # --- USB-C: TPD2S017 flow-through ESD clamp below J1 (connects by labels: J1-side
     #     USB_DP/USB_DM in, ESP-side *_ESP out), CC terminators wired off the CC pins ---
-    "J1": (19, 20), "D_esd": (18.5, 34),
+    "J1": (19, 20), "D_esd": (18.5, 34.5),  # ESD clamp low enough that its pin labels
+                                            # clear J1's GND hookup, high enough that
+                                            # its body clears the box bottom
     "R_cc1": (34, 17.5), "R_cc2": (31, 18.5),   # hang from short wires off A5/B5
     # Fuse + Schottky laid horizontal inline on J1's VBUS row (J1 -> F1 -> D4 anode);
     # +5V port hangs off the cathode. The VBUS_F TVS riser climbs from the fuse output
@@ -163,7 +172,7 @@ SCHEM_POS = {
     "R_boot": (97, 44), "SW_boot": (106, 45),
     "U1": (82, 22),   # MCU raised to the top row, level with POWER
     # MCU decoupling pair (PCB group "MCU") top-right of U1, clear of the pad-28..26
-    # port/label fan-out (ends ~x251) and of R_io8's +3V3 label row (y~48):
+    # port/label fan-out (ends ~x189) and of R_io8's +3V3 label row (y~48):
     "C_3v3": (100, 12), "C_dec": (105, 12),
     # single-use parts wired directly to the U1 pin they serve (right pin column):
     "R_io8": (98, 19),     # GPIO8 pull-up, rotated inline with pad 10's row
@@ -171,12 +180,14 @@ SCHEM_POS = {
     # All three rows share the same cluster: gate series R on top (GATE*_PRE/DRV label
     # on pin 1), FET + pulldown on the wired gate trunk below. K1's gate R input is
     # GATE1_PRE (from K3's interlock contact); the GPIO (GATE1_DRV) goes to K3.5.
-    "R_g1": (114, 18), "Q1": (116, 23), "R_pd1": (114, 30), "D1": (122, 22.5), "K1": (133, 23),
-    "R_g2": (114, 42), "Q2": (116, 47), "R_pd2": (114, 52), "D2": (122, 46.5), "K2": (133, 47),
-    "R_g3": (114, 66), "Q3": (116, 71), "R_pd3": (114, 76), "D3": (122, 70.5), "K3": (133, 71),
-    "R_ot": (134, 41.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
+    # rows sit 7 units lower than the natural top so GATE1_PRE's vertical label
+    # (R_g1 pin 1, ~13 mm of 90°-text) stays inside the group box
+    "R_g1": (114, 25), "Q1": (116, 30), "R_pd1": (114, 37), "D1": (122, 29.5), "K1": (133, 30),
+    "R_g2": (114, 49), "Q2": (116, 54), "R_pd2": (114, 59), "D2": (122, 53.5), "K2": (133, 54),
+    "R_g3": (114, 73), "Q3": (116, 78), "R_pd3": (114, 83), "D3": (122, 77.5), "K3": (133, 78),
+    "R_ot": (134, 48.5),   # ÖT bridge series R, wired on top of K2's NO contact (pin 4)
     # --- bell-sense rows: J2 | clamp diode | polarity switch | opto | limiter ---
-    "J2": (14, 83),
+    "J2": (17, 83),   # pulled toward the switches; its P*-labels end ~3 mm short of theirs
     # rows ordered OK1/OK2/OK3 top->bottom on a uniform 20-unit pitch. Clamp diodes
     # sit between the switch and the opto (gx46), centred on the opto-LED midpoint
     # (same row) so JP/CATH wire symmetrically; optos at gx54 for clearance.
@@ -186,29 +197,75 @@ SCHEM_POS = {
     "D_oc2": (46, 83), "SW_OC2": (32, 83), "OC2": (54, 83), "R_lim1": (36.5, 92.5),
     "D_oc3": (46, 103), "SW_OC3": (32, 103), "OC3": (54, 103), "R_lim2": (36.5, 111),
     "R_em": (66, 107),   # shared emitter R, hangs off a vertical trunk right of the optos
+    # collector pull-ups: pin 1 (rot 180) lands dead on each opto's pin-4 row, the
+    # body just east of the OC*_OUT pin label, west of the emitter trunk
+    "R_pu1": (62.5, 60.5), "R_pu2": (62.5, 80.5), "R_pu3": (62.5, 100.5),
     # --- audio codec: I2C pull-ups above U3, xfmr + coupling caps below;
-    #     single-use parts wired straight to the U3 pin they serve: VREF/VMID
-    #     reservoirs hang from staggered wires off pins 14/15/16 (clear of the
-    #     pin labels), CE pull-down off pin 20 beyond them ---
+    #     DACVREF/ADCVREF reservoirs wired below the bend field, VMID reservoir
+    #     and CE pull-down label-connected in the pocket left of U3 (see the
+    #     single-use wiring section) ---
     #     supply decoupling row (PCB group "Audio codec") above U3, I2C pull-ups
     #     shifted right to make room:
     "C_dv": (75, 72), "C_pv": (80, 72), "C_av": (85, 72), "C_avb": (90, 72),
     # I2C pull-ups flank U3 so each wires straight down onto its codec pin:
     # SCL -> pin 1 (left column), SDA -> pin 19 (right column)
-    "R_scl": (70, 72), "R_sda": (109, 72), "R_ce": (129, 83.5),
+    "R_scl": (70, 72), "R_sda": (109, 72),
     "U3": (92, 86), "T1": (83, 106),
     # AC-coupling caps between U3's analog pins and T1 winding B; column order
     # matches the bend-row order so the pin->cap drops don't cross (see audio wiring)
     "C_op": (89, 98), "C_on": (93, 98), "C_mn": (97, 98), "C_mp": (101, 98),
-    "C_vref": (113, 89.5), "C_aref": (118, 88.5), "C_vmid": (123, 87.5),
+    # audio front-end series resistors: one row below the coupling caps, inline on
+    # each cap's column (pin 1 up = cap side, pin 2 down to the SEC_* rails)
+    "R_op": (89, 101.5), "R_on": (93, 101.5), "R_mn": (97, 101.5), "R_mp": (101, 101.5),
+    # DACVREF/ADCVREF reservoirs tucked below the coupling-cap bend field (fed by
+    # wires down the free lanes east of the bends), stacked in one column so their
+    # value texts don't crowd the coupling caps or the box edge; VMID reservoir +
+    # CE pull-down live in the pocket left of U3's bottom edge, label-connected —
+    # everything inside the group box (they used to overflow it to the east)
+    "C_vref": (105, 98), "C_aref": (105, 104),
+    "C_vmid": (84, 95.5), "R_ce": (77, 95.5),
 }
 GRID2 = dict(GRID); GRID2.update(SCHEM_POS)
+
+# ---- zone shifts: move each functional group as a rigid body into the floorplan
+# (offsets in grid units; multiples of 0.5 gu = 1.27 mm keep pins on the wire
+# grid). Absolute mm literals in the wiring sections below are already expressed
+# in the shifted frame — change a zone here and those literals move with it.
+ZONE_SHIFT = (
+    # MCU left, beside USB-C
+    (("U1", "C_3v3", "C_dec", "R_io8"), (-24.5, 0)),
+    # POWER to the top row, right of the MCU
+    (("U2", "C_in", "C_out", "FLAG3", "FLAGG"), (47, -5.5)),
+    # POWER LED centred in its (enlarged) box below POWER
+    (("R_led", "LED1"), (-38, 18)),
+    # RESET/BOOT trails the MCU
+    (("R_en", "C_en", "SW_en", "R_boot", "SW_boot"), (-3, 0.5)),
+    # bell sense up into the space the straps vacated
+    (("J2", "D_oc1", "D_oc2", "D_oc3", "SW_OC1", "SW_OC2", "SW_OC3",
+      "OC1", "OC2", "OC3", "R_lim1", "R_lim2", "R_lim3", "R_em",
+      "R_pu1", "R_pu2", "R_pu3"), (-5.5, -13)),
+    # audio block up-left, beside the bell rows (the extra +0.5/+1.5 centres the
+    # contents in the group box, below its top-edge title)
+    (("C_dv", "C_pv", "C_av", "C_avb", "R_scl", "R_sda", "U3", "T1",
+      "C_op", "C_on", "C_mn", "C_mp", "R_op", "R_on", "R_mn", "R_mp",
+      "C_vref", "C_aref", "C_vmid", "R_ce"), (-5.5, -11)),
+    # relay drivers up to the top row
+    (("R_g1", "Q1", "R_pd1", "D1", "K1", "R_g2", "Q2", "R_pd2", "D2", "K2",
+      "R_g3", "Q3", "R_pd3", "D3", "K3", "R_ot"), (-2.5, -8.5)),
+)
+for _refs, (_zdx, _zdy) in ZONE_SHIFT:
+    for _zr in _refs:
+        _zx, _zy = GRID2[_zr]
+        GRID2[_zr] = (_zx + _zdx, _zy + _zdy)
+
 POS = {ref: (gx * G, gy * G) for ref, (gx, gy) in GRID2.items()}
 
 # ---- build ----
 sch = Schematic.create_new()
 sch.version = "20250114"
 sch.paper.paperSize = "A3"
+sch.titleBlock = TitleBlock(title=TITLE, revision=REVISION, company=COMPANY,
+                            date=datetime.date.today().isoformat())
 sch.uuid = U()
 ROOT = sch.uuid
 PROJECT = "doorbell"
@@ -364,7 +421,8 @@ def place_power(entry, x, y, outdir=90):
     sch.schematicSymbols.append(ss)
 
 LABEL_STUB = 2.54   # short wire from pin to label, so the text clears the pin number
-STUB_BY_REF = {"U1": 5.08, "U3": 5.08}   # big ICs: pin numbers need more clearance
+STUB_BY_REF = {"U1": 5.08, "U3": 5.08,   # big ICs: pin numbers need more clearance
+               "D_esd": 5.08}            # 2.54-pitch SOT-23-6: labels crowd the body
 # Per-pin stub overrides: a longer stub pushes that one label clear of its neighbours.
 STUB_BY_PIN = {("R_g1", "1"): 5.08,   # GATE1_PRE raised off R_g1's body
                ("R_g2", "1"): 5.08,   # GATE2_DRV raised off R_g2's body
@@ -374,7 +432,10 @@ STUB_BY_PIN = {("R_g1", "1"): 5.08,   # GATE1_PRE raised off R_g1's body
 # R_io8 lies inline with U1's dense pin column, so its rail end gets a label too.
 POWER_AS_LABEL = {("U3", "3"), ("U3", "4"), ("U3", "5"), ("U3", "10"),
                   ("U3", "11"), ("U3", "21"), ("R_io8", "2"),
-                  ("D_esd", "2")}   # GND mid-pin in the TPD2S017's 2.54-pitch column
+                  ("D_esd", "2"),  # GND mid-pin in the TPD2S017's 2.54-pitch column
+                  # pull-up tops: a port graphic's sideways value text would cross
+                  # the emitter trunk 9 mm to the east
+                  ("R_pu1", "2"), ("R_pu2", "2"), ("R_pu3", "2")}
 def add_label(net, x, y, outdir, stub=LABEL_STUB):
     dx, dy = DIR_DELTA[outdir]
     lx, ly = x + dx * stub, y + dy * stub
@@ -441,15 +502,28 @@ wire(PX("R_led", "2"), PX("LED1", "2"))
 
 # ---- single-use parts wired straight to the one pin they serve ----
 WIRED_NETS.update(("GPIO8", "USB_CC1", "USB_CC2", "OT_BRIDGE",
-                   "ES_DACVREF", "ES_ADCVREF", "ES_VMID", "ES_CE"))
+                   "ES_DACVREF", "ES_ADCVREF"))
 wire(PX("U1", "10"), PX("R_io8", "1"))    # GPIO8 pull-up inline with pad 10
 wire(PX("J1", "A5"), PX("R_cc1", "1"))    # CC terminators hang off the CC pins
 wire(PX("J1", "B5"), PX("R_cc2", "1"))
 wire(PX("K2", "4"), PX("R_ot", "2"))      # ÖT bridge R sits on K2's NO contact
-wire(PX("U3", "14"), PX("C_vref", "1"))   # DACVREF reservoir
-wire(PX("U3", "15"), PX("C_aref", "1"))   # ADCVREF reservoir
-wire(PX("U3", "16"), PX("C_vmid", "1"))   # VMID reservoir
-wire(PX("U3", "20"), PX("R_ce", "1"))     # CE address pull-down
+# DACVREF/ADCVREF reservoirs tuck below the coupling-cap bend field: east on the
+# pin row (crossing the MIC bend verticals, as before), down the free lanes just
+# east of the bend columns (x=262.89 / 265.43 — clear of every bend run), then a
+# short west leg into the cap top.
+_p14, _cv1 = PX("U3", "14"), PX("C_vref", "1")
+wire(_p14, (262.89, _p14[1]), (262.89, _cv1[1]), _cv1)
+_p15, _ca1 = PX("U3", "15"), PX("C_aref", "1")
+wire(_p15, (265.43, _p15[1]), (265.43, _ca1[1]), _ca1)
+# VMID reservoir + CE pull-down sit in the pocket left of U3's bottom edge and
+# connect by label (a wire would have to cross the whole bend field). The pin-16
+# label gets NO stub: "ES_VMID" then ends 0.5 mm short of the MIC1N bend vertical;
+# pin 20's row is above the bend tops, so its auto label is safe. The pocket parts
+# carry hand-placed horizontal labels off their pin-1 tips.
+add_label("ES_VMID", *PX("U3", "16"), 0, stub=0)
+add_label("ES_VMID", *PX("C_vmid", "1"), 0, stub=1.27)
+add_label("ES_CE", *PX("R_ce", "1"), 0, stub=1.27)
+SKIP_LABEL_PINS.update({("U3", "16"), ("C_vmid", "1"), ("R_ce", "1")})
 
 # ---- LDO: C_in/C_out wired inline on the VIN/VOUT pin row. U2's own rail pins are
 #      skipped so the +5V/+3V3 ports sit on the cap tops instead of riding the wires.
@@ -483,31 +557,49 @@ for _pa, _pb, _net, _bx in (("A6", "B6", "USB_DP", 66.04),
 #      T1's winding-A pin rows (the secondary owns pins 1/3 after the winding swap;
 #      T1 is drawn rotated 180 so those pins face the caps). Cap
 #      columns are ordered by bend row so none of the runs cross each other.
-WIRED_NETS.update(("ES_OUTP", "ES_OUTN", "ES_MICP", "ES_MICN", "SEC_A", "SEC_B"))
-for _pin, _cap, _bx, _by in (("12", "C_op", 264.16, 236.22),   # OUTP
-                             ("13", "C_on", 269.24, 238.76),   # OUTN
-                             ("17", "C_mn", 271.78, 241.3),    # MIC1N
-                             ("18", "C_mp", 274.32, 243.84)):  # MIC1P
+WIRED_NETS.update(("ES_OUTP", "ES_OUTN", "ES_MICP", "ES_MICN",
+                   "OUT_A", "OUT_B", "MIC_A", "MIC_B", "SEC_A", "SEC_B"))
+for _pin, _cap, _bx, _by in (("12", "C_op", 250.19, 208.28),   # OUTP
+                             ("13", "C_on", 255.27, 210.82),   # OUTN
+                             ("17", "C_mn", 257.81, 213.36),    # MIC1N
+                             ("18", "C_mp", 260.35, 215.9)):  # MIC1P
     _p, _c1 = PX("U3", _pin), PX(_cap, "1")
     wire(_p, (_bx, _p[1]), (_bx, _by), (_c1[0], _by), _c1)
+# series resistors (R_op/R_on/R_mn/R_mp) sit inline below their caps: a short
+# OUT_*/MIC_* link cap pad 2 -> R pad 1, then R pad 2 carries the SEC_* leg.
+for _cap, _r in (("C_op", "R_op"), ("C_on", "R_on"),
+                 ("C_mn", "R_mn"), ("C_mp", "R_mp")):
+    wire(PX(_cap, "2"), PX(_r, "1"))
 _t3, _t1p = PX("T1", "3"), PX("T1", "1")
-wire(_t1p, (PX("C_mp", "2")[0], _t1p[1]))     # SEC_A rail on T1 pin 1's row
-for _cap in ("C_op", "C_mp"):
-    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t1p[1]))
-junction(PX("C_op", "2")[0], _t1p[1])
-wire(_t3, (PX("C_mn", "2")[0], _t3[1]))       # SEC_B rail on T1 pin 3's row
-for _cap in ("C_on", "C_mn"):
-    _c2 = PX(_cap, "2"); wire(_c2, (_c2[0], _t3[1]))
-junction(PX("C_on", "2")[0], _t3[1])
+# SEC_A rail on T1 pin 1's row; the outer resistors' pad-2 drops cross the SEC_B
+# rail mid-wire (no junction) on the way down.
+wire(_t1p, (PX("R_mp", "2")[0], _t1p[1]))
+for _r in ("R_op", "R_mp"):
+    _r2 = PX(_r, "2"); wire(_r2, (_r2[0], _t1p[1]))
+junction(PX("R_op", "2")[0], _t1p[1])
+# SEC_B rail: jogs one grid step below T1 pin 3's row — on the row itself,
+# R_op's pad-2 endpoint (same y, mid-rail x) would merge the two nets.
+_jx, _jy = _t3[0] + 1.27, _t3[1] + 2.54
+wire(_t3, (_jx, _t3[1]), (_jx, _jy), (PX("R_mn", "2")[0], _jy))
+for _r in ("R_on", "R_mn"):
+    _r2 = PX(_r, "2"); wire(_r2, (_r2[0], _jy))
+junction(PX("R_on", "2")[0], _jy)
 
 # I2C pull-ups wired straight down onto their codec pins; the wire carries the net
 # name (U1's pins keep their labels, binding the rest of the net).
 SKIP_LABEL_PINS.update({("U3", "19"), ("R_sda", "2"), ("U3", "1"), ("R_scl", "2")})
 _sda2, _scl2 = PX("R_sda", "2"), PX("R_scl", "2")
 wire(PX("U3", "19"), (_sda2[0], PX("U3", "19")[1]), _sda2)
-add_label("I2C_SDA", _sda2[0], 196.85, 90, stub=0)
+add_label("I2C_SDA", _sda2[0], 168.91, 90, stub=0)
 wire(PX("U3", "1"), (_scl2[0], PX("U3", "1")[1]), _scl2)
-add_label("I2C_SCL", 182.88, PX("U3", "1")[1], 0, stub=0)
+add_label("I2C_SCL", 168.91, PX("U3", "1")[1], 0, stub=0)
+
+# ---- opto collector pull-ups: each R_pu* stands on its opto's pin-4 stub (pin 1
+#      dead on the collector row, pin 2 = +3V3 up). The OC*_OUT net keeps its pin-4
+#      label, which binds the rest of the net (the U1 input) as before.
+for _oc, _rp in (("OC1", "R_pu1"), ("OC2", "R_pu2"), ("OC3", "R_pu3")):
+    wire(PX(_oc, "4"), PX(_rp, "1"))
+SKIP_LABEL_PINS.update({("R_pu1", "1"), ("R_pu2", "1"), ("R_pu3", "1")})
 
 # ---- shared opto emitter: one vertical trunk right of the optos drops into R_em ----
 WIRED_NETS.add("OC_EMIT")
@@ -523,10 +615,10 @@ junction(_re1[0], PX("OC3", "3")[1])
 # the rail to U1's EN pin label.
 wire(PX("R_en", "2"), PX("SW_en", "1"))
 junction(*PX("C_en", "1"))                # cap taps the rail mid-run
-add_label("EN", 205.74, PX("SW_en", "1")[1], outdir=0, stub=0)    # name sits on the rail
+add_label("EN", 198.12, PX("SW_en", "1")[1], outdir=0, stub=0)    # name sits on the rail
 # BOOT rail: same pattern, R_boot into the BOOT button.
 wire(PX("R_boot", "2"), PX("SW_boot", "1"))
-add_label("BOOT", 255.27, PX("SW_boot", "1")[1], outdir=0, stub=0)
+add_label("BOOT", 247.65, PX("SW_boot", "1")[1], outdir=0, stub=0)
 
 # Polarity switches: JP wired over the top of the switch into the opto anode
 # (net name bound by a mid-wire label + the clamp diode's label); RET wired
@@ -548,7 +640,7 @@ for _sw, _oc, _rl, _d, _jp, _drop in (("SW_OC1", "OC1", "R_lim3", "D_oc1", "OC1_
     wire(sw5, (sw5[0], jt), (oc1[0], jt), oc1)
     wire((d1[0], jt), d1)
     junction(d1[0], jt)
-    add_label(_jp, 86.36, jt, 0, stub=0)      # name sits on the rail
+    add_label(_jp, 72.39, jt, 0, stub=0)      # name sits on the rail
     # RET: SW pin2 down & across into the limiter return (pin 2), inline on the CATH row.
     rb = sw2[1] + _drop
     wire(sw2, (sw2[0], rb), (rl2[0], rb), rl2)
@@ -591,14 +683,17 @@ def title(text, x, y):
     e = just("left"); e.font = Font(height=2.0, width=2.0, bold=True)
     sch.texts.append(Text(text=text, position=Position(x, y, 0), effects=e))
 
-group_box(13.5, 13, 95.5, 91);      title("USB-C", 15, 16)
-group_box(98, 28, 148, 63);         title("POWER", 99.5, 31)
-group_box(160, 13, 277, 95.5);      title("ESP32-C6 MCU", 162, 16)
-group_box(279, 38, 372, 207);       title("RELAY DRIVERS", 281, 41)
-group_box(313, 15.5, 366, 30.5);    title("POWER LED", 313.5, 18)
-group_box(174, 171.5, 280, 284);    title("AUDIO  ES8311 + LINE XFMR", 176, 281.3)
-group_box(166.5, 98, 277, 130);     title("RESET / BOOT", 168, 101)
-group_box(16, 132.5, 170, 285);     title("BELL SENSE", 18, 136)
+# Box edges are tidied to a common frame: the four top-row boxes share top=13,
+# the two bottom-row boxes share bottom=252.5, RESET/BOOT and AUDIO share their
+# left edge, and POWER LED matches POWER's 50x35 outline.
+group_box(13.5, 13, 95.5, 95.5);    title("USB-C", 15, 16)
+group_box(97.5, 13, 215, 95.5);     title("ESP32-C6 MCU", 99, 16)
+group_box(217.5, 13, 267.5, 49);    title("POWER", 219, 16)
+group_box(217.5, 51, 267.5, 86);    title("POWER LED", 219, 54)
+group_box(272.5, 13, 365.5, 202.5); title("RELAY DRIVERS", 274, 16)
+group_box(158.5, 139.5, 269.5, 252.5); title("AUDIO  ES8311 + LINE XFMR", 160, 142.5)
+group_box(158.5, 99, 269.5, 131.5); title("RESET / BOOT", 160, 102)
+group_box(13.5, 99, 156, 252.5);    title("BELL SENSE", 15, 102.5)
 
 out = os.path.join(HERE, "doorbell.kicad_sch")
 sch.to_file(out)

@@ -9,13 +9,14 @@ layout are different problems, so the board gets its own deliberate, compact pla
 The board comes out *placed and netted* (full ratsnest) but UNROUTED — route it with
 route.py / `build.sh route`. Run with KiCad's bundled Python (owns pcbnew); see build.sh.
 """
-import os, sys, math
+import os, sys, math, datetime
 from collections import defaultdict
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import pcbnew
 from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
-                             EDGE_FLUSH, EDGE_OVERHANG, ANTENNA_REF)
+                             EDGE_FLUSH, EDGE_OVERHANG, ANTENNA_REF,
+                             TITLE, REVISION, COMPANY)
 
 # ---- PCB placement: ref -> (x_mm, y_mm, rotation_deg) ----
 # LOGIC/USB section in the lower-left: the ESP32 with its LDO / boot+reset / LED / decoupling
@@ -164,6 +165,10 @@ MARGIN = 1.0           # board edge margin (mm) on non-flush edges (right edge o
 def vmm(x, y): return pcbnew.VECTOR2I(pcbnew.FromMM(x), pcbnew.FromMM(y))
 
 board = pcbnew.CreateEmptyBoard()
+_tb = pcbnew.TITLE_BLOCK()
+_tb.SetTitle(TITLE); _tb.SetRevision(REVISION); _tb.SetCompany(COMPANY)
+_tb.SetDate(datetime.date.today().isoformat())
+board.SetTitleBlock(_tb)
 board.SetCopperLayerCount(4)        # 4-layer stack: F.Cu / In1 / In2 / B.Cu
 board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_MIXED)
 board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_MIXED)

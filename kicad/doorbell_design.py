@@ -5,6 +5,12 @@ the PCB always describe the same circuit. Edit here, then run `./build.sh`.
 """
 import os
 
+# drawing-sheet title block, shared by the schematic and PCB generators
+# (each generator fills the date field with its generation date)
+TITLE = "Doorbell controller (Klingel V4)"
+REVISION = "V4"
+COMPANY = "Gunnar Beutner"
+
 # internal key -> KiCad reference designator
 REF = {
     "U1":"U1","U2":"U2","U3":"U3","T1":"T1","J1":"J1","J2":"J2","K2":"K2","K3":"K3","K1":"K1",
