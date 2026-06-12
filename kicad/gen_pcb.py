@@ -15,7 +15,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import pcbnew
 from doorbell_design import (COMP, REF, FOOTPRINT, NETS, FP_LIB_DIRS,
-                             EDGE_FLUSH, EDGE_OVERHANG, ANTENNA_REF,
+                             EDGE_FLUSH, EDGE_OVERHANG, ANTENNA_REF, LCSC,
                              TITLE, REVISION, COMPANY)
 
 # ---- PCB placement: ref -> (x_mm, y_mm, rotation_deg) ----
@@ -189,6 +189,11 @@ for ref, libname in FOOTPRINT.items():
         raise RuntimeError(f"footprint not found: {libname}")
     fp.SetReference(REF[ref])
     fp.SetValue(COMP[ref][2])
+    if ref in LCSC:
+        fp.SetField("LCSC", LCSC[ref])   # part number on the footprint (matches the BOM)
+        for _fld in fp.GetFields():
+            if _fld.GetName() == "LCSC":
+                _fld.SetVisible(False)   # data field, not silk
     x, y, rot = PCB_PLACE[ref]
     fp.SetPosition(vmm(x, y))
     fp.SetOrientationDegrees(rot)
@@ -1543,10 +1548,15 @@ def _place_fiducial(ref, cx, cy):              # cx,cy = the board corner to gro
                 _fid_rects.append(_crtyd_rect(fp))     # keep the next fiducial off this one
                 return (fx, fy)
     raise RuntimeError(f"no clear fiducial location found for {ref}")
-# V4.1 TODO: re-enable these. With no board fiducials, JLCPCB's CAM added its own
-# for the V4 proto run -- including a 1.55 mm copper dot INSIDE the antenna keepout
-# (bottom-left, ~(2.1, 68.3); approved 2026-06-12, estimated impact < 0.3 dB).
-# Providing our own three marks at controlled positions prevents that.
+# V4.1 TODO: re-enable these. With no board fiducials, JLCPCB's CAM added two marks
+# for the V4 proto run (approved 2026-06-12) -- and the production drill file shows they
+# are DRILLED 1.152 mm positioning holes (JLCPCB's standard SMT tooling size) through a
+# 1.55 mm pad on BOTH outer layers, not flat optical dots: one at ~(2.1, 68.25), just
+# west of (outside) the antenna copper-clear zone (estimated impact < 0.3 dB), one at
+# (36.0, 64.5) west of T1. Since they register the assembly fixture mechanically,
+# optical fiducials alone may not stop the CAM from drilling them -- V4.1 should also
+# pre-place 1.152 mm tooling holes at controlled positions (or carry an order remark
+# keeping CAM-added holes away from the antenna edge).
 _fids = []  # fiducials disabled
 # _fids = [_place_fiducial("FID1", x0, y0),      # top-left
 #          _place_fiducial("FID2", x0, y1),      # bottom-left

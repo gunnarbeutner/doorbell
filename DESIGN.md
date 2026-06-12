@@ -708,9 +708,9 @@ belt-and-suspenders local references. Gotchas handled in code, so DRC stays 0/0:
 - **Programming/bring-up:** flash + view logs over USB-C (native USB-Serial-JTAG); BOOT +
   EN buttons fitted for recovery.
 - **Bench validation against the real TV20/S** (door pulse, chime suppress, session sense,
-  PTT) before it goes in the wall. The board has **no dedicated test points** — probe on
-  J2's screws and component pads — and **no mounting holes** (accepted for the test-board
-  run; revisit for the wall install).
+  PTT) before it goes in the wall. Probe via the commissioning test points (TP1 = GND
+  scope anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. The board has
+  **no mounting holes** (accepted for the test-board run; revisit for the wall install).
 
 ---
 
@@ -825,9 +825,15 @@ rating; every U1 pad↔GPIO assignment against the Espressif C6-WROOM-1 symbol.
 **Known minor items (accepted):**
 - One 0.388 mm bus↔logic clearance spot (<0.5 mm aspiration; fine for 12 V).
 - A benign plane-stitch warning on U1's EPAD.
-- No board fiducials (generator support exists, disabled): JLCPCB's CAM added its own
-  on the V4 proto, one inside the antenna keep-out (~(2.1, 68.3), 1.55 mm copper dot,
-  floating; estimated impact < 0.3 dB — accepted for proto). V4.1: re-enable our own
-  fiducials at controlled positions.
+- No board fiducials (generator support exists, disabled): JLCPCB's CAM added two marks
+  on the V4 proto, and the production drill file shows they are **drilled 1.152 mm
+  positioning holes** (JLCPCB's standard SMT tooling size) through a 1.55 mm pad on both
+  outer layers — mechanical fixture-registration holes, not flat optical fiducials. One
+  sits at ~(2.1, 68.25), just west of (outside) the antenna copper-clear zone (estimated
+  impact < 0.3 dB — accepted for proto); the other at (36.0, 64.5) west of T1. Because
+  they register the assembly fixture, optical fiducials alone may not prevent them —
+  V4.1: re-enable our own fiducials **and** pre-place 1.152 mm tooling holes at
+  controlled positions (or carry an order remark keeping CAM-added holes away from the
+  antenna edge).
 - No mounting holes; three commissioning test points: TP1 = GND at (37.5, 62.5) (the logic ground is isolated from the bus, so TP1 is the scope-ground anchor; bus measurements reference J2.1/P1 instead), TP2 = +5V at (46.3, 21.1) (stub into K1's coil pad 1), TP3 = +3V3 at (28.6, 39.152) (stub onto R18's plane via). Bare 1.5 mm pads, excluded from BOM/CPL.
 - Bench-confirm the relay-coil voltage under WiFi TX with a long USB cable if paranoid.

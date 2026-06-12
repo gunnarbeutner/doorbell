@@ -150,6 +150,34 @@ LCSC = {
     "SW_OC3": "C2921541",
     "D_esd": "C880115",     # TI TPD2S017DBVR (easyeda2kicad symbol carries the field too; explicit for the BOM overrides)
     "F_vbus": "C151135",    # Littelfuse 0466001.NRHF 1A fast 1206 fuse (stock KiCad symbol carries no LCSC field)
+    # --- The remaining parts' numbers used to live only in the JLCPCB-library symbols'
+    #     "LCSC" field; listed explicitly so the dict is the complete single source
+    #     (gen_pcb.py stamps them onto the footprints, jlcpcb_files.py onto the BOM).
+    # 0603 passives (JLCPCB basic parts)
+    "R_g1": "C22775", "R_g2": "C22775", "R_g3": "C22775",            # 100R
+    "R_em": "C21190", "R_led": "C21190", "R_op": "C21190", "R_on": "C21190",  # 1k
+    "R_ot": "C4190",                                                  # 2.2k
+    "R_io8": "C22978",                                                # 3.3k
+    "R_lim1": "C23186", "R_lim2": "C23186", "R_lim3": "C23186",
+    "R_cc1": "C23186", "R_cc2": "C23186",                             # 5.1k
+    "R_pd1": "C25804", "R_pd2": "C25804", "R_pd3": "C25804",
+    "R_en": "C25804", "R_boot": "C25804", "R_sda": "C25804",
+    "R_scl": "C25804", "R_ce": "C25804", "R_pu1": "C25804",
+    "R_pu2": "C25804", "R_pu3": "C25804", "R_mp": "C25804", "R_mn": "C25804",  # 10k
+    "C_dec": "C14663", "C_dv": "C14663", "C_pv": "C14663", "C_av": "C14663",  # 100nF
+    "C_en": "C15849", "C_vmid": "C15849", "C_aref": "C15849",
+    "C_op": "C15849", "C_on": "C15849", "C_mp": "C15849", "C_mn": "C15849",   # 1uF
+    "C_in": "C19702", "C_out": "C19702", "C_3v3": "C19702",
+    "C_avb": "C19702", "C_vref": "C19702",                            # 10uF
+    # semiconductors / misc
+    "Q1": "C8545", "Q2": "C8545", "Q3": "C8545",                      # 2N7002
+    "D1": "C81598", "D2": "C81598", "D3": "C81598",
+    "D_oc1": "C81598", "D_oc2": "C81598", "D_oc3": "C81598",          # 1N4148W
+    "D_vbus": "C2480",                                                # SS14
+    "D_tvs": "C19077497",                                             # SMF5.0A
+    "LED1": "C2286",                                                  # power LED
+    "OC1": "C115450", "OC2": "C115450", "OC3": "C115450",             # LTV-217
+    "SW_boot": "C720477", "SW_en": "C720477",                         # TS-1088 tactile
 }
 # symbols borrowed from a *different* part (value/LCSC overridden above): their MPN/datasheet
 # fields describe the stand-in, not the real part -> gen_schematic.py must not embed them.
