@@ -1543,6 +1543,10 @@ def _place_fiducial(ref, cx, cy):              # cx,cy = the board corner to gro
                 _fid_rects.append(_crtyd_rect(fp))     # keep the next fiducial off this one
                 return (fx, fy)
     raise RuntimeError(f"no clear fiducial location found for {ref}")
+# V4.1 TODO: re-enable these. With no board fiducials, JLCPCB's CAM added its own
+# for the V4 proto run -- including a 1.55 mm copper dot INSIDE the antenna keepout
+# (bottom-left, ~(2.1, 68.3); approved 2026-06-12, estimated impact < 0.3 dB).
+# Providing our own three marks at controlled positions prevents that.
 _fids = []  # fiducials disabled
 # _fids = [_place_fiducial("FID1", x0, y0),      # top-left
 #          _place_fiducial("FID2", x0, y1),      # bottom-left

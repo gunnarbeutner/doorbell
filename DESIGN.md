@@ -825,5 +825,9 @@ rating; every U1 pad↔GPIO assignment against the Espressif C6-WROOM-1 symbol.
 **Known minor items (accepted):**
 - One 0.388 mm bus↔logic clearance spot (<0.5 mm aspiration; fine for 12 V).
 - A benign plane-stitch warning on U1's EPAD.
+- No board fiducials (generator support exists, disabled): JLCPCB's CAM added its own
+  on the V4 proto, one inside the antenna keep-out (~(2.1, 68.3), 1.55 mm copper dot,
+  floating; estimated impact < 0.3 dB — accepted for proto). V4.1: re-enable our own
+  fiducials at controlled positions.
 - No mounting holes; three commissioning test points: TP1 = GND at (37.5, 62.5) (the logic ground is isolated from the bus, so TP1 is the scope-ground anchor; bus measurements reference J2.1/P1 instead), TP2 = +5V at (46.3, 21.1) (stub into K1's coil pad 1), TP3 = +3V3 at (28.6, 39.152) (stub onto R18's plane via). Bare 1.5 mm pads, excluded from BOM/CPL.
 - Bench-confirm the relay-coil voltage under WiFi TX with a long USB cable if paranoid.
