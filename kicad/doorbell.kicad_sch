@@ -1,13 +1,13 @@
 (kicad_sch (version 20250114) (generator kiutils)
 
-  (uuid 1b3a2dac-0ea3-4341-9a19-146ec76a9a45)
+  (uuid 645220e6-38b9-4040-864b-b90d05f845d6)
 
   (paper "A3")
 
   (title_block
     (title "Doorbell controller (Klingel V4)")
-    (date "2026-06-12")
-    (rev "V4")
+    (date "2026-06-13")
+    (rev "V4.1")
     (company "Gunnar Beutner")
   )
 
@@ -3382,67 +3382,67 @@
   )
 
   (junction (at 283.21000000000004 54.61) (diameter 0) (color 0 0 0 0)
-    (uuid 3a04fbbc-c5ee-4f9d-8690-afa9b5e5e8f7)
+    (uuid c8d54597-1903-461d-928e-de8215882865)
   )
   (junction (at 303.53000000000003 49.53) (diameter 0) (color 0 0 0 0)
-    (uuid 319ed3fa-a4be-4fe9-8333-e9e51982fb26)
+    (uuid e385f6b0-3ec4-4191-859e-86e18e9dd65f)
   )
   (junction (at 312.42 24.129999999999995) (diameter 0) (color 0 0 0 0)
-    (uuid 047726bc-412c-4101-8db2-264f58af5dce)
+    (uuid e867e2fb-ab13-4725-a345-553bd397df1c)
   )
   (junction (at 283.21000000000004 115.57000000000001) (diameter 0) (color 0 0 0 0)
-    (uuid 98acc808-f0b3-408a-9146-f93e85c8d587)
+    (uuid d0531300-ebaf-49d7-879d-cc8104b53a5a)
   )
   (junction (at 303.53000000000003 110.49000000000001) (diameter 0) (color 0 0 0 0)
-    (uuid dcc79153-d802-4921-8e49-e84c63bea1e6)
+    (uuid c145c182-551f-4cc5-9df5-8499708dab2a)
   )
   (junction (at 312.42 85.09) (diameter 0) (color 0 0 0 0)
-    (uuid 51bd13ea-ddea-415d-bc4a-fa5e8f3cd738)
+    (uuid f601e8d2-aaea-4d4d-9d61-f592293d1608)
   )
   (junction (at 283.21000000000004 176.53) (diameter 0) (color 0 0 0 0)
-    (uuid 1ee5d3ab-01e4-4407-8aac-379356f4ffe8)
+    (uuid ba953306-c60e-42c9-bcda-64ee7b14ea28)
   )
   (junction (at 303.53000000000003 171.45) (diameter 0) (color 0 0 0 0)
-    (uuid bf5459f8-7009-43e1-95b5-679bde86aab7)
+    (uuid a6eea738-4926-4575-800d-cc3a03fd2f58)
   )
   (junction (at 312.42 146.04999999999998) (diameter 0) (color 0 0 0 0)
-    (uuid 1627147f-a75b-41a5-ac03-ec651bdf42e1)
+    (uuid e5972736-f427-4e1a-a500-4cef464ea5e7)
   )
   (junction (at 74.93 35.56) (diameter 0) (color 0 0 0 0)
-    (uuid b47d741e-d6ea-4d67-8216-537cc2211474)
+    (uuid b076a215-fddc-4384-872c-175f77f4ab98)
   )
   (junction (at 212.09 248.92000000000002) (diameter 0) (color 0 0 0 0)
-    (uuid d1cbf228-7a19-4fbf-a19b-393a15092169)
+    (uuid 3645f7d5-f5cd-4322-825b-9c40075a1c24)
   )
   (junction (at 222.25 236.22) (diameter 0) (color 0 0 0 0)
-    (uuid cfffbb74-5408-4b6d-9224-cc102a30e4ff)
+    (uuid 91930a6c-3527-4520-9ecd-a33695f369d8)
   )
   (junction (at 153.67000000000002 180.34) (diameter 0) (color 0 0 0 0)
-    (uuid 702c9ac9-6174-4a4f-bd98-43218d2726eb)
+    (uuid 0ed943da-2b28-4ec2-a9b9-54de7c8ab470)
   )
   (junction (at 153.67000000000002 231.14) (diameter 0) (color 0 0 0 0)
-    (uuid db4552ff-0f1e-4af5-9ec1-afcf0c2b5267)
+    (uuid bee41228-85bf-4152-81e8-1682a349be94)
   )
   (junction (at 185.42000000000002 113.03) (diameter 0) (color 0 0 0 0)
-    (uuid 9a0ff6a5-7ba3-492f-ba6f-1a915b70631d)
+    (uuid 0b5f0edc-2482-4c1b-99b3-cf3d754ff110)
   )
   (junction (at 102.87 102.86999999999999) (diameter 0) (color 0 0 0 0)
-    (uuid 708ffd67-5f05-4f85-a7fb-c756edeb8ed0)
+    (uuid 92d7ee0b-d54d-49c4-b2f4-70270c7955f7)
   )
   (junction (at 102.87 147.32) (diameter 0) (color 0 0 0 0)
-    (uuid bb0c40db-b51a-466c-9e41-7f064e378938)
+    (uuid 5c4c68b4-f537-4b8d-8fa7-d8ecc3a1cc4e)
   )
   (junction (at 102.87 153.67000000000002) (diameter 0) (color 0 0 0 0)
-    (uuid 78f29335-ee6c-4ce4-86ec-20e1c449557e)
+    (uuid 74722327-d480-4d45-8295-a54132bbb928)
   )
   (junction (at 102.87 201.93) (diameter 0) (color 0 0 0 0)
-    (uuid 53d44e59-61b6-4942-b0f8-e3a75047ab98)
+    (uuid 6f2c6f42-a046-4696-be22-de4b49a31fa4)
   )
   (junction (at 102.87 204.47) (diameter 0) (color 0 0 0 0)
-    (uuid 50b261a7-397d-4a3c-baa7-cfad6af512a4)
+    (uuid 771b268f-a57b-4482-8361-66dc3ec7341c)
   )
   (junction (at 102.87 248.92000000000002) (diameter 0) (color 0 0 0 0)
-    (uuid bdf8e8d2-dcdf-4257-9b3c-13b04084c108)
+    (uuid 1738826f-25a6-4e2e-922b-e272075e31f3)
   )
 
   (no_connect (at 328.93 90.17))
@@ -3469,775 +3469,775 @@
 
   (wire (pts (xy 283.21 45.720000000000006) (xy 283.21 68.58))
     (stroke (width 0) (type default))
-    (uuid 0f5b57bf-86cb-4004-8029-d0ac743380ae)
+    (uuid 6c21ac97-fb58-4ec0-8bc1-8ae699693ba9)
   )
   (wire (pts (xy 290.83000000000004 49.53) (xy 321.31 49.53))
     (stroke (width 0) (type default))
-    (uuid 068ae382-05cf-4c5b-9aab-32ee07576c38)
+    (uuid a7669ad6-a67a-40af-b277-fe9b7189c216)
   )
   (wire (pts (xy 321.31 49.53) (xy 321.31 44.449999999999996))
     (stroke (width 0) (type default))
-    (uuid d54f722f-043e-4216-9426-7f2a2144234e)
+    (uuid 7547459c-cf2d-47ea-ac90-a9eadc552b36)
   )
   (wire (pts (xy 303.53000000000003 40.64) (xy 303.53000000000003 49.53))
     (stroke (width 0) (type default))
-    (uuid 9e96f97d-e03e-4659-93a0-44730d5ed46c)
+    (uuid 6deec8e0-bd30-4566-8113-2e6b8bc389c1)
   )
   (wire (pts (xy 303.53000000000003 33.019999999999996) (xy 303.53000000000003 24.129999999999995))
     (stroke (width 0) (type default))
-    (uuid 36793e78-adc3-4ac0-a11e-92fe9877443d)
+    (uuid 5cf85674-d5cc-42a0-a7b9-d2003ced2745)
   )
   (wire (pts (xy 303.53000000000003 24.129999999999995) (xy 321.31 24.129999999999995))
     (stroke (width 0) (type default))
-    (uuid 0ce115cc-0d3d-4f42-b829-697e13121d53)
+    (uuid 01cc7f06-de63-40c8-9734-54a2b84b3969)
   )
   (wire (pts (xy 321.31 24.129999999999995) (xy 321.31 29.209999999999997))
     (stroke (width 0) (type default))
-    (uuid 479c594b-d64f-49cd-8f50-ca0b11129677)
+    (uuid 6e811afb-5ec4-4f87-b615-bb6ab9dc4de0)
   )
   (wire (pts (xy 312.42 24.129999999999995) (xy 312.42 21.589999999999996))
     (stroke (width 0) (type default))
-    (uuid 1ae6e95f-d2a2-4e11-aa50-8241fc7b12ed)
+    (uuid 01932346-ba02-46c1-af49-d2a60f2d72ae)
   )
   (wire (pts (xy 283.21 106.68) (xy 283.21 124.46000000000001))
     (stroke (width 0) (type default))
-    (uuid ed658b92-1c28-400b-b50c-21b6da009287)
+    (uuid 9da895fe-fa23-4e68-ae1f-c543b17202db)
   )
   (wire (pts (xy 290.83000000000004 110.49000000000001) (xy 321.31 110.49000000000001))
     (stroke (width 0) (type default))
-    (uuid a3b78373-d665-4271-aa99-c70b78fef9d4)
+    (uuid 95cdb348-cb3e-4cc6-a8c3-85c0ca26fa38)
   )
   (wire (pts (xy 321.31 110.49000000000001) (xy 321.31 105.41000000000001))
     (stroke (width 0) (type default))
-    (uuid 932e95c4-a7e8-4e5b-abe4-b267f9b821e9)
+    (uuid b6084391-7136-4764-9841-b567595c2d6d)
   )
   (wire (pts (xy 303.53000000000003 101.60000000000001) (xy 303.53000000000003 110.49000000000001))
     (stroke (width 0) (type default))
-    (uuid 8409e3c1-a1bf-48d2-8e94-b0d07ae54da7)
+    (uuid 0bb9165a-0650-4987-aabb-32fea47d23c1)
   )
   (wire (pts (xy 303.53000000000003 93.98) (xy 303.53000000000003 85.09))
     (stroke (width 0) (type default))
-    (uuid 6780e693-f978-47c3-93eb-a27e5068938a)
+    (uuid 34575a2b-dcef-47dd-8bdc-4cbf850d8b36)
   )
   (wire (pts (xy 303.53000000000003 85.09) (xy 321.31 85.09))
     (stroke (width 0) (type default))
-    (uuid 5e0c2606-5fa9-48aa-bbb0-81bee7f962ec)
+    (uuid 1ae69f40-c923-456d-bf8c-f1cd779b9074)
   )
   (wire (pts (xy 321.31 85.09) (xy 321.31 90.17))
     (stroke (width 0) (type default))
-    (uuid f06da82d-4b89-4a74-b5c5-05644919260f)
+    (uuid 07b4c598-703f-40ba-b3ed-0fa62ec9bd36)
   )
   (wire (pts (xy 312.42 85.09) (xy 312.42 82.55))
     (stroke (width 0) (type default))
-    (uuid 28394836-75cf-43c1-97f8-def62a9b7941)
+    (uuid 9fbe4f98-6d85-4af1-b366-6913de0ec9a0)
   )
   (wire (pts (xy 283.21 167.64000000000001) (xy 283.21 185.42))
     (stroke (width 0) (type default))
-    (uuid 5e7ea340-d52e-4ab4-8d9c-2c454427f543)
+    (uuid 3eb4e611-a554-42a5-8981-5f6f7199510f)
   )
   (wire (pts (xy 290.83000000000004 171.45) (xy 321.31 171.45))
     (stroke (width 0) (type default))
-    (uuid 896dcff7-4b7c-450d-9125-83ec2c68c34a)
+    (uuid 652cf552-54cc-482c-94df-abe261a60b52)
   )
   (wire (pts (xy 321.31 171.45) (xy 321.31 166.37))
     (stroke (width 0) (type default))
-    (uuid f34891a3-44d2-4ea3-82a3-0d5d5d6e795d)
+    (uuid 06eae4ee-8a48-42be-935e-9fadbbd904c6)
   )
   (wire (pts (xy 303.53000000000003 162.56) (xy 303.53000000000003 171.45))
     (stroke (width 0) (type default))
-    (uuid a527100a-75b6-44b8-8776-8062a4613a2c)
+    (uuid 38750d09-69f5-4890-a44d-eebe2efde9a1)
   )
   (wire (pts (xy 303.53000000000003 154.94) (xy 303.53000000000003 146.04999999999998))
     (stroke (width 0) (type default))
-    (uuid b4f51f6e-6096-4454-8aac-47209d6093ca)
+    (uuid 9f48cc8d-7ed3-43b6-a5c1-baaaa8411169)
   )
   (wire (pts (xy 303.53000000000003 146.04999999999998) (xy 321.31 146.04999999999998))
     (stroke (width 0) (type default))
-    (uuid 3bd18bec-e166-4791-b586-4ba23a856dd2)
+    (uuid fb61ca4b-a6dd-4ba1-b748-10d7383193c3)
   )
   (wire (pts (xy 321.31 146.04999999999998) (xy 321.31 151.13))
     (stroke (width 0) (type default))
-    (uuid e27a63aa-af41-402c-b49b-ec54c06086f4)
+    (uuid 0043ead7-df99-4884-9d9d-e6653604c3b1)
   )
   (wire (pts (xy 312.42 146.04999999999998) (xy 312.42 143.51))
     (stroke (width 0) (type default))
-    (uuid 960ea57f-7b88-48cb-9255-9e681c017637)
+    (uuid d2e6edaf-7a92-4470-9ae6-74da99f52457)
   )
   (wire (pts (xy 247.65 68.58) (xy 240.03 68.58))
     (stroke (width 0) (type default))
-    (uuid d6ac0138-5727-43d9-aeee-f74c6aeb78f8)
+    (uuid fa6533ee-a3eb-4796-8e00-07351499aa62)
   )
   (wire (pts (xy 173.99 48.260000000000005) (xy 182.88 48.26))
     (stroke (width 0) (type default))
-    (uuid c498e234-f5eb-49d6-93da-995b32c99c2e)
+    (uuid 615af134-b534-4d95-a8ca-1773eab9c9c7)
   )
   (wire (pts (xy 63.5 40.64) (xy 86.36 40.64))
     (stroke (width 0) (type default))
-    (uuid 17b7dedf-6bf0-432b-88ab-a596cab3160f)
+    (uuid 2606049e-b154-400f-b587-db660f92a7a8)
   )
   (wire (pts (xy 63.5 43.18) (xy 78.74 43.18))
     (stroke (width 0) (type default))
-    (uuid 1ad31f4e-25f1-4180-a2e4-7f1f5082cb7a)
+    (uuid e4debf06-9199-4692-bb23-60449baa7512)
   )
   (wire (pts (xy 334.01000000000005 90.17) (xy 334.01 87.63000000000001))
     (stroke (width 0) (type default))
-    (uuid 144cff46-8cbf-42b5-b044-532af4f632ba)
+    (uuid a1a8f32a-752b-44d0-aec3-061f4fb61ff4)
   )
   (wire (pts (xy 247.65 195.58) (xy 262.89 195.58))
     (stroke (width 0) (type default))
-    (uuid 1aff38c9-d59c-46cb-ac79-62693d8d83b1)
+    (uuid 1b8d4c5a-3b64-40dc-adfd-a49c33e35af0)
   )
   (wire (pts (xy 262.89 195.58) (xy 262.89 217.17))
     (stroke (width 0) (type default))
-    (uuid f7cd907a-a64f-44e1-b582-3f63aaa94d94)
+    (uuid 1976b855-44b5-4343-9836-7839e68aa214)
   )
   (wire (pts (xy 262.89 217.17) (xy 252.73 217.17))
     (stroke (width 0) (type default))
-    (uuid 2718367d-151f-4316-9e18-71c65e56203a)
+    (uuid bf74fdef-e695-48be-a717-576211ddbf82)
   )
   (wire (pts (xy 247.65 193.04) (xy 265.43 193.04))
     (stroke (width 0) (type default))
-    (uuid fe715d0a-2605-432f-8093-02d18cf51701)
+    (uuid 5133a690-06c8-43d1-9993-4b240569e4be)
   )
   (wire (pts (xy 265.43 193.04) (xy 265.43 232.41))
     (stroke (width 0) (type default))
-    (uuid dc5452b4-78d9-4acb-83d4-8a58fcc3071b)
+    (uuid ace75edc-b7da-4fba-8529-a6f3d3d456f1)
   )
   (wire (pts (xy 265.43 232.41) (xy 252.73 232.41))
     (stroke (width 0) (type default))
-    (uuid 37cbba2f-c9cf-4a62-9980-79d9c3bb2ca1)
+    (uuid cbaa0c90-cc42-44fd-a6b3-e0491c3e8341)
   )
   (wire (pts (xy 199.39000000000001 210.82) (xy 200.66000000000003 210.82))
     (stroke (width 0) (type default))
-    (uuid 47b270f9-7f55-4b8d-a964-cebe490b9de8)
+    (uuid 8c098a47-11e2-4b2e-9ef9-bec39f89a7e6)
   )
   (wire (pts (xy 181.61 210.82) (xy 182.88000000000002 210.82))
     (stroke (width 0) (type default))
-    (uuid a86fb05a-ba3a-45a9-9c9a-bbfb8e8af39a)
+    (uuid 988f5cf7-fa57-4590-ab35-c713afaee695)
   )
   (wire (pts (xy 231.14 29.21) (xy 226.06 29.210000000000004))
     (stroke (width 0) (type default))
-    (uuid e96e0c41-1779-41df-b00e-a0afccd6cbba)
+    (uuid 538637ab-7f1c-4d09-8092-3f90e2cce82f)
   )
   (wire (pts (xy 246.38 29.21) (xy 251.46 29.210000000000004))
     (stroke (width 0) (type default))
-    (uuid a8962f8e-0dce-4698-bd80-cfecc2246b4c)
+    (uuid 0af29e62-17b4-4f54-84f8-423aa7ea9cb8)
   )
   (wire (pts (xy 63.5 35.559999999999995) (xy 67.31 35.56))
     (stroke (width 0) (type default))
-    (uuid 01f2fe53-8ad3-49ab-bab5-5c9aa364332f)
+    (uuid 2853ef01-7b00-437c-9c6e-530fa4ad1ba7)
   )
   (wire (pts (xy 74.93 35.56) (xy 77.47 35.56))
     (stroke (width 0) (type default))
-    (uuid 13ef158f-ec01-459c-b496-c36a4b54ede3)
+    (uuid 99b22d62-352f-4a66-9508-7267c1bc3531)
   )
   (wire (pts (xy 74.93 35.56) (xy 74.93 17.78))
     (stroke (width 0) (type default))
-    (uuid b5dafcaf-532a-445c-bd93-4184e8f8f0f7)
+    (uuid 80e38582-14a6-43f3-a24d-8fdb7ce80fdd)
   )
   (wire (pts (xy 74.93 17.78) (xy 66.04 17.78))
     (stroke (width 0) (type default))
-    (uuid 1a85bb94-a57c-4ba4-b7ed-1c6decafd537)
+    (uuid 0e508063-527e-4b69-a113-4186fd2487d1)
   )
   (wire (pts (xy 63.5 87.63) (xy 66.04 87.63))
     (stroke (width 0) (type default))
-    (uuid 016bb1ba-c16c-4e34-8026-5fe12b71f992)
+    (uuid de3d3b25-8c90-408e-b257-1ca6d16da475)
   )
   (wire (pts (xy 63.5 53.339999999999996) (xy 66.04 53.339999999999996))
     (stroke (width 0) (type default))
-    (uuid 421cd791-9544-46e1-ad68-b0ff3005140f)
+    (uuid 5f889229-7f8e-4952-bfc7-04df7ba5e56b)
   )
   (wire (pts (xy 66.04 53.339999999999996) (xy 66.04 55.879999999999995))
     (stroke (width 0) (type default))
-    (uuid e3cae61c-a7c7-4ce0-b9b3-e31466f07f6b)
+    (uuid cce98b00-d87b-4ff7-a5ab-d38ca1e92ab3)
   )
   (wire (pts (xy 66.04 55.879999999999995) (xy 63.5 55.879999999999995))
     (stroke (width 0) (type default))
-    (uuid 9e01e0c8-0efc-44fe-a2c3-bf98960259bb)
+    (uuid 92deff58-3483-4ba6-85cc-6a2bf3d9f899)
   )
   (wire (pts (xy 63.5 48.26) (xy 68.58 48.26))
     (stroke (width 0) (type default))
-    (uuid 08b958cc-d32b-4d00-acfd-af82506af05b)
+    (uuid 3218930d-fe80-49c6-80a3-1059c83760e4)
   )
   (wire (pts (xy 68.58 48.26) (xy 68.58 50.8))
     (stroke (width 0) (type default))
-    (uuid b64a94c3-28b8-4a11-b291-6ac565d1af06)
+    (uuid 59423b20-7859-4d44-9a77-419174a19be4)
   )
   (wire (pts (xy 68.58 50.8) (xy 63.5 50.8))
     (stroke (width 0) (type default))
-    (uuid 64ca3a5a-d158-438d-b984-64d4df6df574)
+    (uuid b1cf31e9-646a-4fc4-b8d2-f2f466751572)
   )
   (wire (pts (xy 247.65 200.66) (xy 250.19 200.66))
     (stroke (width 0) (type default))
-    (uuid d7a6af46-cccb-4544-ba01-e416b1fe5555)
+    (uuid 5c71b48c-4667-46bb-a9ce-c483be309a74)
   )
   (wire (pts (xy 250.19 200.66) (xy 250.19 208.28))
     (stroke (width 0) (type default))
-    (uuid a35b9d9b-e444-4f28-92e1-79b07adc57b3)
+    (uuid 56834745-8eb9-4664-8a5d-85463a2c0c39)
   )
   (wire (pts (xy 250.19 208.28) (xy 212.09 208.28))
     (stroke (width 0) (type default))
-    (uuid 2130fe4d-ff65-4575-8efc-7390cc3f7fe5)
+    (uuid b8a48a8a-5124-4a9e-a56f-6cc13d57093a)
   )
   (wire (pts (xy 212.09 208.28) (xy 212.09 217.17))
     (stroke (width 0) (type default))
-    (uuid d3fca1ea-08e5-4da1-84e7-0fb40a55d1de)
+    (uuid 2f3bcded-57f2-4355-aed7-0f1f0b49bd30)
   )
   (wire (pts (xy 247.65 198.12) (xy 255.27 198.12))
     (stroke (width 0) (type default))
-    (uuid 18ce7342-d4c7-4f70-9944-90bd6f15e74d)
+    (uuid 544d1336-a9ce-4880-84b9-1d8e504b2a4d)
   )
   (wire (pts (xy 255.27 198.12) (xy 255.27 210.82))
     (stroke (width 0) (type default))
-    (uuid 657e2991-c9cb-4da9-8c00-d960ea19b143)
+    (uuid e235c0c3-0998-4040-b54e-4604467757be)
   )
   (wire (pts (xy 255.27 210.82) (xy 222.25 210.82))
     (stroke (width 0) (type default))
-    (uuid 64abc65c-d88c-4023-9959-50db54d97500)
+    (uuid 20d752c0-e8c8-43e4-a0bd-8adcd8845e43)
   )
   (wire (pts (xy 222.25 210.82) (xy 222.25 217.17))
     (stroke (width 0) (type default))
-    (uuid 3e2f4d03-c7f8-4b07-a572-f0ac94c82bdd)
+    (uuid 38a6f3d2-2c39-4241-943e-7bc286af4d0c)
   )
   (wire (pts (xy 247.65 187.96) (xy 257.81 187.96))
     (stroke (width 0) (type default))
-    (uuid 5ccdef44-ce4e-4629-8a75-1c399d1e8a62)
+    (uuid 34e591c6-cfe7-452c-b1e0-07db1e27ff43)
   )
   (wire (pts (xy 257.81 187.96) (xy 257.81 213.36))
     (stroke (width 0) (type default))
-    (uuid d709afd4-2eef-45b6-94e4-3e08a3172d94)
+    (uuid bd9930eb-815b-4e1d-bee8-7aa33eb021d5)
   )
   (wire (pts (xy 257.81 213.36) (xy 232.41 213.36))
     (stroke (width 0) (type default))
-    (uuid b6b85c9a-0b82-4b73-897b-51056acfda28)
+    (uuid 9aabf21a-3dc8-4d76-801b-b752c5c9bdd6)
   )
   (wire (pts (xy 232.41 213.36) (xy 232.41 217.17))
     (stroke (width 0) (type default))
-    (uuid 1cabb387-b54d-4fa3-9987-1778861ece54)
+    (uuid dca867ac-e116-4402-b80e-02932763e8b6)
   )
   (wire (pts (xy 247.65 185.42) (xy 260.35 185.42))
     (stroke (width 0) (type default))
-    (uuid 2855dcf8-c95b-4038-a044-b67a9b4a6a46)
+    (uuid ac64d2c5-30de-4b8b-938c-dafb93a0f06e)
   )
   (wire (pts (xy 260.35 185.42) (xy 260.35 215.9))
     (stroke (width 0) (type default))
-    (uuid a558be56-9804-46b6-884f-07d09622a32a)
+    (uuid 3ef1ae56-0fa4-44f8-bf25-53b3c195e16c)
   )
   (wire (pts (xy 260.35 215.9) (xy 242.57 215.9))
     (stroke (width 0) (type default))
-    (uuid d966d6f7-89ac-4d98-a343-0e7a2e83a21c)
+    (uuid 483950fe-2abe-4bcb-9329-f18899e2da7c)
   )
   (wire (pts (xy 242.57 215.9) (xy 242.57 217.17))
     (stroke (width 0) (type default))
-    (uuid c748979c-6df6-4cda-9755-7fcedda2f85e)
+    (uuid 0a093358-4f34-4767-a602-be92e4cc5e19)
   )
   (wire (pts (xy 212.09 224.79) (xy 212.09 226.06))
     (stroke (width 0) (type default))
-    (uuid 77508029-6116-479a-a1d4-886ab7a36b83)
+    (uuid 5c95de36-aa1a-4df3-ad7d-989b9bc4b12b)
   )
   (wire (pts (xy 222.25 224.79) (xy 222.25 226.06))
     (stroke (width 0) (type default))
-    (uuid 176d6722-f3d1-45ba-a9b7-42c7e4ee35d2)
+    (uuid 5d738f77-dd25-442b-a084-0a4fcd0a99dd)
   )
   (wire (pts (xy 232.41 224.79) (xy 232.41 226.06))
     (stroke (width 0) (type default))
-    (uuid e5617618-8d97-4681-8d22-cae3c50ea8e7)
+    (uuid a9c786e1-4e78-4e15-8be5-d00b10413846)
   )
   (wire (pts (xy 242.57 224.79) (xy 242.57 226.06))
     (stroke (width 0) (type default))
-    (uuid 9645706e-e820-40fb-ad6e-221724ae3f3f)
+    (uuid 6b9511db-753a-4b77-97db-9b89d7f5bac1)
   )
   (wire (pts (xy 207.01 248.92000000000002) (xy 242.57 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid 76c83021-299a-4100-be16-b74714bdd233)
+    (uuid 298a296d-629c-474d-97c2-4574ca134711)
   )
   (wire (pts (xy 212.09 233.68) (xy 212.09 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid f9b79339-e6be-423b-9bc8-c19faa04faf7)
+    (uuid d36f5ebb-66e0-435a-840c-9ac30666ba54)
   )
   (wire (pts (xy 242.57 233.68) (xy 242.57 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid 140472da-9f69-49d3-a782-c45fbcc31679)
+    (uuid e237575d-fc82-48dc-bfc2-034ac742cbfb)
   )
   (wire (pts (xy 207.01 233.68) (xy 208.28 233.68))
     (stroke (width 0) (type default))
-    (uuid b242a773-b361-4c4b-9143-89b608254c32)
+    (uuid ec1ef72c-a5cc-4a91-851a-d3a437fea520)
   )
   (wire (pts (xy 208.28 233.68) (xy 208.28 236.22))
     (stroke (width 0) (type default))
-    (uuid 52569e48-b95b-413a-914e-53759820ab18)
+    (uuid d22f431b-e488-4137-9f7e-bf79b1dfe49b)
   )
   (wire (pts (xy 208.28 236.22) (xy 232.41 236.22))
     (stroke (width 0) (type default))
-    (uuid b0c2fabb-9803-4159-a068-04b218814c7f)
+    (uuid 39496f72-3c9a-4e8d-b0b3-69c1c8cdfdfc)
   )
   (wire (pts (xy 222.25 233.68) (xy 222.25 236.22))
     (stroke (width 0) (type default))
-    (uuid f2db8a7a-e8a2-4fd3-b369-934e9f127301)
+    (uuid 02cf4680-aad5-4ae8-90aa-522fd583689e)
   )
   (wire (pts (xy 232.41 233.68) (xy 232.41 236.22))
     (stroke (width 0) (type default))
-    (uuid d5a83f92-bfd0-4cf4-beb1-8b20a30027bb)
+    (uuid a711ee5b-4142-4027-a369-f882be60474d)
   )
   (wire (pts (xy 247.65 182.88) (xy 262.89 182.88))
     (stroke (width 0) (type default))
-    (uuid 18bcdb7b-dece-4a59-8361-01d5b4c10eb6)
+    (uuid 18982225-a25c-4bbd-bd4f-748f07c43a0d)
   )
   (wire (pts (xy 262.89 182.88) (xy 262.89 158.75))
     (stroke (width 0) (type default))
-    (uuid fbaa80f3-2cf3-4072-befc-f3be8f04d9c4)
+    (uuid 1ed9eefd-8fba-4aca-a3c8-d5a246b0d4c5)
   )
   (wire (pts (xy 191.77 180.34) (xy 163.83 180.34))
     (stroke (width 0) (type default))
-    (uuid 51e14d52-d6dc-403e-be39-7ba127e87a00)
+    (uuid b4b89685-ab81-48aa-bde7-cb8568bbf609)
   )
   (wire (pts (xy 163.83 180.34) (xy 163.83 158.75))
     (stroke (width 0) (type default))
-    (uuid 3d01940c-a06b-4196-888e-625273acc1e4)
+    (uuid 99cf2236-c907-479b-9cf0-67fef9d54427)
   )
   (wire (pts (xy 130.81 124.46) (xy 144.78 124.46000000000001))
     (stroke (width 0) (type default))
-    (uuid 643b772f-fafd-4640-af14-316cb9084ac1)
+    (uuid c7cf5bca-2800-4212-8f51-928252addebd)
   )
   (wire (pts (xy 130.81 175.26000000000002) (xy 144.78 175.26))
     (stroke (width 0) (type default))
-    (uuid d254691a-9e9b-46a6-ab54-224a7680aeba)
+    (uuid ba307185-00de-4e80-896c-b3e252be04e3)
   )
   (wire (pts (xy 130.81 226.06) (xy 144.78 226.06))
     (stroke (width 0) (type default))
-    (uuid e4918cb1-b684-4495-9aa8-78251b01f10f)
+    (uuid 1f82315d-08d1-4d2c-9f9b-79d0979687ec)
   )
   (wire (pts (xy 130.81 129.54) (xy 153.67000000000002 129.54))
     (stroke (width 0) (type default))
-    (uuid 879357b9-99ba-4bee-93d1-f385043c9cdc)
+    (uuid f76b6291-2187-4a1a-b8fc-7ae03e4b1415)
   )
   (wire (pts (xy 130.81 180.34) (xy 153.67000000000002 180.34))
     (stroke (width 0) (type default))
-    (uuid 4c224974-052a-4e7f-9580-b8c29a8a5dc8)
+    (uuid bac466f5-d727-4e5f-abb9-16022886a2ce)
   )
   (wire (pts (xy 130.81 231.14) (xy 153.67000000000002 231.14))
     (stroke (width 0) (type default))
-    (uuid 4a2fa61c-55eb-41c8-ae9c-bc9750572d62)
+    (uuid 3f73a833-b212-4dbe-83e6-8f3e7e677cc9)
   )
   (wire (pts (xy 153.67000000000002 129.54) (xy 153.67000000000002 234.95))
     (stroke (width 0) (type default))
-    (uuid 5506e4aa-1ce3-4335-8d1f-30b82c1123fa)
+    (uuid a084aa8c-184b-4c66-b8c7-38ee9a0e4f81)
   )
   (wire (pts (xy 181.61 113.03) (xy 210.82 113.03))
     (stroke (width 0) (type default))
-    (uuid cd68c4f9-e370-486a-bf57-1ef111f2e19b)
+    (uuid 1a9c3f4d-9a4b-4f09-aa34-78871b788114)
   )
   (wire (pts (xy 242.57 113.03) (xy 256.54 113.03))
     (stroke (width 0) (type default))
-    (uuid a06e4468-be72-4056-8ad2-5c7fa9d11d49)
+    (uuid d44dcaf1-90be-4e09-bc1f-2c35f519cb6e)
   )
   (wire (pts (xy 68.58 115.57) (xy 68.58 102.86999999999999))
     (stroke (width 0) (type default))
-    (uuid 9a3a2242-3251-4c5d-8854-651f01f233cf)
+    (uuid bac29d68-58c1-4324-8480-e73a870e7b8a)
   )
   (wire (pts (xy 68.58 102.86999999999999) (xy 115.57 102.86999999999999))
     (stroke (width 0) (type default))
-    (uuid afd93c6f-abcc-49ff-81b2-b37cff14eca3)
+    (uuid a63c26d9-8e82-4a97-8897-70248d504c73)
   )
   (wire (pts (xy 115.57 102.86999999999999) (xy 115.57 124.46))
     (stroke (width 0) (type default))
-    (uuid 627dafb6-b4ea-418e-81fb-2b79964f4731)
+    (uuid 31810166-7ee4-4b0a-bb8c-4592213769aa)
   )
   (wire (pts (xy 102.87 102.86999999999999) (xy 102.87 123.19))
     (stroke (width 0) (type default))
-    (uuid 4bb8abab-ef8a-49e1-998a-ecd1c174e920)
+    (uuid d3e88314-44b8-425a-b714-7c6438ce4076)
   )
   (wire (pts (xy 68.58 138.43) (xy 68.58 147.32))
     (stroke (width 0) (type default))
-    (uuid 33b14e31-bed8-44b5-8dee-8942781d27ce)
+    (uuid 07fec4be-3277-4bea-91c1-e4edb2a0ea1a)
   )
   (wire (pts (xy 68.58 147.32) (xy 74.92999999999999 147.32))
     (stroke (width 0) (type default))
-    (uuid d4b5e684-e56e-4524-9142-96cda887efca)
+    (uuid 89a50f03-e1e1-4c18-a6eb-3f1dfe21c568)
   )
   (wire (pts (xy 74.92999999999999 147.32) (xy 74.92999999999999 147.32))
     (stroke (width 0) (type default))
-    (uuid 2b64151c-691f-441c-9233-31dd420b4aa3)
+    (uuid c68e3188-6c8c-4700-9e71-8e4985c67de8)
   )
   (wire (pts (xy 82.55 147.32) (xy 115.57 147.32))
     (stroke (width 0) (type default))
-    (uuid 42bbdbb3-9a23-4bad-a6b3-6f01cfdbf1cd)
+    (uuid 43486113-939a-4ecc-be75-fd8cf1050d6f)
   )
   (wire (pts (xy 115.57 147.32) (xy 115.57 129.54))
     (stroke (width 0) (type default))
-    (uuid 24d85683-f071-44d2-b4d2-a23df830114f)
+    (uuid a03d3c13-7d41-4c49-9b45-f3b0e7a9eac6)
   )
   (wire (pts (xy 102.87 147.32) (xy 102.87 130.81))
     (stroke (width 0) (type default))
-    (uuid a482bc3e-2a2b-4e2f-b292-48879913e211)
+    (uuid 6812705f-4102-475e-b5dc-b3e3643de742)
   )
   (wire (pts (xy 68.58 166.37) (xy 68.58 153.67000000000002))
     (stroke (width 0) (type default))
-    (uuid 4a24b425-8ff4-4b2a-8b54-fd755f681665)
+    (uuid 55f91412-b6f6-4509-9f57-351927185917)
   )
   (wire (pts (xy 68.58 153.67000000000002) (xy 115.57 153.67000000000002))
     (stroke (width 0) (type default))
-    (uuid 2dad6434-6502-4bce-8a71-729e41f81088)
+    (uuid c2497832-d247-4242-b61e-184b473b1934)
   )
   (wire (pts (xy 115.57 153.67000000000002) (xy 115.57 175.26000000000002))
     (stroke (width 0) (type default))
-    (uuid 30a8a933-4c97-48ed-95de-4439b58579e5)
+    (uuid 40bf6ec8-6f19-4ca8-a5ea-c4a1c040ae1e)
   )
   (wire (pts (xy 102.87 153.67000000000002) (xy 102.87 173.99))
     (stroke (width 0) (type default))
-    (uuid 89439ba5-1112-4ced-a2a2-c818fd9119fb)
+    (uuid 29bdeca7-01ee-4e14-bd3c-585965c8df06)
   )
   (wire (pts (xy 68.58 189.23000000000002) (xy 68.58 201.93))
     (stroke (width 0) (type default))
-    (uuid 5e403a87-27c7-400f-9f13-17cd88ca9133)
+    (uuid 1abac55e-ed44-4140-a1f8-ff82f728e46b)
   )
   (wire (pts (xy 68.58 201.93) (xy 74.92999999999999 201.93))
     (stroke (width 0) (type default))
-    (uuid ed7d974a-ea55-46a0-a5a9-69875866cf3b)
+    (uuid df124a60-9f02-49d0-9eb6-406820fa72a7)
   )
   (wire (pts (xy 74.92999999999999 201.93) (xy 74.92999999999999 201.93))
     (stroke (width 0) (type default))
-    (uuid c83e9728-1b8e-4d0d-ab61-a0acf06eb88a)
+    (uuid a6d4e76e-b597-41db-9c02-064861aebf84)
   )
   (wire (pts (xy 82.55 201.93) (xy 115.57 201.93))
     (stroke (width 0) (type default))
-    (uuid 691c5aca-4136-43d4-9d5d-8694384fd1da)
+    (uuid 50f28905-cd7c-4e50-9796-879aaaa37162)
   )
   (wire (pts (xy 115.57 201.93) (xy 115.57 180.34))
     (stroke (width 0) (type default))
-    (uuid 4afab11b-a1a6-4256-a180-c849dba13c4c)
+    (uuid 3993275b-14c5-4a96-a14a-2b64a3a7c4ca)
   )
   (wire (pts (xy 102.87 201.93) (xy 102.87 181.61))
     (stroke (width 0) (type default))
-    (uuid 035c781e-11b4-4f64-a241-74c569fc8913)
+    (uuid 802a2594-7976-4879-be04-d494d33faf0b)
   )
   (wire (pts (xy 68.58 217.17) (xy 68.58 204.47))
     (stroke (width 0) (type default))
-    (uuid 347324cf-3428-4982-b01f-dcc5fe4a1bb4)
+    (uuid 0e7006d9-162b-4aa9-91d2-349a50780b39)
   )
   (wire (pts (xy 68.58 204.47) (xy 115.57 204.47))
     (stroke (width 0) (type default))
-    (uuid bc9e5b04-269e-4641-97f3-69b02024043f)
+    (uuid d2b86da4-9f5a-4cd9-a77d-334250b44757)
   )
   (wire (pts (xy 115.57 204.47) (xy 115.57 226.06))
     (stroke (width 0) (type default))
-    (uuid 69c11b13-4f50-43aa-a039-a96995e00ff9)
+    (uuid c1c010eb-2fd0-4ba7-8bfe-1d5a51226f58)
   )
   (wire (pts (xy 102.87 204.47) (xy 102.87 224.79))
     (stroke (width 0) (type default))
-    (uuid 413af661-a354-4b18-8c40-119a0f72eb99)
+    (uuid b7cc9b54-eaf7-42fb-a84d-a87a48a23be2)
   )
   (wire (pts (xy 68.58 240.03) (xy 68.58 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid 7129cb57-42c1-4a5e-ab42-ef693faa4407)
+    (uuid 3c78b729-2c59-4200-970d-74a7eb033d1f)
   )
   (wire (pts (xy 68.58 248.92000000000002) (xy 74.92999999999999 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid bcb83521-2f0f-43ec-82a0-8f36f47a744b)
+    (uuid d971a4ef-7642-4ce6-bc3c-2c15ed3018e3)
   )
   (wire (pts (xy 74.92999999999999 248.92000000000002) (xy 74.92999999999999 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid aaefd7d6-c827-4dd5-96c5-893ee009a915)
+    (uuid 8a8da4bc-6b95-4443-a106-1e5fc6808797)
   )
   (wire (pts (xy 82.55 248.92000000000002) (xy 115.57 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid fccdf5df-b1aa-4b6b-bf8b-3a64f4a4f3c7)
+    (uuid 2539bae9-750a-43ed-8a9d-ea6d47847dae)
   )
   (wire (pts (xy 115.57 248.92000000000002) (xy 115.57 231.14))
     (stroke (width 0) (type default))
-    (uuid 49efd605-c557-4b6d-990a-c8e65f29dfd4)
+    (uuid b40fa2cc-41bc-4a58-a938-c010edd075e9)
   )
   (wire (pts (xy 102.87 248.92000000000002) (xy 102.87 232.41))
     (stroke (width 0) (type default))
-    (uuid 0222f349-2e12-4749-ad33-17347232e4b8)
+    (uuid c4eea2ed-4882-46fc-a5d0-1754c5fe6bc1)
   )
   (wire (pts (xy 190.5 48.26) (xy 193.04 48.26))
     (stroke (width 0) (type default))
-    (uuid a4dd6a68-964c-4512-a0a4-ae0bc0a61208)
+    (uuid d1132391-ac80-4e7c-94b1-5fb0e01d8b9e)
   )
   (wire (pts (xy 191.77 185.42) (xy 186.69 185.42))
     (stroke (width 0) (type default))
-    (uuid 22303ceb-33ae-46d7-81f2-e022fd57ded3)
+    (uuid e0a03a62-cc12-4e33-ac61-1a15811a6d03)
   )
   (wire (pts (xy 191.77 187.96) (xy 186.69 187.96))
     (stroke (width 0) (type default))
-    (uuid a7fbbb07-04ad-4a10-9c23-1d2ad8d4729c)
+    (uuid 9ac3fc48-230e-4570-9b80-cc13fa4ab941)
   )
   (wire (pts (xy 247.65 203.2) (xy 252.73000000000002 203.2))
     (stroke (width 0) (type default))
-    (uuid cb4ec748-bf7f-45eb-801c-f69de7882342)
+    (uuid c32ba183-4e5e-479d-86c5-18fb59708b8f)
   )
   (wire (pts (xy 144.78 116.84) (xy 144.78 114.3))
     (stroke (width 0) (type default))
-    (uuid 2b831b07-c7d2-432a-ba73-6f3131fd0db4)
+    (uuid 6244f9b0-521c-423a-ade2-e6f8f6170722)
   )
   (wire (pts (xy 144.78 167.64) (xy 144.78 165.1))
     (stroke (width 0) (type default))
-    (uuid abcedf74-d42d-41f8-b530-a8fc8fa722a2)
+    (uuid f17aa28d-301b-4389-8d8f-833afaadf4c1)
   )
   (wire (pts (xy 144.78 218.44) (xy 144.78 215.9))
     (stroke (width 0) (type default))
-    (uuid b7017f76-4cb3-4233-8c6f-e59d71e15a4e)
+    (uuid 68448bcc-eada-44dd-b497-3667af31678f)
   )
   (wire (pts (xy 30.48 87.63) (xy 25.4 87.63))
     (stroke (width 0) (type default))
-    (uuid 53bd765b-61a2-40c5-82f1-80c38d5f4ff8)
+    (uuid e5920c2e-a640-4085-92c6-dc7835e4704a)
   )
   (wire (pts (xy 191.77 190.5) (xy 186.69 190.5))
     (stroke (width 0) (type default))
-    (uuid c117b8f2-8f05-4e8c-b2ed-b7a86141d8f7)
+    (uuid 05007c69-0464-4515-98a2-53e1fddcdd61)
   )
   (wire (pts (xy 191.77 203.2) (xy 186.69 203.2))
     (stroke (width 0) (type default))
-    (uuid d51406c9-ec04-48c7-8943-409cf57b17b5)
+    (uuid ade03f0f-8210-4cfd-a6a9-6b182437dc23)
   )
   (wire (pts (xy 247.65 177.8) (xy 252.73000000000002 177.8))
     (stroke (width 0) (type default))
-    (uuid dd182877-684d-4bd6-ad13-e8ac81d2c189)
+    (uuid 237afec2-0912-4be9-ba45-61a81ff6a8f6)
   )
   (wire (pts (xy 30.48 90.17) (xy 25.4 90.17))
     (stroke (width 0) (type default))
-    (uuid 6adf5215-6e90-480c-97c9-c580816fa507)
+    (uuid 88737c4e-08bf-4b8d-bd4f-7ec90e24d1c9)
   )
   (wire (pts (xy 30.48 85.08999999999999) (xy 25.4 85.08999999999999))
     (stroke (width 0) (type default))
-    (uuid 16d328d5-531f-48bf-9d58-641a58605695)
+    (uuid 75073f81-1b43-45cd-87af-6088b95477b4)
   )
   (wire (pts (xy 173.99 38.1) (xy 179.07000000000002 38.1))
     (stroke (width 0) (type default))
-    (uuid 566678f7-26d8-41fb-81fd-5d63ef5eabf7)
+    (uuid f27f16f1-8ff8-4a13-a6f7-f86d78207d32)
   )
   (wire (pts (xy 63.5 90.17) (xy 68.58 90.17))
     (stroke (width 0) (type default))
-    (uuid b684437a-c017-4a41-8000-53b146de68c9)
+    (uuid 4c2d6331-e11b-49ad-8841-827a8f196dc2)
   )
   (wire (pts (xy 63.5 85.08999999999999) (xy 68.58 85.08999999999999))
     (stroke (width 0) (type default))
-    (uuid a1b30a3d-fe14-4f2e-b168-200fde3e1f55)
+    (uuid b36eda8a-e5f1-4d5f-9fbf-485e6fd41e32)
   )
   (wire (pts (xy 173.99 35.56) (xy 179.07000000000002 35.56))
     (stroke (width 0) (type default))
-    (uuid 251ec71f-805f-422a-bbfd-0af2650cbac6)
+    (uuid bcd0f974-40f3-4945-9409-1b52f7568614)
   )
   (wire (pts (xy 118.11000000000001 27.94) (xy 113.03000000000002 27.94))
     (stroke (width 0) (type default))
-    (uuid 045d6483-e7ee-45aa-97ff-1803b8648cf5)
+    (uuid 9e0644d2-7bb3-4cc3-8e39-bfb18bdea51c)
   )
   (wire (pts (xy 173.99 50.800000000000004) (xy 179.07000000000002 50.800000000000004))
     (stroke (width 0) (type default))
-    (uuid 5ce6ec3d-c3b3-4017-aff8-b36030c9d828)
+    (uuid fc453578-6c67-4c55-bfab-fba070857e06)
   )
   (wire (pts (xy 173.99 68.58) (xy 179.07000000000002 68.58))
     (stroke (width 0) (type default))
-    (uuid aef3d78b-ba20-41b7-9302-3ac13c7365c7)
+    (uuid f487bd81-32ff-48a6-bf73-b03ea7aa866f)
   )
   (wire (pts (xy 344.17 151.13) (xy 344.17 148.59))
     (stroke (width 0) (type default))
-    (uuid 6f0fb2dc-7e37-4b72-9c2f-cbcb9f974957)
+    (uuid d42b0724-8a90-42b8-8c2c-24f5946f26bd)
   )
   (wire (pts (xy 341.63000000000005 166.37) (xy 341.63000000000005 168.91))
     (stroke (width 0) (type default))
-    (uuid 36edc245-67c3-40e5-aebd-99716849a34c)
+    (uuid c2d1f1b8-3d89-465c-9ce9-d5f3fff895e5)
   )
   (wire (pts (xy 283.21 38.1) (xy 283.21 33.02))
     (stroke (width 0) (type default))
-    (uuid 0674c5e7-33dd-4b53-aa51-88d579b6c12a)
+    (uuid 4a77b24d-4a0b-4cb9-b356-279e62b5e0fb)
   )
   (wire (pts (xy 173.99 66.04) (xy 179.07000000000002 66.04))
     (stroke (width 0) (type default))
-    (uuid 10b4daee-77ea-4ceb-97cf-ad0b0033a94b)
+    (uuid 8f1a728c-ac8d-4183-9a06-15469240b7a6)
   )
   (wire (pts (xy 283.21 99.06) (xy 283.21 93.98))
     (stroke (width 0) (type default))
-    (uuid a56f9285-164d-4408-a480-4dce5a5f70bf)
+    (uuid 756b5121-0dca-4f6a-8d9d-9dfd58beebf5)
   )
   (wire (pts (xy 173.99 71.12) (xy 179.07000000000002 71.12))
     (stroke (width 0) (type default))
-    (uuid 99291bea-b402-4a6d-bb23-7988f2b30255)
+    (uuid 275d356e-d2b7-4db2-b609-b73c5f729286)
   )
   (wire (pts (xy 283.21 160.02) (xy 283.21 154.94))
     (stroke (width 0) (type default))
-    (uuid bfab3ae5-0ade-42f3-b426-a745e94f2d09)
+    (uuid 69e5f084-1648-4d35-84c1-55d60c449c91)
   )
   (wire (pts (xy 24.130000000000003 172.72) (xy 21.590000000000003 172.72))
     (stroke (width 0) (type default))
-    (uuid 708a7ed8-9016-4fc9-acaf-3edb83aacb23)
+    (uuid e93d9667-663c-419e-a01a-e704e5808f5d)
   )
   (wire (pts (xy 186.69 248.92000000000002) (xy 184.15 248.92000000000002))
     (stroke (width 0) (type default))
-    (uuid 9ad0db0b-01b0-42cf-8117-c5ec89ceafc2)
+    (uuid 46777d09-1104-4184-9691-6089150b74d2)
   )
   (wire (pts (xy 76.2 189.23000000000002) (xy 76.2 191.77))
     (stroke (width 0) (type default))
-    (uuid ff21349a-1a73-4cb8-9d57-0202532c8325)
+    (uuid 736881c7-8002-4853-ad30-8b240ded8afe)
   )
   (wire (pts (xy 60.96 166.37) (xy 60.96 163.83))
     (stroke (width 0) (type default))
-    (uuid 266917f1-3e89-4b3f-a3d4-7a4890ec94be)
+    (uuid 3064967e-337e-416d-85b3-3841da471a56)
   )
   (wire (pts (xy 76.2 240.03) (xy 76.2 242.57))
     (stroke (width 0) (type default))
-    (uuid a798a5aa-1c3a-4e43-8ac1-bd1be39b8b26)
+    (uuid c71fe70b-8342-4592-b67d-001cd5cf195e)
   )
   (wire (pts (xy 60.96 217.17) (xy 60.96 214.63))
     (stroke (width 0) (type default))
-    (uuid ebc83682-a9c6-453c-845e-1609f746555a)
+    (uuid 04b97aa3-8e59-4480-8713-deabf68b1eb1)
   )
   (wire (pts (xy 24.130000000000003 175.26000000000002) (xy 21.590000000000003 175.26000000000002))
     (stroke (width 0) (type default))
-    (uuid 17676009-ea6d-41fc-b0e4-463d1e3e775f)
+    (uuid 28c8cb72-4967-4d52-95d9-6d8717b03443)
   )
   (wire (pts (xy 331.47 105.41000000000001) (xy 331.47 107.95000000000002))
     (stroke (width 0) (type default))
-    (uuid 16267d9a-223d-4202-9acd-aa5adadadf2e)
+    (uuid 31b4725b-daa6-407f-9cf6-8c38aa480255)
   )
   (wire (pts (xy 334.01000000000005 29.209999999999997) (xy 334.01000000000005 26.669999999999998))
     (stroke (width 0) (type default))
-    (uuid b0abedbe-f8eb-4ab4-a2bc-725649930885)
+    (uuid 8abb7b09-49d6-4e66-8405-3d2310af11c0)
   )
   (wire (pts (xy 76.2 138.43) (xy 76.2 140.97))
     (stroke (width 0) (type default))
-    (uuid 81c420cb-206d-4ec4-82d2-e15bd6ca2763)
+    (uuid 24cfd20d-e3ff-4545-968f-e7029518eb67)
   )
   (wire (pts (xy 60.96 115.57) (xy 60.96 113.02999999999999))
     (stroke (width 0) (type default))
-    (uuid 52996767-7e1f-4ffd-924b-c4e32b0a7fff)
+    (uuid 6a2d0cff-24d4-4dc9-8872-ac1d0134e4f9)
   )
   (wire (pts (xy 24.130000000000003 177.8) (xy 21.590000000000003 177.8))
     (stroke (width 0) (type default))
-    (uuid 0488e4ed-b3fe-4e59-8018-d231d163db18)
+    (uuid fa7856f0-2044-4b9a-9e63-e063020df364)
   )
   (wire (pts (xy 334.01 80.01) (xy 334.01 77.47))
     (stroke (width 0) (type default))
-    (uuid dfd47c66-c94a-4fc4-92b3-bae1cfa289ca)
+    (uuid 79caf089-066c-46b6-8464-281f6190bf58)
   )
   (wire (pts (xy 24.130000000000003 180.34) (xy 21.590000000000003 180.34))
     (stroke (width 0) (type default))
-    (uuid 6a54b00f-5b5d-4e9c-8fa9-ef3182ce2f68)
+    (uuid 654c0602-87ce-4982-9702-50e24de3d0c0)
   )
   (wire (pts (xy 331.47 166.37) (xy 331.47 168.91))
     (stroke (width 0) (type default))
-    (uuid 8fb223e6-5fe9-4e00-866e-18af9ab843f9)
+    (uuid 668ce38b-de70-4f94-8769-4ae30e156b03)
   )
   (wire (pts (xy 328.93 151.13) (xy 328.93 148.59))
     (stroke (width 0) (type default))
-    (uuid 2f795d79-4f3f-4f1b-bd61-d10f10dd18af)
+    (uuid 02cf995f-e9f0-4428-91ab-d1d590cfc129)
   )
   (wire (pts (xy 24.130000000000003 185.42000000000002) (xy 21.590000000000003 185.42000000000002))
     (stroke (width 0) (type default))
-    (uuid 8e7b36cc-4d3e-4400-922e-358b27c917f3)
+    (uuid 3c7fce17-92eb-43e1-bd91-63545d902efc)
   )
   (wire (pts (xy 331.47 44.449999999999996) (xy 331.47 46.989999999999995))
     (stroke (width 0) (type default))
-    (uuid 49fc0d47-3f4c-4439-a4df-dcf688dd53e4)
+    (uuid ea93e87e-2a97-49ac-a303-f763dfa477a0)
   )
   (wire (pts (xy 60.96 189.23000000000002) (xy 60.96 191.77))
     (stroke (width 0) (type default))
-    (uuid 1566cea0-f81f-4e2c-83ac-c17a44b987ac)
+    (uuid 2142af1d-596e-434f-bcb8-19deead94a60)
   )
   (wire (pts (xy 76.2 166.37) (xy 76.2 163.83))
     (stroke (width 0) (type default))
-    (uuid 950a1fb7-db73-4a60-a411-58620ccfbd4f)
+    (uuid 3c70a83f-5e28-48d4-b3de-aa83f8720de6)
   )
   (wire (pts (xy 24.130000000000003 182.88000000000002) (xy 21.590000000000003 182.88000000000002))
     (stroke (width 0) (type default))
-    (uuid 4e6abcb8-8952-49d7-b825-a5b6e89fb2e5)
+    (uuid cf0956d1-a803-4918-b8be-f30e2ebd83ed)
   )
   (wire (pts (xy 186.69 233.68) (xy 184.15 233.68))
     (stroke (width 0) (type default))
-    (uuid a57d05b1-7938-42d9-a770-279fccdc6760)
+    (uuid d370a19f-6a1e-48bf-80d6-3492b30b12d0)
   )
   (wire (pts (xy 60.96 240.03) (xy 60.96 242.57))
     (stroke (width 0) (type default))
-    (uuid e626504c-a8e5-458c-8784-fef84d583d97)
+    (uuid 54b05e32-36d0-469c-b74a-5a660ad9a12f)
   )
   (wire (pts (xy 76.2 217.17) (xy 76.2 214.63))
     (stroke (width 0) (type default))
-    (uuid 2ad008dd-e0ff-4328-b5e2-972d7219d7e8)
+    (uuid 0da73bec-50ae-4398-a025-a5c3d9e97c47)
   )
   (wire (pts (xy 60.96 138.43) (xy 60.96 140.97))
     (stroke (width 0) (type default))
-    (uuid f15c3966-3493-4a13-bb0d-d3142105a7fd)
+    (uuid 6d0e7796-6390-44c4-9991-7b0bc54aa271)
   )
   (wire (pts (xy 76.2 115.57) (xy 76.2 113.02999999999999))
     (stroke (width 0) (type default))
-    (uuid 70116329-c885-4495-b0fe-c37addc013ce)
+    (uuid 9f56e8c1-ab19-486e-9191-cdb66e89529f)
   )
   (wire (pts (xy 130.81 175.26000000000002) (xy 133.35 175.26000000000002))
     (stroke (width 0) (type default))
-    (uuid e9680966-5fe9-4ba0-a651-3ee3622230b7)
+    (uuid 0ce3edac-171f-47d7-9203-e57f082710e2)
   )
   (wire (pts (xy 118.11000000000001 40.64) (xy 113.03000000000002 40.64))
     (stroke (width 0) (type default))
-    (uuid 11f7e584-5742-4e6d-8fbc-5fa7e55bcdc8)
+    (uuid 0479489d-f10d-447e-b622-715dbd961312)
   )
   (wire (pts (xy 130.81 226.06) (xy 133.35 226.06))
     (stroke (width 0) (type default))
-    (uuid 35c720c3-b65b-4b38-a7d2-29ee02b488e2)
+    (uuid 6dd19605-bad8-4e6f-9e71-fd2af2091523)
   )
   (wire (pts (xy 118.11000000000001 38.1) (xy 113.03000000000002 38.1))
     (stroke (width 0) (type default))
-    (uuid ccb862bc-30d7-4827-a0f5-00c33d86aa6a)
+    (uuid 59dee4e0-dbaf-4ec0-b5c9-ad27f11741da)
   )
   (wire (pts (xy 130.81 124.46) (xy 133.35 124.46))
     (stroke (width 0) (type default))
-    (uuid c78bf897-1abc-48e7-844e-b6e0716eb94d)
+    (uuid 3f8bc54d-c9ce-436d-af0f-b96cbb39597d)
   )
   (wire (pts (xy 173.99 73.66) (xy 179.07000000000002 73.66))
     (stroke (width 0) (type default))
-    (uuid f3949483-5521-478e-a7cc-3fef69b8cc7f)
+    (uuid 2af86e90-a6b5-4817-95d1-6c5ea3ccc924)
   )
   (wire (pts (xy 191.77 182.88) (xy 186.69 182.88))
     (stroke (width 0) (type default))
-    (uuid a12450bb-d757-41b8-8c85-e87f81dd1e08)
+    (uuid 46541c30-7310-42e0-bde5-0e401bfd9a28)
   )
   (wire (pts (xy 118.11000000000001 53.34) (xy 113.03000000000002 53.34))
     (stroke (width 0) (type default))
-    (uuid f99abc6c-08d6-42d4-a905-7ce781e23c27)
+    (uuid 189e0fd3-6500-42bc-b63f-b33696922463)
   )
   (wire (pts (xy 191.77 193.04) (xy 186.69 193.04))
     (stroke (width 0) (type default))
-    (uuid af0ca319-0e9b-4256-b01e-4cc36f08183a)
+    (uuid 42c247c2-5fb9-4f9b-85b4-b0d345ac8b9a)
   )
   (wire (pts (xy 173.99 55.88) (xy 179.07000000000002 55.88))
     (stroke (width 0) (type default))
-    (uuid 0be431f9-75e1-47fd-82bb-34e2048012e2)
+    (uuid ee8cf379-e163-4282-aaa4-06510d7bee80)
   )
   (wire (pts (xy 191.77 198.12) (xy 186.69 198.12))
     (stroke (width 0) (type default))
-    (uuid 0151fa8f-6641-4bff-a23f-09fd9edc1d3b)
+    (uuid 7bf3d046-3b56-47c7-998d-2ee6fd15da9c)
   )
   (wire (pts (xy 118.11000000000001 33.02) (xy 113.03000000000002 33.02))
     (stroke (width 0) (type default))
-    (uuid e87db3a6-8def-4911-81e6-450eeece194f)
+    (uuid 56ce13f3-2be6-4210-9a46-32eb834121e9)
   )
   (wire (pts (xy 191.77 200.66) (xy 186.69 200.66))
     (stroke (width 0) (type default))
-    (uuid 06b3cf55-5266-4d7a-8a28-eb6cf2650388)
+    (uuid 839835f2-6a77-4754-916f-d0923b12ff3d)
   )
   (wire (pts (xy 118.11000000000001 55.88) (xy 113.03000000000002 55.88))
     (stroke (width 0) (type default))
-    (uuid 570f615c-9fc4-4bb6-829a-a3f5ae237fdb)
+    (uuid 47941e4c-b726-4f7e-919b-97789cbed500)
   )
   (wire (pts (xy 191.77 195.58) (xy 186.69 195.58))
     (stroke (width 0) (type default))
-    (uuid a76068f7-e734-4f83-b19d-a210bf4c1d41)
+    (uuid 45125aaf-fac7-487f-9359-7dc8c8393955)
   )
   (wire (pts (xy 173.99 53.34) (xy 179.07000000000002 53.34))
     (stroke (width 0) (type default))
-    (uuid bb44cccf-cdaf-4ade-9f8f-ec5d50ddac4a)
+    (uuid c505f1a0-a2e2-492c-8d13-6eff506f3f9a)
   )
   (wire (pts (xy 173.99 60.96) (xy 179.07000000000002 60.96))
     (stroke (width 0) (type default))
-    (uuid c1a19e24-1033-4f82-a71d-5f6872f0b94d)
+    (uuid 0777261d-4ce9-497f-ba0a-8f61163d6a71)
   )
   (wire (pts (xy 173.99 63.5) (xy 179.07000000000002 63.5))
     (stroke (width 0) (type default))
-    (uuid 0f13f8df-a028-4e78-b253-b81fc2fcdba9)
+    (uuid 0dbe3024-7708-4eb0-b244-0633ef1b509d)
   )
   (wire (pts (xy 247.65 180.34) (xy 252.73000000000002 180.34))
     (stroke (width 0) (type default))
-    (uuid 7059fc95-8036-4e71-b689-9e1e1e415dbd)
+    (uuid b2c94d3c-7b7f-4f38-8ef2-1e6c156b22a0)
   )
 
   (rectangle (start 13.5 13) (end 95.5 95.5)
@@ -4583,7 +4583,7 @@
 
   (symbol (lib_id "PCM_Espressif:ESP32-C6-WROOM-1") (at 146.05 55.88 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 53620234-ea9e-4333-ba70-562cbbc0b786)
+    (uuid 0f51264c-8390-4957-a86c-6d85c23f8e8b)
     (property "Reference" "U1" (at 146.05 53.34 0))
     (property "Value" "ESP32-C6-WROOM-1-N8" (at 146.05 58.42 0))
     (property "Footprint" "PCM_Espressif:ESP32-C6-WROOM-1" (at 146.05 55.88 0)
@@ -4598,38 +4598,38 @@
     (property "Datasheet" "https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf" (at 146.05 55.88 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "3" (uuid 724c50f9-a7ba-47ef-878b-9c6e30cecdda))
-    (pin "8" (uuid 6087fb9f-3741-4df3-a6ed-271259ae057f))
-    (pin "9" (uuid ead4d24c-b542-4360-b66a-c18358796ba2))
-    (pin "27" (uuid 6871f118-6eb2-4f46-a77b-141d03f9f57e))
-    (pin "26" (uuid 38b419dc-2fbe-4fca-aef4-849c1377b7b0))
-    (pin "4" (uuid 5ff8479d-b96d-42a5-9eb1-8af0b0b14849))
-    (pin "5" (uuid 4b0be2c5-da9e-474a-88a0-7a37994be054))
-    (pin "6" (uuid efe7c285-1950-43b2-a62e-e6c87e9674cf))
-    (pin "7" (uuid 4ce6e398-5e9a-4e34-a5e8-33c97f2ae7a2))
-    (pin "22" (uuid 762eb796-2da1-414e-8659-298aeaadd29c))
-    (pin "2" (uuid add9c34b-92ab-4600-a4fc-b01498b83ef0))
-    (pin "1" (uuid fa639488-f86a-42ea-ba3b-456790a4cb90))
-    (pin "28" (uuid b3a1f370-0da2-4c40-b0e1-ad6480987561))
-    (pin "29" (uuid 893b7e7d-a044-48cd-8564-e4f3a9c0e729))
-    (pin "25" (uuid 7f10bb3e-8878-42b1-afdc-bf4cb1174240))
-    (pin "24" (uuid 59360622-c217-47f1-b32d-d0fc163bd9f9))
-    (pin "14" (uuid 2c872cf4-5cc0-4fc7-9130-ef6e958ba669))
-    (pin "13" (uuid 03ab59ac-8967-42df-b22e-21613dbc2a77))
-    (pin "10" (uuid e7b6e900-4477-4030-b42a-cd59edc493c3))
-    (pin "15" (uuid 48f3b097-3e69-461b-a2d1-ff0a50e8571c))
-    (pin "11" (uuid 50ad5608-9204-4e1b-a0eb-91540b128b94))
-    (pin "12" (uuid bf3b73fd-0a37-4bdb-a98e-e50081897f06))
-    (pin "23" (uuid 36d7bc1f-ee3d-4ada-aea0-c9733abe2824))
-    (pin "16" (uuid f7d4fd13-8ced-4ed5-8ff5-edda43d4d98c))
-    (pin "17" (uuid 78d47da8-f929-40ef-8307-f7fd8f43ff5b))
-    (pin "18" (uuid ad9cb752-cfd0-49f1-8710-a65c537f6b86))
-    (pin "19" (uuid dca3d6ca-42a1-421a-a47d-ac3835169537))
-    (pin "20" (uuid cbffa788-6937-4877-ae42-ca7299b72603))
-    (pin "21" (uuid b57920bb-f6ce-43cb-a445-44af9c49312f))
+    (pin "3" (uuid f57bce68-a51d-4f3d-be30-9109f6cb809b))
+    (pin "8" (uuid 744172cb-f2b2-4b58-9f06-81923ca2d48b))
+    (pin "9" (uuid 3bc5e096-dca2-476b-98e4-a89fc0c024f3))
+    (pin "27" (uuid d37c814d-8b88-4195-a991-b657588a8b23))
+    (pin "26" (uuid eb405621-f29c-442f-8735-f6ebbcadff99))
+    (pin "4" (uuid c024abf1-66fa-485e-805e-467e7660e4dc))
+    (pin "5" (uuid 1ed3a5b7-3fee-41b5-ae5d-54e55ac74234))
+    (pin "6" (uuid 57219d18-2cfe-4a25-b42f-880d14b8248b))
+    (pin "7" (uuid 6ae774d4-8dd4-4e2f-9fb3-599d959acb3c))
+    (pin "22" (uuid 1eb4fd99-3436-48ff-8117-875e2fc0a2cd))
+    (pin "2" (uuid 18c0f424-713c-425e-9da6-e34b0ca82a47))
+    (pin "1" (uuid 37d6baa9-fe41-49e9-8c5c-6f8f2e432d6b))
+    (pin "28" (uuid e0df8bd6-664b-43a1-82be-af1895608394))
+    (pin "29" (uuid 0aaefa61-4f38-4b94-9721-ab5d77e2f4a6))
+    (pin "25" (uuid 8a05e0b2-c6b1-48c5-af2f-0a9283e5e738))
+    (pin "24" (uuid fde10d65-cb12-40b9-becd-f0160afb5217))
+    (pin "14" (uuid ece321e5-c628-4277-a124-cbc7f029b18d))
+    (pin "13" (uuid 5515ee37-e823-4038-87cd-e6fa1b877050))
+    (pin "10" (uuid 69cf95a3-1a2a-4cde-a76d-7434afd5e0af))
+    (pin "15" (uuid 448edc05-9d4a-43b4-8904-2fe2cf3bf9b2))
+    (pin "11" (uuid 8c7201e5-979e-4437-8be8-68c2890bf542))
+    (pin "12" (uuid 0fca57f6-9ec1-405d-b69a-b0db51bfa016))
+    (pin "23" (uuid b3d03b83-1c2e-4849-bd73-74126053a133))
+    (pin "16" (uuid ec188049-ff9c-45e8-83b8-0a45e5cd8150))
+    (pin "17" (uuid cdd18337-071e-45ed-a241-4c652ce20fcc))
+    (pin "18" (uuid 7c7c6bca-89e4-40fc-9561-00daae6f101f))
+    (pin "19" (uuid 5f29a1a9-af3b-42e2-a6d5-d824e762a0a0))
+    (pin "20" (uuid aa4c34f3-85ab-49b7-b3ce-2a52626ec3c9))
+    (pin "21" (uuid d2f52e5d-d716-4219-af04-36c55137cb5b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "U1") (unit 1)
         )
       )
@@ -4638,7 +4638,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Power:LDO, 3.3V, 1A") (at 238.76 31.75 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 152bdb28-b9fb-4df6-b2fe-179415c24635)
+    (uuid 5edef499-0f30-4b61-bfc5-d089cf279686)
     (property "Reference" "U2" (at 238.76 21.59 0))
     (property "Value" "SGM2212-3.3" (at 238.76 24.130000000000003 0))
     (property "Footprint" "PCM_JLCPCB:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR" (at 238.76 31.75 0)
@@ -4650,13 +4650,13 @@
     (property "Description" "5V->3.3V LDO; low dropout rides out WiFi-TX VBUS sag" (at 238.76 31.75 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 54f7aebf-c51e-4b33-b082-c37507908830))
-    (pin "4" (uuid a09be4cd-ddef-4517-aa29-7455d1994c41))
-    (pin "2" (uuid 7324635f-7c92-4660-9e70-07707567bfb5))
-    (pin "3" (uuid 82cc75bd-26b5-4904-a6bd-4025d388fdb4))
+    (pin "1" (uuid 478ac94b-73c1-4f22-af08-296db63fbe99))
+    (pin "4" (uuid b1eacdd5-df01-4fd9-9a75-9d2d8d74ef42))
+    (pin "2" (uuid cd5b75d0-6b31-49eb-96c4-961a347893f0))
+    (pin "3" (uuid 7b4ecf65-688a-4413-8aab-83f0bbdfa790))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "U2") (unit 1)
         )
       )
@@ -4665,7 +4665,7 @@
 
   (symbol (lib_id "ES8311:ES8311") (at 219.71 190.5 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 54162a70-d2f1-4c26-b23d-756af5bfd50b)
+    (uuid b29d9fc0-8154-43a1-88c7-27090ff8e6c8)
     (property "Reference" "U3" (at 219.71 187.96 0))
     (property "Value" "ES8311" (at 219.71 193.04 0))
     (property "Footprint" "ES8311:WQFN-20_L3.0-W3.0-P0.40-BL-EP1.7" (at 219.71 190.5 0)
@@ -4683,30 +4683,30 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/C962342.pdf" (at 219.71 190.5 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 73c3fe38-3f2e-4815-9679-f074779eabb7))
-    (pin "2" (uuid 0874d02a-0aa2-4439-bc5d-a25ccaf0aef9))
-    (pin "3" (uuid 6ce36269-0295-4ac6-a09c-8915abccbb65))
-    (pin "4" (uuid fc7ab731-7daf-4f63-b1da-20bb2575ec01))
-    (pin "5" (uuid 65613f12-d08b-447e-8e52-54e80c890c53))
-    (pin "6" (uuid a529d156-abc5-4695-a6f5-1e54c0ba099f))
-    (pin "7" (uuid 955a825b-e1e5-4e23-94ad-e0e09984fec0))
-    (pin "8" (uuid f8b5d32d-9598-4fc8-9b5a-e6ae19c118f9))
-    (pin "9" (uuid 2798defb-3831-4714-9992-89cd0f61bc26))
-    (pin "10" (uuid 8ac4deb7-b820-4d6e-a2a3-eb9d69850c7c))
-    (pin "11" (uuid 1f7d3090-4462-4b2b-b431-d0b23f1ae16e))
-    (pin "12" (uuid 693c3e7d-9f5b-44ef-bfa9-620d67ba8c91))
-    (pin "13" (uuid cc9829d7-01cf-4c66-9ec3-8f69dbeec8ee))
-    (pin "14" (uuid 529926ef-f999-46ed-a977-0c12c049a8b3))
-    (pin "15" (uuid d10fbc77-3931-40e3-b207-ab7cbd4b8630))
-    (pin "16" (uuid c8011261-81e8-46fd-9f54-34c0bd8cc2c6))
-    (pin "17" (uuid 480b3014-3746-42ae-9f75-551f5a125c15))
-    (pin "18" (uuid 39cbb1d4-b272-4bb6-b09a-e75950069063))
-    (pin "19" (uuid 29f1f38b-b9df-4f45-b280-91da3a0b26c7))
-    (pin "20" (uuid 4b1c5267-7405-4128-822d-cc08bd16f3ef))
-    (pin "21" (uuid d029c9df-302e-473d-8f8d-045e79023505))
+    (pin "1" (uuid 09ce96e7-5cc8-4057-819a-fe6789ec84f4))
+    (pin "2" (uuid 4e95a262-db07-4980-82b4-8983f289f95f))
+    (pin "3" (uuid 71357f31-18bb-4de5-a358-df9390ff5d47))
+    (pin "4" (uuid dededfdb-7ab4-4f62-8b1a-1c57b3e83537))
+    (pin "5" (uuid ccce9108-64ce-479c-82b6-7626710eb2d2))
+    (pin "6" (uuid aeb2a52a-220a-4222-943b-1dfe4ab2a15e))
+    (pin "7" (uuid a32d73cb-8abb-4409-98e7-5d4ace234d97))
+    (pin "8" (uuid a9816f19-5277-424d-8b77-f4c03da3445e))
+    (pin "9" (uuid c86867e0-67e3-4b03-bc0a-4d268bfaf38b))
+    (pin "10" (uuid 087dd6e8-08bf-43b1-9a98-2c8a0c547edb))
+    (pin "11" (uuid c15bf07f-f743-49d8-a4e6-db1e73fb9c89))
+    (pin "12" (uuid e8acceba-53b4-4434-949b-6535be1d4b1d))
+    (pin "13" (uuid b49b13bf-6258-45e6-8f7f-3819627408a4))
+    (pin "14" (uuid dda1d458-c002-43ab-9506-cfb3820edefb))
+    (pin "15" (uuid ec87d8a9-3428-4faa-84dd-77d61a3b31a2))
+    (pin "16" (uuid 5291eb9f-d146-4c55-b629-2f9534d4f03d))
+    (pin "17" (uuid 61bbe5a8-a536-42a4-8bb7-ee641004d837))
+    (pin "18" (uuid c1d1e75a-13a4-44ba-ab02-213aa62fc319))
+    (pin "19" (uuid 7a340cf6-8222-4c05-95cf-00a5119c553b))
+    (pin "20" (uuid 59677621-e2aa-47c9-b67c-82c2ae736e66))
+    (pin "21" (uuid 45138323-9483-49a4-a23c-69ab44a4682a))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "U3") (unit 1)
         )
       )
@@ -4715,7 +4715,7 @@
 
   (symbol (lib_id "SM_LP_5001:SM-LP-5001") (at 196.85 241.3 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e069228b-7dab-41b6-aa57-71d5378efe21)
+    (uuid c5a916dc-30f2-4aa8-bcad-8b7e46897d7a)
     (property "Reference" "T1" (at 196.85 226.06 0))
     (property "Value" "SM-LP-5001" (at 196.85 228.6 0))
     (property "Footprint" "SM_LP_5001:XFMR-SMD_SM-LP-5001E" (at 196.85 241.3 0)
@@ -4733,15 +4733,15 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/C7503474.pdf" (at 196.85 241.3 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid edd09698-57d5-424f-b946-2936a9610f5b))
-    (pin "1" (uuid 5a1302e0-9280-4d78-972d-775e85f799fa))
-    (pin "3" (uuid 68471ed7-64b4-431c-a5a2-bc991ac90d9c))
-    (pin "4" (uuid 907d8be6-1893-40ed-b3f8-f270c2f8a60d))
-    (pin "5" (uuid 8c3b3d23-5274-4c45-acc0-870141c8720c))
-    (pin "6" (uuid 2314cb8d-e83e-40ff-8191-b72a0cb6c06f))
+    (pin "2" (uuid 8beb7f3d-f99a-41b8-8409-6e8d12bd57f0))
+    (pin "1" (uuid 62220bec-b458-4930-8380-e1ce5b34d38d))
+    (pin "3" (uuid 7eb141a3-79da-4847-ace5-1ffbcd9040db))
+    (pin "4" (uuid dcadcf44-058e-467e-ac1a-d29191078402))
+    (pin "5" (uuid 1f81764e-9443-448b-971e-4f7c1b9e1ba4))
+    (pin "6" (uuid b154eae3-3345-4c89-a958-45dc4ce27c35))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "T1") (unit 1)
         )
       )
@@ -4750,7 +4750,7 @@
 
   (symbol (lib_id "Connector:USB_C_Receptacle_USB2.0_16P") (at 48.26 50.8 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 97b004ab-003d-408b-abdf-611b7a4f2683)
+    (uuid 1b780d1a-2944-4db1-a874-68768f30c9c9)
     (property "Reference" "J1" (at 48.26 27.939999999999994 0))
     (property "Value" "USB-C (USB4105)" (at 48.26 30.479999999999997 0))
     (property "Footprint" "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal" (at 48.26 50.8 0)
@@ -4765,26 +4765,26 @@
     (property "Datasheet" "https://www.usb.org/sites/default/files/documents/usb_type-c.zip" (at 48.26 50.8 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "A1" (uuid c96a2389-dd1d-4913-ab26-9134e4649532))
-    (pin "A4" (uuid 938049e7-1278-49bd-a93f-5133fcccd394))
-    (pin "A5" (uuid 8793f2a8-dab5-4b33-9b33-73e01c42ea4f))
-    (pin "A6" (uuid e6e5b92e-3f22-4e3f-8dfc-13c131963900))
-    (pin "A7" (uuid 217e17f4-4929-46d7-ae41-3b4e295dc201))
-    (pin "A8" (uuid 0b7a3728-6f72-4427-bb1c-d873664bc756))
-    (pin "A9" (uuid 414de247-1637-4c31-b53b-47a8224ca4a3))
-    (pin "A12" (uuid 82d5cd5a-52be-4ca9-86b9-8e5b3913450e))
-    (pin "B1" (uuid 85177e9f-73d1-4844-966b-d064d73bbbe0))
-    (pin "B4" (uuid df9cf012-a562-4ac2-80da-d0c7715d207a))
-    (pin "B5" (uuid 2df7c209-afd3-4ad0-93e3-24dd6b67a330))
-    (pin "B6" (uuid 115dfaa6-c806-41f6-882d-e0e2d8747d7c))
-    (pin "B7" (uuid d79b0fc8-4f8a-4138-bf6c-f0715a88f97b))
-    (pin "B8" (uuid f1075b66-e5e6-4984-abc4-7736d420c4d5))
-    (pin "B9" (uuid 86e2de03-f9ac-4baa-aac6-eeeacd2be420))
-    (pin "B12" (uuid e9d3c082-52bd-43c9-a63f-5058c3c0765f))
-    (pin "SH" (uuid 7980dc63-c6b9-4e62-9a96-4132d19473a6))
+    (pin "A1" (uuid 3864e7d3-f9a7-445a-a6f7-e16d6d195572))
+    (pin "A4" (uuid 8a840ad9-2e0c-4503-bdb3-cfa142d05149))
+    (pin "A5" (uuid cec298e0-106a-4d73-9a55-12e4262fe6e6))
+    (pin "A6" (uuid cc2b4f62-04b9-4e4f-8f75-6c3951b98dfc))
+    (pin "A7" (uuid 4d12038f-c86f-4635-9740-ed2cb2774e55))
+    (pin "A8" (uuid 62bc0161-141e-4ee9-86e6-499cac4c50fd))
+    (pin "A9" (uuid 64794f33-e962-4e3e-81ee-ec43269eba82))
+    (pin "A12" (uuid fac99531-b596-4246-9a42-3cd88357a269))
+    (pin "B1" (uuid 07610a49-955a-4490-a2f1-85832a480887))
+    (pin "B4" (uuid 6dfbf7da-5f24-4f10-8066-feb6ee902bf3))
+    (pin "B5" (uuid 36ce9389-6cc2-40f9-92af-29588dafd15c))
+    (pin "B6" (uuid 174e83ec-4169-4aab-8f3b-f2011a63d751))
+    (pin "B7" (uuid 3181946d-d1e7-442c-9e5a-3297a181b4b2))
+    (pin "B8" (uuid ec82558f-c04c-40a8-aba2-cf3ec3485abd))
+    (pin "B9" (uuid c08308cd-9ed2-4738-9a61-d42fbe327731))
+    (pin "B12" (uuid b7f09454-71ba-426c-afc8-a515f22b384d))
+    (pin "SH" (uuid 89907494-7d42-43a1-b396-7ce47c134f36))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "J1") (unit 1)
         )
       )
@@ -4793,7 +4793,7 @@
 
   (symbol (lib_id "Connector_Generic:Conn_01x06") (at 29.21 177.8 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid b986fe3e-398c-442d-8fbd-d9306404e7b3)
+    (uuid 8858f595-6262-4ee7-972b-dfff58a821c5)
     (property "Reference" "J2" (at 29.21 175.26000000000002 0))
     (property "Value" "WF26 (6-way screw)" (at 29.21 189.23000000000002 0))
     (property "Footprint" "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical" (at 29.21 177.8 0)
@@ -4805,15 +4805,15 @@
     (property "Description" "WF26 intercom bus tap: P1-P3, P4/IN_P4 (line-4 break-in), P5" (at 29.21 177.8 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid e6857001-920c-4d27-a8ee-282f9d19c4f0))
-    (pin "2" (uuid 5d7a4841-9192-4eb1-a20a-1e3207df7373))
-    (pin "3" (uuid 5bc14c76-2774-48bd-897f-a266182e786c))
-    (pin "4" (uuid 96e68a45-960b-4bd0-b1b9-00c288d326f6))
-    (pin "5" (uuid 25db8631-4cc7-4130-ae16-e9c1dcd96a91))
-    (pin "6" (uuid c4fe2b49-7d78-44d9-8204-1850797b2677))
+    (pin "1" (uuid 24e16280-cc39-4078-abfb-0f9d23a79a5d))
+    (pin "2" (uuid c9540d9d-89cd-4db6-ad8e-0746ba54c9dc))
+    (pin "3" (uuid dcfe176f-f2e5-4490-980d-8964e54759e6))
+    (pin "4" (uuid 1ae8d0bd-15fd-4deb-9a98-bdd8675c43c3))
+    (pin "5" (uuid b212659b-3cac-4da2-97a1-2d21529b8102))
+    (pin "6" (uuid a3d1d738-09e3-4daf-a146-076d49e8cec7))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "J2") (unit 1)
         )
       )
@@ -4822,7 +4822,7 @@
 
   (symbol (lib_id "cas220tb1:CAS-220TB1") (at 67.31 127.0 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 66e20847-6831-4119-851c-cfdecaeeb26b)
+    (uuid af6bcb62-41de-4592-a893-17bc03b64f55)
     (property "Reference" "SW3" (at 56.81 125.73 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -4844,15 +4844,15 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf" (at 67.31 127.0 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 24794746-3fb5-4180-9f68-f8d90a6eb50a))
-    (pin "3" (uuid d4e1ca0c-7192-4203-b4c8-2e24ce52df1a))
-    (pin "1" (uuid 28b4ebfc-4d3b-43a1-87d2-94180da3f517))
-    (pin "4" (uuid a7129d85-7e23-4a07-88c1-2079b7d15746))
-    (pin "6" (uuid f84d0cbd-76c1-4c41-b30e-dba1054bfa2f))
-    (pin "5" (uuid 67b4e0e0-29cb-4950-a53f-4aef03b6616e))
+    (pin "2" (uuid caf68031-e348-4df0-9514-e7cb00b8ccf6))
+    (pin "3" (uuid 76a1b9de-0eaa-4225-bf33-62d275b82549))
+    (pin "1" (uuid b93225d8-1c68-4587-897e-607d9752a6bc))
+    (pin "4" (uuid 69083740-0e91-44e6-956c-02028d128c52))
+    (pin "6" (uuid 2852cd7b-8a9d-4b88-9613-e870cc3e54f4))
+    (pin "5" (uuid dd3068e9-5597-4d50-8876-1e689b2f5111))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "SW3") (unit 1)
         )
       )
@@ -4861,7 +4861,7 @@
 
   (symbol (lib_id "cas220tb1:CAS-220TB1") (at 67.31 177.8 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 8747fb3d-5654-4814-9aac-04ec3a15fe4f)
+    (uuid 067f94c4-d22f-4ec3-91b3-6cbb59c08361)
     (property "Reference" "SW4" (at 56.81 176.53 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -4883,15 +4883,15 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf" (at 67.31 177.8 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 8f50831d-8acb-4b18-8f74-faaa252bb98f))
-    (pin "3" (uuid 633e4434-a619-4a90-9bc8-867ccb263fec))
-    (pin "1" (uuid 466b7526-1736-44ba-b0e0-724cf9378240))
-    (pin "4" (uuid 58f575c7-853d-4e19-9865-7447b9deadeb))
-    (pin "6" (uuid dc1e2dc4-74c6-467c-8c08-300ae75189bb))
-    (pin "5" (uuid 56f768ea-ee55-4eaa-a4e9-ae73d5ccb75a))
+    (pin "2" (uuid b990fb01-2df5-4196-b3d0-9e2d16034f76))
+    (pin "3" (uuid d65eed90-c543-4637-af75-048cd9022bc0))
+    (pin "1" (uuid 87e1a208-57ca-4fb5-8639-a2bbc6d144db))
+    (pin "4" (uuid 727b6749-55e6-46bf-9533-f4a8fef870ea))
+    (pin "6" (uuid d09ce0ec-1134-467f-9cfb-d133c97fed83))
+    (pin "5" (uuid ce624303-9896-4e7d-bcd4-6daaeea091c4))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "SW4") (unit 1)
         )
       )
@@ -4900,7 +4900,7 @@
 
   (symbol (lib_id "cas220tb1:CAS-220TB1") (at 67.31 228.6 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 69a011ff-15c7-4836-8565-02530e92a050)
+    (uuid 0f5aad0c-243c-4b26-a6ae-42686285236a)
     (property "Reference" "SW5" (at 56.81 227.32999999999998 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -4922,15 +4922,15 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf" (at 67.31 228.6 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid d649d404-1256-440d-88c8-b26ab19c0fe6))
-    (pin "3" (uuid 3032eb17-652b-46b4-b531-d1ab31305a08))
-    (pin "1" (uuid 2e425459-8690-4587-8882-b3c37ce11e5c))
-    (pin "4" (uuid 3f0baceb-0294-45fd-b7ac-21caf231f232))
-    (pin "6" (uuid a0142fa8-50c1-4c0b-ba39-afd0ada78403))
-    (pin "5" (uuid 18c545d5-b045-4993-b506-cda33b969acd))
+    (pin "2" (uuid 23a3aa6a-6d9e-4495-bef1-967f931ea64e))
+    (pin "3" (uuid 71b3a245-e898-4e5d-8379-b09cd160e502))
+    (pin "1" (uuid 521b1457-a51f-45dc-80c8-552215c4f590))
+    (pin "4" (uuid 3a85a73b-5784-4d5e-a794-0633b6dd3d05))
+    (pin "6" (uuid d3bb0c13-2d46-4ec5-b0df-f7cb1362753d))
+    (pin "5" (uuid c72641ac-d388-4f3d-a36c-f13ca345477e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "SW5") (unit 1)
         )
       )
@@ -4939,7 +4939,7 @@
 
   (symbol (lib_id "Relay:G6K-2") (at 331.47 97.79 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ca74367f-f411-4efe-ac83-c054f33b68cf)
+    (uuid 0064f30d-c6e3-4b85-9f06-01eb0959c39d)
     (property "Reference" "K2" (at 347.97 96.52000000000001 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -4958,17 +4958,17 @@
     (property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf" (at 331.47 97.79 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid dc84b6e3-47c1-403b-9296-6b464e65e6d4))
-    (pin "2" (uuid ed236fa1-9c6a-4736-9629-3007e152d90e))
-    (pin "3" (uuid c0a38f0b-a7d2-4680-9763-6596d87fda9b))
-    (pin "4" (uuid fc6150b8-20eb-4226-a585-b4f25e42a1a4))
-    (pin "5" (uuid 5e4f94c4-3596-4ef1-99c7-e23991e3f2ba))
-    (pin "6" (uuid 6c80a54c-2a57-42be-82eb-5c4e519efa1a))
-    (pin "7" (uuid b0ac0a56-bd59-410a-abb1-ea25b01140b7))
-    (pin "8" (uuid 8400e5f3-8db0-4567-9718-882b9a67fed4))
+    (pin "1" (uuid 8505b0c0-5222-49c5-9b7a-5f543c09540f))
+    (pin "2" (uuid 37a05e7c-8568-4699-9c95-21d776764be6))
+    (pin "3" (uuid f332d501-fbca-407a-8711-915603c7b23f))
+    (pin "4" (uuid 9f80e698-7313-4b2b-9b33-560d37c5034a))
+    (pin "5" (uuid 1a84f4fd-2327-4283-bea5-5ce3af234c4b))
+    (pin "6" (uuid 202c181b-60e8-40a7-8a3e-8af98fcdc23b))
+    (pin "7" (uuid 42206a81-344f-4ac2-961f-cb6007787009))
+    (pin "8" (uuid 7ca8c960-ce6e-4ed5-9379-256270d088b7))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "K2") (unit 1)
         )
       )
@@ -4977,7 +4977,7 @@
 
   (symbol (lib_id "Relay:G6K-2") (at 331.47 158.75 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid d49d49e9-8be2-4efc-8ef7-cc4fd85abde2)
+    (uuid 5029d1bf-0ae2-4f97-bea2-50c00431607b)
     (property "Reference" "K3" (at 347.97 157.48 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -4996,17 +4996,17 @@
     (property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf" (at 331.47 158.75 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid abef6635-44a8-4118-babc-1f314f9f1ece))
-    (pin "2" (uuid 3a6c0549-e172-457d-9991-2bd2c3d5ab92))
-    (pin "3" (uuid 95a144ab-c97e-4798-b7a7-0b23401e3167))
-    (pin "4" (uuid f112f863-2c02-460c-86f2-deaa3ca66a0e))
-    (pin "5" (uuid 17f45fa4-a484-469a-9ff7-f1f2d3f6b312))
-    (pin "6" (uuid c0f802a1-94ed-4a6d-b70f-39d361225b2a))
-    (pin "7" (uuid 93355709-7b6c-4965-b4f9-176e94534b72))
-    (pin "8" (uuid f65a6785-1980-4778-85e6-3d38e0ff8b9e))
+    (pin "1" (uuid ab8b3aeb-5cdd-4ea0-8afc-699dad99e81e))
+    (pin "2" (uuid 6a8c9210-f359-406a-9e4f-a6d4456d5070))
+    (pin "3" (uuid f2698a2f-034b-4c44-b600-aa3a6d2275d5))
+    (pin "4" (uuid d04a53da-ccb4-4231-ba02-fcbecbe14e4d))
+    (pin "5" (uuid 558318a3-e05c-4123-bcb1-d0476f4d9855))
+    (pin "6" (uuid e3b24821-b3b8-4ca5-b1d9-21309cc1505c))
+    (pin "7" (uuid da71c89d-5181-41ba-a7f9-9e51f1395cd8))
+    (pin "8" (uuid 0de04df2-34e8-4991-978c-2f10d1a629bf))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "K3") (unit 1)
         )
       )
@@ -5015,7 +5015,7 @@
 
   (symbol (lib_id "Relay:G6K-2") (at 331.47 36.83 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 60439f9c-5214-49e3-ab7f-9a004a412058)
+    (uuid f04e279a-2c9a-4c28-9bb8-e873da61e87b)
     (property "Reference" "K1" (at 347.97 35.559999999999995 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5034,17 +5034,17 @@
     (property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf" (at 331.47 36.83 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 3fc66add-d781-40e2-a550-1eab27df37d8))
-    (pin "2" (uuid 4b293dc1-b02a-442f-ac10-3c95a666fb45))
-    (pin "3" (uuid 5cd9d83f-2729-4359-b2c6-d2d95e673971))
-    (pin "4" (uuid 64b71451-2455-4203-a631-a0ffd893dda1))
-    (pin "5" (uuid 36539c02-04f7-4670-85d5-a180c010e3a2))
-    (pin "6" (uuid 133a15d5-338b-49fb-ae2f-c9ef8b912c8a))
-    (pin "7" (uuid 1fe3b935-83de-4117-8090-5be7d4eae9e1))
-    (pin "8" (uuid 25cb8172-f6a7-4b1b-98a8-78a209eae523))
+    (pin "1" (uuid 0990e9c5-fabb-418e-8563-886d1c8785c0))
+    (pin "2" (uuid 23f69e14-094e-481b-94db-904fc468efc1))
+    (pin "3" (uuid 2d7388c2-bbc3-44e2-9f7b-090737b088f5))
+    (pin "4" (uuid 123bd044-3932-4d29-aeee-ee5040753a71))
+    (pin "5" (uuid 9225bba6-d854-456a-a5d9-0d69f2bc28ae))
+    (pin "6" (uuid 862d70af-f0c1-4aa6-aa03-866ae118c3a4))
+    (pin "7" (uuid 49f9618e-a277-4379-b33a-041c2698bd9c))
+    (pin "8" (uuid 8156d68e-3784-4de4-856e-6e7b49e3c845))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "K1") (unit 1)
         )
       )
@@ -5053,7 +5053,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Transistors:NMOS,2N7002") (at 288.29 115.57000000000001 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 4d1c7e9f-4dfc-40d5-a615-091cc417ca6c)
+    (uuid 9f7b2472-94d6-4949-b13b-b9804f997a73)
     (property "Reference" "Q2" (at 293.37 114.30000000000001 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5075,12 +5075,12 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf" (at 288.29 115.57000000000001 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "3" (uuid fd46f7f1-b25c-4e32-a012-64847f02feb6))
-    (pin "1" (uuid 59e3de9e-a506-481b-abed-26f44302c6f1))
-    (pin "2" (uuid 5f724f0f-c18c-4e9e-a381-d0d6a86236b6))
+    (pin "3" (uuid 91cb823a-ebbb-46bb-af69-d805b2f370dd))
+    (pin "1" (uuid 66516a0a-1fa5-417b-bf22-4f289984ac7f))
+    (pin "2" (uuid 3981753a-9843-4824-a519-a67856d66381))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "Q2") (unit 1)
         )
       )
@@ -5089,7 +5089,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Transistors:NMOS,2N7002") (at 288.29 176.53 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 161af573-c675-4999-9f6f-81fb86a8a63c)
+    (uuid 3ea39f96-87c9-4f92-a22c-f51e81c879c1)
     (property "Reference" "Q3" (at 293.37 175.26 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5111,12 +5111,12 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf" (at 288.29 176.53 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "3" (uuid 935459c1-dc9d-47d1-8386-a4d240c9616b))
-    (pin "1" (uuid 84f5555b-b4d8-4145-b508-95da9b030f6e))
-    (pin "2" (uuid fdcaf176-f373-40e3-978f-1645c8418f61))
+    (pin "3" (uuid 30420dea-428c-4004-8791-f91923fe133d))
+    (pin "1" (uuid d48c0876-4b9c-4e38-b734-355a1f4a301e))
+    (pin "2" (uuid 5f7a9cb2-cdae-4806-9267-069b2622fc75))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "Q3") (unit 1)
         )
       )
@@ -5125,7 +5125,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Transistors:NMOS,2N7002") (at 288.29 54.61 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 715c7c5a-1d62-4228-9128-fd67eecba5b2)
+    (uuid d3add021-1e0e-4965-9251-c6fba6764dfa)
     (property "Reference" "Q1" (at 293.37 53.339999999999996 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5147,12 +5147,12 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf" (at 288.29 54.61 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "3" (uuid 9226b7fe-1e5e-4cfa-bd32-f95ba85f1e6a))
-    (pin "1" (uuid 8b789a5c-4ded-47b3-8222-47e642bec449))
-    (pin "2" (uuid 13442a4d-8f3d-47fa-9f2f-2a84d376ba76))
+    (pin "3" (uuid 526a0bd6-9613-44f1-b08f-c14546368cbd))
+    (pin "1" (uuid 081b949f-da56-4f12-b92f-d1d585b06eb3))
+    (pin "2" (uuid da29b3de-bc38-483b-bd57-3d64577d5f2f))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "Q1") (unit 1)
         )
       )
@@ -5161,7 +5161,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W") (at 303.53000000000003 97.79 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ac5992e5-5381-4474-a66d-cf7f33350d26)
+    (uuid 0bad851e-8309-4a32-9aad-5c251bafd8b6)
     (property "Reference" "D2" (at 305.31 96.52000000000001 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -5183,11 +5183,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf" (at 303.53000000000003 97.79 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 45010100-e167-4f9c-bb07-2952be4a5c29))
-    (pin "1" (uuid 3f599a0a-aae7-4f2f-a89c-0cdd719f977d))
+    (pin "2" (uuid 8124f439-35be-4bd4-9453-c06d877d3224))
+    (pin "1" (uuid a19f2ced-1ae0-4111-8fa0-803949059aa5))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D2") (unit 1)
         )
       )
@@ -5196,7 +5196,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W") (at 303.53000000000003 158.75 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 184c8e0e-3eb4-4f9d-98ba-bff2a5dac188)
+    (uuid e9cd15c6-f411-4abd-8823-2c16a3c7a877)
     (property "Reference" "D3" (at 305.31 157.48 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -5218,11 +5218,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf" (at 303.53000000000003 158.75 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid be1d8e3d-13bc-49e9-a339-8ce2285607b6))
-    (pin "1" (uuid e8c6e029-b69c-404f-ad77-2c9f2965d68e))
+    (pin "2" (uuid 2433d2c0-2ceb-4e65-9bea-df5b0ef47532))
+    (pin "1" (uuid 2605e76e-8a1b-401b-8dce-3bfa203c5971))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D3") (unit 1)
         )
       )
@@ -5231,7 +5231,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W") (at 303.53000000000003 36.83 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 233d934e-ad22-4042-95d4-7f892018d97f)
+    (uuid 4634bcc2-d875-4fc5-bcf7-9dd5b1501724)
     (property "Reference" "D1" (at 305.31 35.559999999999995 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -5253,11 +5253,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf" (at 303.53000000000003 36.83 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 4ff879e8-e8f8-457a-92c9-d3602f49d10c))
-    (pin "1" (uuid c8a03244-f642-420a-bf76-eddc26d2e1e7))
+    (pin "2" (uuid b1a78e2b-f5ab-44e1-b51f-e1d7d1d825cf))
+    (pin "1" (uuid 5bc73100-4e7c-45fa-bb29-8f4e1fdba795))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D1") (unit 1)
         )
       )
@@ -5266,7 +5266,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:Schottky,SS14") (at 81.28 35.56 90) (unit 1)
     (in_bom no) (on_board no)
-    (uuid c8dc0c87-71f3-4b3b-aac2-fb95610cf23e)
+    (uuid d999f073-a27a-4968-a75d-3f5aa9bad8c2)
     (property "Reference" "D4" (at 81.28 30.480000000000004 270))
     (property "Value" "SS14" (at 81.28 33.02 270))
     (property "Footprint" "PCM_JLCPCB:D_SMA" (at 81.28 35.56 0)
@@ -5284,11 +5284,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2407101109_MDD-Microdiode-Semiconductor-SS14_C2480.pdf" (at 81.28 35.56 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 343f9dba-c8b7-4ce2-90de-a0bade935509))
-    (pin "1" (uuid f9ae8d1b-0b81-43d1-afbe-c03265deb24b))
+    (pin "2" (uuid d6ca7efd-f295-402b-af21-eaa917f3a1a8))
+    (pin "1" (uuid a8117349-71fa-419d-8f2a-a61eae6b7136))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D4") (unit 1)
         )
       )
@@ -5297,7 +5297,7 @@
 
   (symbol (lib_id "TPD2S017:TPD2S017DBVR") (at 46.99 87.63 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 2a71093a-2e77-4e18-ae00-7431717c7328)
+    (uuid d673e55f-3ca4-4834-a364-dfe9f01f450a)
     (property "Reference" "D5" (at 83.49000000000001 86.36 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5319,15 +5319,15 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/C880115.pdf" (at 46.99 87.63 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 0c689f5b-f778-43b8-8595-558e41213a68))
-    (pin "2" (uuid a9b96b3e-b743-4cd4-8863-9d38de94c198))
-    (pin "3" (uuid 9d88a0cd-a39d-42c7-8cf5-29654c02c713))
-    (pin "4" (uuid 998d1c53-b3ba-4064-8d05-8616201fce86))
-    (pin "5" (uuid 2a0b5705-abfa-454b-8622-2adff27b4938))
-    (pin "6" (uuid b974921d-6449-4ab1-b4bd-01c93ed15421))
+    (pin "1" (uuid 4a9bfe11-a368-41d4-afd4-6aa70c022b79))
+    (pin "2" (uuid d34eacea-2f10-4e34-9bee-97ede03accc4))
+    (pin "3" (uuid 9a7c41a2-3bd2-41ba-a82c-d81a83c498ef))
+    (pin "4" (uuid c5e6a517-3ce9-4cc8-9ca4-dbb4594e4c5f))
+    (pin "5" (uuid d4194949-be9a-4cff-9c34-bcce9316af7c))
+    (pin "6" (uuid 9de06091-7559-4a00-a635-f54b4a1db2b6))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D5") (unit 1)
         )
       )
@@ -5336,7 +5336,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:TVS-Uni,SMF5.0A") (at 66.04 21.59 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1ba4eee6-3b35-410f-89a8-704bc57faef0)
+    (uuid d6c9abe2-d7df-420c-abfb-0e14036418bc)
     (property "Reference" "D10" (at 67.82000000000001 20.32 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -5358,11 +5358,11 @@
     (property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2312041000_hongjiacheng-SMF5-0A_C19077497.pdf" (at 66.04 21.59 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid b12af7ea-2d51-4072-b63f-4f7a13693cc1))
-    (pin "1" (uuid 27df2268-54b7-42f8-bb62-eb8b88767f01))
+    (pin "2" (uuid e45e99a2-217c-4196-8bef-ca2171875423))
+    (pin "1" (uuid e6bfd37f-6bc3-4dc3-88f0-68dbcc06ad4c))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D10") (unit 1)
         )
       )
@@ -5371,7 +5371,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W") (at 102.87 127.0 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e40c3476-ab5a-44d7-b4be-5a63871d7208)
+    (uuid 1bd2c555-02aa-4ce2-8ddb-da6482a3d121)
     (property "Reference" "D7" (at 102.87 115.57 0))
     (property "Value" "1N4148W" (at 102.87 118.11 0))
     (property "Footprint" "PCM_JLCPCB:D_SOD-123" (at 102.87 127.0 0)
@@ -5389,11 +5389,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf" (at 102.87 127.0 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 2e283d11-f781-4722-b155-7d5c6379450f))
-    (pin "1" (uuid 0701a2e4-f03f-4128-8433-4ca62ab189d6))
+    (pin "2" (uuid 32ccda2b-ccb0-4e5c-a91f-2ea6e4c6cb38))
+    (pin "1" (uuid ca6dea4c-0a73-4426-b3c2-3c9f48600060))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D7") (unit 1)
         )
       )
@@ -5402,7 +5402,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W") (at 102.87 177.8 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 2b4e657f-e94f-4540-9304-f7030607461b)
+    (uuid 4c42a39f-eb60-446c-9a8c-3945cbbc4de8)
     (property "Reference" "D8" (at 102.87 166.37 0))
     (property "Value" "1N4148W" (at 102.87 168.91 0))
     (property "Footprint" "PCM_JLCPCB:D_SOD-123" (at 102.87 177.8 0)
@@ -5420,11 +5420,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf" (at 102.87 177.8 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid abdd5bda-7201-4efc-a58a-d33e2fda6c84))
-    (pin "1" (uuid 98824368-4510-4e7a-aa5d-7b477435c74c))
+    (pin "2" (uuid 477609d4-0b75-46ab-bcbe-23fa6af89c04))
+    (pin "1" (uuid f1071fa0-3701-4210-9d6f-9f36ff936fe8))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D8") (unit 1)
         )
       )
@@ -5433,7 +5433,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W") (at 102.87 228.6 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 65d765fe-54ba-4550-a090-0abd3d01e83d)
+    (uuid 4c4c53f6-3dcf-4576-9e9f-be0a84491d82)
     (property "Reference" "D9" (at 102.87 217.17 0))
     (property "Value" "1N4148W" (at 102.87 219.70999999999998 0))
     (property "Footprint" "PCM_JLCPCB:D_SOD-123" (at 102.87 228.6 0)
@@ -5451,11 +5451,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf" (at 102.87 228.6 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 5827ac0f-d75c-4e70-aa00-631dd001faed))
-    (pin "1" (uuid 4d0f757a-c698-4336-bb0c-664955a00b5a))
+    (pin "2" (uuid 2d0596e7-7b6f-4493-9705-beff845c543d))
+    (pin "1" (uuid 24c33e01-bef0-474a-a1a1-735f4fb5bffc))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D9") (unit 1)
         )
       )
@@ -5464,7 +5464,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G") (at 123.19 177.8 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 357fd677-0ef9-49f3-b418-b018376698cc)
+    (uuid 399f8bca-db37-49f5-9d71-f5ce6405e4b9)
     (property "Reference" "OK2" (at 123.19 175.26000000000002 0))
     (property "Value" "LTV-217 (PC817)" (at 123.19 184.15 0))
     (property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm" (at 123.19 177.8 0)
@@ -5482,13 +5482,13 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf" (at 123.19 177.8 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 2e5ca553-dd8c-40ad-a5cd-ca3b20eee250))
-    (pin "2" (uuid 77c63ddf-5b4e-4c11-ae33-98cba2a3b451))
-    (pin "3" (uuid 7f1457fe-f981-403a-a6c6-79d0dc7a2e0d))
-    (pin "4" (uuid c0776b5a-eee7-49e9-aa6e-be30ec064821))
+    (pin "1" (uuid a13e3bf1-5e5e-4073-b6df-a9f4e91aa5e1))
+    (pin "2" (uuid 8b6aafbb-899b-44f0-9851-9134f0209143))
+    (pin "3" (uuid c09e550e-56a3-44cc-a818-453b1464bb93))
+    (pin "4" (uuid a4215fef-8a1b-419b-b097-e65a530e6e5e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "OK2") (unit 1)
         )
       )
@@ -5497,7 +5497,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G") (at 123.19 228.6 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 581bd444-bfba-4c44-8e1e-2b947b58b191)
+    (uuid 1fc350a7-f3cb-410d-b80e-a8c6742728c9)
     (property "Reference" "OK3" (at 123.19 226.06 0))
     (property "Value" "LTV-217 (PC817)" (at 123.19 234.95 0))
     (property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm" (at 123.19 228.6 0)
@@ -5515,13 +5515,13 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf" (at 123.19 228.6 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 82acf014-5657-418a-ad5e-b7b4fe0ce544))
-    (pin "2" (uuid c28e2bd9-59ec-4ff4-8d55-7d8474c8e5d8))
-    (pin "3" (uuid b71ec51d-e2f3-4eb4-8175-7490bfde433a))
-    (pin "4" (uuid 1631de14-46a1-4193-8df9-4e1ee40c4d06))
+    (pin "1" (uuid f0cdd820-1b47-45c9-89f3-2d72aed18a35))
+    (pin "2" (uuid 4e33e0da-511b-40a7-ab51-5ac30ee53b70))
+    (pin "3" (uuid 7161c4a0-585a-4795-b769-02a38760d5cc))
+    (pin "4" (uuid 82a81ef2-212e-4859-9e4d-a57b0d606b83))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "OK3") (unit 1)
         )
       )
@@ -5530,7 +5530,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G") (at 123.19 127.0 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 18d75273-424f-4836-8788-578feb9e01d7)
+    (uuid e3ae8973-0eae-4625-9865-e96ac2c89075)
     (property "Reference" "OK1" (at 123.19 124.46 0))
     (property "Value" "LTV-217 (PC817)" (at 123.19 133.35 0))
     (property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm" (at 123.19 127.0 0)
@@ -5548,13 +5548,13 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf" (at 123.19 127.0 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid b3e9bb08-2fe6-4a97-8e5c-2203583b3248))
-    (pin "2" (uuid 31d27e8e-3b0a-4a13-82d8-e16a853ed078))
-    (pin "3" (uuid 09096721-708e-44c0-8349-66a4c47945ec))
-    (pin "4" (uuid f9bd1155-5707-4c5c-8a05-b57e044315e0))
+    (pin "1" (uuid 63da6ef4-2e6f-43af-9d6d-7fa7a92e241f))
+    (pin "2" (uuid 5e6a5f19-09a0-4a68-b839-41cdf8f5c585))
+    (pin "3" (uuid 08e501ef-9aea-49f6-bf89-6134dc06d332))
+    (pin "4" (uuid 5c7c60f8-77a0-4554-930b-4bf3a770abc1))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "OK1") (unit 1)
         )
       )
@@ -5563,7 +5563,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ") (at 78.74 201.93 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 9e9685ab-553b-418e-aaa2-ea2d1d7cfb7c)
+    (uuid f30f166b-bb69-4b7f-a827-fc51b7e01154)
     (property "Reference" "R1" (at 78.74 196.85 90))
     (property "Value" "5.1k" (at 78.74 199.39000000000001 90))
     (property "Footprint" "PCM_JLCPCB:R_0603" (at 78.74 201.93 0)
@@ -5581,11 +5581,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf" (at 78.74 201.93 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 49113b77-560f-416e-87f2-282d70f005fc))
-    (pin "2" (uuid f07577e8-846f-4c2a-8f9f-6cba3805a125))
+    (pin "1" (uuid 2aaa03e0-8ef9-40f5-a202-6ad11d89d2ed))
+    (pin "2" (uuid f45301d8-d324-49e4-bbad-cc86b39ff0a7))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R1") (unit 1)
         )
       )
@@ -5594,7 +5594,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ") (at 78.74 248.92000000000002 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 205136fe-5192-4582-aae6-f20e44c4b4b4)
+    (uuid 51cfab83-95c3-48f5-b7be-a0e5cfb64e40)
     (property "Reference" "R2" (at 78.74 243.84 90))
     (property "Value" "5.1k" (at 78.74 246.38000000000002 90))
     (property "Footprint" "PCM_JLCPCB:R_0603" (at 78.74 248.92000000000002 0)
@@ -5612,11 +5612,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf" (at 78.74 248.92000000000002 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid b25f9e75-9fd4-4741-9d13-2b405f4581a3))
-    (pin "2" (uuid 2ed11ca3-9a8b-4de1-9df0-aa46aaf6f9df))
+    (pin "1" (uuid 9846d95e-81cb-42ea-86ff-008d22feca5d))
+    (pin "2" (uuid c457c083-c227-4fdc-bc03-5867056a11c7))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R2") (unit 1)
         )
       )
@@ -5625,7 +5625,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ") (at 78.74 147.32 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 0ed28dde-3ee4-4286-96e5-e72986baa1ee)
+    (uuid 141e6316-f0c6-4b51-ab43-fc843ca50a20)
     (property "Reference" "R17" (at 78.74 142.23999999999998 90))
     (property "Value" "5.1k" (at 78.74 144.78 90))
     (property "Footprint" "PCM_JLCPCB:R_0603" (at 78.74 147.32 0)
@@ -5643,11 +5643,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf" (at 78.74 147.32 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid ccc13952-311c-45ce-9695-25af5bfeff15))
-    (pin "2" (uuid 9e14d107-53e0-4a30-a7aa-08e269b080e3))
+    (pin "1" (uuid 6ec2deab-5c16-4ee7-bda4-bb94c22282ea))
+    (pin "2" (uuid e73501bf-17b2-4b98-b594-154e2cc45081))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R17") (unit 1)
         )
       )
@@ -5656,7 +5656,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,1kΩ") (at 153.67000000000002 238.76 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 2c0486a3-1fe9-4422-82af-e057a80f56f8)
+    (uuid 509e683b-a8ce-4504-ba75-7ff8c5fbea82)
     (property "Reference" "R3" (at 151.13000000000002 237.48999999999998 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -5678,11 +5678,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf" (at 153.67000000000002 238.76 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 7f7322e3-bf0c-4792-85e3-9361468babcd))
-    (pin "2" (uuid de179625-2b7d-4a5c-9037-53852b522127))
+    (pin "1" (uuid fd10ed3a-48f4-402f-84b6-b0554576cb26))
+    (pin "2" (uuid 1a52c1e6-5c5d-480e-a6cc-fd144074a18e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R3") (unit 1)
         )
       )
@@ -5691,7 +5691,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,100Ω") (at 283.21 102.87 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid fe22c551-476d-4678-9e69-44f4ce7cba19)
+    (uuid c12ac300-d4d3-4e3f-99e3-ebc07896eb3c)
     (property "Reference" "R4" (at 284.98999999999995 101.60000000000001 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5713,11 +5713,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf" (at 283.21 102.87 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid b91f4bdf-e968-4842-960d-c73d052cda48))
-    (pin "2" (uuid 9b0055cd-7e9f-4d3b-8cd3-c6dbc01348ff))
+    (pin "1" (uuid ea8bf6c2-b0fd-4091-9eae-b9ef94881ced))
+    (pin "2" (uuid 18239029-942f-4a24-953e-9ea47c7f5b5f))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R4") (unit 1)
         )
       )
@@ -5726,7 +5726,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,100Ω") (at 283.21 163.83 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid c710f3fc-4c73-4a03-9904-199fe3dd4826)
+    (uuid 21279e21-93eb-485e-aaff-71bd3a150d6e)
     (property "Reference" "R5" (at 284.98999999999995 162.56 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5748,11 +5748,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf" (at 283.21 163.83 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 98187697-eb47-4d0b-81e2-167309b3c75d))
-    (pin "2" (uuid 37bb05c2-415d-4d4d-af00-6acf7d9334b4))
+    (pin "1" (uuid 2303e65d-3baa-4404-9d4f-c80a1f810eb9))
+    (pin "2" (uuid 09c00d9a-bb4a-4bd0-bd6f-f776c4870b2b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R5") (unit 1)
         )
       )
@@ -5761,7 +5761,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,100Ω") (at 283.21 41.910000000000004 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ce93d5c9-aa68-4d99-baf7-1f89f6b29d40)
+    (uuid 089a09ab-c3b1-406f-a163-bb7b65c92c67)
     (property "Reference" "R6" (at 284.98999999999995 40.64 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5783,11 +5783,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf" (at 283.21 41.910000000000004 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 1e59a1e4-a7d4-4ddd-9c1b-821ebc54b107))
-    (pin "2" (uuid 35921be2-c0aa-4f47-a32b-af36e166e7bb))
+    (pin "1" (uuid 7902168d-df66-41e6-93d0-1c4e492a06bd))
+    (pin "2" (uuid 6dabff9c-5783-4df0-b7d1-13e6e3b1fe36))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R6") (unit 1)
         )
       )
@@ -5796,7 +5796,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 283.21 128.27 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 51bc5abb-7704-4f2b-a0e5-6c8b39712f1a)
+    (uuid a91e6964-0a79-48f0-99c3-1c7c651c403e)
     (property "Reference" "R7" (at 284.98999999999995 127.00000000000001 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5818,11 +5818,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 283.21 128.27 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 1e56d01a-f1f1-40df-9046-b67af3e9575f))
-    (pin "2" (uuid 601906c9-918f-428b-9463-9b50ac983962))
+    (pin "1" (uuid 7086a1cb-26d9-4779-beb7-2b7767b0e17a))
+    (pin "2" (uuid 1a8dbb9e-369f-4dc1-af54-22a3e4a1207b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R7") (unit 1)
         )
       )
@@ -5831,7 +5831,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 283.21 189.23 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid c66bc5d7-f5be-4cd3-bb31-a372aa511f1e)
+    (uuid 956002ff-be48-4bbc-9bf7-604680e2fd71)
     (property "Reference" "R8" (at 284.98999999999995 187.95999999999998 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5853,11 +5853,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 283.21 189.23 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid db7ac341-36cd-45e9-a225-d2d40bd523dd))
-    (pin "2" (uuid bd5e428f-79d8-4dde-9972-3e3e7ce65630))
+    (pin "1" (uuid a7ff58b2-f971-4113-9b34-be443212beda))
+    (pin "2" (uuid 3ad8301d-8687-436e-89fa-3d085336538b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R8") (unit 1)
         )
       )
@@ -5866,7 +5866,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 283.21 72.39 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid c470b7be-44e9-4098-acbb-79cfa1394184)
+    (uuid 53fc0fd0-786b-4112-8c69-4b1948c8424c)
     (property "Reference" "R9" (at 284.98999999999995 71.12 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5888,11 +5888,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 283.21 72.39 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 1f99137f-aafe-4e6b-899f-19816e2795a7))
-    (pin "2" (uuid 10ab1367-5398-4b3f-aa5e-1df11aedd141))
+    (pin "1" (uuid af939508-1017-47ec-b422-b4fd13518895))
+    (pin "2" (uuid f59543c1-eeeb-4cb6-9270-298d47908623))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R9") (unit 1)
         )
       )
@@ -5901,7 +5901,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 177.8 113.03 90) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e0cfff88-4b2d-44b2-a590-ae8c8e1960de)
+    (uuid 7537188b-9829-4f78-9ecb-27245a36a57d)
     (property "Reference" "R10" (at 177.8 107.95 270))
     (property "Value" "10k" (at 177.8 110.49 270))
     (property "Footprint" "PCM_JLCPCB:R_0603" (at 177.8 113.03 0)
@@ -5919,11 +5919,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 177.8 113.03 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 8cb286f1-4772-4f3c-bccf-b9ffb68c48a2))
-    (pin "2" (uuid e43de750-b9ae-4c1f-971c-94abdef85897))
+    (pin "1" (uuid 9ad902fc-f5ef-4acb-8b30-978730fee9a4))
+    (pin "2" (uuid 5930d741-dd09-4872-b39d-8f56cfb6d548))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R10") (unit 1)
         )
       )
@@ -5932,7 +5932,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 238.76 113.03 90) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 8403ee2e-437f-4f98-be20-ea570a5207b6)
+    (uuid bd3eb56d-c5fa-4dfe-87e5-d8dd44680940)
     (property "Reference" "R11" (at 238.76 107.95 270))
     (property "Value" "10k" (at 238.76 110.49 270))
     (property "Footprint" "PCM_JLCPCB:R_0603" (at 238.76 113.03 0)
@@ -5950,11 +5950,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 238.76 113.03 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 8973bcf3-807d-4c2e-ac3a-ac736a81f504))
-    (pin "2" (uuid 848a9f7f-c0e1-49d3-9e81-35ef3c29df67))
+    (pin "1" (uuid 7242ece6-609e-494a-aeda-1943b9ca9cbd))
+    (pin "2" (uuid af4bb71d-1262-4fde-ab18-3fc63d1b11e6))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R11") (unit 1)
         )
       )
@@ -5963,7 +5963,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ") (at 86.36 44.45 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 2a07614a-d912-4c11-bbd6-393023aa06b4)
+    (uuid e2590c92-7564-4d65-a1f5-d238b6f2b951)
     (property "Reference" "R13" (at 88.14 43.18 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -5985,11 +5985,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf" (at 86.36 44.45 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 8f981935-2a11-4b74-b78e-aa3749bdda51))
-    (pin "2" (uuid f1d1947e-8224-43a7-a4e1-082188f1e8bd))
+    (pin "1" (uuid 87776450-5a77-434c-aee9-a89e93a566f6))
+    (pin "2" (uuid 6b3522ce-d20f-4e1a-97df-dc4e1d3f9e2e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R13") (unit 1)
         )
       )
@@ -5998,7 +5998,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ") (at 78.74 46.99 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 08c7f1eb-1640-41f0-ab70-f96ac9079a6e)
+    (uuid aa960703-4c15-4006-aacf-80140955ae28)
     (property "Reference" "R14" (at 80.52 45.72 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6020,11 +6020,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf" (at 78.74 46.99 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid d19289b8-3871-4b91-a7f1-c7466a68201f))
-    (pin "2" (uuid 40934a7c-7401-4de7-b93f-c5f074e8800d))
+    (pin "1" (uuid 08db74b0-d684-43e9-bf79-ec3bb273b6fa))
+    (pin "2" (uuid 9e387832-190f-4003-92fd-b99080ca38c4))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R14") (unit 1)
         )
       )
@@ -6033,7 +6033,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,1kΩ") (at 251.46 68.58 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1818d15d-7d79-4cfe-ab6a-a101517f4077)
+    (uuid 97d04f27-aba9-4801-933e-eed69066bf60)
     (property "Reference" "R15" (at 251.46 63.5 90))
     (property "Value" "1k" (at 251.46 66.03999999999999 90))
     (property "Footprint" "PCM_JLCPCB:R_0603" (at 251.46 68.58 0)
@@ -6051,11 +6051,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf" (at 251.46 68.58 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid d0c5647c-1fd6-491a-8711-d2ea225ac5d1))
-    (pin "2" (uuid 5dacd634-6e5d-4d12-bab1-c97e1b2581ae))
+    (pin "1" (uuid a49d7bb2-f236-4c0a-9ebf-b4631fc97222))
+    (pin "2" (uuid d5be7186-c5a5-4e15-82c7-193a232a5bc4))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R15") (unit 1)
         )
       )
@@ -6064,7 +6064,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ") (at 334.01 83.82000000000001 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid eed87e18-a0e6-4f91-8029-c4ac38f6b09a)
+    (uuid 40967d6e-17cf-4c49-a7eb-09c21b6fcfac)
     (property "Reference" "R16" (at 335.78999999999996 82.55000000000001 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6086,11 +6086,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf" (at 334.01 83.82000000000001 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 245ad480-e247-4623-934a-9721e62b7e16))
-    (pin "2" (uuid 5307cab6-3de8-460c-919c-5e03e63a9745))
+    (pin "1" (uuid 3f7171d4-b366-4d6a-9ab2-ade95577c923))
+    (pin "2" (uuid 1e774b1c-884e-4059-8687-0522c8f0d3c5))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R16") (unit 1)
         )
       )
@@ -6099,7 +6099,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,3.3kΩ") (at 186.69 48.26 90) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 91e82390-2862-4c7c-840c-3ff3926f154f)
+    (uuid 7490c8b5-42a6-46ea-844e-cf8c77984719)
     (property "Reference" "R12" (at 186.69 43.18 270))
     (property "Value" "3.3k" (at 186.69 45.72 270))
     (property "Footprint" "PCM_JLCPCB:R_0603" (at 186.69 48.26 0)
@@ -6117,11 +6117,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF3301T5E_C22978.pdf" (at 186.69 48.26 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 8b79fc1e-7197-47ab-ab04-c25433265ba4))
-    (pin "2" (uuid 4b485c05-d536-4a34-a301-201069742c18))
+    (pin "1" (uuid 1e1eecec-0c68-4f1b-8963-2480cfad420c))
+    (pin "2" (uuid cfd83436-d4d4-4397-a14f-0079b374f17c))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R12") (unit 1)
         )
       )
@@ -6130,7 +6130,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 262.89 154.94 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid c469bdc2-dc90-4489-aafe-946d52b3860a)
+    (uuid 691a08d5-f9d4-4a9e-ae7b-a8d28c3edc7e)
     (property "Reference" "R18" (at 260.34999999999997 153.67 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -6152,11 +6152,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 262.89 154.94 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 9ba9e983-7323-4977-85e8-f6da1c0f5e5d))
-    (pin "2" (uuid a3ac0a7d-fa8f-4dcd-81e8-f4302dcd9a14))
+    (pin "1" (uuid 51d9fd3e-1d3d-4b71-820e-096171406884))
+    (pin "2" (uuid 9dde2908-97e2-4940-ad5e-fb9103287265))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R18") (unit 1)
         )
       )
@@ -6165,7 +6165,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 163.83 154.94 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 8ef2c87c-f7ef-496b-910a-eabb7ebd4d50)
+    (uuid 333f39bb-7023-4339-b482-7513c78b5ba1)
     (property "Reference" "R19" (at 165.61 153.67 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6187,11 +6187,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 163.83 154.94 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 5ef659cf-b56d-4580-bbb2-0b2ab81e6c8e))
-    (pin "2" (uuid e252df09-b037-4bb0-a674-7a87a440c67d))
+    (pin "1" (uuid 23b12890-2b62-49f1-b679-e750bddfd30c))
+    (pin "2" (uuid 1a8c6e7e-f650-4acc-bc64-0514233ebc8c))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R19") (unit 1)
         )
       )
@@ -6200,7 +6200,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 181.61 214.63 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 05187b3c-9ce5-4c53-beab-41daa5a368f0)
+    (uuid 735cd1ca-990f-4e47-aca2-f5ea1ee43190)
     (property "Reference" "R20" (at 183.39000000000001 213.35999999999999 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6222,11 +6222,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 181.61 214.63 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 6e094675-356c-43fd-afe1-c6207225fcd5))
-    (pin "2" (uuid 03030516-8342-42eb-854f-2e2519dc5913))
+    (pin "1" (uuid 1cc34ee2-6c3a-416a-a808-0f23b20c40cb))
+    (pin "2" (uuid 643a58d7-5d8c-4558-b682-9906745eb816))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R20") (unit 1)
         )
       )
@@ -6235,7 +6235,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 144.78 120.65 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 2afa110e-8b5f-4d33-be11-ea6cd4646c85)
+    (uuid d5bfb2aa-557d-4476-81f1-c1593bdf9110)
     (property "Reference" "R21" (at 146.56 119.38000000000001 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -6257,11 +6257,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 144.78 120.65 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid c07c2bf8-9ba7-4e03-a00e-b76c0847e2b7))
-    (pin "2" (uuid e0e00f05-476f-4b34-982e-0fda77d5be90))
+    (pin "1" (uuid fd1304d5-ddc6-4c58-abdc-a833e31bf2bb))
+    (pin "2" (uuid 16a3426b-89a0-40fe-8f18-7dbea1bde778))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R21") (unit 1)
         )
       )
@@ -6270,7 +6270,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 144.78 171.45 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 7b3fe849-6c0c-4c99-8ac7-f8e1a0107160)
+    (uuid 7f95b620-c353-4ec0-8435-073e43815bab)
     (property "Reference" "R22" (at 146.56 170.17999999999998 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -6292,11 +6292,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 144.78 171.45 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 47a24b2c-3dd7-4839-a306-82408c324706))
-    (pin "2" (uuid 9e09b942-dd7f-419c-8175-2cbeb481b346))
+    (pin "1" (uuid 9d711310-0909-42c2-85f6-3fc61ed69633))
+    (pin "2" (uuid fef2a1ca-3ce8-4fb0-91cf-cb05b6fd369d))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R22") (unit 1)
         )
       )
@@ -6305,7 +6305,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 144.78 222.25 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid b6a4cfb4-0c36-4425-bc74-f20af524d581)
+    (uuid a7f307b1-98a2-4692-97ec-0e109c9eec62)
     (property "Reference" "R23" (at 146.56 220.98 0)
       (effects (font (size 1.0 1.0)) (justify right))
     )
@@ -6327,11 +6327,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 144.78 222.25 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 1e66b27d-c865-4c76-8c10-23cb9efbddc2))
-    (pin "2" (uuid 7e26ec1f-9641-4ed5-a64b-cb3c72814e32))
+    (pin "1" (uuid 066e3bb5-21b1-408b-bbc0-6595ab3cf40b))
+    (pin "2" (uuid dca2ba7d-257f-41b2-988c-e5d61c6cf98c))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R23") (unit 1)
         )
       )
@@ -6340,7 +6340,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,1kΩ") (at 212.09 229.87 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 9263aa14-79f0-4adb-902d-318e96e1fbf6)
+    (uuid 919b24be-9ce9-4214-a206-f8e736d8b517)
     (property "Reference" "R24" (at 213.87 228.6 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6362,11 +6362,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf" (at 212.09 229.87 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 578760b2-05e3-4f98-8725-4542ee3fe08f))
-    (pin "2" (uuid 8a251c50-64b1-4a05-838e-bdd63978e274))
+    (pin "1" (uuid 463430f0-507a-425c-a037-696f2adea3ee))
+    (pin "2" (uuid 7184cbe9-7018-4697-8d83-53aba9a9f9cf))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R24") (unit 1)
         )
       )
@@ -6375,7 +6375,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,1kΩ") (at 222.25 229.87 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 68890642-0ce3-4e3d-a97f-bac221768e0f)
+    (uuid 8dcff959-bee9-4035-9832-02759cff17f7)
     (property "Reference" "R25" (at 224.03 228.6 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6397,11 +6397,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf" (at 222.25 229.87 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 5cafa729-c7b9-4a05-aa33-72edd5462fcf))
-    (pin "2" (uuid 2f9bf9a9-1c20-40d8-ad30-540489ebf412))
+    (pin "1" (uuid 514c23e9-7771-4827-be2a-9258c2eb7364))
+    (pin "2" (uuid 4c736057-466c-446d-b968-8c024bcb43b0))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R25") (unit 1)
         )
       )
@@ -6410,7 +6410,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 242.57 229.87 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 0aa59081-14c7-4828-9eb7-e0e49d9bb95a)
+    (uuid 13c9c51a-6edf-40dc-9baf-9750a6ba10a5)
     (property "Reference" "R26" (at 244.35 228.6 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6432,11 +6432,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 242.57 229.87 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 6c666d6c-7dfb-4a2d-b1c0-b91444593bd1))
-    (pin "2" (uuid 7f6f7edb-6cde-4d94-aa51-589a6d197538))
+    (pin "1" (uuid 397a4cd8-d99e-44b0-adff-8de12555a7c9))
+    (pin "2" (uuid 6d886c0e-017a-426f-ac95-573a3a3fd31f))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R26") (unit 1)
         )
       )
@@ -6445,7 +6445,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Resistors:0603,10kΩ") (at 232.41 229.87 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 21a9a12e-bdb3-4a90-8317-8bc4bf8d1ed4)
+    (uuid f111958f-99b5-44fb-8030-bce47575c2df)
     (property "Reference" "R27" (at 234.19 228.6 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6467,11 +6467,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf" (at 232.41 229.87 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 8c504604-2ebc-4bd7-9861-c09fb2d26e33))
-    (pin "2" (uuid 913c0f8c-772b-4b0f-a0cc-3dce73d67ab5))
+    (pin "1" (uuid b4446dfe-5cab-4ad7-b276-988e282ed5c7))
+    (pin "2" (uuid af459aaf-f4aa-406d-a1ad-cd404d8e1bf9))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "R27") (unit 1)
         )
       )
@@ -6480,7 +6480,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,10uF") (at 226.06 33.02 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 6bb22bc7-11b8-4b17-be8c-8682e023c81a)
+    (uuid c2ea6968-0afc-4cee-a411-063a83d4a42c)
     (property "Reference" "C2" (at 227.84 31.750000000000004 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6502,11 +6502,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf" (at 226.06 33.02 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid a77c9aca-4434-498a-9692-8d17fd02e80c))
-    (pin "2" (uuid f40a98fa-c19a-499b-a5ab-4f6246002c28))
+    (pin "1" (uuid 11cbf82c-63fa-4cfb-8e3d-48f009c6ec79))
+    (pin "2" (uuid b7ae7168-d80e-4e2b-9285-8c4075a68f59))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C2") (unit 1)
         )
       )
@@ -6515,7 +6515,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,10uF") (at 191.77 30.48 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 05768b90-6338-4742-acba-a9de68c4315c)
+    (uuid ff5da4e9-5fb5-45bb-b321-551c89548e88)
     (property "Reference" "C3" (at 193.55 29.21 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6537,11 +6537,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf" (at 191.77 30.48 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 491a5611-02fa-40a1-a874-1988f1aa9aa7))
-    (pin "2" (uuid d56a94ab-5a42-4049-8016-bb6154201ad4))
+    (pin "1" (uuid 0a7e45b3-d8b4-4a64-b585-315d8069a9d3))
+    (pin "2" (uuid 34bb116c-8568-43f7-b508-afd35e9208bc))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C3") (unit 1)
         )
       )
@@ -6550,7 +6550,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,10uF") (at 251.46 33.02 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 49b0f2e2-1580-419f-b595-dd05051bea17)
+    (uuid 3abab73e-ca44-4d1b-a4a4-852c226f4dea)
     (property "Reference" "C4" (at 253.24 31.750000000000004 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6572,11 +6572,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf" (at 251.46 33.02 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid bafbc99f-3ea0-434c-983c-8e0c9c411315))
-    (pin "2" (uuid 63b9f8fd-7ed7-4e6f-a710-6d5372a84562))
+    (pin "1" (uuid b43847f2-5bf8-4358-878b-5f09251c99d6))
+    (pin "2" (uuid bfbec4f2-dabd-44b4-b103-80f7456fd194))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C4") (unit 1)
         )
       )
@@ -6585,7 +6585,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,1uF") (at 185.42000000000002 116.84 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ba9b31b3-36f4-4f19-83df-e238c438cb81)
+    (uuid a95f8ba4-afb2-40fc-90da-ecc955562f61)
     (property "Reference" "C5" (at 187.20000000000002 115.57000000000001 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6607,11 +6607,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf" (at 185.42000000000002 116.84 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 163f7072-c245-4060-9557-e05bd06c5a66))
-    (pin "2" (uuid 97268453-df93-4c31-8742-75ffda58b40c))
+    (pin "1" (uuid 40c79132-3a40-48fb-bb1e-7edf1262a6e0))
+    (pin "2" (uuid 6d7085d0-7d06-429f-997a-f53472d9b192))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C5") (unit 1)
         )
       )
@@ -6620,7 +6620,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,100nF") (at 204.47 30.48 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e363fca2-da1e-4701-a00d-41dc2eba2aff)
+    (uuid 19a03ef6-60b9-493b-a478-d2eb6cbe611d)
     (property "Reference" "C6" (at 206.25 29.21 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6642,11 +6642,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf" (at 204.47 30.48 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 52dd54b2-8b8a-4a4c-81b3-7a727e3500fa))
-    (pin "2" (uuid 38d63147-f1ec-4a8a-91ae-d13e89d8ca22))
+    (pin "1" (uuid 19d72b7d-8961-47e7-9bf0-58d3327f196b))
+    (pin "2" (uuid 59d3dfa7-7fde-4e73-b6fa-f13afb3c089b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C6") (unit 1)
         )
       )
@@ -6655,7 +6655,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,100nF") (at 176.53 154.94 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 34e4e90c-6fac-4aa3-81c8-8a118b500098)
+    (uuid 3177c5f5-39b2-4adf-bee8-73d1b75dc2b8)
     (property "Reference" "C7" (at 178.31 153.67 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6677,11 +6677,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf" (at 176.53 154.94 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 47f05ccb-a0ed-4739-afe7-e04685cd0477))
-    (pin "2" (uuid 62943fab-6efa-4b21-b7b9-01299219d87f))
+    (pin "1" (uuid fca8842a-e437-4663-aa85-a839682ad7e5))
+    (pin "2" (uuid 20e158af-191e-4d03-9500-937a958099c5))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C7") (unit 1)
         )
       )
@@ -6690,7 +6690,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,100nF") (at 189.23 154.94 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1095bd6a-34bd-4d0f-b3ca-def0305481ec)
+    (uuid 731c0900-0380-4666-b03c-41cb5da16a8d)
     (property "Reference" "C8" (at 191.01 153.67 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6712,11 +6712,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf" (at 189.23 154.94 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 9a52cdb7-b32f-4ab3-a60b-3b0362d40e43))
-    (pin "2" (uuid 30ff0bc4-d693-43de-b1d3-fee418fdde05))
+    (pin "1" (uuid 8bd60054-2b4a-4170-b913-e85b339b106d))
+    (pin "2" (uuid fbd9f172-32a2-4e4a-b109-4481617cd328))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C8") (unit 1)
         )
       )
@@ -6725,7 +6725,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,100nF") (at 201.93 154.94 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid d7357ed7-63ba-40fc-8fd0-1fdb342e08e0)
+    (uuid bdff01c1-3883-47cf-8343-bbe049644d9f)
     (property "Reference" "C9" (at 203.71 153.67 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6747,11 +6747,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf" (at 201.93 154.94 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid e34898dc-6279-4be4-98f9-2efa20a8a56f))
-    (pin "2" (uuid b2075899-eada-405d-a07b-ffa7b9d42423))
+    (pin "1" (uuid fa317a34-f73c-4382-b2ca-92daf3ea3a5a))
+    (pin "2" (uuid fe779b35-a553-42e3-96c0-b086788ade5a))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C9") (unit 1)
         )
       )
@@ -6760,7 +6760,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,10uF") (at 214.63 154.94 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 280ac3b9-bff0-4f2d-b442-fc57ddc070a0)
+    (uuid cb0b0bde-97f1-456d-8787-adefa1bf789a)
     (property "Reference" "C10" (at 216.41 153.67 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6782,11 +6782,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf" (at 214.63 154.94 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 91090427-f689-43fe-8228-85b6a4a5da30))
-    (pin "2" (uuid e523c6d8-4a6a-4b7e-b78c-0fe3dcafb8e6))
+    (pin "1" (uuid 433eebf6-0d07-475f-ba04-f80258dbf0e9))
+    (pin "2" (uuid e8a5fda9-1915-42d8-894c-931075518923))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C10") (unit 1)
         )
       )
@@ -6795,7 +6795,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,10uF") (at 252.73 220.98 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e00b8b3e-e4d9-4c30-a221-8e05dc978994)
+    (uuid 3dd1550e-a59c-4f26-9bb5-b2cb733f28f2)
     (property "Reference" "C11" (at 254.51 219.70999999999998 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6817,11 +6817,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf" (at 252.73 220.98 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid fddf3e81-b2a8-4d8c-bab6-91185bfd586f))
-    (pin "2" (uuid 9dd88bbe-bc78-4486-86a7-a28164f0f929))
+    (pin "1" (uuid e7796e8f-3508-4339-9a78-1ea4fe1c7158))
+    (pin "2" (uuid 6c747e2e-cd91-47b3-951b-8715afd079d2))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C11") (unit 1)
         )
       )
@@ -6830,7 +6830,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,1uF") (at 199.39000000000001 214.63 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e8e48bc6-8024-42ed-9da2-db3ee4825ee0)
+    (uuid b26acbcf-7292-4634-bbb9-853c03f3d81f)
     (property "Reference" "C12" (at 201.17000000000002 213.35999999999999 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6852,11 +6852,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf" (at 199.39000000000001 214.63 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 101f2409-d5d1-4a2d-8281-a8ec36231220))
-    (pin "2" (uuid 981b27d4-604c-432e-98b6-e96a1b142655))
+    (pin "1" (uuid 2cfc16d7-72c3-499a-8e2b-7e1b031347f7))
+    (pin "2" (uuid 6fbc04c4-7d9e-4be6-8a91-9ba0fba24246))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C12") (unit 1)
         )
       )
@@ -6865,7 +6865,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,1uF") (at 252.73 236.22 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid f4fff093-f078-40e6-aa2d-8b603220bae0)
+    (uuid 1e861614-936a-4b10-9e5a-3e3fc639a99b)
     (property "Reference" "C13" (at 254.51 234.95 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6887,11 +6887,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf" (at 252.73 236.22 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid e92a38bf-1355-42f9-b612-37ac8197428c))
-    (pin "2" (uuid 87e75996-bd7b-4f47-8ac1-ac7f3d31846b))
+    (pin "1" (uuid 0c4c84b1-9d14-4b86-9be5-c052034b7c61))
+    (pin "2" (uuid 70ea535e-37ca-4ec9-a71d-23449ba2c4f3))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C13") (unit 1)
         )
       )
@@ -6900,7 +6900,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,1uF") (at 212.09 220.98 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 993c1e3f-c7c7-4b3c-a956-0a06fd7e915f)
+    (uuid 0b0d128a-3aa3-4ec1-8508-864f28c85b79)
     (property "Reference" "C14" (at 213.87 219.70999999999998 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6922,11 +6922,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf" (at 212.09 220.98 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 50d7ec49-dbf6-4cf2-b554-f3c03a4a9f9d))
-    (pin "2" (uuid 5e49e680-3e30-460f-8c2c-a0f6cd75180b))
+    (pin "1" (uuid 5c9e19e7-8614-4087-87e0-d0ed314d9dad))
+    (pin "2" (uuid 5ecbe931-0430-4b80-90e4-74639dd597b9))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C14") (unit 1)
         )
       )
@@ -6935,7 +6935,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,1uF") (at 222.25 220.98 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e039f96d-108b-4e08-a092-f718a59fda21)
+    (uuid 1f30e53e-e9bc-415a-a3f4-390641aa8c7d)
     (property "Reference" "C15" (at 224.03 219.70999999999998 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6957,11 +6957,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf" (at 222.25 220.98 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 7252b147-4fd8-4979-8edc-671b69c4872c))
-    (pin "2" (uuid e3b96bb1-4fc6-4a82-9c63-5f94caf1b1b6))
+    (pin "1" (uuid e609d277-67f5-44ae-8ccd-0bfc16a01f1f))
+    (pin "2" (uuid 80c349e7-1019-4a86-8c8a-c438b4cfd214))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C15") (unit 1)
         )
       )
@@ -6970,7 +6970,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,1uF") (at 242.57 220.98 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 56f2fc6e-c54e-4e79-be46-7355ce8f4d82)
+    (uuid 16ae2f2f-8382-4712-ae9c-cbc1e36de5d4)
     (property "Reference" "C16" (at 244.35 219.70999999999998 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -6992,11 +6992,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf" (at 242.57 220.98 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 8f0dda0f-bbcd-4f52-8b18-604d955d1565))
-    (pin "2" (uuid 8319b6e8-df50-4ce7-89b6-36dea229eca0))
+    (pin "1" (uuid e1c4f618-b028-4b96-9adb-2a6d8f82a072))
+    (pin "2" (uuid 48825bf4-8c9c-4b11-b52a-abe78ee670a1))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C16") (unit 1)
         )
       )
@@ -7005,7 +7005,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Capacitors:0603,1uF") (at 232.41 220.98 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 271eff80-fed0-4b80-a886-49ac82b90475)
+    (uuid 7c7e3243-cf35-4bcf-81cf-484c0fec3fdd)
     (property "Reference" "C17" (at 234.19 219.70999999999998 0)
       (effects (font (size 1.0 1.0)) (justify left))
     )
@@ -7027,11 +7027,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf" (at 232.41 220.98 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid 8eb78270-2f40-4a2b-81e1-76b4e063f125))
-    (pin "2" (uuid a225d3f3-c809-4a21-924d-c726f6f68ece))
+    (pin "1" (uuid 380830ba-97d7-484c-a41c-50f3f79308e2))
+    (pin "2" (uuid 795efdd8-3de3-4f56-8a5d-c045c751858d))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "C17") (unit 1)
         )
       )
@@ -7040,7 +7040,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Diodes:LED,0603,Red") (at 236.22 68.58 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid acb64cdd-0a4c-4bba-9c86-770ce95bebcb)
+    (uuid 178131ea-2d8f-4d5a-8dde-d2e14e42ae08)
     (property "Reference" "D6" (at 236.22 63.5 90))
     (property "Value" "PWR" (at 236.22 66.03999999999999 90))
     (property "Footprint" "PCM_JLCPCB:D_0603" (at 236.22 68.58 0)
@@ -7058,11 +7058,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1810231112_Hubei-KENTO-Elec-KT-0603R_C2286.pdf" (at 236.22 68.58 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "2" (uuid 67a1c544-387a-4892-9441-ef5f4cb6b4ff))
-    (pin "1" (uuid 3edcf56a-ea05-4e29-8b34-e4c939045e5c))
+    (pin "2" (uuid aaf1ea58-1c99-47bb-b104-e4114cef4f07))
+    (pin "1" (uuid d8ba8471-ec3b-4cb2-b63a-98662f893985))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "D6") (unit 1)
         )
       )
@@ -7071,7 +7071,7 @@
 
   (symbol (lib_id "Device:Fuse") (at 71.12 35.56 90) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 64e988d2-6904-463b-ab0a-a8bdbccda604)
+    (uuid 2417a3fe-8b8f-4ddc-9fe5-a1c7966f8907)
     (property "Reference" "F1" (at 71.12 30.480000000000004 270))
     (property "Value" "1A fast (466)" (at 71.12 33.02 270))
     (property "Footprint" "Fuse:Fuse_1206_3216Metric" (at 71.12 35.56 0)
@@ -7083,11 +7083,11 @@
     (property "Description" "VBUS fuse (1A fast): fail-safe for a clamping D10 / board fault; ~2x headroom over WiFi-TX+relay peaks" (at 71.12 35.56 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid ab489703-b411-4878-9af3-06ff243a1cc3))
-    (pin "2" (uuid 74d14cf8-dfdd-4775-8c80-8bc7a43aba2c))
+    (pin "1" (uuid a2e9811d-da11-4814-9b18-5868c7e24aed))
+    (pin "2" (uuid 99ab83a5-cd4e-4d17-921c-e03b06b6cb9b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "F1") (unit 1)
         )
       )
@@ -7096,7 +7096,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Connectors_Buttons:Tactile Button, 160gf, 12V, 50mA, 4.0mm") (at 261.62 115.57000000000001 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid d8c364e9-9472-4c37-ad78-a0f08901f519)
+    (uuid e935eb6d-fdee-466c-b266-81cda6f1a49d)
     (property "Reference" "SW1" (at 260.35 127.0 0))
     (property "Value" "BOOT" (at 260.35 129.54000000000002 0))
     (property "Footprint" "PCM_JLCPCB:SW_TS-1088-AR02016" (at 261.62 115.57000000000001 0)
@@ -7114,11 +7114,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_XUNPU-TS-1088-AR02016_C720477.pdf" (at 261.62 115.57000000000001 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid aa4b2e54-8e20-4703-812b-4d13e7d5306c))
-    (pin "2" (uuid ee3633f8-4f1f-4c49-b265-1779081425e3))
+    (pin "1" (uuid 304d3b98-5fe8-47e9-9006-4c3b13c22dab))
+    (pin "2" (uuid 7082678e-2e52-4a5c-ab7a-b0aece5c1e4e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "SW1") (unit 1)
         )
       )
@@ -7127,7 +7127,7 @@
 
   (symbol (lib_id "PCM_JLCPCB-Connectors_Buttons:Tactile Button, 160gf, 12V, 50mA, 4.0mm") (at 215.9 115.57000000000001 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 4cc1ab57-e42b-40c0-b2ab-7c738ca1d9de)
+    (uuid 03e1c378-78ac-417d-9881-73cf1b7d05c7)
     (property "Reference" "SW2" (at 214.63 127.0 0))
     (property "Value" "EN" (at 214.63 129.54000000000002 0))
     (property "Footprint" "PCM_JLCPCB:SW_TS-1088-AR02016" (at 215.9 115.57000000000001 0)
@@ -7145,11 +7145,11 @@
     (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_XUNPU-TS-1088-AR02016_C720477.pdf" (at 215.9 115.57000000000001 0)
       (effects (font (size 1.0 1.0)) hide)
     )
-    (pin "1" (uuid c054abf1-d1be-42c3-996f-413e4e5a6782))
-    (pin "2" (uuid 65403e7c-fb92-4bfe-8979-44c553e5e84b))
+    (pin "1" (uuid 292c31f1-e969-4aca-a6c1-8dbc69dc770e))
+    (pin "2" (uuid 7ae1970f-223c-4f83-9054-39f1372fff19))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "SW2") (unit 1)
         )
       )
@@ -7158,15 +7158,15 @@
 
   (symbol (lib_id "power:PWR_FLAG") (at 88.9 27.94 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 792c8b62-2da0-493b-8612-b3cbc4457e62)
+    (uuid 74459c58-ad55-4857-8aa7-852f1bc68b0c)
     (property "Reference" "#FLG1" (at 88.9 25.400000000000002 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "" (at 88.9 30.48 0))
-    (pin "1" (uuid 71467fa8-592e-4fb9-b2ed-abf624f8fde7))
+    (pin "1" (uuid 56814ebf-6bee-4a15-a25c-28bc44a4d62e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#FLG1") (unit 1)
         )
       )
@@ -7175,15 +7175,15 @@
 
   (symbol (lib_id "power:PWR_FLAG") (at 261.62 22.86 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 7b983918-4a6d-4ce4-82a9-f00fc8780d52)
+    (uuid 1c220942-d4fd-4233-a9a9-963d6bb4a889)
     (property "Reference" "#FLG2" (at 261.62 20.32 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "" (at 261.62 25.4 0))
-    (pin "1" (uuid fc08d866-480e-4a8d-bd61-3608d8bba711))
+    (pin "1" (uuid 513906c1-c5eb-4a1a-ad89-e5d915c1e2f1))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#FLG2") (unit 1)
         )
       )
@@ -7192,15 +7192,15 @@
 
   (symbol (lib_id "power:PWR_FLAG") (at 261.62 39.37 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ca0b87c2-4335-4ec6-9ad0-39f7b371e9c0)
+    (uuid 714d882a-ea68-46d9-846b-b8ef6fc86dd2)
     (property "Reference" "#FLG3" (at 261.62 36.83 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "" (at 261.62 41.91 0))
-    (pin "1" (uuid 14a1182a-d647-4e6f-b5de-b71bab8668cf))
+    (pin "1" (uuid 226797f3-c6ae-4ba3-bc4f-7c996c6ef3a0))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#FLG3") (unit 1)
         )
       )
@@ -7209,17 +7209,17 @@
 
   (symbol (lib_id "power:+5V") (at 312.42 21.589999999999996 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 3274f0c9-32d0-4b49-b8dc-b912dbd34cae)
+    (uuid bef95a11-9b12-4152-84ce-603319c0dfcd)
     (property "Reference" "#PWR01" (at 312.42 21.589999999999996 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+5V" (at 312.42 17.089999999999996 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid f435e59e-3750-4ee6-9107-60a77355d5ae))
+    (pin "1" (uuid a678b237-d1d7-4036-a2bc-a2febc6ef244))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR01") (unit 1)
         )
       )
@@ -7228,17 +7228,17 @@
 
   (symbol (lib_id "power:+5V") (at 312.42 82.55 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 3bc52d95-7064-4013-8960-2647459d45b4)
+    (uuid b4a44b5f-5a69-4446-a9ca-045bdcf58fe0)
     (property "Reference" "#PWR02" (at 312.42 82.55 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+5V" (at 312.42 78.05 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 2d27de9c-1f15-4e65-ab74-3a3b11768150))
+    (pin "1" (uuid 7c830b31-120b-47ae-a344-98b90d9c55f7))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR02") (unit 1)
         )
       )
@@ -7247,17 +7247,17 @@
 
   (symbol (lib_id "power:+5V") (at 312.42 143.51 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 40f6caec-4cf0-4f34-a1dd-e756c536d049)
+    (uuid f3987d20-7c73-4441-9799-7063a3d9acb1)
     (property "Reference" "#PWR03" (at 312.42 143.51 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+5V" (at 312.42 139.01 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 7166f002-0b72-411c-8e53-0b981c5f143d))
+    (pin "1" (uuid c8012e3b-501a-4d76-bd4a-db01dfb62208))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR03") (unit 1)
         )
       )
@@ -7266,17 +7266,17 @@
 
   (symbol (lib_id "power:+5V") (at 85.09 35.56 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 642131b7-801d-4aa9-8c37-a10e6d4d0f6f)
+    (uuid 93f73212-9c29-4402-91ae-388e32f32e10)
     (property "Reference" "#PWR04" (at 85.09 35.56 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+5V" (at 89.59 35.56 90)
       (effects (font (size 1.0 1.0)) (justify left))
     )
-    (pin "1" (uuid 1ce20654-056c-4c94-b84f-f8f88eb69ddd))
+    (pin "1" (uuid bbd06fd3-0537-4779-9183-97e88dfd2e39))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR04") (unit 1)
         )
       )
@@ -7285,17 +7285,17 @@
 
   (symbol (lib_id "power:+5V") (at 226.06 29.210000000000004 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid bd6d4db2-f87c-4579-b50b-2a77bdd1a970)
+    (uuid 2a3298a5-53f4-46f5-afd3-a1ce480b2b4f)
     (property "Reference" "#PWR05" (at 226.06 29.210000000000004 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+5V" (at 226.06 24.710000000000004 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 3e65ae6b-9643-4882-9563-21149690cb23))
+    (pin "1" (uuid 2943a58a-e1bc-463c-b0b1-bf186ddda5ae))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR05") (unit 1)
         )
       )
@@ -7304,17 +7304,17 @@
 
   (symbol (lib_id "power:+5V") (at 88.9 27.94 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1052d8af-56f2-49ec-b978-4b0e5c0e9ee4)
+    (uuid 999235ab-b3f5-4e68-9c16-e8069cf8bac7)
     (property "Reference" "#PWR06" (at 88.9 27.94 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+5V" (at 88.9 32.44 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 707aeb89-5299-4222-8a67-30aab68175ae))
+    (pin "1" (uuid 3775cead-aa3a-4a8a-be10-0a4003c05134))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR06") (unit 1)
         )
       )
@@ -7323,17 +7323,17 @@
 
   (symbol (lib_id "power:+3V3") (at 251.46 29.210000000000004 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid f0a4b8e1-256a-45a8-afaf-8b9d5657e1f8)
+    (uuid ae3de8b5-b293-49ae-8ead-4dfe255a61b7)
     (property "Reference" "#PWR07" (at 251.46 29.210000000000004 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 251.46 24.710000000000004 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 30387bc4-2220-4fd0-9e73-7d46c1b49835))
+    (pin "1" (uuid 2763a07d-19fe-4360-a18b-ca49e6097085))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR07") (unit 1)
         )
       )
@@ -7342,17 +7342,17 @@
 
   (symbol (lib_id "power:+3V3") (at 191.77 26.67 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 93bd9a2a-e2a4-42b4-9a16-86f813290b94)
+    (uuid 95be14c3-9392-42db-b26d-d0577f314b0b)
     (property "Reference" "#PWR08" (at 191.77 26.67 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 191.77 22.17 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 57c0f7cb-986d-424c-8d91-d07133277a31))
+    (pin "1" (uuid 25d161a4-5100-49c5-ad22-ff2d7163cbf0))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR08") (unit 1)
         )
       )
@@ -7361,17 +7361,17 @@
 
   (symbol (lib_id "power:+3V3") (at 204.47 26.67 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid f5619b9e-0153-44ec-8960-2f75ca31afd2)
+    (uuid 3fe637fb-9c11-4c0a-96b4-35f670a834e8)
     (property "Reference" "#PWR09" (at 204.47 26.67 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 204.47 22.17 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 6a3157cc-b02a-4892-92ec-e39154a47bfa))
+    (pin "1" (uuid 144b1d10-45d8-4dc8-b669-2f6993dfca08))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR09") (unit 1)
         )
       )
@@ -7380,17 +7380,17 @@
 
   (symbol (lib_id "power:+3V3") (at 146.05 22.86 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 9cfbecf2-325c-4f6f-aa22-68d8265eb024)
+    (uuid 9184fa95-44da-469e-8c20-2e17153e7fab)
     (property "Reference" "#PWR10" (at 146.05 22.86 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 146.05 18.36 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 3211547a-2225-4d78-a29f-a7a919305fc6))
+    (pin "1" (uuid 7a89948f-cb2b-4058-b6b2-4e2fcb5248f6))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR10") (unit 1)
         )
       )
@@ -7399,17 +7399,17 @@
 
   (symbol (lib_id "power:+3V3") (at 173.99 113.03 90) (unit 1)
     (in_bom no) (on_board no)
-    (uuid f9628a8a-c4ce-4029-8d28-3428ff90ba6c)
+    (uuid abbd3632-6fdd-4aa4-874b-6a2ec45d4ed1)
     (property "Reference" "#PWR11" (at 173.99 113.03 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 169.49 113.03 270)
       (effects (font (size 1.0 1.0)) (justify right))
     )
-    (pin "1" (uuid 7df24955-5744-4920-b987-b669fda2bffe))
+    (pin "1" (uuid 75183cf7-dbd3-4130-9702-6602660b4f3a))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR11") (unit 1)
         )
       )
@@ -7418,17 +7418,17 @@
 
   (symbol (lib_id "power:+3V3") (at 234.95 113.03 90) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 8224ea07-5548-4562-909c-ad111ecacd9f)
+    (uuid c10bdef4-3dc0-405c-b83f-204218c63229)
     (property "Reference" "#PWR12" (at 234.95 113.03 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 230.45 113.03 270)
       (effects (font (size 1.0 1.0)) (justify right))
     )
-    (pin "1" (uuid 6f9a8167-34ed-4953-aecf-694cc576f99b))
+    (pin "1" (uuid 3805245d-3b41-4bef-879e-095621ca7c4c))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR12") (unit 1)
         )
       )
@@ -7437,17 +7437,17 @@
 
   (symbol (lib_id "power:+3V3") (at 255.27 68.58 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 2896c8c4-983c-4239-92a4-fdc9dfa18172)
+    (uuid c9ff47f1-1d20-4ebb-a6fd-e212da6830ec)
     (property "Reference" "#PWR13" (at 255.27 68.58 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 259.77 68.58 90)
       (effects (font (size 1.0 1.0)) (justify left))
     )
-    (pin "1" (uuid 861fc9fc-8abb-4c99-8e12-8d81958730cd))
+    (pin "1" (uuid 3565cc76-8b9e-4cb3-b7c3-be1b6ffc60bf))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR13") (unit 1)
         )
       )
@@ -7456,17 +7456,17 @@
 
   (symbol (lib_id "power:+3V3") (at 261.62 22.86 180) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1b78ff41-b2c4-4625-9898-3cb684f07e88)
+    (uuid 6765be92-c71c-4cdf-9be6-49c28086cd95)
     (property "Reference" "#PWR14" (at 261.62 22.86 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 261.62 27.36 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 396bf3e3-6503-483c-9fbd-eed28a50641d))
+    (pin "1" (uuid b57c2028-90a1-4e9c-8253-6c7d68cf411a))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR14") (unit 1)
         )
       )
@@ -7475,17 +7475,17 @@
 
   (symbol (lib_id "power:+3V3") (at 176.53 151.13 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid c388b271-61bd-4c7d-ad54-fdb610478149)
+    (uuid 36f61e6b-cd5c-41a8-ba42-006ddb410c4f)
     (property "Reference" "#PWR15" (at 176.53 151.13 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 176.53 146.63 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 56827027-c199-4764-8f08-aeea4f71e14e))
+    (pin "1" (uuid 457f6b25-9723-4b35-9bad-29cf4c826a9f))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR15") (unit 1)
         )
       )
@@ -7494,17 +7494,17 @@
 
   (symbol (lib_id "power:+3V3") (at 189.23 151.13 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 5d5d104f-7e35-4516-9e8d-21748ac7a8d6)
+    (uuid 52a17665-b7c3-418b-844a-aa5a2935c65d)
     (property "Reference" "#PWR16" (at 189.23 151.13 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 189.23 146.63 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid ef805cd4-6f15-4b1e-9f48-347113d6c1aa))
+    (pin "1" (uuid cf4a94b0-19c9-4509-9167-d5bb8caa1d9d))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR16") (unit 1)
         )
       )
@@ -7513,17 +7513,17 @@
 
   (symbol (lib_id "power:+3V3") (at 201.93 151.13 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1da1dd76-c613-4e6d-9bcc-9039fe3ced24)
+    (uuid bde673c8-423d-4a57-8103-c535a5921ffb)
     (property "Reference" "#PWR17" (at 201.93 151.13 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 201.93 146.63 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid f616a9ab-804e-4ef4-a6cf-b52f4ce882fd))
+    (pin "1" (uuid 514efaef-44bc-42b8-b191-f342477b2a35))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR17") (unit 1)
         )
       )
@@ -7532,17 +7532,17 @@
 
   (symbol (lib_id "power:+3V3") (at 214.63 151.13 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1eeb6813-5066-41fa-bb7f-c0155443df0c)
+    (uuid 11bcad1d-f55f-45f1-8b0c-e62c7bf21a65)
     (property "Reference" "#PWR18" (at 214.63 151.13 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 214.63 146.63 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid f906a2c5-24ff-47a5-b534-234170f691d8))
+    (pin "1" (uuid 2b028725-f086-4ba2-8b86-865fea0bc0cf))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR18") (unit 1)
         )
       )
@@ -7551,17 +7551,17 @@
 
   (symbol (lib_id "power:+3V3") (at 262.89 151.13 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid f06dfb49-0daa-4f5c-b160-619b3ef156e0)
+    (uuid 9283a52f-6628-435a-ac8b-485d3fd6580f)
     (property "Reference" "#PWR19" (at 262.89 151.13 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 262.89 146.63 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid c736b7ef-4c6e-4d9d-8ab4-aa7174b67ffc))
+    (pin "1" (uuid 6db11cc5-30b1-4e87-b1dc-48c706345226))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR19") (unit 1)
         )
       )
@@ -7570,17 +7570,17 @@
 
   (symbol (lib_id "power:+3V3") (at 163.83 151.13 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 0a1485dc-0e05-47b4-a6fe-3da569ed064f)
+    (uuid 5640bbd1-8fc5-4dc6-8f89-9dd9d7c67989)
     (property "Reference" "#PWR20" (at 163.83 151.13 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "+3V3" (at 163.83 146.63 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 0992225f-8519-4c32-8a1e-1171161d7d06))
+    (pin "1" (uuid 2f3065ec-af13-4fab-b32f-f26725e2823b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR20") (unit 1)
         )
       )
@@ -7589,17 +7589,17 @@
 
   (symbol (lib_id "power:GND") (at 48.26 73.66 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 9914a1f4-c30b-4a01-8244-a9bf90cd4fa3)
+    (uuid 70a10115-6d1f-4e89-9c0f-76a60085e93f)
     (property "Reference" "#PWR21" (at 48.26 73.66 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 48.26 78.16 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 2f755263-1c39-4a4b-8f0c-ef93d12ccef1))
+    (pin "1" (uuid 0d3e7857-6a59-4273-9e4c-0e88c45e8151))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR21") (unit 1)
         )
       )
@@ -7608,17 +7608,17 @@
 
   (symbol (lib_id "power:GND") (at 40.64 73.66 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 09a23556-f208-4482-99f6-7803e0df7cea)
+    (uuid 23ac5102-15d5-489d-bc6e-b869441a12f4)
     (property "Reference" "#PWR22" (at 40.64 73.66 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 40.64 78.16 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 2c0bf371-dd52-41a9-b34a-8f761bc1d83f))
+    (pin "1" (uuid f86ae638-0d0e-46d1-ad96-f1db167e29fd))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR22") (unit 1)
         )
       )
@@ -7627,17 +7627,17 @@
 
   (symbol (lib_id "power:GND") (at 226.06 36.830000000000005 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ef074675-9526-4d2a-96f8-5e63368b19b0)
+    (uuid c7e5523b-cc1b-4daf-a69c-d952de1f6432)
     (property "Reference" "#PWR23" (at 226.06 36.830000000000005 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 226.06 41.330000000000005 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid fb2102bf-9459-4231-9319-1a699c6c8143))
+    (pin "1" (uuid b57a84c0-ab32-4dbb-93fa-88888b85fef0))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR23") (unit 1)
         )
       )
@@ -7646,17 +7646,17 @@
 
   (symbol (lib_id "power:GND") (at 251.46 36.830000000000005 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 6244e5e2-01cf-4bc3-a2ea-9685307d8977)
+    (uuid b30a141e-6b01-4b56-8803-154187788b70)
     (property "Reference" "#PWR24" (at 251.46 36.830000000000005 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 251.46 41.330000000000005 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid a422b881-6725-422f-91e0-ebf440a8135d))
+    (pin "1" (uuid 7b2a7d66-1053-4b9b-aeab-c5797de27a17))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR24") (unit 1)
         )
       )
@@ -7665,17 +7665,17 @@
 
   (symbol (lib_id "power:GND") (at 191.77 34.29 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 27f477e6-3dca-4ff7-8dcd-832def8f639a)
+    (uuid 6c676241-bd53-4141-b7f3-257550e98f6c)
     (property "Reference" "#PWR25" (at 191.77 34.29 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 191.77 38.79 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 7c9b31f7-a957-4989-b539-cbfc252d696f))
+    (pin "1" (uuid 6f6a83b2-0f92-4acf-a5c8-6467467a221b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR25") (unit 1)
         )
       )
@@ -7684,17 +7684,17 @@
 
   (symbol (lib_id "power:GND") (at 204.47 34.29 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e919ad62-1a2c-443e-86eb-503dd7574c9e)
+    (uuid 6d4ba1a2-54e9-4d79-96dc-2e3076c3e8ba)
     (property "Reference" "#PWR26" (at 204.47 34.29 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 204.47 38.79 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid a34eba8d-956b-4aa2-a96d-b3f8cead41f8))
+    (pin "1" (uuid 2a691730-0beb-45ea-92ba-f6fda37fd652))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR26") (unit 1)
         )
       )
@@ -7703,17 +7703,17 @@
 
   (symbol (lib_id "power:GND") (at 238.76 36.83 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 8defec5b-e463-4917-9b95-43d39e8d2b8a)
+    (uuid 275e2b58-c53d-495f-a5f5-08305153958b)
     (property "Reference" "#PWR27" (at 238.76 36.83 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 238.76 41.33 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 0adf08bc-c69d-4b19-940b-0a92d8ed4892))
+    (pin "1" (uuid a68c3624-4141-4f26-856e-9d440211e5d3))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR27") (unit 1)
         )
       )
@@ -7722,17 +7722,17 @@
 
   (symbol (lib_id "power:GND") (at 290.83000000000004 120.65 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 41e91d9d-fb23-4c00-bc76-a942f1f7a310)
+    (uuid e5ed72b2-01cf-490e-a6a2-51f9666e4c5d)
     (property "Reference" "#PWR28" (at 290.83000000000004 120.65 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 290.83000000000004 125.15 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 79a9809f-17e6-4dc6-8a37-af68f7b5144e))
+    (pin "1" (uuid 5f4fe3f9-a1ea-404f-8497-89b8f5ec68ae))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR28") (unit 1)
         )
       )
@@ -7741,17 +7741,17 @@
 
   (symbol (lib_id "power:GND") (at 290.83000000000004 181.61 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 3323720e-4def-4eec-8bf3-e079e839ec10)
+    (uuid eb2e179e-5310-469a-9a05-9dc44dfa891d)
     (property "Reference" "#PWR29" (at 290.83000000000004 181.61 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 290.83000000000004 186.11 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 25f9ead1-204d-4487-9724-c955a22ec13f))
+    (pin "1" (uuid 1bdb702f-9e3b-4a65-ae81-cb4a74338ab2))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR29") (unit 1)
         )
       )
@@ -7760,17 +7760,17 @@
 
   (symbol (lib_id "power:GND") (at 290.83000000000004 59.69 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 370cf652-fe1f-4024-ad04-98827bc592b8)
+    (uuid 51bd9337-e052-44df-b44e-ffab8236922b)
     (property "Reference" "#PWR30" (at 290.83000000000004 59.69 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 290.83000000000004 64.19 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid f709c54a-83c9-4d25-8039-58b6c9e7a183))
+    (pin "1" (uuid febb8fdc-cd65-4657-9623-1d2f7f06d456))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR30") (unit 1)
         )
       )
@@ -7779,17 +7779,17 @@
 
   (symbol (lib_id "power:GND") (at 283.21 132.08 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 06d04ea9-1c2d-4493-ad2c-003a091e0968)
+    (uuid 1d0b914d-dc5d-4b17-9e20-cc2fd9ea43ca)
     (property "Reference" "#PWR31" (at 283.21 132.08 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 283.21 136.58 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid dfe19ad9-9e59-47b3-9112-6ea2a327bf62))
+    (pin "1" (uuid c37052d0-404f-46ee-bc76-e21f46985e97))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR31") (unit 1)
         )
       )
@@ -7798,17 +7798,17 @@
 
   (symbol (lib_id "power:GND") (at 283.21 193.04 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 10eee2bd-a9a7-4e06-ab9b-599e6cd4e7bf)
+    (uuid 2545747f-7d56-4507-a2a2-a6d2548c3f8f)
     (property "Reference" "#PWR32" (at 283.21 193.04 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 283.21 197.54 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 1b09db15-7ed8-49e2-b407-c20fbe5e8192))
+    (pin "1" (uuid 25059561-290e-4570-843e-aee6316a0ab6))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR32") (unit 1)
         )
       )
@@ -7817,17 +7817,17 @@
 
   (symbol (lib_id "power:GND") (at 283.21 76.2 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ef2a29ad-22e5-4990-b34e-aa0531d82aee)
+    (uuid a4939e89-1d39-49ac-9305-21285b591ff9)
     (property "Reference" "#PWR33" (at 283.21 76.2 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 283.21 80.7 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid aced9190-c139-487c-881b-673dc2c5fe5c))
+    (pin "1" (uuid f6083f88-a66b-4fc0-b5dd-1a6e827f00ef))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR33") (unit 1)
         )
       )
@@ -7836,17 +7836,17 @@
 
   (symbol (lib_id "power:GND") (at 153.67000000000002 242.57 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e5227383-d53a-4eba-b71e-9cd3f3badd66)
+    (uuid af5f7400-0ff3-46fb-88b9-6734f373f3ce)
     (property "Reference" "#PWR34" (at 153.67000000000002 242.57 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 153.67000000000002 247.07 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 55918985-18b7-4bc2-b88f-2a9eaf3fde08))
+    (pin "1" (uuid 7b43b8fe-b37e-4ad8-8588-f79ad17a6244))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR34") (unit 1)
         )
       )
@@ -7855,17 +7855,17 @@
 
   (symbol (lib_id "power:GND") (at 185.42000000000002 120.65 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 0e7d7c6e-923c-4a36-ac83-191cc2981761)
+    (uuid 1874a193-2dc0-49ef-b7e1-546bb15a96f8)
     (property "Reference" "#PWR35" (at 185.42000000000002 120.65 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 185.42000000000002 125.15 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 91c91d1e-6bb8-408c-aa86-c6c254cf171d))
+    (pin "1" (uuid 58601281-f83b-4cc9-81fb-6c426875d3dc))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR35") (unit 1)
         )
       )
@@ -7874,17 +7874,17 @@
 
   (symbol (lib_id "power:GND") (at 86.36 48.260000000000005 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid dd7cb2b1-7015-4f59-82e9-a7b3adf86e0b)
+    (uuid 7d6bbaa6-e79a-4836-be3d-d68118f3d4e9)
     (property "Reference" "#PWR36" (at 86.36 48.260000000000005 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 86.36 52.760000000000005 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 796648cd-b1f0-492a-8fbe-f62d465636e5))
+    (pin "1" (uuid f0d9984e-2e52-4d7f-984f-0a31f9fd8793))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR36") (unit 1)
         )
       )
@@ -7893,17 +7893,17 @@
 
   (symbol (lib_id "power:GND") (at 78.74 50.800000000000004 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid ed0ef3bb-9c3b-4fbd-8158-3299538a1baf)
+    (uuid 186428f8-d82a-45d1-bfff-bd79ded501ca)
     (property "Reference" "#PWR37" (at 78.74 50.800000000000004 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 78.74 55.300000000000004 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 307adc19-2058-4ba9-8c17-756353a29b43))
+    (pin "1" (uuid 8c0e5cba-e0b2-4938-abfb-6f078f10fa77))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR37") (unit 1)
         )
       )
@@ -7912,17 +7912,17 @@
 
   (symbol (lib_id "power:GND") (at 232.41 68.58 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid a9e04ff6-3627-4f2c-bb77-4cebacbf796f)
+    (uuid 11dd4680-dd4c-4281-a502-9e298fa46242)
     (property "Reference" "#PWR38" (at 232.41 68.58 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 227.91 68.58 90)
       (effects (font (size 1.0 1.0)) (justify right))
     )
-    (pin "1" (uuid 8b1ce5fb-ecaa-4670-861e-a5705477f1a3))
+    (pin "1" (uuid 0f6f691f-fbea-430f-bcfe-40387e5512b0))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR38") (unit 1)
         )
       )
@@ -7931,17 +7931,17 @@
 
   (symbol (lib_id "power:GND") (at 256.54 120.65 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 10fb3af8-2d7d-4206-9000-d9569b778ed7)
+    (uuid f2b9691b-a21c-4820-893d-51e6b5cc7cb6)
     (property "Reference" "#PWR39" (at 256.54 120.65 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 252.04000000000002 120.65 90)
       (effects (font (size 1.0 1.0)) (justify right))
     )
-    (pin "1" (uuid 2f201e38-fa94-4336-9d22-d950f1ece51d))
+    (pin "1" (uuid 935c466e-5507-4b9a-b29f-2b5eff1a925e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR39") (unit 1)
         )
       )
@@ -7950,17 +7950,17 @@
 
   (symbol (lib_id "power:GND") (at 210.82 120.65 270) (unit 1)
     (in_bom no) (on_board no)
-    (uuid db43fa1c-f1c1-4b55-96f1-550bd0e29463)
+    (uuid a0ff3e91-529d-4068-8844-4033ee5bc238)
     (property "Reference" "#PWR40" (at 210.82 120.65 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 206.32 120.65 90)
       (effects (font (size 1.0 1.0)) (justify right))
     )
-    (pin "1" (uuid 0d358e73-471a-4cd1-a602-463fc65d81b8))
+    (pin "1" (uuid 0d9c808e-4873-4297-8dd1-590f860a326b))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR40") (unit 1)
         )
       )
@@ -7969,17 +7969,17 @@
 
   (symbol (lib_id "power:GND") (at 66.04 25.4 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid e583eca5-8fcb-4286-a9c9-b0e597235c67)
+    (uuid 1cb941d0-9c79-4c69-9ea0-0be8edebab16)
     (property "Reference" "#PWR41" (at 66.04 25.4 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 66.04 29.9 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 321858bc-1edb-4036-b15b-872889c3c7eb))
+    (pin "1" (uuid e4aabf48-1034-4871-b07d-175e605b85ae))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR41") (unit 1)
         )
       )
@@ -7988,17 +7988,17 @@
 
   (symbol (lib_id "power:GND") (at 261.62 39.37 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 4e729a91-30bc-4503-81ad-00f59fbf67bb)
+    (uuid 4808b031-829b-4c45-9306-6d930892628e)
     (property "Reference" "#PWR42" (at 261.62 39.37 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 261.62 43.87 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 84c25b8e-7240-4eb6-827c-930a3c67335b))
+    (pin "1" (uuid 6c27790f-2740-4ca1-82a4-a3b16eaa5ab2))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR42") (unit 1)
         )
       )
@@ -8007,17 +8007,17 @@
 
   (symbol (lib_id "power:GND") (at 252.73 224.79 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid c515536e-4a5e-4dad-b0e1-731ffcf4f5dd)
+    (uuid bb921712-a6ed-4591-aee9-e18fa4f7ff70)
     (property "Reference" "#PWR43" (at 252.73 224.79 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 252.73 229.29 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid d3d13457-eb3f-4384-b756-5fbdad21f522))
+    (pin "1" (uuid 273b8068-e1f2-4582-816c-4fa3cb48aca9))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR43") (unit 1)
         )
       )
@@ -8026,17 +8026,17 @@
 
   (symbol (lib_id "power:GND") (at 199.39000000000001 218.44 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 9970a3d1-eae7-481a-b475-dcc26708c22f)
+    (uuid 63915168-3613-4fcb-86d9-b3ea006140f8)
     (property "Reference" "#PWR44" (at 199.39000000000001 218.44 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 199.39000000000001 222.94 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 99e203dd-0b6c-4b22-84b5-3cd3085324a1))
+    (pin "1" (uuid 4f1e85ef-63ea-45e7-bc23-9a6f1f46cf27))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR44") (unit 1)
         )
       )
@@ -8045,17 +8045,17 @@
 
   (symbol (lib_id "power:GND") (at 252.73 240.03 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 385ecdf9-7ba4-4151-9588-bf4fb7b670ad)
+    (uuid b3a1a772-e660-471b-9385-f768a06e3bb6)
     (property "Reference" "#PWR45" (at 252.73 240.03 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 252.73 244.53 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid aed88d44-9524-4d89-9d49-f9c99552cb90))
+    (pin "1" (uuid b8aced87-83ce-4815-82af-b7748e94ef30))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR45") (unit 1)
         )
       )
@@ -8064,17 +8064,17 @@
 
   (symbol (lib_id "power:GND") (at 181.61 218.44 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 1bc3f4cd-ee16-4fd6-bcaa-88a6807530ce)
+    (uuid ec48530a-46ed-418b-9972-25b2a132e89c)
     (property "Reference" "#PWR46" (at 181.61 218.44 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 181.61 222.94 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid cb1932c7-85d0-44fa-946f-ccc3fc847ddd))
+    (pin "1" (uuid 0e854140-6a83-49c0-a59a-beae9bcff2df))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR46") (unit 1)
         )
       )
@@ -8083,17 +8083,17 @@
 
   (symbol (lib_id "power:GND") (at 176.53 158.75 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid a4ffe601-9be5-4e27-bf30-584bb377bd22)
+    (uuid 4c77c0e8-5904-419a-b880-bec0cfafd815)
     (property "Reference" "#PWR47" (at 176.53 158.75 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 176.53 163.25 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 2360a895-56e1-4c72-9de8-d726c0560dc3))
+    (pin "1" (uuid f69b6740-747c-4f4a-a3d8-10294e7f8440))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR47") (unit 1)
         )
       )
@@ -8102,17 +8102,17 @@
 
   (symbol (lib_id "power:GND") (at 189.23 158.75 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 918aab03-7525-43fc-986f-7fa4441790a5)
+    (uuid 5c978343-d9bd-468f-81e3-05b2ed9def42)
     (property "Reference" "#PWR48" (at 189.23 158.75 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 189.23 163.25 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 067e21e2-e029-4502-9b75-acf9600ab708))
+    (pin "1" (uuid abf0e6ed-30dd-43e7-88b2-0fc1ce077e76))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR48") (unit 1)
         )
       )
@@ -8121,17 +8121,17 @@
 
   (symbol (lib_id "power:GND") (at 201.93 158.75 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid 83d9a4ba-c600-4fa0-a242-721e38f85aba)
+    (uuid ed9bf8cc-13b1-41e1-8ef9-92ddcbbdc8f5)
     (property "Reference" "#PWR49" (at 201.93 158.75 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 201.93 163.25 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 23bfa172-e28d-4b04-b517-a480d0a84cc8))
+    (pin "1" (uuid cd0436a1-5144-47d3-855c-92116014a6a5))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR49") (unit 1)
         )
       )
@@ -8140,17 +8140,17 @@
 
   (symbol (lib_id "power:GND") (at 214.63 158.75 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid a9b91bf3-84b2-4192-be2a-3a78ee27ac64)
+    (uuid f90af083-f651-4076-8620-2742624b0970)
     (property "Reference" "#PWR50" (at 214.63 158.75 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 214.63 163.25 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid cc984e5e-5a11-406e-8111-fb83383a3c50))
+    (pin "1" (uuid c202f5b0-3f4b-4b56-8d81-62f13cd4f9ad))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR50") (unit 1)
         )
       )
@@ -8159,17 +8159,17 @@
 
   (symbol (lib_id "power:GND") (at 146.05 88.9 0) (unit 1)
     (in_bom no) (on_board no)
-    (uuid be9f491e-d213-4f6c-a051-6060102b1b4c)
+    (uuid 0a8332fd-8d5d-4dd7-b9a0-e5400dac6311)
     (property "Reference" "#PWR51" (at 146.05 88.9 0)
       (effects (font (size 1.0 1.0)) hide)
     )
     (property "Value" "GND" (at 146.05 93.4 0)
       (effects (font (size 1.0 1.0)))
     )
-    (pin "1" (uuid 503f3c35-3b55-4d92-9610-a1b28e1c6e28))
+    (pin "1" (uuid 71d83894-133d-4895-810a-5d07b6d4782e))
     (instances
       (project "doorbell"
-        (path "/1b3a2dac-0ea3-4341-9a19-146ec76a9a45"
+        (path "/645220e6-38b9-4040-864b-b90d05f845d6"
           (reference "#PWR51") (unit 1)
         )
       )

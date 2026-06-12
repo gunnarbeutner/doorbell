@@ -241,3 +241,34 @@ for _lid, _lname in _COPPER_LAYERS:
                            if z.GetLayer() == _lid)
     print(f"    {_lname} {_pre:6.0f} mm² ({100*_pre/_board_area:5.1f}%)  →  "
           f"{_post:6.0f} mm² ({100*_post/_board_area:5.1f}%)")
+
+# --- Float-thieving DRC: floating islands are intentional (they fill pockets the GND
+#     thieve can't reach), but only as slivers. Any float island ≥ _FLOAT_MAX_AREA mm²,
+#     or longer than _FLOAT_MAX_SIDE mm (thin slivers can dodge the area test), FAILS
+#     the build. The fix is a hand-placed GND stitching via in gen_pcb.py (the pocket
+#     then joins the GND thieve on the next fill) or shrinking the pocket -- vias are
+#     never auto-placed. ---
+_FLOAT_MAX_AREA, _FLOAT_MAX_SIDE = 2.0, 10.0
+_nfloat, _failures = 0, []
+for _z in board.Zones():
+    if not _z.GetZoneName().endswith("_float"):
+        continue
+    _polys = _z.GetFilledPolysList(_z.GetLayer())
+    for _i in range(_polys.OutlineCount()):
+        _nfloat += 1
+        _outline = _polys.Outline(_i)
+        _ibb = _outline.BBox()
+        _w, _h = pcbnew.ToMM(_ibb.GetWidth()), pcbnew.ToMM(_ibb.GetHeight())
+        _area = abs(_outline.Area()) / pcbnew.FromMM(1) ** 2
+        if _area >= _FLOAT_MAX_AREA or max(_w, _h) >= _FLOAT_MAX_SIDE:
+            _failures.append(f"{_z.GetZoneName()} {_w:.1f}×{_h:.1f} mm ({_area:.1f} mm²) at "
+                             f"x={pcbnew.ToMM(_ibb.GetLeft()):.1f} "
+                             f"y={pcbnew.ToMM(_ibb.GetTop()):.1f}")
+if _failures:
+    sys.exit(f"ERROR: {len(_failures)} float-thieving island(s) over the sliver limit "
+             f"(≥ {_FLOAT_MAX_AREA} mm² or ≥ {_FLOAT_MAX_SIDE} mm):\n  "
+             + "\n  ".join(_failures)
+             + "\nStitch the pocket to GND with a hand-placed via in gen_pcb.py "
+               "or shrink it.")
+print(f"  float-thieving: {_nfloat} islands, all under {_FLOAT_MAX_AREA} mm² "
+      f"/ {_FLOAT_MAX_SIDE} mm")

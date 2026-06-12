@@ -425,9 +425,13 @@ SM-LP-5001 dielectric strength 2000 VRMS). **P1 is the bus common, not board GND
 (Voltages are low — 12 VAC bus — so this is about hum/ground-loops more than shock.)
 
 > **4-layer caveat:** the GND/+3V3 planes span the whole board, so bus-side traces run over
-> logic-plane copper. Isolation is intact (the planes don't bridge the domains), but there
-> is no plane-free slot; revisit with plane cut-outs under the bus side if ground-loop/hum
-> coupling proves to matter.
+> logic-plane copper. Isolation is intact (the planes don't bridge the domains; the bus
+> domain's only on-board path to logic is capacitive), and the coupling is small: the
+> longest bus runs (P1/P5, ~120 mm of 0.5 mm trace over 0.21 mm prepreg) come to ≈10 pF
+> ≈ 300 MΩ at 50 Hz — on-board hum injection is negligible; ground-loop exposure lives in
+> the external wiring, not the stack. The J2 pad row's merged antipads already form a
+> ~21 mm plane slot under the terminal block (both planes), thinning copper under the bus
+> entry. Revisit with deliberate plane cut-outs only if hum shows up in practice.
 
 ### BOM
 
@@ -452,6 +456,19 @@ together on B.Cu over the GND plane, and the remaining escapes fan out on F.Cu/B
 Placement around J1 must leave the escape fan room (re-verify the hand-routed escape
 fan after any reshuffle).
 
+**Why this plane assignment (not GND/3V3 swapped, a 5V plane, or a split In1).**
+B.Cu is load-bearing (USB pair, P1/P5 weave, IN_P4, GATE1_PRE), so a dedicated 5V
+plane would cost a routing layer and break the J1 escape fan; +5V's loads (LDO in,
+three relay coils + flybacks) are tens of mA at ms timescales, so a 0.5 mm trace is
+electrically over-spec'd and a plane buys nothing. GND stays on In2 (not In1)
+because USB on B.Cu is the only net that needs a direct plane reference; F.Cu
+signals referencing the well-decoupled +3V3 plane is fine. A 3V3/5V split of In1
+(5V island under the relay/LDO cluster) was considered and rejected: the boundary
+would run near the audio nest (return-path cut where it matters most) and the spine
+works as-is. Fallback if a re-floorplan ever breaks the +5V spine's threading
+corridors: 5V island on In1 with the seam kept clear of the MIC/SEC/OUT region —
+and combine it with the bus-side plane relief noted above.
+
 **Power routing** (`gen_pcb.py` — the power nets are fully hand-routed): +5V
 is one 0.5 mm F.Cu spine, D4 → C_in → U2.3 (LDO in), then north on a vertical at
 x=40.6 threading between the MIC_A/MIC_B NE wrap and U2's pad toes (the thread is
@@ -474,6 +491,29 @@ surfacing into the pad with one straight stub. The audio front-end (SEC_A/SEC_B 
 T1's west pads, through the R24–R27 series-resistor row south of T1, and on as
 OUT_*/MIC_* legs to the coupling caps) is hand-designed as nested 0.329 mm pairs —
 see the T1 tie-in description.
+
+**Plane integrity & thieving (measured from the fill).** Both inner planes are solid
+apart from the antenna keepout (all-layer, x≤37.1/y≥63.5) and 81 via/PTH piercings;
+merging overlapping antipads (0.5 mm clearance, 0.25 mm min web) leaves ~9 slots per
+plane. Notable: the J2 pad row (~21 mm slot at y=15, both planes — crossed only by bus
+nets, which don't return through the planes); the USB pair's two via transitions (~3 mm
+each — the one near U1 is crossed on F.Cu by I2C_SCL/I2S_BCLK/I2S_MCLK, a ~1.5 mm In1
+return interruption, accepted at those edge rates); the rest are benign 2-via chains.
+Copper thieving (`route.py`): a priority-1 GND zone plus a priority-0 floating zone per
+outer layer. B.Cu float is empty (the GND thieve reaches everything); F.Cu float is a
+few dozen sub-2 mm² slivers, each 0.21 mm over the solid +3V3 plane so lateral pickup
+is plane-shunted (~10:1) — audio/hum coupling negligible. Every larger pocket is
+grounded by a hand-placed GND stitching via in `gen_pcb.py` (relay/bus region, opto
+block, OC3 jumper, bus corner, NW of U3, SE of J1, the opto-output column, and the
+three gaps of the OUT/MIC column under T1, where the grounded strips also guard the
+OUT pair from the MIC pair). `route.py` enforces a hard sliver limit post-fill: **the build FAILS on any
+float island ≥ 2 mm² or ≥ 10 mm long** (the length test catches thin slivers that
+dodge the area test). Sub-limit slivers are electrically inert and pass without
+ceremony — there is no waiver mechanism.
+Vias are never auto-placed: the remedy for an unwanted island is a hand-placed GND
+stitching via in `gen_pcb.py` (the pocket then joins the GND thieve) or shrinking the
+pocket. Note `route.py` is not idempotent — it assumes a fresh board from
+`gen_pcb.py`; rerunning it standalone duplicates the thieving zones.
 
 **The board is 100% hand-routed** — every net is pre-placed geometry in
 `gen_pcb.py` (nothing is locked; there is no autorouter in the pipeline).

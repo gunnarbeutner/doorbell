@@ -1411,9 +1411,9 @@ _chainl("GATE3", [(19.377, 33.11), (15.811, 33.11), (14.8, 34.121)],
 _pre_via(vmm(14.8, 34.121), net=nets["GATE3"])
 _chainl("GATE3", [(14.8, 34.121), _pxy("R_pd3", "1")], pcbnew.F_Cu, _BW)
 _chainl("EN", [_pxy("U1", "3"), (20.984, 59.42), (19.925, 58.361),
-               (19.925, 43.894)], pcbnew.F_Cu, _BW)
-_pre_via(vmm(19.925, 43.894), net=nets["EN"])
-_chainl("EN", [(19.925, 43.894), (19.925, 42.36)], pcbnew.B_Cu, _BW)
+               (19.925, 44.894)], pcbnew.F_Cu, _BW)
+_pre_via(vmm(19.925, 44.894), net=nets["EN"])
+_chainl("EN", [(19.925, 44.894), (19.925, 42.36)], pcbnew.B_Cu, _BW)
 _pre_via(vmm(19.925, 42.36), net=nets["EN"])
 _chainl("EN", [(19.925, 42.36), (18.14, 42.36), _pxy("C_en", "1")], pcbnew.F_Cu, _BW)
 _chainl("EN", [(19.925, 42.36), _pxy("SW_en", "1")], pcbnew.F_Cu, _BW)
@@ -1711,7 +1711,7 @@ for _sw, _txt, _side, _ang in (("SW_boot", "BOOT", "left", 90), ("SW_en", "RST",
 
 # Product name + revision on the front silkscreen (reads bottom-to-top, left of U1).
 _pn = pcbnew.PCB_TEXT(board)
-_pn.SetText("Doorbell Controller V4.0  2026-06-10")
+_pn.SetText("Doorbell Controller V4.1  2026-06-13")
 _pn.SetLayer(pcbnew.F_SilkS)
 _pn.SetPosition(vmm(0.5, 52.75))
 _pn.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(1.0), pcbnew.FromMM(1.0)))
@@ -1767,6 +1767,30 @@ for _ref, _net, (_tx, _ty), _via, (_lx, _ly) in TP_TABLE:
 _chainl("+5V", [TP_TABLE[1][2], _pxy("K1", "1")], pcbnew.F_Cu, 0.4)
 # TP3 stub straight east onto R18's (R_sda) +3V3 plane via
 _chainl("+3V3", [TP_TABLE[2][2], (30.585, 39.152)], pcbnew.F_Cu, 0.4)
+
+# GND stitching vias grounding float-thieving pockets (the GND thieve claims a
+# pocket once it touches the via): relay/bus region (nearest copper: IN_P4/P4
+# F.Cu pair 0.83 mm), the opto block (nearest copper: OK2.3 pad 0.77 mm), and
+# NW of U3 outside its EP no-via area (nearest copper: U3.20 pad 0.65 mm);
+# B.Cu is clear under all three.
+_pre_via(vmm(19.0, 21.75), net=nets["GND"])
+_pre_via(vmm(4.855, 35.75), net=nets["GND"])
+_pre_via(vmm(30.5, 43.75), net=nets["GND"])
+# Under T1, centred in the three gaps of the OUT_A/OUT_B/MIC_B/MIC_A column
+# (1.3 mm pitch, 0.2 mm traces -> 0.25 mm via-edge clearance each side); grounds
+# the inter-pair float strips, which then guard the OUT pair from the MIC pair.
+_pre_via(vmm(32.15, 54.5), net=nets["GND"])
+_pre_via(vmm(33.45, 54.5), net=nets["GND"])
+_pre_via(vmm(34.75, 54.5), net=nets["GND"])
+# Pocket SE of J1 (nearest copper: USB_CC1 0.59 mm) and the opto-output column
+# strips west of the OC2/OC3_OUT verticals (nearest copper: 0.53 mm)
+_pre_via(vmm(45.0, 64.0), net=nets["GND"])
+_pre_via(vmm(2.75, 60.05), net=nets["GND"])
+_pre_via(vmm(2.75, 58.15), net=nets["GND"])
+# OC3 jumper pocket (nearest copper: OC3_JP 0.80 mm) and the bus corner
+# pocket by OC3_RET/P5 (nearest copper: OC3_RET 0.68 mm)
+_pre_via(vmm(3.0, 24.5), net=nets["GND"])
+_pre_via(vmm(1.25, 15.5), net=nets["GND"])
 
 board.BuildConnectivity()
 out = os.path.join(HERE, "doorbell.kicad_pcb")

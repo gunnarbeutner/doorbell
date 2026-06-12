@@ -8,7 +8,7 @@ import os
 # drawing-sheet title block, shared by the schematic and PCB generators
 # (each generator fills the date field with its generation date)
 TITLE = "Doorbell controller (Klingel V4)"
-REVISION = "V4"
+REVISION = "V4.1"
 COMPANY = "Gunnar Beutner"
 
 # internal key -> KiCad reference designator
