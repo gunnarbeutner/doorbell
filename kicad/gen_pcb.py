@@ -1629,7 +1629,7 @@ for _k in ("K2", "K3", "K1"):
 # U3's refdes: place to the right and below the IC body (clear of the cap ring).
 _u3ref = fps["U3"].Reference()
 _u3l, _u3r, _u3t, _u3b = fext(fps["U3"])
-_u3ref.SetPosition(pcbnew.VECTOR2I(pcbnew.FromMM(_u3r + 0.5), pcbnew.FromMM(_u3b + 1.0)))
+_u3ref.SetPosition(pcbnew.VECTOR2I(pcbnew.FromMM(_u3r + 0.5), pcbnew.FromMM(_u3b + 0.5)))
 _u3ref.SetTextAngleDegrees(0)
 
 # Reset Value() text on the two tactile switches: the library footprint places the text
@@ -1637,6 +1637,50 @@ _u3ref.SetTextAngleDegrees(0)
 for _k in ("SW_boot", "SW_en"):
     fps[_k].Value().SetPosition(fps[_k].GetPosition())
     fps[_k].Value().SetTextAngleDegrees(0)
+
+# --- Refdes silk for every part with room on its own footprint (>= 0.8 mm text).
+#     Small parts (0603 R/C, LED) stay hidden: a readable label cannot fit their
+#     outline. Text sits on the body centre (under the part once populated --
+#     bare-board orientation aid); 0.8 mm for the tight centres, library default
+#     (>= 0.8) elsewhere.
+#     dy/ang per part: SMA diodes run vertical (their inter-pad gap is taller
+#     than wide); SOT-23 centres are too tight, so the FET labels sit just
+#     below the body.
+for _rk, _small, _dy, _ang in (
+        ("Q1", True, 2.35, 0), ("Q2", True, 2.35, 0), ("Q3", True, 2.35, 0),
+        ("D1", True, 0, 0), ("D2", True, 0, 0), ("D3", True, 0, 0),
+        ("D_oc1", True, 0, 0), ("D_oc2", True, 0, 0), ("D_oc3", True, 0, 0),
+        ("D_esd", True, -0.3, 0),
+        ("D_vbus", True, 0, 90),
+        ("OC1", True, 0, 0), ("OC2", True, 0, 0), ("OC3", True, 0, 0),
+        ("U2", False, 0, 0)):
+    _rl, _rr, _rt, _rb = fext(fps[_rk])
+    _ref = fps[_rk].Reference()
+    _ref.SetVisible(True)
+    _ref.SetPosition(vmm((_rl + _rr) / 2.0, (_rt + _rb) / 2.0 + _dy))
+    _ref.SetTextAngleDegrees(_ang)
+    if _small:
+        _ref.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
+        _ref.SetTextThickness(pcbnew.FromMM(0.12))
+# U2's ref: the SOT-223 body sits left of the pads' bbox centre -- nudge right.
+_u2r = fps["U2"].Reference()
+_u2r.SetPosition(pcbnew.VECTOR2I(_u2r.GetPosition().x + pcbnew.FromMM(0.5),
+                                 _u2r.GetPosition().y))
+# D10's ref: its SMA centre is too narrow for 3 chars; north is D4's, east is
+# F1's pad column -- sit south of the body, east of the GND via stub.
+_dl, _dr, _dt, _db = fext(fps["D_tvs"])
+_d10ref = fps["D_tvs"].Reference()
+_d10ref.SetVisible(True)
+_d10ref.SetPosition(vmm((_dl + _dr) / 2.0 + 0.6, _db + 0.6))
+_d10ref.SetTextAngleDegrees(0)
+_d10ref.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
+_d10ref.SetTextThickness(pcbnew.FromMM(0.12))
+# U1's ref: body centre is the EPAD field (silk over its mask openings would be
+# clipped) -- sit north of the EPAD instead, still well inside the module outline.
+_u1ref = fps["U1"].Reference()
+_u1ref.SetVisible(True)
+_u1ref.SetPosition(vmm(13.0, 51.5))
+_u1ref.SetTextAngleDegrees(0)
 
 # Silkscreen labels on the left side of the user-facing buttons, rotated CCW (reads bottom-to-top).
 for _sw, _txt, _side, _ang in (("SW_boot", "BOOT", "left", 90), ("SW_en", "RST", "right", 270)):
