@@ -258,7 +258,7 @@ rectified).
 | MCU | **ESP32-C6-WROOM-1-N8** (LCSC C5366877) | ESPHome-supported, native USB, enough GPIO for the audio path (I²S + I²C + 3 relay gates + 3 opto inputs) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
-| Relays | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts beat silver at these low "wetting" currents. 4.5 V coil (must-operate 3.6 V) clears the post-Schottky ~4.5 V rail by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%) coil max |
+| Relays | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts beat silver at these low "wetting" currents. 4.5 V coil (must-operate 3.6 V) clears the post-Schottky ~4.5 V rail by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%) coil max. PhotoMOS SSRs (AQY212/TLP222A class, AC/DC type) were considered for click noise but rejected: K3 needs the fail-safe NC contact + hardware interlock pole, clicks are rare and event-correlated, and no second board spin is planned. If K2's click ever bothers in the field, its land refits to a dead-bugged SOP-4 PhotoMOS (LED across coil pads 1/8 via ~680 Ω, output across contact pads 3/4) |
 | Relay driver | **Discrete: 2N7002 + 1N4148W flyback + 10 k gate pull-down** | Pull-down ⇒ relays default OFF at boot |
 | Opto polarity | **DPDT slide switch per opto** (NIDEC CAS-220TB1, C2921541) + **anti-parallel 1N4148W clamp** across each LED | Bus signal polarity is unconfirmed per channel; the switch selects it without rework, the clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on AC content |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT) | See "WF26 connector"; 6-way because line 4 needs in + out for the series chime-break |
@@ -481,10 +481,10 @@ see the T1 tie-in description.
 if any connection is unrouted — missing copper is added in `gen_pcb.py`.
 The last stragglers: GATE1/GATE2 share one pattern per channel — a perfectly
 vertical drop ties the pull-down's pad 1 into the gate resistor's pad 2 (R4/R5/R6
-sit x-aligned over their pull-downs), then a straight run east on the y=36.5
+sit x-aligned over their pull-downs), then a straight run east on the y=36.9
 resistor row with a 45° drop into the FET gate; GATE3's FET
 leg instead ducks under on B.Cu west of the relay block (GATE1_DRV's escape
-channel crosses the y=36.5 row at x=16.34). EN leaves U1 pad 3 and 45°s onto the
+channel crosses the y=36.9 row at x=16.34). EN leaves U1 pad 3 and 45°s onto the
 RST button's pad column (x=19.925, clear of MCLK's riser), running one straight
 line — F.Cu vertical, via, B.Cu hop under the SDA/SCL lane stack, via,
 stub into the button — and branches west into C_en and R_en. OT_BRIDGE is a single near-vertical slant K2.4 → R16.2; LED_A is a
@@ -525,15 +525,17 @@ spreads board-wide once the autorouter packs the escapes. `route.py` patches the
 consistent; hole-to-copper is 0.2 mm to match. Trade-off: the
 board routes at the fab limit rather than keeping a clearance design margin.
 
-**Track widths:** signal nets route at the 0.2 mm default; two net classes injected into
-the DSN by `route.py` (`NET_CLASSES`, `(rule (width …))` per class) widen the
-current-carrying nets to **0.5 mm**: `+5V` (LDO input — ESP32 WiFi-TX peaks ~350 mA — plus
-three relay coils) and every net at WF26-bus potential — `P1/P2/P3/P4/P5/IN_P4` (the chime
-solenoid current crosses the board through K3's NC contact), `OT_BRIDGE`, and the opto
-sense legs up to the LED (`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor sides
-(`OCx_OUT`, `OC_EMIT`), the transformer secondary (`SEC_*`/`OUT_*`/`MIC_*`), and K3's interlock pole
-(`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. The widths live only in
-the DSN injection; KiCad's DRC does not enforce them.
+**Track widths:** signal nets route at the 0.2 mm default; the hand-routed geometry in
+`gen_pcb.py` widens the current-carrying nets to **0.5 mm**: `+5V` (LDO input — ESP32
+WiFi-TX peaks ~350 mA — plus three relay coils) and every net at WF26-bus potential —
+`P1/P2/P3/P4/P5/IN_P4` (line 4 carries the TV20/S's Türruf signal through K3's NC
+contact; the "gong" is an electronically generated tone played through the WF26's 16 Ω
+speaker — there is no chime solenoid — so the worst-case bus current is bounded by the
+speaker drive, well under 1 A), `OT_BRIDGE`, and the opto sense legs up to the LED
+(`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor sides (`OCx_OUT`, `OC_EMIT`),
+the transformer secondary (`SEC_*`/`OUT_*`/`MIC_*`), and K3's interlock pole
+(`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. KiCad's DRC does not
+enforce these widths.
 
 **GPIO escape bundle** (`gen_pcb.py`, pre-routes like the VBUS star): the six MCU
 lines into the opto/relay-driver block (`OC1/2/3_OUT`, `GATE1/2/3_DRV`) leave U1's left
@@ -823,5 +825,5 @@ rating; every U1 pad↔GPIO assignment against the Espressif C6-WROOM-1 symbol.
 **Known minor items (accepted):**
 - One 0.388 mm bus↔logic clearance spot (<0.5 mm aspiration; fine for 12 V).
 - A benign plane-stitch warning on U1's EPAD.
-- No mounting holes, no dedicated test points (see "Build / test notes").
+- No mounting holes; three commissioning test points: TP1 = GND at (37.5, 62.5) (the logic ground is isolated from the bus, so TP1 is the scope-ground anchor; bus measurements reference J2.1/P1 instead), TP2 = +5V at (46.3, 21.1) (stub into K1's coil pad 1), TP3 = +3V3 at (28.6, 39.152) (stub onto R18's plane via). Bare 1.5 mm pads, excluded from BOM/CPL.
 - Bench-confirm the relay-coil voltage under WiFi TX with a long USB cable if paranoid.

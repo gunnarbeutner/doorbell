@@ -519,6 +519,7 @@ FP_LIB_DIRS = {
     "TPD2S017": f"{_HERE}/lib_usb/TPD2S017.pretty",   # TI TPD2S017 (easyeda2kicad import, C880115); footprint unused (PCM_JLCPCB SOT-23-6 instead)
     "Fuse": f"{_STOCK}/Fuse.pretty",           # stock 1206 fuse land pattern (F1)
     "Fiducial": f"{_STOCK}/Fiducial.pretty",   # PCBA optical reference marks (added in gen_pcb.py)
+    "TestPoint": f"{_STOCK}/TestPoint.pretty", # commissioning test pads (added in gen_pcb.py)
 }
 
 def footprint_path(libname):

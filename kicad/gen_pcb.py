@@ -45,7 +45,7 @@ PCB_PLACE = {
     "LED1":   (48.0, 16.5, 90), # power LED; right of J2
     "R_led":  (48.0, 13.5, 270), # LED series resistor; right of J2
     "C_dec":  (24.2, 61.2, 270),  # 100nF decoupling; just clear of U1's east courtyard
-    "C_3v3":  (25.75, 61.2, 270),  # 10uF decoupling; same row, next to C_dec
+    "C_3v3":  (25.6, 61.2, 270),  # 10uF decoupling; same row, centred between C_dec and R_io8
     # === BOTTOM edge: USB-C + CC pulldowns above its CC pads ===
     "J1":     (44.1, 60, 0),  # USB-C (USB4105: SMD pads, THT shell stakes); A9/B4 VBUS
                               # column at x=46.5, in line with F1 pin 1 and its via
@@ -93,13 +93,13 @@ PCB_PLACE = {
     "R_pu1":  (10.555, 36.9, 180),
     "K3":     (19.5, 27, 270),# chime-suppress relay, shifted +4mm right to clear OC1 column
     "Q3":     (23.5, 34, 180),# NMOS, swapped with R_pd3 + rotated 180°
-    "R_g3":   (14.68, 36.5, 0),   # gate series R; x puts pad 2 dead above R_pd3.1
+    "R_g3":   (14.68, 36.9, 0),   # gate series R on the R_pu* row (y=36.9); x puts pad 2 dead above R_pd3.1
                                   # so GATE3 drops perfectly vertical
     "R_pd3":  (15.5, 34, 90), # gate pulldown, swapped with Q3 + rotated 180°
     "D3":     (18.8, 33.6, 0),# flyback, moved north (toward K3 coil)
     "K2":     (31, 27, 270),  # door-opener relay, rotated CW
     "Q2":     (35, 34, 180),  # NMOS, swapped with R_pd2 + rotated 180°
-    "R_g2":   (26.18, 36.5, 0),   # gate series R; x puts pad 2 dead above R_pd2.1
+    "R_g2":   (26.18, 36.9, 0),   # gate series R on the R_pu* row (y=36.9); x puts pad 2 dead above R_pd2.1
                                   # so GATE2 drops perfectly vertical
     "R_pd2":  (27, 34, 90),   # gate pulldown, swapped with Q2 + rotated 180°
     "D2":     (30.3, 33.6, 0),# flyback, moved north (toward K2 coil)
@@ -107,7 +107,7 @@ PCB_PLACE = {
     # === K1 (PTT placeholder) relay + driver: same spacing as K3→K2 (11.5 mm) ===
     "K1":     (42.5, 27, 270),
     "Q1":     (46.5, 34, 180),
-    "R_g1":   (37.68, 36.5, 0), # K1 gate series R, gate-side of the interlock; same
+    "R_g1":   (37.68, 36.9, 0), # K1 gate series R, gate-side of the interlock; same
                                 # position/orientation relative to R_pd1 as R_g2 has
                                 # to R_pd2 (pad 2 dead above the pulldown's pad 1 so
                                 # GATE1 drops perfectly vertical)
@@ -1221,7 +1221,7 @@ _chainl("GND", [_pxy("U2", "1"), (41.5, 40.67), (41.5, 40.446)], pcbnew.F_Cu, _B
 _pre_via(vmm(41.5, 40.446), net=nets["GND"])
 _chainl("GND", [(41.5, 40.446), _pxy("C_out", "2")], pcbnew.F_Cu, _BW)
 _tapvia("+3V3", "U2", "2", [(42.53, 43.006)])
-_tapvia("+3V3", "C_out", "1", [(41.5, 37.085)])
+_tapvia("+3V3", "C_out", "1", [(42.6, 37.9625), (42.6, 37.7)])  # east of the pad, clear of GATE1's y=36.9 run
 # R_en's pull-up supply: single (near-45°) slant onto R_boot's locked +3V3 via
 _chainl("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
 
@@ -1239,7 +1239,7 @@ _pre_via(vmm(17.9, 31.839), net=nets["GATE1_PRE"])
 _chainl("GATE1_PRE", [(17.9, 31.839), (23.966, 31.839), (26.886, 34.759),
                       (34.259, 34.759), (36.0, 36.5)], pcbnew.B_Cu, _BW)
 _pre_via(vmm(36.0, 36.5), net=nets["GATE1_PRE"])
-_chainl("GATE1_PRE", [(36.0, 36.5), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
+_chainl("GATE1_PRE", [(36.0, 36.5), (36.4, 36.9), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
 # --- T1 secondary <-> series resistors <-> coupling caps (SEC_*/OUT_*/MIC_*),
 #     hand-routed and locked (restores the pre-resistor hand routes, adapted to the
 #     net split). The resistors sit in a row south of T1 (see PCB_PLACE); every
@@ -1365,7 +1365,7 @@ _chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
 # --- Last nets, hand-routed — the board is now 100% hand-routed (route.py only
 #     verifies connectivity). GATE1/2/3 share one pattern per channel: a perfectly vertical drop
 #     ties the pull-down's pad 1 into the gate resistor's pad 2 (the R_g* sit
-#     x-aligned over their pull-downs), then a straight run east on the y=36.5
+#     x-aligned over their pull-downs), then a straight run east on the y=36.9
 #     resistor row and a 45° drop into the FET's gate pad — all F.Cu, no vias
 #     (replaces the (since-removed) autorouter's two-via B.Cu detour on GATE3). EN leaves U1 pad 3
 #     west and 45°s onto the RST button's pad column (x=19.925, clear of MCLK's
@@ -1375,12 +1375,12 @@ _chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
 #     with one near-vertical slant. OT_BRIDGE is
 #     a single near-vertical slant K2.4 -> R16.2 (bus width); LED_A's dead-straight
 #     vertical is kept as the autorouter laid it.
-for _gq, _gpd, _grg, _gx45 in (("Q1", "R_pd1", "R_g1", 45.89),
-                               ("Q2", "R_pd2", "R_g2", 34.39)):
+for _gq, _gpd, _grg, _gx45 in (("Q1", "R_pd1", "R_g1", 45.49),
+                               ("Q2", "R_pd2", "R_g2", 33.99)):
     _gnet = "GATE" + _gq[1]
     _chainl(_gnet, [_pxy(_gpd, "1"), _pxy(_grg, "2")], pcbnew.F_Cu, _BW)
-    _chainl(_gnet, [_pxy(_grg, "2"), (_gx45, 36.5), _pxy(_gq, "1")], pcbnew.F_Cu, _BW)
-# GATE3 can't run the y=36.5 row east — GATE1_DRV's locked escape channel crosses it
+    _chainl(_gnet, [_pxy(_grg, "2"), (_gx45, 36.9), _pxy(_gq, "1")], pcbnew.F_Cu, _BW)
+# GATE3 can't run the y=36.9 row east — GATE1_DRV's locked escape channel crosses it
 # at x=16.34 — so its FET leg ducks under on B.Cu west of the relay block instead:
 # Q3 gate west on y=34.95, 45° down to a via, B.Cu west + 45° up to a second via,
 # and a 45° F.Cu landing into R_pd3's pad 1.
@@ -1662,6 +1662,40 @@ for _ref in EDGE_OVERHANG:
             (_edge == "top"    and MM(_b.GetTop())    < y0) or
             (_edge == "bottom" and MM(_b.GetBottom()) > y1)):
             fps[_ref].Remove(_it)
+
+# --- Commissioning test points: TP1/TP2 = GND (the logic ground is isolated from the
+#     WF26 bus by the optos/T1, so without these the only scope-ground grab points are
+#     0603 cap ends), TP3 = +5V, TP4 = +3V3. Bare 1.5 mm pads, excluded from BOM/CPL.
+#     GND/+3V3 get an offset through-via to their In2/In1 plane (no via-in-pad);
+#     +5V has no plane, so TP3 stubs over to C_in pad 1 on a lane at y=47.4 that
+#     threads between U2's pad row and C_in/C_out.
+#     Positions are fixed (nudge here if a spot turns out inconvenient):
+#       ref   net    pad (x, y)       plane via (x, y)
+#       ref   net    pad (x, y)       plane via       ref-text offset
+TP_TABLE = [
+    ("TP1", "GND",  (37.5, 62.5),    (36.2, 62.5),  (0, -1.7)),
+    ("TP2", "+5V",  (46.3, 21.1),    None,          (2.6, 0)),    # label east: J2 silk frame above
+    ("TP3", "+3V3", (28.6, 39.152),  None,          (0, 1.7)),    # label south: R4 pad above
+]
+TP_LIB = FP_LIB_DIRS["TestPoint"]
+for _ref, _net, (_tx, _ty), _via, (_lx, _ly) in TP_TABLE:
+    _fp = pcbnew.FootprintLoad(TP_LIB, "TestPoint_Pad_D1.5mm")
+    _fp.SetReference(_ref); _fp.SetValue(_net)
+    _fp.SetPosition(vmm(_tx, _ty))
+    _fp.Reference().SetPosition(vmm(_tx + _lx, _ty + _ly))
+    _fp.SetAttributes(_fp.GetAttributes() | pcbnew.FP_EXCLUDE_FROM_POS_FILES
+                      | pcbnew.FP_EXCLUDE_FROM_BOM)    # bare copper, not a placed part
+    for _p in _fp.Pads():
+        _p.SetNet(nets[_net])
+    board.Add(_fp)
+    if _via is not None:
+        _pre_track(vmm(_tx, _ty), vmm(*_via), pcbnew.F_Cu, 0.4, nets[_net])
+        _pre_via(vmm(*_via), net=nets[_net])
+    print(f"  test point {_ref} ({_net}) at ({_tx},{_ty})")
+# TP2 stub straight south into K1's coil pad 1 (+5V)
+_chainl("+5V", [TP_TABLE[1][2], _pxy("K1", "1")], pcbnew.F_Cu, 0.4)
+# TP3 stub straight east onto R18's (R_sda) +3V3 plane via
+_chainl("+3V3", [TP_TABLE[2][2], (30.585, 39.152)], pcbnew.F_Cu, 0.4)
 
 board.BuildConnectivity()
 out = os.path.join(HERE, "doorbell.kicad_pcb")
