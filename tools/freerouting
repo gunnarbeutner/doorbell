@@ -1,5 +1,0 @@
-#!/bin/sh
-# Freerouting v2.2.4 + degenerate-polyline guard (see freerouting-npe-fix.patch):
-# upstream NPEs in insert_forced_trace_polyline when the located connection has
-# consecutive duplicate corners. Used by kicad/route.py.
-exec java -jar "$(dirname "$0")/freerouting-patched.jar" "$@"

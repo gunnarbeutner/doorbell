@@ -1,39 +1,24 @@
 #!/usr/bin/env python3
-"""Autoroute kicad/doorbell.kicad_pcb with Freerouting.
+"""Finalize kicad/doorbell.kicad_pcb: inner planes, groups, thieving, density report.
 
-Exports a Specctra DSN from the board (pcbnew), runs Freerouting headless to produce a
-.ses, then imports the session back and saves the routed board in place. Re-running
-gen_pcb.py wipes the routes (fresh ratsnest), so the workflow is: edit design -> regen
-board -> route.
+The board is fully hand-routed by gen_pcb.py; there is no autorouter. After the
+inner planes are filled, any remaining unrouted connection FAILS the build -- the
+missing copper must be added to gen_pcb.py, not invented by a tool.
 
-Run with KiCad's bundled Python (owns pcbnew); see build.sh. Env:
-    FR_PASSES   Freerouting max passes (default 20)
-    FREEROUTING path to the freerouting launcher
+Run with KiCad's bundled Python (owns pcbnew); see build.sh.
 """
-import os, sys, subprocess, math, re
+import os, sys, math
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import pcbnew
 from doorbell_design import GROUPS, REF
 
 BOARD = os.path.join(HERE, "doorbell.kicad_pcb")
-DSN = os.path.join(HERE, "doorbell.dsn")
-SES = os.path.join(HERE, "doorbell.ses")
-# Default to the repo's patched build (v2.2.4 + degenerate-polyline guard, see
-# tools/freerouting-npe-fix.patch): stock v2.2.4 NPEs on this board's locked wiring.
-_TOOLS_FR = os.path.join(HERE, "..", "tools", "freerouting")
-FREEROUTING = os.environ.get(
-    "FREEROUTING",
-    _TOOLS_FR if os.path.exists(_TOOLS_FR)
-    else "/Applications/freerouting.app/Contents/MacOS/freerouting")
-PASSES = os.environ.get("FR_PASSES", "20")
 
 board = pcbnew.LoadBoard(BOARD)
 
-# --- Pre-fill inner planes before DSN export so Freerouting sees solid GND/+3V3 copper
-#     on In2/In1 and connects pads to them with short via stubs instead of long surface
-#     traces.  The DSN export includes the filled zone copper as pre-existing wiring.
-#     Zones are re-filled after the SES import to incorporate the new routing. ---
+# --- Inner planes: In1 = +3V3, In2 = GND, filled before the connectivity check so
+#     through-via plane bonds count as routed copper. ---
 def _add_plane(layer, netname):
     net = board.FindNet(netname)
     z = pcbnew.ZONE(board); z.SetLayer(layer); z.SetNet(net)
@@ -51,121 +36,31 @@ _add_plane(pcbnew.In2_Cu, "GND")
 board.BuildConnectivity()
 pcbnew.ZONE_FILLER(board).Fill(board.Zones())
 
-# Fully hand-routed? If the locked pre-routes + inner planes already satisfy every
-# connection, skip Freerouting entirely — there is nothing for it to add, and the
-# DSN -> Freerouting -> SES round-trip is the flakiest part of the pipeline.
+# The board must be fully hand-routed: pre-routes + planes satisfy every
+# connection, or the build fails here with the offending nets.
 board.BuildConnectivity()
 try:
     _unrouted = board.GetConnectivity().GetUnconnectedCount(False)
 except TypeError:                       # older API: no aVisibleOnly argument
     _unrouted = board.GetConnectivity().GetUnconnectedCount()
 
-def _autoroute():
-    if not pcbnew.ExportSpecctraDSN(board, DSN):
-        sys.exit("DSN export failed")
-    _patch_and_route()
-    if not pcbnew.ImportSpecctraSES(board, SES):
-        sys.exit("SES import failed")
-
-def _patch_and_route():
-    _inject_net_classes()
-    subprocess.run([FREEROUTING, "-de", DSN, "-do", SES, "-mp", PASSES, "-da", "-mt", "1",
-                    "--router.optimizer.enabled=true"], check=True)
-
-# Inject net class rules into the DSN so Freerouting knows which layers each net
-# belongs on. GND/+3V3 are restricted to their inner-plane layers — Freerouting
-# places short vias from outer pads to reach them. USB_DP/USB_DM are restricted
-# to B.Cu to keep the differential pair on one uninterrupted layer.
-# Syntax: (circuit (use_layer "layer")) inside the class.
-# Each net must belong to exactly one class, so remove them from kicad_default first.
-# GND is allowed on F.Cu + In2.Cu + B.Cu; +3V3 on F.Cu + In1.Cu + B.Cu.
-# B.Cu must be included because the only via is a full through-hole (F.Cu→In1→In2→B.Cu):
-# omitting B.Cu makes the via illegal for GND/+3V3 and Freerouting falls back to flat
-# F.Cu traces, never reaching the inner planes.  Signal nets (kicad_default) are
-# restricted to outer layers only so they cannot pollute In1/In2.  Post-route,
-# _add_plane() floods the remaining In1/In2 copper as solid pours.
-# Per-class track width (µm, DSN units): nets without a width fall back to the global
-# (rule (width 200)) from the structure section, i.e. 0.2 mm. +5V feeds the LDO (ESP32
-# WiFi-TX peaks ~350 mA) plus three relay coils; the P-bus nets carry the chime solenoid
-# current through K3's NC contact — both get 0.5 mm.
-NET_CLASSES = [
-    # name        nets                                            layers                      width_um
-    ("gnd_plane",  ["GND"],             ["F.Cu", "In2.Cu", "B.Cu"], None),
-    ("v3v3_plane", ["+3V3"],            ["F.Cu", "In1.Cu", "B.Cu"], None),
-    # both sides of the TPD2S017 (connector-side + ESP-side) stay on outer layers
-    ("usb_diff",   ["USB_DP","USB_DM","USB_DP_ESP","USB_DM_ESP"], ["F.Cu", "B.Cu"], None),
-    ("power",      ["+5V"],                                       ["F.Cu", "B.Cu"], 500),
-    # every net galvanically tied to the WF26 bus (bus potential): the P-bus itself, the
-    # ÖT bridge (K2 contact <-> R16), and the opto sense legs up to the LED (switch
-    # outputs, LED cathode/limiter nodes, limiter returns). NOT bus potential: OCx_OUT /
-    # OC_EMIT (opto transistor side), SEC_A/SEC_B (behind T1's isolation), GATE1/_PRE
-    # (K3's interlock pole switches 3.3V only).
-    ("bus",        ["P1","P2","P3","P4","P5","IN_P4","OT_BRIDGE",
-                    "OC1_JP","OC2_JP","OC3_JP",
-                    "OC1_CATH","OC2_CATH","OC3_CATH",
-                    "OC1_RET","OC2_RET","OC3_RET"],               ["F.Cu", "B.Cu"], 500),
-]
-RECLASSED = {n for _, nets, _, _ in NET_CLASSES for n in nets}
-
-def _inject_net_classes():
-    with open(DSN) as f: dsn = f.read()
-
-    # Relax the routing clearance/track that Freerouting honours from KiCad's default 0.2mm/0.2mm
-    # to JLCPCB's published fine-pitch capability (0.127mm clearance / 0.15mm track) -- the same
-    # fab limit the board already allows for J1. The default 0.2mm clearance acts as a too-wide
-    # keepout halo around every pad and makes the 0.40mm-pitch ES8311 (U3) un-escapable (a 0.6mm
-    # via can't sit beside a fine-pitch pin). The (clearance 50 (type smd_smd)) entry is left
-    # untouched.
-    dsn = re.sub(r'\(clearance 200\)', '(clearance 127)', dsn)
-
-    # Remove reclassed nets (USB_DP/USB_DM) from kicad_default, and restrict ALL nets
-    # (including GND/+3V3) to the outer copper layers only.  In1.Cu (+3V3) and In2.Cu
-    # (GND) are filled as solid copper pours after routing; Freerouting must not place
-    # signal traces there.  Through-hole vias still drill through all 4 layers, so their
-    # barrels connect GND/+3V3 pads to the inner-plane pours automatically.
-    def _patch_default(m):
-        block = m.group(0)
-        for net in RECLASSED:
-            block = re.sub(r'(?<=\s)' + re.escape(net) + r'(?=[\s\n])', '', block)
-        # Prepend use_layer directives before the existing use_via entry.
-        block = re.sub(
-            r'(\s*)\(use_via ',
-            r'\1(use_layer "F.Cu")\1(use_layer "B.Cu")\1(use_via ',
-            block,
-        )
-        return block
-    dsn = re.sub(r'\(class kicad_default.*?\)', _patch_default, dsn, flags=re.DOTALL)
-
-    # Build new class entries (net names unquoted, matching kicad_default style)
-    via_m = re.search(r'\(use_via "([^"]+)"', dsn)
-    via_name = via_m.group(1) if via_m else "Via[0-3]_600:300_um"
-    def _class_entry(name, nets, layers, width_um=None):
-        nets_str = " ".join(nets)
-        layers_str = "\n        ".join(f'(use_layer "{l}")' for l in layers)
-        rule_str = f'\n      (rule (width {width_um}))' if width_um else ''
-        return (f'    (class {name} {nets_str}\n'
-                f'      (circuit\n'
-                f'        {layers_str}\n'
-                f'        (use_via "{via_name}")\n'
-                f'      ){rule_str}\n'
-                f'    )')
-
-    injection = "\n".join(_class_entry(*c) for c in NET_CLASSES)
-    # Insert inside the (network ...) block, before its closing ) which sits just
-    # before the (wiring ...) section.
-    dsn = re.sub(r'(\n  \)\n\s*\(wiring)', "\n" + injection + r'\1', dsn)
-    with open(DSN, 'w') as f: f.write(dsn)
-    print(f"exported {DSN} (injected {len(NET_CLASSES)} net class rule(s))")
-
 if _unrouted == 0:
-    print("0 unrouted connections -- board is fully hand-routed; skipping Freerouting")
+    print("0 unrouted connections -- board is fully hand-routed")
 else:
-    print(f"{_unrouted} unrouted connection(s) -> Freerouting")
-    _autoroute()
+    _names = set()
+    try:
+        _conn = board.GetConnectivity()
+        for _nc in range(1, board.GetNetCount()):
+            _rn = _conn.GetRatsnestForNet(_nc)
+            if _rn is not None and _rn.GetEdges():
+                _names.add(board.FindNet(_nc).GetNetname())
+    except Exception:
+        pass
+    sys.exit(f"ERROR: {_unrouted} unrouted connection(s)"
+             + (f" on net(s): {', '.join(sorted(_names))}" if _names else "")
+             + "\nAll routing is hand-placed -- add the missing pre-route in gen_pcb.py.")
 
-# --- Subassembly groups: created HERE (post-route) so they never reach the Specctra DSN export --
-#     groups on the board confuse the DSN export and break the autoroute. Add them to the routed
-#     board by finding each member footprint by refdes. ---
+# --- Subassembly groups: add each member footprint by refdes. ---
 _grp_map = {}
 for _gname, _keys in GROUPS.items():
     _grp = pcbnew.PCB_GROUP(board)

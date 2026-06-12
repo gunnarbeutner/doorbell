@@ -449,10 +449,10 @@ routed on B.Cu references GND. +5V is a short surface trace. Set in `gen_pcb.py`
 **Why 4-layer.** J1 (USB4105) is a single-row SMD Type-C: D+/D−/CC/VBUS escape from one
 fine-pitch interleaved pad row, which leans on the 4-layer stack — the D+/D− pair routes
 together on B.Cu over the GND plane, and the remaining escapes fan out on F.Cu/B.Cu.
-Placement around J1 must leave the escape fan room (verify Freerouting copes after any
-reshuffle).
+Placement around J1 must leave the escape fan room (re-verify the hand-routed escape
+fan after any reshuffle).
 
-**Power routing** (`gen_pcb.py`, locked — the power nets are fully hand-routed): +5V
+**Power routing** (`gen_pcb.py` — the power nets are fully hand-routed): +5V
 is one 0.5 mm F.Cu spine, D4 → C_in → U2.3 (LDO in), then north on a vertical at
 x=40.6 threading between the MIC_A/MIC_B NE wrap and U2's pad toes (the thread is
 why U2 sits at x=45.5), ducking west at y=38.55 just north of the MIC return lanes
@@ -461,7 +461,7 @@ onto the straight vertical at x=37.64 — R6 (R_g1) sits nudged
 jog — onto D1's flyback row and up/over to K1's coil pin; from the
 (41.688, 27.099) tee a west leg crosses the relay block, tapping K2/K3 coil pins off
 the y=24.779 row and dropping into D2/D3 dead-centre. GND/+3V3 reach their In2/In1
-planes through locked 0.2 mm stubs + vias at every SMD pad (FET/pull-down row, the
+planes through 0.2 mm stubs + vias at every SMD pad (FET/pull-down row, the
 BOOT/RST cluster, U1 pad 28, the USB CC pulldowns and C_in, the LED block — its two
 vias dodge P1's/P5's B.Cu verticals — and the LDO column, where U2.1 and C_out share
 one GND via on their centreline); U2's tab and J1's shield stakes are PTH
@@ -475,27 +475,25 @@ T1's west pads, through the R24–R27 series-resistor row south of T1, and on as
 OUT_*/MIC_* legs to the coupling caps) is hand-designed as nested 0.329 mm pairs —
 see the T1 tie-in description.
 
-**The board is 100% hand-routed** — every net is locked pre-route geometry in
-`gen_pcb.py`. `route.py` checks the ratsnest after filling the inner planes and,
-when there are 0 unrouted connections, skips the DSN → Freerouting → SES
-round-trip entirely (the flakiest part of the pipeline); the autoroute path only
-engages if a future edit leaves something unrouted.
+**The board is 100% hand-routed** — every net is pre-placed geometry in
+`gen_pcb.py` (nothing is locked; there is no autorouter in the pipeline).
+`route.py` checks the ratsnest after filling the inner planes and FAILS the build
+if any connection is unrouted — missing copper is added in `gen_pcb.py`.
 The last stragglers: GATE1/GATE2 share one pattern per channel — a perfectly
 vertical drop ties the pull-down's pad 1 into the gate resistor's pad 2 (R4/R5/R6
 sit x-aligned over their pull-downs), then a straight run east on the y=36.5
 resistor row with a 45° drop into the FET gate; GATE3's FET
-leg instead ducks under on B.Cu west of the relay block (GATE1_DRV's locked escape
+leg instead ducks under on B.Cu west of the relay block (GATE1_DRV's escape
 channel crosses the y=36.5 row at x=16.34). EN leaves U1 pad 3 and 45°s onto the
 RST button's pad column (x=19.925, clear of MCLK's riser), running one straight
-line — F.Cu vertical, via, B.Cu hop under the locked SDA/SCL lane stack, via,
+line — F.Cu vertical, via, B.Cu hop under the SDA/SCL lane stack, via,
 stub into the button — and branches west into C_en and R_en. OT_BRIDGE is a single near-vertical slant K2.4 → R16.2; LED_A is a
 dead-straight vertical.
 
-**Routing + plane recipe.** Freerouting routes on all four layers freely (no `LT_POWER`
-designation, no pre-stitch vias). After the SES is imported, `route.py` pours +3V3 on In1
-and GND on In2 as copper-fill zones; the filler leaves clearance gaps around any signal
-traces Freerouting placed on those layers. Result: **0 unconnected, 0 DRC**; no
-manually-placed vias.
+**Routing + plane recipe.** All copper is placed by `gen_pcb.py`; `route.py` pours
++3V3 on In1 and GND on In2 as copper-fill zones (the filler leaves clearance gaps
+around anything else on those layers), then verifies connectivity.
+Result: **0 unconnected, 0 DRC**.
 
 **Floorplan** (`PCB_PLACE` in `gen_pcb.py`; the audio block is additionally re-packed by
 rigid-body transforms in `gen_pcb.py`, so on-board positions differ from the raw table —
@@ -537,7 +535,7 @@ sense legs up to the LED (`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor 
 (`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. The widths live only in
 the DSN injection; KiCad's DRC does not enforce them.
 
-**GPIO escape bundle** (`gen_pcb.py`, locked pre-routes like the VBUS star): the six MCU
+**GPIO escape bundle** (`gen_pcb.py`, pre-routes like the VBUS star): the six MCU
 lines into the opto/relay-driver block (`OC1/2/3_OUT`, `GATE1/2/3_DRV`) leave U1's left
 pad column as six parallel vertical lanes hugging the module's left edge (0.329 mm pitch,
 nested in pad order so stubs/corners never cross; geometry derived from U1/OK3 pad
@@ -555,7 +553,7 @@ row and rise north into their gate resistors' pad 1 (GATE1 rises beside R6 — R
 limits the lane — and finishes with a 45° jog into the pad centre; GATE3/GATE2 rise
 straight into R5/R4).
 
-**I2C/I2S escape bundle** (`gen_pcb.py`, locked pre-routes, north of U1): BOOT leads
+**I2C/I2S escape bundle** (`gen_pcb.py`, pre-routes, north of U1): BOOT leads
 from U1 pad 15 east + 45° NE to its switch and on to R_boot (its proven autoroute path,
 locked). I2C SDA/SCL (pads 16/17 — a GPIO-matrix pin swap with I2S, free on the C6)
 follow as nested parallel diagonals (0.327 mm perpendicular) flattening east at
@@ -585,7 +583,7 @@ reaching any upper lane — BCLK/DIN via short shallow 45°s, WS/DOUT on aggress
 vertical risers beside U1's pad column (east of GPIO8's via), clear of T1's west pads.
 T1 sits 2.35 mm below U3 (its south edge clear of R12 below).
 
-**U3 analog / CE / supply hookups** (`gen_pcb.py`, locked — with the I2C/I2S bundles
+**U3 analog / CE / supply hookups** (`gen_pcb.py` — with the I2C/I2S bundles
 this makes every U3 net fully hand-routed, all on F.Cu): on the east column, OUTN /
 DACVREF / ADCVREF drop into their caps' pad-1 centres on three nested parallel 45°
 diagonals (0.85 mm apart; DACVREF/ADCVREF via short staircase verticals at
@@ -593,7 +591,7 @@ x=34.805/34.405 so the diagonals land dead-on). OUTP runs dead on its own pad ro
 (0.2 mm clear of OUTN's stub one row below), east past the column, and rises 45°
 into C_op. On the north row, MIC1P/MIC1N rise as a
 symmetric pair into C_mp/C_mn, VMID does the same one column over, and CE rises off
-pad 20 and 45°s onto R_ce's row — nested parallel to the locked SDA drop one pad
+pad 20 and 45°s onto R_ce's row — nested parallel to the SDA drop one pad
 over. Supplies: DVDD/PVDD (pads 3/4) tie west onto a shared rail with an In1 via
 mid-rail, continuing straight into C_pv pad 1 and up the pad-1 column into C_dv;
 AVDD (pad 11) runs straight east into C_avb pad 1 and up into C_av with an In1 via
@@ -629,10 +627,10 @@ west on lanes y=39.032/39.361 to drop 45° into C16/C17 pad 2 (the C17 lane and
 drop reuse the pre-split link geometry verbatim). Keeping each direction's legs
 paired at 0.329 mm preserves the floating audio pair's small pickup loop.
 
-The entire WF26 bus group — **P1–P5 and IN_P4 — is hand-routed and locked** in
-`gen_pcb.py` (geometry lifted from a clean Freerouting solution and normalized, plus
-the one link Freerouting consistently failed to close: P5 from the polarity-switch
-cluster to J2.5, which branches the locked J2 loop at its (30.48, 12.54) corner and
+The entire WF26 bus group — **P1–P5 and IN_P4 — is hand-routed** in
+`gen_pcb.py` (geometry originally lifted from a clean autorouter solution and
+normalized, plus the one link the autorouter consistently failed to close: P5 from the polarity-switch
+cluster to J2.5, which branches the J2 loop at its (30.48, 12.54) corner and
 runs west above the J2 pad row on B.Cu into a via clear east of SW_OC1 pad 1, 45° into
 the pad). The rest: P3 west off J2.3 into R16; P4 45° over the J2 pad row (y=13.317)
 and a long 45° down into K3 COM; P2 from J2.2 into K1.4 with a branch west along
@@ -641,31 +639,23 @@ B.Cu via pair under the switch row to pad 3; IN_P4 from J2.6 into K3.2 (NC), wes
 along y=15 on B.Cu up to SW_OC2 pads 1/6, and a loop north of K1 from its COM (pad 3)
 back to J2.6; P1 from J2.1 on a B.Cu trunk along y=23.613 under the relay contact row
 to vias feeding SW_OC2 pads 4/3 and SW_OC3 pads 4/3. OC3_RET (SW_OC3's centre pad 2 →
-R2) is locked along its proven path too — 45° onto the y=12.321 lane and down the
-far-west column x=0.316 — because with the bus walls locked, Freerouting (greedy, no
-rip-up through protected wiring) no longer finds that escape on its own. The rest of
+R2) is pinned along its proven path too — 45° onto the y=12.321 lane and down the
+far-west column x=0.316 — the one escape that threads the bus walls. The rest of
 the opto block is hand-routed as well: each JP net drops from its switch's centre
 pad 5 down a vertical between the switch columns, 45°s into the clamp diode's anode
 pad and hops 45° onward into the opto's pad 1 (three near-identical channels);
 OC1_RET/OC2_RET run their switch's centre pad 2 down a vertical beside the cathode
 channel into the limiter's pad 2; OC_EMIT's west tail lands on R3's pad with one
-near-horizontal slant. Together with the locked CATH/EMIT chains and the OC*_OUT
+near-horizontal slant. Together with the CATH/EMIT chains and the OC*_OUT
 escape bundle, every opto net is hand-routed. Branches in
-the locked wiring only meet at segment endpoints or pad centres (Freerouting
-mishandles mid-segment T-junctions in protected wiring).
+the pre-placed wiring only meet at segment endpoints or pad centres.
 To free the NE corridor, the ESP-side USB pair takes a south
 detour on B.Cu: straight stubs on the pad rows into vias in line with U1 pads 14/13
 (DM's on its vertical at x=23.85; DP's 0.58 mm east so its drop clears DM's via,
 converging to the 0.329 pair pitch just below), south beside GPIO8's B.Cu wall, then
 45° SE into the eastbound pair at y=58.85/59.179 under T1 to the TPD2S017-side vias.
 
-**Freerouting requirement:** stock Freerouting v2.2.4 crashes on this board
-(`NullPointerException` in `insert_forced_trace_polyline`: located connections with
-consecutive duplicate corners collapse to an empty polyline whose `first_corner()` is
-null). `tools/freerouting` wraps a patched build (`tools/freerouting-patched.jar`,
-guard in `InsertFoundConnectionAlgo.insert_trace` — see
-`tools/freerouting-npe-fix.patch`, worth upstreaming); `route.py` prefers it
-automatically. Result: 0 errors, 0 unconnected, DRC clean (only the intentional
+Build result: 0 errors, 0 unconnected, DRC clean (only the intentional
 thieving-zone isolated-copper warning). R12 (GPIO8 strap
 pull-up) lives SE of U1 beside C3, GPIO8 pad south onto a B.Cu via — GPIO8 crosses
 under the I2S fan corridor from a via next to U1 pad 10 — and +3V3 pad north, tapping
@@ -677,7 +667,7 @@ at x=24.5, across B.Cu (over the In2 GND plane) as a tight pair — 0.327 mm
 perpendicular on the 45° diagonals, 0.329 mm on straights — surfacing in a second via
 pair west of the TPD2S017 and fanning into D5 pins 6/1. Via pairs sit 0.8 mm apart; the
 partner trace stays on a wider offset past each via (0.166 mm trace-to-via copper gap)
-before converging. The connector side is hand-routed too (locked, F.Cu): D+/D− each
+before converging. The connector side is hand-routed too (F.Cu): D+/D− each
 tie their A/B pad pair together and rise into the TPD2S017 inputs — DP joins A6↔B6
 with a shallow U just south of the pad row and climbs a vertical at x=45.5 into D5
 pin 4; DM tees at (44.152, 61.598), joining B7/A7 and running one 45° into D5 pin 3 —
@@ -702,11 +692,10 @@ belt-and-suspenders local references. Gotchas handled in code, so DRC stays 0/0:
 - The footprint is bare copper, not a placed part → `FP_EXCLUDE_FROM_POS_FILES` +
   `FP_EXCLUDE_FROM_BOM`, so it never enters the CPL (`jlcpcb_cpl.py` skips that attribute)
   or the BOM; its netless pad is exempted from `check_pcb.py`'s "every pad in a net" check.
-- The stock fiducial pad's 0.6 mm local clearance override is dropped (inherit the board
-  default): Freerouting doesn't honour overrides on netless pads and DRC would flag the
-  gap. (Fencing the fiducial off with an all-layer keepout instead starves the autorouter.)
+- The stock fiducial pad's 0.6 mm local clearance override is dropped (inherit the
+  board default) so DRC doesn't flag the gap on the netless pad.
 - A minimal **F.Cu-only** keepout (r = 1.1 mm = mask radius + margin) around each mark
-  stops autorouted tracks from running under the mask window (two nets in one exposed
+  stops tracks from running under the mask window (two nets in one exposed
   aperture = solder-mask bridge). Front-side only, so B.Cu/inner planes stay free; the
   fiducial's own pad is allowed inside.
 

@@ -4,7 +4,7 @@
 #   ./build.sh           schematic + PCB + route + fab   (full run)   [default = all-route]
 #   ./build.sh sch       schematic only (+ ERC + PDF)
 #   ./build.sh pcb       PCB only (placed + netted, unrouted)
-#   ./build.sh route     autoroute the current PCB with Freerouting
+#   ./build.sh route     finalize the PCB (planes/groups/thieving; fails if unrouted)
 #   ./build.sh fab       export Gerbers/drill/position + BOM to kicad/fab/
 #   ./build.sh all       schematic + PCB (unrouted) + ERC + schematic PDF
 #   ./build.sh all-route schematic + PCB + route + fab   (full run)
@@ -35,7 +35,7 @@ check() {
   "$KPY" kicad/check_pcb.py 2>&1 | q
 }
 route() {
-  echo "▶ route (freerouting)"
+  echo "▶ route (hand-routed: planes + finalize)"
   "$KPY" kicad/route.py 2>&1 | q
   kicad-cli pcb drc "$PCB" -o /tmp/doorbell_drc.txt 2>&1 | q | tail -1
   grep -iE "unconnected pads|DRC violations" /tmp/doorbell_drc.txt || true

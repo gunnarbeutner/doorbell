@@ -435,8 +435,7 @@ NETS = {
 }
 
 # Subassembly groups (KiCad PCB_GROUP) -> internal keys. Each functional block selects/moves as a
-# unit in the PCB editor. Created in route.py AFTER autorouting (groups confuse the Specctra DSN
-# export, so they must not be on the board when it is sent to Freerouting). Footprints only; an
+# unit in the PCB editor. Created in route.py at finalize time. Footprints only; an
 # item belongs to at most one group.
 GROUPS = {
     "MCU":                     ["U1", "R_io8", "C_3v3", "C_dec"],

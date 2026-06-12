@@ -280,9 +280,8 @@ for _p in list(fps["U2"].Pads()):
 #     grounds through pad 10 (AGND, tied into the EP) and the F.Cu GND pour; the codec's
 #     milliwatt dissipation needs no dedicated thermal path to the inner plane. The
 #     {EP, pad 10} GND cluster gets its plane bond from a via just SOUTH of pad 10,
-#     OUTSIDE the footprint (the DSN export doesn't credit pour copper, so without it
-#     Freerouting invents its own EP via). A via-keepout rule area over the EP keeps
-#     the paste field hole-free no matter what the router decides.
+#     OUTSIDE the footprint -- the EP's explicit plane bond. A via-keepout rule
+#     area over the EP keeps the paste field hole-free.
 _p10 = next(p for p in fps["U3"].Pads() if p.GetNumber() == "10")
 _p10x, _p10y = _p10.GetPosition().x, _p10.GetPosition().y
 # Exit straight south in the pad's own direction (0.2 mm, matching the
@@ -354,7 +353,7 @@ for edge, refs in by_edge.items():
 #     0.8 mm sub-pads are laced together with unlocked F.Cu tracks (grid neighbours),
 #     so the whole EPAD is one explicit copper net; the pad-28 tie (below) lands on
 #     it and pad 28's own via west of the module is its plane bond. A no-via rule
-#     area over the field keeps the router/stitch grid from re-perforating it.
+#     area over the field keeps any future tooling from re-perforating it.
 #     Placed AFTER the edge-flush slide (U1 is flush-pinned, so its pads move
 #     during the slide).
 _ep29s = [p.GetPosition() for p in fps["U1"].Pads() if p.GetNumber() == "29"]
@@ -404,7 +403,7 @@ for _a, _b, _lay in ((_sh[0], _sh[1], pcbnew.B_Cu),
 #     (45°/90° turns only) -> via beside D5 pin 5 (TPD2S017 VCC bias) -> F.Cu into the
 #     pin.
 _vbus_net = nets["VBUS"]
-# Debug gate for bisecting Freerouting crashes: PRE_RANGE="lo:hi" places only the
+# Debug gate for bisecting pre-route problems: PRE_RANGE="lo:hi" places only the
 # pre-route calls with index lo <= i < hi (default: all). Each _pre_track/_pre_via
 # call consumes one index in deterministic order.
 _PRE_RANGE = os.environ.get("PRE_RANGE")
@@ -426,15 +425,14 @@ def _pre_track(a, b, layer, w=0.3, net=None):
                         f"({pcbnew.ToMM(a.x):.3f},{pcbnew.ToMM(a.y):.3f})->"
                         f"({pcbnew.ToMM(b.x):.3f},{pcbnew.ToMM(b.y):.3f}) w={w}"):
         return
-    # skip degenerate/micro segments: Freerouting NPEs on polylines that
-    # collapse to a point at DSN resolution (0.05 mm guard; dropped stubs stay
+    # skip degenerate/micro segments (0.05 mm guard; dropped stubs stay
     # connected through the overlapping copper of the adjoining track/pad)
     if abs(a.x - b.x) < pcbnew.FromMM(0.05) and abs(a.y - b.y) < pcbnew.FromMM(0.05):
         return
     t = pcbnew.PCB_TRACK(board)
     t.SetStart(a); t.SetEnd(b); t.SetLayer(layer)
     t.SetWidth(pcbnew.FromMM(w)); t.SetNet(net or _vbus_net)
-    board.Add(t)   # nothing is locked: pre-routes are plain copper Freerouting may rework
+    board.Add(t)   # nothing is locked: pre-routes are plain copper
 def _pre_via(pos, net=None):
     if not _pre_enabled(f"via {(net or _vbus_net).GetNetname()} "
                         f"({pcbnew.ToMM(pos.x):.3f},{pcbnew.ToMM(pos.y):.3f})"):
@@ -455,7 +453,7 @@ def _dogleg(a, b, layer, w=0.3, net=None):
     _pre_track(mid, b, layer, w, net)
 # VBUS runs J1 -> F1 (fuse) -> VBUS_F -> D4/D5/D10. Hand-routed pieces:
 #  - VBUS_F: D5 pin 5 (VCC bias) exits north between pads 4/6, then doglegs into
-#    D10's cathode pad. (D4's anode joins VBUS_F via Freerouting.)
+#    D10's cathode pad. (D4's anode is tied into VBUS_F by the hand routes below.)
 #  - D5 pin 2 GND return: via under D5's body (left half), barrel to the In2 plane.
 _p5 = next(p for p in fps["D_esd"].Pads() if p.GetNumber() == "5").GetPosition()
 _d5c = fps["D_esd"].GetPosition()
@@ -538,7 +536,8 @@ for _gnum, _shi in (("A1", 0), ("A12", 2)):   # _sh order: 0=left-rear, 2=right-
 #     runs instead. Their 45° diagonals nest parallel to OC3's at 0.4625 mm vertical
 #     steps (= 0.327 mm perpendicular); the horizontals stack from just clear of the
 #     opto pad row (OC2 on top at pad-row+0.15 mm copper gap) downward at one lane
-#     pitch, and all stop just west of OK2 pad 3 — Freerouting continues them east.
+#     pitch, and all stop just west of OK2 pad 3; their eastward continuations are
+#     hand-routed further below.
 #     With the GATE pad swap (18=K2, 19=K3, 20=K1) the lane stack's targets are ordered
 #     strictly west->east (OK2, OK1, R_g1, R_g3, R_g2), so every north-bend out of the
 #     stack is crossing-free and the whole bundle hand-routes with no vias: each line
@@ -664,7 +663,7 @@ _bC = _TOMM(_sw1.x) + _TOMM(_sw1.y)            # BOOT's 45° line: x + y = _bC
 _pre_track(_b15, vmm(_bC - _TOMM(_b15.y), _TOMM(_b15.y)), pcbnew.F_Cu, _BW, nets["BOOT"])
 _pre_track(vmm(_bC - _TOMM(_b15.y), _TOMM(_b15.y)), _sw1, pcbnew.F_Cu, _BW, nets["BOOT"])
 _pre_track(_sw1, _rb2, pcbnew.F_Cu, _BW, nets["BOOT"])
-# R_boot's +3V3 pad sits right against the locked BOOT wire; Freerouting NPEs trying
+# R_boot's +3V3 pad sits right against the locked BOOT wire; the (since-removed) autorouter NPEs trying
 # to drop a plane via at a pad hemmed in by locked wiring (degenerate connection), so
 # pre-place its In1 tap.
 _rb1 = _padpos("R_boot", "1")
@@ -717,7 +716,7 @@ _pre_track(vmm(21.5, _yl_scl), vmm(_yl_scl + _c_scl, _yl_scl),
            pcbnew.F_Cu, _BW, nets["I2C_SCL"])
 _pre_track(vmm(_yl_scl + _c_scl, _yl_scl), vmm(_p1y + _c_scl, _p1y),
            pcbnew.F_Cu, _BW, nets["I2C_SCL"])
-# run split at the pull-up tap so the stub joins at segment ENDPOINTS (Freerouting
+# run split at the pull-up tap so the stub joins at segment ENDPOINTS (the (since-removed) autorouter
 # mishandles mid-segment T-junctions in protected wiring)
 _pre_track(vmm(_p1y + _c_scl, _p1y), vmm(_TOMM(_r19p2.x), _p1y),
            pcbnew.F_Cu, _BW, nets["I2C_SCL"])
@@ -794,7 +793,7 @@ for _unum, _cnet, _cpad in (("2", "+3V3", "1"), ("1", "GND", "2")):
     _pre_track(_c6p, _c3p, pcbnew.F_Cu, _BW, nets[_cnet])
 _c3v3 = _padpos("C_3v3", "1")
 # pad rows differ by only ~0.05 mm: one straight (slightly slanted) segment instead
-# of a micro-45° jog, which Freerouting chokes on
+# of a micro-45° jog, which the (since-removed) autorouter chokes on
 _pre_track(_c3v3, _rio2, pcbnew.F_Cu, _BW, nets["+3V3"])
 # In1-plane tap for the rail: via just east of R_io8 pad 2
 _v_io8b = vmm(_TOMM(_rio2.x) + 0.88, _TOMM(_rio2.y))
@@ -884,7 +883,7 @@ for _net, _t1p, _jp, _vx2, _ytop in (
             ((_jx, _ytop + _BCH), (_jx, _TOMM(_jp.y)))):
         _pre_track(vmm(*_a), vmm(*_b), pcbnew.B_Cu, _BUSW, nets[_net])
 
-# --- Opto LED cathode + emitter nets: geometry lifted from a clean Freerouting
+# --- Opto LED cathode + emitter nets: geometry lifted from a clean the (since-removed) autorouter
 #     solution, normalized and locked. Per CATH channel (opto pin 2 -> clamp diode
 #     pad 2 -> limiter pad 1, bus width): 45° jog west off the opto pad (the vertical
 #     sits 0.9934 west of the diode column, clearing the diode's anode pad by 0.29),
@@ -921,7 +920,7 @@ _chain("OC_EMIT", [_e2, (_e2[0] - (_e2[1] - _YH), _YH),
                    (_e3[0], _e3[1] - 0.1483), _e3], _BW)
 _chain("OC_EMIT", [_e3, _rem], _BW)   # single near-horizontal slant into R_em pad 1
 
-# --- Relay coil drain nets (K*_DRAIN), geometry lifted from Freerouting and
+# --- Relay coil drain nets (K*_DRAIN), geometry lifted from an autorouter run and
 #     normalized (its K3 solution even contained a 0.1 um micro-segment): from the
 #     FET drain (Q pad 3) west, 45° down onto the flyback diode's row, T-junction at
 #     x = K-pin-8 - 1.65; from there west into D pad 2, and 45° NE + vertical north
@@ -937,7 +936,7 @@ for _dnet, _q, _k, _d in (("K1_DRAIN", "Q1", "K1", "D1"),
                    (_kp[0], _dp[1] - (_kp[0] - _vx)), _kp], _BW)
 
 # --- WF26 bus nets (P1-P5, IN_P4), fully hand-routed at bus width. Geometry lifted
-#     from a clean Freerouting solution and normalized, PLUS the one link Freerouting
+#     from a clean autorouter solution and normalized, PLUS the one link the autorouter
 #     consistently failed to close (P5: switch cluster -> J2.5). The T1/J2 sections
 #     above already land P1/P5 from T1 around J2 into the J2 pins; this section does
 #     the rest:
@@ -958,7 +957,7 @@ for _dnet, _q, _k, _d in (("K1_DRAIN", "Q1", "K1", "D1"),
 #             J2 pad row, via at x=17.85 (clear east of SW_OC1 pad 1), 45° F.Cu drop
 #             into pad 1; cluster runs on F.Cu: 45° to SW_OC1 pad 6, the y=12.321
 #             lane north of the switch pad rows to SW_OC3 pad 1, 45° to its pad 6.
-#     Branches only ever meet at segment ENDPOINTS or pad centres (Freerouting
+#     Branches only ever meet at segment ENDPOINTS or pad centres (the (since-removed) autorouter
 #     mishandles mid-segment T-junctions in protected wiring).
 def _chainl(_net, _pts, _lay, _w=0.5):
     for _a, _b in zip(_pts, _pts[1:]):
@@ -973,7 +972,7 @@ _chainl("P4", [_j2p["4"], (31.967, 13.317), (25.908, 13.317), (17.9, 21.325),
 _chainl("P2", [_j2p["2"], (40.65, 20.271), (38.7, 22.221), _pxy("K1", "4")], pcbnew.F_Cu)
 _chainl("P2", [(38.7, 22.221), (38.07, 21.593), (30.783, 21.593), (30.154, 22.221),
                (29.4, 22.221), _pxy("K2", "3")], pcbnew.F_Cu)
-# K2.3 -> SW_OC1.4: the old freerouting-derived weave shaved K2.4 / K3.1 / K3.2 /
+# K2.3 -> SW_OC1.4: the old autorouter-derived weave shaved K2.4 / K3.1 / K3.2 /
 # K3.3 at 0.13 (the DRC floor). Reworked: under-body runs at y=25.0 (0.35 clear of
 # the pad row), the row crossing on the single 45° line (x - y = 1.75) that clears
 # BOTH K2.4's SW corner and K3.1's NE corner at 0.21, a short y=21.9 lane north of
@@ -1025,7 +1024,7 @@ _chainl("P5", [_pxy("SW_OC1", "1"), (13.25, 16.85), _pxy("SW_OC1", "6")], pcbnew
 _chainl("P5", [_pxy("SW_OC1", "1"), (15.721, 12.321), (6.548, 12.321), (5.519, 13.35),
                _pxy("SW_OC3", "1")], pcbnew.F_Cu)
 _chainl("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.F_Cu)
-# OC3_RET rides along: with the bus nets locked, Freerouting no longer finds the
+# OC3_RET rides along: with the bus nets pre-placed, the old autorouter could not find the
 # escape for SW_OC3's centre pad 2 (greedy, no rip-up across protected wiring), so
 # its previously-proven path is locked as well — 45° NW onto the y=12.321 lane,
 # west, down the far-west column at x=0.316 (between the board edge and the SW_OC3 /
@@ -1041,7 +1040,7 @@ _chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
                     (0.316, 12.546), (0.316, _YCH - 0.25), (0.566, _YCH),
                     (_rl2[0] - (_rl2[1] - _YCH), _YCH), _rl2], pcbnew.F_Cu)
 # Remaining opto switch-pad nets (bus width, F.Cu; geometry lifted from a clean
-# Freerouting solution). Each JP net drops from its switch's centre pad 5 down a
+# the (since-removed) autorouter solution). Each JP net drops from its switch's centre pad 5 down a
 # vertical between the switch columns, 45°s into the clamp diode's pad 1 and hops
 # 45° onward into the opto's anode (pad 1) — the three channels are near-identical,
 # OC1/OC3 with a 45° entry into the vertical, OC2's pad 5 already on its column.
@@ -1229,7 +1228,7 @@ _chainl("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
 # --- GATE1_PRE + T1 secondary (SEC_A/SEC_B): locked along their proven paths.
 #     Like OC3_RET, these are casualties of the locked walls around them (the +5V
 #     spine and the U3/audio hookups): valid corridors exist — these exact routes
-#     coexisted with identical +5V geometry — but Freerouting (greedy, no rip-up
+#     coexisted with identical +5V geometry — but the (since-removed) autorouter (greedy, no rip-up
 #     through protected wiring) stops finding them on its own.
 #     GATE1_PRE ducks onto B.Cu to cross under the relay-driver block (K3.6 -> via
 #     -> east -> 45° staircase) and stays there all the way to a via just LEFT of
@@ -1339,7 +1338,7 @@ for _a, _b in (
     _pre_track(vmm(*_a), vmm(*_b), pcbnew.F_Cu, _BW, nets["USB_DM_ESP"])
 
 # --- USB-C connector side, fully hand-routed (0.2 mm, F.Cu; geometry lifted from a
-#     clean Freerouting solution). D+/D− each tie their A/B pad pair together and
+#     clean the (since-removed) autorouter solution). D+/D− each tie their A/B pad pair together and
 #     rise into the TPD2S017 inputs: DP joins A6<->B6 with a shallow U just south of
 #     the pad row and runs B6 -> 45° -> vertical at x=45.5 -> 45° into D5 pin 4;
 #     DM tees at (44.152, 61.598) — B7 and A7 join there and one 45° leads into
@@ -1363,12 +1362,12 @@ _chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
                     (48.756, 64.31), (49.153, 63.913), (49.153, 61.793),
                     _pxy("R_cc2", "1")], pcbnew.F_Cu, _BW)
 
-# --- Last nets, hand-routed — the board is now 100% hand-routed (Freerouting only
-#     verifies). GATE1/2/3 share one pattern per channel: a perfectly vertical drop
+# --- Last nets, hand-routed — the board is now 100% hand-routed (route.py only
+#     verifies connectivity). GATE1/2/3 share one pattern per channel: a perfectly vertical drop
 #     ties the pull-down's pad 1 into the gate resistor's pad 2 (the R_g* sit
 #     x-aligned over their pull-downs), then a straight run east on the y=36.5
 #     resistor row and a 45° drop into the FET's gate pad — all F.Cu, no vias
-#     (replaces Freerouting's two-via B.Cu detour on GATE3). EN leaves U1 pad 3
+#     (replaces the (since-removed) autorouter's two-via B.Cu detour on GATE3). EN leaves U1 pad 3
 #     west and 45°s onto the RST button's pad column (x=19.925, clear of MCLK's
 #     riser), running one straight line — F.Cu vertical, via, B.Cu hop under the
 #     locked SDA/SCL lane stack, via, stub into the button; from the north via it
@@ -1513,7 +1512,7 @@ def _place_fiducial(ref, cx, cy):              # cx,cy = the board corner to gro
                 fp.Reference().SetVisible(False)       # keep silk out of the fiducial clear area
                 # Courtyard is KEPT (cleared of every part by >=1.4 mm above) so DRC courtyard-
                 # overlap catches any future regression that puts a fiducial under a component.
-                # The stock fiducial pad carries a 0.6 mm LOCAL clearance override. Freerouting
+                # The stock fiducial pad carries a 0.6 mm LOCAL clearance override. the (since-removed) autorouter
                 # (driven from the DSN) does not honour per-pad local clearance on a netless pad,
                 # so it routes to the 0.2 mm board default and KiCad's DRC then flags 0.2-0.6 mm
                 # "violations" against the override. Drop the override (inherit the 0.2 mm board
@@ -1540,7 +1539,7 @@ print(f"  fiducials: disabled")
 # NOTE: J1 is the GCT USB4105 -- single-row SMD Type-C (only the shell stakes are THT).
 # All 16 signal contacts escape from one fine-pitch pad row on F.Cu, so placement around
 # J1 must leave the escape fan room and D+/D- want to drop to B.Cu over the GND plane;
-# verify Freerouting copes after any reshuffle near the bottom edge.
+# verify the (since-removed) autorouter copes after any reshuffle near the bottom edge.
 
 
 # J2 (WF26 terminal) per-screw labels on the front silk so the bus lines are unambiguous when

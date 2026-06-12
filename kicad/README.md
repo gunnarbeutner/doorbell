@@ -7,7 +7,7 @@ placement). Two generators consume it; `build.sh` orchestrates them:
 
 ```
 ./build.sh            # schematic + PCB (unrouted) + ERC + schematic PDF
-./build.sh route      # autoroute the PCB with Freerouting
+./build.sh route      # finalize the PCB (planes/groups/thieving; fails if unrouted)
 ./build.sh fab        # Gerbers + drill + position + BOM -> kicad/fab/
 ./build.sh all-route  # schematic + PCB + route + fab (full run)
 ```
@@ -16,13 +16,13 @@ placement). Two generators consume it; `build.sh` orchestrates them:
 |--------|-------------|--------|
 | `gen_schematic.py` | `.venv/bin/python` (kiutils) | `doorbell.kicad_sch` — ERC 0 errors |
 | `gen_pcb.py` | KiCad bundled python (pcbnew) | `doorbell.kicad_pcb` — placed + netted, 0 DRC |
-| `route.py` | KiCad bundled python (pcbnew) | routes the board via Freerouting |
+| `route.py` | KiCad bundled python (pcbnew) | finalizes the board (planes, groups, thieving); fails if any connection is unrouted |
 
-**Freerouting** is wired in via `route.py`: `pcbnew.ExportSpecctraDSN` → Freerouting
-headless (`/Applications/freerouting.app`, `-de in.dsn -do out.ses -mp N`) →
-`pcbnew.ImportSpecctraSES` → save. A full route of this board takes ~6 s and reaches
-0 DRC violations / 0 unconnected pads. Re-running `gen_pcb.py` wipes routes (fresh
-ratsnest), so iterate as: edit `doorbell_design.py` → `./build.sh` → `./build.sh route`.
+The board is **100% hand-routed** in `gen_pcb.py` (there is no autorouter).
+`route.py` fills the inner planes, adds groups and copper thieving, and FAILS the
+build if any connection is left unrouted — missing copper is added in `gen_pcb.py`,
+never invented by a tool. Re-running `gen_pcb.py` rebuilds the board from scratch,
+so iterate as: edit `doorbell_design.py` → `./build.sh` → `./build.sh route`.
 
 > The PCB uses the explicit compact floorplan in `gen_pcb.py` (`PCB_PLACE`): logic/USB in the
 > lower-left, bus interface on the right; ~35.8×47.7 mm, 4-layer (F.Cu / +3V3 / GND / B.Cu).
