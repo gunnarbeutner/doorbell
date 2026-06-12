@@ -465,9 +465,10 @@ planes through locked 0.2 mm stubs + vias at every SMD pad (FET/pull-down row, t
 BOOT/RST cluster, U1 pad 28, the USB CC pulldowns and C_in, the LED block — its two
 vias dodge P1's/P5's B.Cu verticals — and the LDO column, where U2.1 and C_out share
 one GND via on their centreline); U2's tab and J1's shield stakes are PTH
-(barrel-connected), and the U1/U3 exposed-pad via arrays are locked with 45° spokes
-pre-wiring the U3 EP vias to the pad centre (the DSN export doesn't credit EP pad
-copper as wiring). GATE1_PRE crosses under the relay-driver block on B.Cu (K3.6 →
+(barrel-connected). Neither exposed pad carries vias (solder-wicking avoidance):
+U1's EPAD cells are laced on F.Cu and tied to pad 28 (whose via, west of the module,
+is the plane bond); U3's EP ties into pad 10, whose via sits SE outside the
+footprint. No-via rule areas over both pad fields keep them hole-free. GATE1_PRE crosses under the relay-driver block on B.Cu (K3.6 →
 via → east → 45° staircase) and stays there to a via just left of R6 (R_g1) pad 1,
 surfacing into the pad with one straight stub. The audio front-end (SEC_A/SEC_B off
 T1's west pads, through the R24–R27 series-resistor row south of T1, and on as
@@ -597,7 +598,7 @@ over. Supplies: DVDD/PVDD (pads 3/4) tie west onto a shared rail with an In1 via
 mid-rail, continuing straight into C_pv pad 1 and up the pad-1 column into C_dv;
 AVDD (pad 11) runs straight east into C_avb pad 1 and up into C_av with an In1 via
 below. GND: pad 5 stubs west into an In2 via, pad 10 runs straight north into the
-via-stitched exposed pad, each cap GND column (C_av/C_avb, C_vref/C_aref, C_dv/C_pv)
+exposed pad (no EP vias; grounded by the F.Cu pour), each cap GND column (C_av/C_avb, C_vref/C_aref, C_dv/C_pv)
 gets a pad-2 column tie + In2 via, C_vmid taps a via 0.9 mm east, and R_sda's +3V3
 pad stubs north into its own In1 via.
 
@@ -773,10 +774,11 @@ and S2 only reaches P2 while that coil is on. OC1 + K1 fully define the audio st
 - **Support net:** PVDD/DVDD/AVDD → +3V3 with decoupling; DACVREF/ADCVREF/VMID reservoir
   caps; CE/DGND/AGND/EP → GND. Symbols/footprints/3D imported with `easyeda2kicad` into
   `kicad/lib_audio/`.
-- **EP grounding (deliberate no-via-in-pad exception):** the QFN-20 centre EP can't reach
-  the inner GND plane via an offset via at 0.4 mm pitch, so `gen_pcb.py` drops a 2×2 GND
-  via array inside the EP (pre-route, so Freerouting sees it grounded). U3's imported
-  package silk is stripped (it crossed pads → silk_over_copper).
+- **EP grounding (no vias):** the QFN-20 centre EP carries no thermal vias — paste
+  printed over open via holes wicks solder away from the joint, and the codec's milliwatt
+  dissipation needs no dedicated path to the inner plane. The EP (and pin 10/AGND, which
+  ties into it) grounds through the F.Cu GND pour; DRC confirms full connectivity. U3's
+  imported package silk is stripped (it crossed pads → silk_over_copper).
 
 **Is leaving LS1 connected electrically safe? — Yes.** LS1 is a passive 16 Ω transducer
 the TV20/S is already designed to drive; a high-Z RX tap doesn't load it (handset keeps

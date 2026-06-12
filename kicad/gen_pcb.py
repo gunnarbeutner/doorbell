@@ -276,28 +276,44 @@ for _p in list(fps["U2"].Pads()):
     if _p.GetAttribute() == pcbnew.PAD_ATTRIB_SMD and _p.IsOnLayer(pcbnew.B_Cu) and not _p.IsOnLayer(pcbnew.F_Cu):
         fps["U2"].Remove(_p)
 
-# --- ES8311 (U3) exposed-pad thermal vias: contained, deliberate exception to no-via-in-pad.
-#     The QFN-20 center EP (GND) cannot reach the inner GND plane via an offset via at 0.40 mm
-#     pitch (boxed in by the perimeter pins), so drop a 2x2 GND via array INSIDE the EP. Placed
-#     here (pre-route) so Freerouting sees the EP already grounded and routes the perimeter GND
-#     pins normally instead of thrashing on an un-escapable pad. Same-net (GND) as the EP -> no
-#     clearance violation; through vias span F.Cu -> In2 GND plane. JLCPCB tents/plugs these.
+# --- ES8311 (U3) exposed pad: NO thermal vias (solder-wicking avoidance). The EP (GND)
+#     grounds through pad 10 (AGND, tied into the EP) and the F.Cu GND pour; the codec's
+#     milliwatt dissipation needs no dedicated thermal path to the inner plane. The
+#     {EP, pad 10} GND cluster gets its plane bond from a via just SOUTH of pad 10,
+#     OUTSIDE the footprint (the DSN export doesn't credit pour copper, so without it
+#     Freerouting invents its own EP via). A via-keepout rule area over the EP keeps
+#     the paste field hole-free no matter what the router decides.
+_p10 = next(p for p in fps["U3"].Pads() if p.GetNumber() == "10")
+_p10x, _p10y = _p10.GetPosition().x, _p10.GetPosition().y
+# Exit straight south in the pad's own direction (0.2 mm, matching the
+# neighbouring escapes), then one 45-degree turn south-east into the via.
+# A via on the straight-south line would graze pad 9's I2S_DOUT escape
+# (0.4 mm west), so the dogleg carries it 0.6 mm east; the via sits clear
+# of the DOUT bend below by 0.35 mm.
+_mid = pcbnew.VECTOR2I(_p10x, _p10y + pcbnew.FromMM(0.6))
+_v10 = pcbnew.VECTOR2I(_p10x + pcbnew.FromMM(0.6), _p10y + pcbnew.FromMM(1.2))
+for _a, _b in ((pcbnew.VECTOR2I(_p10x, _p10y), _mid), (_mid, _v10)):
+    _tr = pcbnew.PCB_TRACK(board)
+    _tr.SetStart(_a); _tr.SetEnd(_b)
+    _tr.SetLayer(pcbnew.F_Cu); _tr.SetWidth(pcbnew.FromMM(0.2))
+    _tr.SetNet(nets["GND"]); board.Add(_tr)
+_v = pcbnew.PCB_VIA(board)
+_v.SetPosition(_v10)
+_v.SetDrill(pcbnew.FromMM(0.3)); _v.SetWidth(pcbnew.FromMM(0.6))
+_v.SetNet(nets["GND"]); board.Add(_v)
+# no-via rule area over the EP (tracks/pads/pour still allowed)
 _ep = next(p for p in fps["U3"].Pads() if p.GetNumber() == "21")
-_epx, _epy = _ep.GetPosition().x, _ep.GetPosition().y
-for _dx in (pcbnew.FromMM(-0.35), pcbnew.FromMM(0.35)):
-    for _dy in (pcbnew.FromMM(-0.35), pcbnew.FromMM(0.35)):
-        _v = pcbnew.PCB_VIA(board)
-        _v.SetPosition(pcbnew.VECTOR2I(_epx + _dx, _epy + _dy))
-        _v.SetDrill(pcbnew.FromMM(0.3)); _v.SetWidth(pcbnew.FromMM(0.6))
-        _v.SetNet(nets["GND"]); _v.SetLocked(True); board.Add(_v)
-        # pre-wire each via to the EP centre (45° spokes): the DSN export doesn't
-        # credit the EP pad copper as wiring, so Freerouting otherwise adds its own
-        # ad-hoc stubs to consider the vias connected
-        _t = pcbnew.PCB_TRACK(board)
-        _t.SetStart(pcbnew.VECTOR2I(_epx + _dx, _epy + _dy))
-        _t.SetEnd(pcbnew.VECTOR2I(_epx, _epy))
-        _t.SetLayer(pcbnew.F_Cu); _t.SetWidth(pcbnew.FromMM(0.3))
-        _t.SetNet(nets["GND"]); _t.SetLocked(True); board.Add(_t)
+_epx, _epy = pcbnew.ToMM(_ep.GetPosition().x), pcbnew.ToMM(_ep.GetPosition().y)
+_kz = pcbnew.ZONE(board); _kz.SetIsRuleArea(True); _kz.SetLayerSet(pcbnew.LSET.AllCuMask())
+_kz.SetDoNotAllowVias(True)
+_kz.SetDoNotAllowTracks(False); _kz.SetDoNotAllowZoneFills(False)
+_kz.SetDoNotAllowPads(False); _kz.SetDoNotAllowFootprints(False)
+_kch = pcbnew.SHAPE_LINE_CHAIN()
+for _pt in ((_epx - 0.95, _epy - 0.95), (_epx + 0.95, _epy - 0.95),
+            (_epx + 0.95, _epy + 0.95), (_epx - 0.95, _epy + 0.95)):
+    _kch.Append(vmm(*_pt))
+_kch.SetClosed(True); _kz.AddPolygon(_kch)
+_kz.SetZoneName("U3 EP no-via"); board.Add(_kz)
 
 # Strip U3's (ES8311) imported package-outline silkscreen: the EasyEDA footprint draws silk lines
 # across the QFN pads (silk_over_copper DRC). Drop the F.SilkS graphics; the reference designator
@@ -333,16 +349,37 @@ for edge, refs in by_edge.items():
         else:
             fps[r].SetPosition(pcbnew.VECTOR2I(p.x, p.y + pcbnew.FromMM(d)))
 
-# --- ESP32-C6 (U1) EPAD stitch: the WROOM EPAD (pad "29") is a 3x3 grid of 0.8 mm
-#     sub-pads; drop one GND via at each sub-pad centre (documented via-in-pad
-#     exception, same rationale as U3's EP). Low-inductance RF return + heat path
-#     into the In2 GND plane, and Freerouting sees the pad pre-grounded. Placed AFTER
-#     the edge-flush slide (U1 is flush-pinned, so its pads move during the slide).
-for _ep29 in (p for p in fps["U1"].Pads() if p.GetNumber() == "29"):
-    _v = pcbnew.PCB_VIA(board)
-    _v.SetPosition(_ep29.GetPosition())
-    _v.SetDrill(pcbnew.FromMM(0.3)); _v.SetWidth(pcbnew.FromMM(0.7))
-    _v.SetNet(nets["GND"]); _v.SetLocked(True); board.Add(_v)
+# --- ESP32-C6 (U1) EPAD: NO vias in the pad field (solder-wicking avoidance; the
+#     window-pane paste then solders cleanly with nothing to drain into). The nine
+#     0.8 mm sub-pads are laced together with unlocked F.Cu tracks (grid neighbours),
+#     so the whole EPAD is one explicit copper net; the pad-28 tie (below) lands on
+#     it and pad 28's own via west of the module is its plane bond. A no-via rule
+#     area over the field keeps the router/stitch grid from re-perforating it.
+#     Placed AFTER the edge-flush slide (U1 is flush-pinned, so its pads move
+#     during the slide).
+_ep29s = [p.GetPosition() for p in fps["U1"].Pads() if p.GetNumber() == "29"]
+_pitch = pcbnew.FromMM(1.3)   # cell pitch is 1.25 mm; tolerance for rounding
+for _i, _a in enumerate(_ep29s):
+    for _b in _ep29s[_i + 1:]:
+        _dx, _dy = abs(_a.x - _b.x), abs(_a.y - _b.y)
+        if (_dx <= _pitch and _dy == 0) or (_dx == 0 and _dy <= _pitch):
+            _tr = pcbnew.PCB_TRACK(board)
+            _tr.SetStart(_a); _tr.SetEnd(_b)
+            _tr.SetLayer(pcbnew.F_Cu); _tr.SetWidth(pcbnew.FromMM(0.4))
+            _tr.SetNet(nets["GND"]); board.Add(_tr)
+_kz = pcbnew.ZONE(board); _kz.SetIsRuleArea(True); _kz.SetLayerSet(pcbnew.LSET.AllCuMask())
+_kz.SetDoNotAllowVias(True)
+_kz.SetDoNotAllowTracks(False); _kz.SetDoNotAllowZoneFills(False)
+_kz.SetDoNotAllowPads(False); _kz.SetDoNotAllowFootprints(False)
+_x0 = min(_p.x for _p in _ep29s) - pcbnew.FromMM(0.6)
+_x1 = max(_p.x for _p in _ep29s) + pcbnew.FromMM(0.6)
+_y0 = min(_p.y for _p in _ep29s) - pcbnew.FromMM(0.6)
+_y1 = max(_p.y for _p in _ep29s) + pcbnew.FromMM(0.6)
+_kch = pcbnew.SHAPE_LINE_CHAIN()
+for _px, _py in ((_x0, _y0), (_x1, _y0), (_x1, _y1), (_x0, _y1)):
+    _kch.Append(pcbnew.VECTOR2I(_px, _py))
+_kch.SetClosed(True); _kz.AddPolygon(_kch)
+_kz.SetZoneName("U1 EPAD no-via"); board.Add(_kz)
 
 # --- J1 shield stitch: on each side of the USB4105, join the front and rear shell-stake
 #     pads (SH) with a short vertical B.Cu track, tying each side's stakes together.
@@ -361,12 +398,11 @@ for _a, _b, _lay in ((_sh[0], _sh[1], pcbnew.B_Cu),
     _tr.SetLayer(_lay)
     _tr.SetWidth(pcbnew.FromMM(0.5))
     _tr.SetNet(_a.GetNet())
-    _tr.SetLocked(True)   # exported as protected wiring -> Freerouting keeps it
     board.Add(_tr)
 
 # --- J1 VBUS bias pre-route: B9 (VBUS pad) -> via just north of it -> across on B.Cu
 #     (45°/90° turns only) -> via beside D5 pin 5 (TPD2S017 VCC bias) -> F.Cu into the
-#     pin. Locked so Freerouting keeps it as protected wiring.
+#     pin.
 _vbus_net = nets["VBUS"]
 # Debug gate for bisecting Freerouting crashes: PRE_RANGE="lo:hi" places only the
 # pre-route calls with index lo <= i < hi (default: all). Each _pre_track/_pre_via
@@ -390,15 +426,15 @@ def _pre_track(a, b, layer, w=0.3, net=None):
                         f"({pcbnew.ToMM(a.x):.3f},{pcbnew.ToMM(a.y):.3f})->"
                         f"({pcbnew.ToMM(b.x):.3f},{pcbnew.ToMM(b.y):.3f}) w={w}"):
         return
-    # skip degenerate/micro segments: Freerouting NPEs on locked polylines that
+    # skip degenerate/micro segments: Freerouting NPEs on polylines that
     # collapse to a point at DSN resolution (0.05 mm guard; dropped stubs stay
     # connected through the overlapping copper of the adjoining track/pad)
     if abs(a.x - b.x) < pcbnew.FromMM(0.05) and abs(a.y - b.y) < pcbnew.FromMM(0.05):
         return
     t = pcbnew.PCB_TRACK(board)
     t.SetStart(a); t.SetEnd(b); t.SetLayer(layer)
-    t.SetWidth(pcbnew.FromMM(w)); t.SetNet(net or _vbus_net); t.SetLocked(True)
-    board.Add(t)
+    t.SetWidth(pcbnew.FromMM(w)); t.SetNet(net or _vbus_net)
+    board.Add(t)   # nothing is locked: pre-routes are plain copper Freerouting may rework
 def _pre_via(pos, net=None):
     if not _pre_enabled(f"via {(net or _vbus_net).GetNetname()} "
                         f"({pcbnew.ToMM(pos.x):.3f},{pcbnew.ToMM(pos.y):.3f})"):
@@ -406,7 +442,7 @@ def _pre_via(pos, net=None):
     v = pcbnew.PCB_VIA(board)
     v.SetPosition(pos)
     v.SetDrill(pcbnew.FromMM(0.3)); v.SetWidth(pcbnew.FromMM(0.6))
-    v.SetNet(net or _vbus_net); v.SetLocked(True)
+    v.SetNet(net or _vbus_net)
     board.Add(v)
 def _dogleg(a, b, layer, w=0.3, net=None):
     """a -> b with one straight + one 45° segment (the diagonal lands on b)."""
@@ -1056,7 +1092,7 @@ _chainl("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
 #     and up the pad-1 column into C_dv; pad 11 (AVDD) runs straight east into
 #     C_avb pad 1 (entering 0.1 off-centre) and up the column into C_av, with an
 #     In1 via below C_av. GND: pad 5 stubs west + 45° into an In2 via; pad 10 runs
-#     straight north into the (via-stitched) exposed pad; the cap GND columns
+#     straight north into the exposed pad (grounded by the F.Cu pour, no EP vias); the cap GND columns
 #     (C_av/C_avb, C_vref/C_aref, C_dv/C_pv) each get a pad-2 column tie + In2 via;
 #     C_vmid's GND pad taps a via 0.9 mm east. R_sda's +3V3 pad stubs north into its
 #     own In1 via (the FR-proven spot).
@@ -1145,7 +1181,9 @@ _chainl("+5V", [(23.3, 24.779), (18.679, 29.4), (18.679, 32.071), _pxy("D3", "1"
 #     through-via to the In2 / In1 plane; via spots FR-proven, stubs normalized to a
 #     straight run or a single 45°). With these, the power nets are fully
 #     hand-routed: U2's tab and J1's shield stakes are PTH (barrel-connected to the
-#     planes), and the U1/U3 exposed pads carry their own pre-placed via arrays.
+#     planes); the U1/U3 exposed pads carry NO vias (solder-wicking avoidance) --
+#     each is laced/tied on F.Cu and bonds to the planes through a via outside the
+#     pad field (U1: pad 28's via; U3: pad 10's via).
 def _tapvia(_net, _key, _num, _pts):
     _chainl(_net, [_pxy(_key, _num)] + _pts, pcbnew.F_Cu, _BW)
     _pre_via(vmm(*_pts[-1]), net=nets[_net])
@@ -1161,7 +1199,16 @@ _tapvia("GND", "R_em", "2", [(_pxy("R_em", "2")[0], _pxy("R_em", "2")[1] - 0.85)
 _tapvia("GND", "C_en", "2", [(16.927, 41.293)])
 _tapvia("GND", "SW_en", "2", [(24.075, 42.356)])
 _tapvia("GND", "SW_boot", "2", [(6.425, 42.336)])
-_tapvia("GND", "U1", "28", [(5.35, 61.96)])
+# pad 28's plane via sits WEST of the pad (toward the board edge, clear of the
+# under-module corridor); the pad additionally ties east + 45° into the EPAD's
+# lower-left cell so the far GND castellation and the EPAD share explicit copper.
+_tapvia("GND", "U1", "28", [(3.15, 61.96)])
+for _a, _b in (((4.25, 61.96), (8.785, 61.96)),
+               ((8.785, 61.96), (13.255, 57.49))):
+    _tr = pcbnew.PCB_TRACK(board)
+    _tr.SetStart(vmm(*_a)); _tr.SetEnd(vmm(*_b))
+    _tr.SetLayer(pcbnew.F_Cu); _tr.SetWidth(pcbnew.FromMM(0.4))
+    _tr.SetNet(nets["GND"]); board.Add(_tr)
 # USB corner: CC pulldowns + input cap; LED block on the top edge (the LED via
 # dodges P1's B.Cu vertical, the R_led via ducks under P5's B.Cu lane corner)
 _tapvia("GND", "R_cc1", "2", [(49.21, 58.352), (48.944, 58.086)])
