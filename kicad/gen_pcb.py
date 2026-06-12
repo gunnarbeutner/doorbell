@@ -31,7 +31,7 @@ PCB_PLACE = {
     "SW_en":  (22, 41, 0),    # RST button, right of BOOT group
     "R_en":   (17, 40, 0),    # EN pullup, above SW_en
     "C_en":   (17, 42, 180),  # EN cap, below SW_en
-    "U2":     (45.5, 44.0, 180), # SGM2212 LDO; rotated CW. Shifted 1.0 east (was 44.5)
+    "U2":     (45.44, 44.0, 180), # SGM2212 LDO; rotated CW; x puts pad 3 dead above C_in pad 1 (x=42.47)
                                  # so the +5V spine's descent (x=40.6) clears the
                                  # MIC_A/MIC_B NE wrap verticals west of the pad toes;
                                  # the tab's PTH pads keep 0.127 to P1's east-strip
@@ -41,7 +41,7 @@ PCB_PLACE = {
                                  # the I2S fan corridor); +3V3 pad (2) faces north,
                                  # tapping the C_dec/C_3v3 power rail (pre-routed).
     "C_in":   (43.25, 48.25, 0), # LDO input cap (C2)
-    "C_out":  (41.5, 38.75, 270), # LDO output cap (C4)
+    "C_out":  (42.47, 38.75, 270), # LDO output cap (C4), on U2 pad 1's column for a dead-vertical GND run
     "LED1":   (48.0, 16.5, 90), # power LED; right of J2
     "R_led":  (48.0, 13.5, 270), # LED series resistor; right of J2
     "C_dec":  (24.2, 61.2, 270),  # 100nF decoupling; just clear of U1's east courtyard
@@ -496,12 +496,11 @@ _gv = pcbnew.VECTOR2I(_d5c.x, _d5c.y)
 _p2 = next(p for p in fps["D_esd"].Pads() if p.GetNumber() == "2").GetPosition()
 _pre_track(_p2, _gv, pcbnew.F_Cu, net=nets["GND"])
 _pre_via(_gv, net=nets["GND"])
-# D10 GND via: same pattern — centred on its footprint, fed by one straight track
-# from the anode pad (pin 2); the 0.6 via leaves ~0.55 mm to each pad's inner edge.
-_d10c = fps["D_tvs"].GetPosition()
+# D10 GND via: south of the anode pad (pin 2), fed by one dead-vertical stub.
 _d10a = next(p for p in fps["D_tvs"].Pads() if p.GetNumber() == "2").GetPosition()
-_pre_track(_d10a, pcbnew.VECTOR2I(_d10c.x, _d10c.y), pcbnew.F_Cu, net=nets["GND"])
-_pre_via(pcbnew.VECTOR2I(_d10c.x, _d10c.y), net=nets["GND"])
+_d10gv = pcbnew.VECTOR2I(_d10a.x, _d10a.y + pcbnew.FromMM(1.7))
+_pre_track(_d10a, _d10gv, pcbnew.F_Cu, w=0.5, net=nets["GND"])  # TVS surge return
+_pre_via(_d10gv, net=nets["GND"])
 
 # VBUS_F distribution: star on F1 pin 2 — one dogleg to D4's anode, one to D10's
 # cathode (D5 pin 5 already taps D10).
@@ -778,33 +777,45 @@ _pre_track(_v8b, _rio1, pcbnew.F_Cu, _BW, nets["GPIO8"])
 
 # U1 power pins: pad 2 (+3V3) and pad 1 (GND) run east in-line through C_dec's and
 # C_3v3's pad rows; the +3V3 rail continues into R_io8 pad 2 (its pull-up supply).
+# 0.5 mm: this row IS the module's supply feed -- the full WiFi-TX peak flows
+# plane via -> R_io8.2 -> C_3v3 -> C_dec -> U1.2 (and its return mirrors on GND).
 for _unum, _cnet, _cpad in (("2", "+3V3", "1"), ("1", "GND", "2")):
     _up = _padpos("U1", _unum)
     _c6p, _c3p = _padpos("C_dec", _cpad), _padpos("C_3v3", _cpad)
     _jog = abs(_TOMM(_c6p.y) - _TOMM(_up.y))
     if _jog >= 0.1:
         _pre_track(_up, vmm(_TOMM(_c6p.x) - _jog, _TOMM(_up.y)),
-                   pcbnew.F_Cu, _BW, nets[_cnet])
+                   pcbnew.F_Cu, 0.5, nets[_cnet])
         _pre_track(vmm(_TOMM(_c6p.x) - _jog, _TOMM(_up.y)), _c6p,
-                   pcbnew.F_Cu, _BW, nets[_cnet])
+                   pcbnew.F_Cu, 0.5, nets[_cnet])
     else:
         # rows nearly collinear: one slightly slanted segment, no micro-45° jog
-        _pre_track(_up, _c6p, pcbnew.F_Cu, _BW, nets[_cnet])
-    _pre_track(_c6p, _c3p, pcbnew.F_Cu, _BW, nets[_cnet])
+        _pre_track(_up, _c6p, pcbnew.F_Cu, 0.5, nets[_cnet])
+    _pre_track(_c6p, _c3p, pcbnew.F_Cu, 0.5, nets[_cnet])
 _c3v3 = _padpos("C_3v3", "1")
 # pad rows differ by only ~0.05 mm: one straight (slightly slanted) segment instead
 # of a micro-45° jog, which the (since-removed) autorouter chokes on
-_pre_track(_c3v3, _rio2, pcbnew.F_Cu, _BW, nets["+3V3"])
+_pre_track(_c3v3, _rio2, pcbnew.F_Cu, 0.5, nets["+3V3"])
 # In1-plane tap for the rail: via just east of R_io8 pad 2
 _v_io8b = vmm(_TOMM(_rio2.x) + 0.88, _TOMM(_rio2.y))
-_pre_track(_rio2, _v_io8b, pcbnew.F_Cu, _BW, nets["+3V3"])
+_pre_track(_rio2, _v_io8b, pcbnew.F_Cu, 0.5, nets["+3V3"])
 _pre_via(_v_io8b, net=nets["+3V3"])
 # In2-plane tap for the GND rail: via just south of C_3v3 pad 2 (east is blocked by
 # R_io8's GPIO8 pad)
 _c3g = _padpos("C_3v3", "2")
 _v_c3g = vmm(_TOMM(_c3g.x), _TOMM(_c3g.y) + 0.88)
-_pre_track(_c3g, _v_c3g, pcbnew.F_Cu, _BW, nets["GND"])
+_pre_track(_c3g, _v_c3g, pcbnew.F_Cu, 0.5, nets["GND"])
 _pre_via(_v_c3g, net=nets["GND"])
+# Extra GND bond branching mid-segment off the U1.1 -> C_dec.2 run: shortens the
+# 100 nF's HF return loop straight into the In2 plane (supplements the C_3v3-south
+# via and U1's pad-28 bond). The +3V3 side deliberately keeps its single far-end
+# via so the supply stays flow-through (plane -> R_io8 -> C_3v3 -> C_dec -> U1.2).
+_u1g, _c6g = _padpos("U1", "1"), _padpos("C_dec", "2")
+_bx = (_TOMM(_u1g.x) + _TOMM(_c6g.x)) / 2
+_by = (_TOMM(_u1g.y) + _TOMM(_c6g.y)) / 2
+_bvy = _TOMM(_c3g.y) + 0.88            # same row as C_3v3's GND via
+_pre_track(vmm(_bx, _by), vmm(_bx, _bvy), pcbnew.F_Cu, 0.5, nets["GND"])
+_pre_via(vmm(_bx, _bvy), net=nets["GND"])
 
 # --- I2S data/clock fan: BCLK/DIN/WS/DOUT (U1 pads 12/11/8/7) run east through the
 #     gap between C_dv's pad row and T1 as four lanes (0.329 mm pitch, top lane
@@ -1183,8 +1194,8 @@ _chainl("+5V", [(23.3, 24.779), (18.679, 29.4), (18.679, 32.071), _pxy("D3", "1"
 #     planes); the U1/U3 exposed pads carry NO vias (solder-wicking avoidance) --
 #     each is laced/tied on F.Cu and bonds to the planes through a via outside the
 #     pad field (U1: pad 28's via; U3: pad 10's via).
-def _tapvia(_net, _key, _num, _pts):
-    _chainl(_net, [_pxy(_key, _num)] + _pts, pcbnew.F_Cu, _BW)
+def _tapvia(_net, _key, _num, _pts, _w=_BW):
+    _chainl(_net, [_pxy(_key, _num)] + _pts, pcbnew.F_Cu, _w)
     _pre_via(vmm(*_pts[-1]), net=nets[_net])
 # FET / pull-down GND row (vias in line with the pads, clear of the drain wiring)
 _tapvia("GND", "Q1", "2", [(47.44, 33.785)])
@@ -1201,7 +1212,7 @@ _tapvia("GND", "SW_boot", "2", [(6.425, 42.336)])
 # pad 28's plane via sits WEST of the pad (toward the board edge, clear of the
 # under-module corridor); the pad additionally ties east + 45° into the EPAD's
 # lower-left cell so the far GND castellation and the EPAD share explicit copper.
-_tapvia("GND", "U1", "28", [(3.15, 61.96)])
+_tapvia("GND", "U1", "28", [(3.15, 61.96)], _w=0.5)  # module GND plane bond
 for _a, _b in (((4.25, 61.96), (8.785, 61.96)),
                ((8.785, 61.96), (13.255, 57.49))):
     _tr = pcbnew.PCB_TRACK(board)
@@ -1212,16 +1223,18 @@ for _a, _b in (((4.25, 61.96), (8.785, 61.96)),
 # dodges P1's B.Cu vertical, the R_led via ducks under P5's B.Cu lane corner)
 _tapvia("GND", "R_cc1", "2", [(49.21, 58.352), (48.944, 58.086)])
 _tapvia("GND", "R_cc2", "2", [(47.93, 59.2), (47.38, 59.75)])
-_tapvia("GND", "C_in", "2", [(44.03, 49.155)])
+_tapvia("GND", "C_in", "2", [(45.33, 48.25)], _w=0.5)  # LDO input ripple return; via east of the pad, straight stub
 _tapvia("GND", "LED1", "1", [(47.955, 18.169)])      # near-vertical slant, one segment
 _tapvia("+3V3", "R_led", "1", [(47.455, 12.135), (47.455, 11.857)])
-# LDO column: U2.1 and C_out share one GND via on C_out's centreline (45° + stub
-# off U2.1 since U2's 1.0 mm east shift); U2.2 / C_out.1 take their own +3V3 vias
-_chainl("GND", [_pxy("U2", "1"), (41.5, 40.67), (41.5, 40.446)], pcbnew.F_Cu, _BW)
-_pre_via(vmm(41.5, 40.446), net=nets["GND"])
-_chainl("GND", [(41.5, 40.446), _pxy("C_out", "2")], pcbnew.F_Cu, _BW)
-_tapvia("+3V3", "U2", "2", [(42.53, 43.006)])
-_tapvia("+3V3", "C_out", "1", [(42.6, 37.9625), (42.6, 37.7)])  # east of the pad, clear of GATE1's y=36.9 run
+# LDO column: C_out sits on U2 pad 1's x, so U2.1 -> via -> C_out.2 is one dead-
+# vertical GND run with the shared via on it; U2.2 / C_out.1 take their own +3V3
+# vias. All LDO-column stubs run 0.5 mm: U2.2's stub carries the full +3V3 load
+# into the In1 plane, and C_out's stubs carry its ripple current.
+_chainl("GND", [_pxy("U2", "1"), (42.47, 40.446)], pcbnew.F_Cu, 0.5)
+_pre_via(vmm(42.47, 40.446), net=nets["GND"])
+_chainl("GND", [(42.47, 40.446), _pxy("C_out", "2")], pcbnew.F_Cu, 0.5)
+_tapvia("+3V3", "U2", "2", [(42.47, 43.006)], _w=0.5)
+_tapvia("+3V3", "C_out", "1", [(43.5, 37.9625)], _w=0.5)  # straight east on the pad centreline, clear of GATE1
 # R_en's pull-up supply: single (near-45°) slant onto R_boot's locked +3V3 via
 _chainl("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
 
