@@ -284,7 +284,7 @@ rectified).
 | IO6 / IO7 | 6 / 7 | I²S MCLK / DOUT(DSDIN) → U3 | out | ES8311 |
 | IO9 | 15 | BOOT strap | — | 10 kΩ pull-up + button to GND |
 | EN | 3 | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec) + button |
-| IO8 | 10 | strap | — | 10 kΩ pull-up (R12) |
+| IO8 | 10 | strap | — | 3.3 kΩ pull-up (R12, per C6 datasheet / DevKitC-1 R6) |
 | IO1 / IO4 / IO5 | 9 / 4 / 5 | spare | — | No-Connect |
 | IO15 | 23 | strap | — | left floating (acceptable per datasheet) |
 | IO16 / IO17 | 25 / 24 | U0TXD / U0RXD | — | No-Connect |

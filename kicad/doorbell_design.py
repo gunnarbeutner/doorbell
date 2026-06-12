@@ -79,7 +79,7 @@ COMP = {
     "R_cc2": ("PCM_JLCPCB-Resistors", "0603,5.1kΩ", "5.1k"),
     "R_led": ("PCM_JLCPCB-Resistors", "0603,1kΩ", "1k"),
     "R_ot": ("PCM_JLCPCB-Resistors", "0603,2.2kΩ", "2.2k"),  # ÖT door-opener bridge series R; matches genuine WF26 R1 (2.2k, confirmed by colour bands red-red-red-gold)
-    "R_io8": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),
+    "R_io8": ("PCM_JLCPCB-Resistors", "0603,3.3kΩ", "3.3k"),
     "R_sda": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # I2C SDA pull-up to +3V3 (codec)
     "R_scl": ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # I2C SCL pull-up to +3V3 (codec)
     "R_ce":  ("PCM_JLCPCB-Resistors", "0603,10kΩ", "10k"),   # CE I2C address pull-down to GND → addr 0x18
@@ -308,7 +308,7 @@ NETS = {
     "USB_CC2": [("J1","B5"),("R_cc2","1")],
     "EN": [("U1","3"),("R_en","2"),("C_en","1"),("SW_en","1")],        # C6 pad 3 = EN
     "BOOT": [("U1","15"),("R_boot","2"),("SW_boot","1")],  # GPIO9/BOOT on C6 pad 15
-    "GPIO8": [("U1","10"),("R_io8","1")],  # C6 strapping pin GPIO8 on pad 10; 10k pull-up
+    "GPIO8": [("U1","10"),("R_io8","1")],  # C6 strapping pin GPIO8 on pad 10; 3.3k pull-up per C6 datasheet/DevKitC-1 (R6)
     # GATE*_DRV pad order (18=K2, 19=K1, 20=K3) is chosen so the GPIO escape bundle's
     # lane stack fans out to its targets west->east without crossings:
     # OK2, OK1, R_g3 (K3 gate R), K3 pin 5 (K1 drive into the interlock), R_g2 (K2).

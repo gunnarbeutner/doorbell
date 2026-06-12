@@ -204,6 +204,37 @@ The JLCPCB symbols draw pin 1 as cathode, matching the KiCad footprint conventio
   100 kHz with short traces.
 - SMF5.0A standoff is 5.0 V against a nominal 5.25 V max VBUS — µA-level leakage at
   the extreme, standard practice.
+- Module 3V3 bulk (C3) is 10 µF where the WROOM-1 datasheet's peripheral schematic
+  shows 22 µF (Fig. 9-1, `docs/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf` p. 40);
+  however the DevKitC-1 reference board itself uses 10 µF + 0.1 µF (C1/C2,
+  `docs/esp32-c6-devkitc-1-schematics_v1.4.pdf` p. 2), which our C3 + C6 match
+  exactly. No minimum is stated anywhere.
+- GPIO8 strap pull-up (R12) is 3.3 kΩ, matching the DevKitC-1 (R6 3.3K 1%, devkit
+  schematic p. 2); the module datasheet's Fig. 9-1 (p. 40) shows 10 kΩ — both are
+  valid, GPIO8 only needs a defined high level at boot.
+- EN reset RC (R10 10 k + C5 1 µF) matches both the datasheet recommendation
+  (Fig. 9-1 note, p. 40: "usually R = 10 kΩ and C = 1 µF") and the DevKitC-1
+  (R5 10K + C6 1 µF, devkit p. 2).
+- Button debounce caps: datasheet Fig. 9-1 (p. 40) shows an optional 0.1 µF (C4)
+  across the reset button; the DevKitC-1 footprints these on both buttons but does
+  not populate them (C13/C14 0.1 µF "NC", devkit p. 2). Our EN button sits next to
+  C5 (1 µF), which covers the role; the BOOT button has no cap — same as the
+  DevKit as shipped.
+- BOOT/IO9 external pull-up (R11 10 k): neither the datasheet reference circuit
+  (p. 40) nor the DevKitC-1 fit one (internal weak pull-up, default 1 — datasheet
+  Table 4-1, p. 12). Ours is a harmless safety margin.
+- Power LED runs ~1.3 mA via R15 1 k — the DevKitC-1's red power LED uses 5.1 k
+  (R11, devkit p. 2), i.e. ~0.25 mA, so ours is brighter than the reference design.
+- ES8311 user guide recommends ferrite beads on AVDD/DVDD (sec. 5.1, p. 6,
+  `docs/ES8311.user.Guide.pdf`) and 33 Ω + 20 pF R-C filters on SDA/SCL (Fig. 7,
+  p. 7, "strongly suggested"); neither is implemented (EMI hardening, not
+  functional). I2C pull-up range 1–4.7 kΩ is from sec. 6, p. 9; DACVREF/ADCVREF/
+  VMID values from the sec. 5.1 table, p. 6.
+- SGM2212 CIN/COUT (10 µF each) comply: COUT range 1–10 µF effective (Recommended
+  Operating Conditions, `docs/sgm2212_datasheet.pdf` p. 3), ≥2.2 µF ceramic
+  recommended (p. 10); 1 µF effective minimum holds even after 0603 DC-bias
+  derating. The DevKitC-1 runs the same regulator with 10 µF + 0.1 µF on each side
+  (C7–C10, devkit p. 2) — the extra 100 nF HF companions are the only difference.
 
 ## Datasheet sources
 
