@@ -124,7 +124,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -137,7 +137,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "T1 secondary -> MIC1N AC-coupling"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -339,7 +339,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -352,7 +352,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ESP32 module bulk decoupling (at U1 pad 2)"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -554,7 +554,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -567,7 +567,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "DAC OUTN AC-coupling to T1 secondary"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -769,7 +769,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -782,7 +782,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "DAC OUTN series R: keeps the idle DAC from shunting RX audio; lowers TX HPF corner"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -984,7 +984,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -997,7 +997,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "DAC OUTP AC-coupling to T1 secondary"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1199,7 +1199,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1212,7 +1212,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 DACVREF reservoir"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1414,7 +1414,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1427,7 +1427,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Power-LED current limiter"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1628,7 +1628,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1641,7 +1641,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K3 coil driver, low-side NMOS"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1913,7 +1913,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C7503474.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1924,7 +1924,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "600:600 1:1 audio isolation transformer; winding A across bus P1/P5, winding B to codec"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -2274,7 +2274,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2287,7 +2287,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "LDO input capacitor"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2489,7 +2489,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2502,7 +2502,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K2 gate pull-down: relay stays off while the GPIO floats at boot"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2701,7 +2701,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -2712,7 +2712,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK3 polarity selector (DPDT slide flips LED feed + return together)"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -3062,7 +3062,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3075,7 +3075,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "I2C SCL pull-up (codec control bus)"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3276,7 +3276,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -3288,7 +3288,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Session-active sense opto: conducts when the WF26 talk relay is energised (P5->P2)"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -3608,7 +3608,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3621,7 +3621,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK2 LED current limiter (per-channel, unshared to avoid cross-talk)"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3823,7 +3823,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3836,7 +3836,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K3 gate pull-down: relay stays off while the GPIO floats at boot"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4048,7 +4048,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "VBUS fuse (1A fast): fail-safe for a clamping D10 / board fault; ~2x headroom over WiFi-TX+relay peaks"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -4208,7 +4208,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4221,7 +4221,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 ADCVREF bypass"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4422,7 +4422,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -4433,7 +4433,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Wi-Fi/BLE MCU (ESPHome); native USB on GPIO12/13"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -5079,7 +5079,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5092,7 +5092,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "EN pull-up"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5293,7 +5293,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5306,7 +5306,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Door-opener relay: bridges P2<->P3 via R16, emulating the WF26 ÖT button"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5691,7 +5691,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.usb.org/sites/default/files/documents/usb_type-c.zip"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5704,7 +5704,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "USB-C receptacle: 5V power + native-USB programming"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6081,7 +6081,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_XUNPU-TS-1088-AR02016_C720477.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -6093,7 +6093,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "BOOT button (hold through reset -> USB download mode)"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -6325,7 +6325,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6338,7 +6338,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "I2C SDA pull-up (codec control bus)"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6540,7 +6540,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6553,7 +6553,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "USB-C CC1 sink pull-down (advertises 5V device)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6755,7 +6755,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6768,7 +6768,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 DVDD decoupling"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6970,7 +6970,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6983,7 +6983,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OC1 collector pull-up: defined sense level without the ESP32's internal pull-up"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7185,7 +7185,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7198,7 +7198,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "MIC1P series R: -12.7dB divider vs the 6k input, headroom for loud gongs (PGA min 0dB)"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7397,7 +7397,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -7408,7 +7408,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK1 polarity selector (DPDT slide flips LED feed + return together)"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -7757,7 +7757,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C880115.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7769,7 +7769,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "USB D+/D- ESD clamp, two-stage flow-through (TPD2S017); VCC biased from VBUS"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -8009,7 +8009,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C962342.pdf"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -8020,7 +8020,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Mono audio codec (ADC+DAC): I2S data + I2C control; half-duplex intercom audio"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -8396,7 +8396,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8409,7 +8409,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K3 gate series resistor"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8610,7 +8610,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8623,7 +8623,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK2 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8924,7 +8924,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8937,7 +8937,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K1 coil flyback diode"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9239,7 +9239,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9252,7 +9252,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K2 gate series resistor"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9453,7 +9453,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -9465,7 +9465,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "House-bell (Türruf) sense opto across P1<->IN_P4"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -9784,7 +9784,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9797,7 +9797,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Virtual-PTT relay: bridges IN_P4<->P2 (talk); gate drive runs through K3's interlock contact"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10181,7 +10181,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10194,7 +10194,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 PVDD decoupling"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10396,7 +10396,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10409,7 +10409,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK1 LED current limiter (value TBD pending measured session voltage)"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10610,7 +10610,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10623,7 +10623,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK3 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10925,7 +10925,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10938,7 +10938,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OC3 collector pull-up: defined sense level without the ESP32's internal pull-up"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11140,7 +11140,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11153,7 +11153,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "DAC OUTP series R: keeps the idle DAC from shunting RX audio; lowers TX HPF corner"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11354,7 +11354,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11367,7 +11367,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K1 coil driver, low-side NMOS"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11641,7 +11641,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11654,7 +11654,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK1 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11954,7 +11954,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_XUNPU-TS-1088-AR02016_C720477.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11966,7 +11966,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Reset button"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -12197,7 +12197,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12210,7 +12210,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K2 coil flyback diode"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12621,7 +12621,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12634,7 +12634,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Chime-suppress relay: breaks line 4 (IN_P4->P4); pole B interlocks K1's gate"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13018,7 +13018,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13031,7 +13031,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK3 LED current limiter (per-channel, unshared to avoid cross-talk)"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13204,7 +13204,7 @@
 			)
 		)
 	)
-	(footprint "PCM_JLCPCB:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR"
+	(footprint "SGM2212:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR"
 		(layer "F.Cu")
 		(uuid "a15b61c0-7e99-4f28-8cc7-2e2e8bd6a674")
 		(at 45.44 44 180)
@@ -13244,7 +13244,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "5V->3.3V LDO; low dropout rides out WiFi-TX VBUS sag"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -13521,7 +13521,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "WF26 intercom bus tap: P1-P3, P4/IN_P4 (line-4 break-in), P5"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -14269,7 +14269,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF3301T5E_C22978.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14282,7 +14282,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "GPIO8 strapping pull-up"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14594,7 +14594,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14607,7 +14607,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ESP32 module HF decoupling"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14806,7 +14806,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -14817,7 +14817,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OK2 polarity selector (DPDT slide flips LED feed + return together)"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -15167,7 +15167,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15180,7 +15180,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "T1 secondary -> MIC1P AC-coupling"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15382,7 +15382,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15395,7 +15395,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "USB-C CC2 sink pull-down (advertises 5V device)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15597,7 +15597,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15610,7 +15610,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 AVDD bulk"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15811,7 +15811,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15824,7 +15824,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K3 coil flyback diode"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16126,7 +16126,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16139,7 +16139,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K1 gate series resistor"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16340,7 +16340,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2407101109_MDD-Microdiode-Semiconductor-SS14_C2480.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16353,7 +16353,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "VBUS reverse-polarity protection Schottky (~0.45V drop to +5V rail)"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16644,7 +16644,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16657,7 +16657,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K2 coil driver, low-side NMOS"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16932,7 +16932,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16945,7 +16945,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "BOOT (GPIO9) pull-up"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17147,7 +17147,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17160,7 +17160,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 CE address pull-down -> I2C addr 0x18"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17362,7 +17362,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17375,7 +17375,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "OC2 collector pull-up: defined sense level without the ESP32's internal pull-up"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17576,7 +17576,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -17588,7 +17588,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Apartment-bell (Etagenruf) sense opto across P1<->P5"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -17908,7 +17908,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17921,7 +17921,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "K1 gate pull-down: relay stays off while the GPIO floats at boot"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18123,7 +18123,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18136,7 +18136,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Shared opto emitter resistor to GND (uA only)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18338,7 +18338,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18351,7 +18351,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "EN reset RC (Espressif-spec 1uF)"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18553,7 +18553,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18566,7 +18566,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 VMID bypass"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18768,7 +18768,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18781,7 +18781,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "MIC1N series R: -12.7dB divider vs the 6k input, headroom for loud gongs (PGA min 0dB)"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18983,7 +18983,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18996,7 +18996,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ES8311 AVDD decoupling"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19198,7 +19198,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1810231112_Hubei-KENTO-Elec-KT-0603R_C2286.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19211,7 +19211,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Power-on indicator LED (+3V3)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19453,7 +19453,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19466,7 +19466,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "LDO output capacitor"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19667,7 +19667,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2312041000_hongjiacheng-SMF5-0A_C19077497.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19680,7 +19680,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "VBUS surge/ESD clamp TVS (5V working voltage)"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19982,7 +19982,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19995,7 +19995,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ÖT bridge series R; matches the WF26's genuine 2.2k button resistor"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
