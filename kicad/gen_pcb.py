@@ -322,11 +322,16 @@ _kch.SetClosed(True); _kz.AddPolygon(_kch)
 _kz.SetZoneName("U3 EP no-via"); board.Add(_kz)
 
 # Strip U3's (ES8311) imported package-outline silkscreen: the EasyEDA footprint draws silk lines
-# across the QFN pads (silk_over_copper DRC). Drop the F.SilkS graphics; the reference designator
-# text and the pads/courtyard are kept.
+# across the QFN pads (silk_over_copper DRC). Drop the F.SilkS *lines* but KEEP the F.SilkS
+# *circles* -- the pin-1 marker (a dot diagonally outboard of pad 1) plus the corner tick. They
+# sit clear of every pad, so they're the orientation reference without the silk-over-copper issue.
+# The reference-designator text and the pads/courtyard are kept regardless.
 for _g in list(fps["U3"].GraphicalItems()):
-    if _g.GetLayer() == pcbnew.F_SilkS:
-        fps["U3"].Remove(_g)
+    if _g.GetLayer() != pcbnew.F_SilkS:
+        continue
+    if getattr(_g, "GetShape", lambda: None)() == pcbnew.SHAPE_T_CIRCLE:
+        continue   # keep the pin-1 dot + corner tick
+    fps["U3"].Remove(_g)
 
 def MM(v): return pcbnew.ToMM(v)
 def fext(fp):                          # footprint extents WITHOUT silk text (mm)
