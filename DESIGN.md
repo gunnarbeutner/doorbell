@@ -149,7 +149,7 @@ The apartment handset (Sprechstelle **WF26/G**, PCB silk "…WF26") has **no MCU
 switches. The full internals are captured in **`wf26/wf26.kicad_sch`** (standalone,
 ERC-clean KiCad project; teardown photos `IMG_5082.jpg` / `reference/intercom-teardown-collage.png`). Parts:
 LS1 (16 Ω speaker/mic), S2 (Sprechen/Hören, DPDT), S1 (Türöffner/ÖT, DPDT), R1 (2.2 kΩ,
-confirmed by colour bands red-red-red-gold), C1 (22 µF/50 V, value image-read), K2 (relay),
+confirmed by colour bands red-red-red-gold), C1 (22 µF/50 V, value image-read), K2 (V23101 relay),
 J1 (5-way bus = P1–P5).
 
 | Net | Pins |
@@ -178,7 +178,8 @@ Key facts:
   Disconnecting P4 forces a permanent off-hook — the P4↔P3 strap breaks, the TV20/S reads
   the station as off-hook, and the chime is suppressed (matches the observed "remove P4 →
   no doorbell sound"). So: **talk = P4↔P2, listen = P4↔P3.**
-- **Internal relay K2:** 6-pin DIL **SPDT (1 Form C)** — coil **5/8** (~320 Ω, across
+- **Internal relay K2:** **V23101** (Siemens/AXICOM series) signal relay, 6-pin DIL
+  **SPDT (1 Form C)**, **11.5 ± 0.2 mm** tall — coil **5/8** (~320 Ω, across
   **P5↔P2**), common **1+12** (tied), contacts **6** (NC, unused) / **7** (NO = P2). The
   coil is energised by the TV20/S powering the line (session active), which **gates** the
   talk path: S2→K2_COM only reaches P2 while the coil is on.
@@ -197,8 +198,6 @@ Key facts:
   model — needs scoping.
 - C1 polarity (+ assumed toward P1); NC vs NO of K2 pins 6/7 (de-energised, COM 1/12
   closes to NC).
-- Relay part identity: the hand-drawn schematic labels it **TIANBO HJR-4102-N-12V**; the
-  teardown photo was read as Siemens V23100 — confirm on the board, the pinout depends on it.
 
 **Interfacing takeaways (audio tap / virtual PTT):**
 - Record incoming audio: high-Z tap on **P1/P5** (speaker stays live, no board contact).
