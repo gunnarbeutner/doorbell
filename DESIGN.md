@@ -1,7 +1,10 @@
 # Doorbell controller (Klingel V4) — design reference
 
-**V4 source of truth: `kicad/doorbell_design.py`** (nets, parts, footprints; `gen_schematic.py`
-and `gen_pcb.py` generate the schematic and PCB from it — build with `./build.sh all-route`).
+**V4 source of truth: the KiCad files** (`kicad/doorbell.kicad_sch` / `kicad/doorbell.kicad_pcb`),
+edited directly in KiCad. `./build.sh all-route` verifies them — the checks KiCad's own DRC/ERC
+can't express (connectivity + the copper-thieving sliver limit in `route.py`, placement in
+`check_pcb.py`) — and exports the fab outputs; it does not generate the board.
+`kicad/doorbell_design.py` is the reference-data module the checks and BOM/CPL export import.
 V4 firmware: `firmware/doorbell-v4.yaml`. LCSC part numbers: `kicad/doorbell_design.py` (`LCSC` dict for
 parts whose symbol carries none or a stand-in's; the JLCPCB library symbols supply the rest) —
 embedded in the schematic as hidden `LCSC`/`Description`/`MPN`/`Datasheet` fields and reused by
@@ -446,8 +449,8 @@ stock/eligibility checks at order time.
 
 **4-layer stack:** `F.Cu` (signals + parts) / `In1.Cu` = solid **+3V3** plane / `In2.Cu` =
 solid **GND** plane / `B.Cu` (signals). GND on In2 (under B.Cu) so the USB D+/D− pair
-routed on B.Cu references GND. +5V is a short surface trace. Set in `gen_pcb.py`
-(`SetCopperLayerCount(4)`); fab gerbers include the inner layers.
+routed on B.Cu references GND. +5V is a short surface trace. The board is a 4-layer stack; fab gerbers include
+the inner layers.
 
 **Why 4-layer.** J1 (USB4105) is a single-row SMD Type-C: D+/D−/CC/VBUS escape from one
 fine-pitch interleaved pad row, which leans on the 4-layer stack — the D+/D− pair routes
@@ -468,28 +471,13 @@ works as-is. Fallback if a re-floorplan ever breaks the +5V spine's threading
 corridors: 5V island on In1 with the seam kept clear of the MIC/SEC/OUT region —
 and combine it with the bus-side plane relief noted above.
 
-**Power routing** (`gen_pcb.py` — the power nets are fully hand-routed): +5V
-is one 0.5 mm F.Cu spine, D4 → C_in → U2.3 (LDO in), then north on a vertical at
-x=40.6 threading between the MIC_A/MIC_B NE wrap and U2's pad toes (the thread is
-why U2 sits at x=45.5), ducking west at y=38.55 just north of the MIC return lanes
-onto the straight vertical at x=37.64 — R6 (R_g1) sits nudged
-0.07 mm left so that vertical threads both its pad gap and R9 (R_pd1) without a
-jog — onto D1's flyback row and up/over to K1's coil pin; from the
-(41.688, 27.099) tee a west leg crosses the relay block, tapping K2/K3 coil pins off
-the y=24.779 row and dropping into D2/D3 dead-centre. GND/+3V3 reach their In2/In1
-planes through 0.2 mm stubs + vias at every SMD pad (FET/pull-down row, the
-BOOT/RST cluster, U1 pad 28, the USB CC pulldowns and C_in, the LED block — its two
-vias dodge P1's/P5's B.Cu verticals — and the LDO column, where U2.1 and C_out share
-one GND via on their centreline); U2's tab and J1's shield stakes are PTH
-(barrel-connected). Neither exposed pad carries vias (solder-wicking avoidance):
-U1's EPAD cells are laced on F.Cu and tied to pad 28 (whose via, west of the module,
-is the plane bond); U3's EP ties into pad 10, whose via sits SE outside the
-footprint. No-via rule areas over both pad fields keep them hole-free. GATE1_PRE crosses under the relay-driver block on B.Cu (K3.6 →
-via → east → 45° staircase) and stays there to a via just left of R6 (R_g1) pad 1,
-surfacing into the pad with one straight stub. The audio front-end (SEC_A/SEC_B off
-T1's west pads, through the R24–R27 series-resistor row south of T1, and on as
-OUT_*/MIC_* legs to the coupling caps) is hand-designed as nested 0.329 mm pairs —
-see the T1 tie-in description.
+**Power routing.** The power nets are hand-routed: **+5V** is a single 0.5 mm F.Cu
+spine (D4 → C_in → LDO in, then up to the three relay coils + flybacks). GND/+3V3
+reach the In2/In1 planes through 0.2 mm stubs + vias at every SMD pad; U2's tab and
+J1's shield stakes are PTH (barrel-connected). **Neither exposed pad carries vias**
+(solder-wicking avoidance): U1's and U3's EPADs are laced and bonded to the planes
+through an adjacent pad's via, and no-via rule areas over both pad fields keep them
+hole-free.
 
 **Plane integrity & thieving (measured from the fill).** Both inner planes are solid
 apart from the antenna keepout (all-layer, x≤37.1/y≥63.5) and 81 via/PTH piercings;
@@ -502,7 +490,7 @@ Copper thieving (`route.py`): a priority-1 GND zone plus a priority-0 floating z
 outer layer. B.Cu float is empty (the GND thieve reaches everything); F.Cu float is a
 few dozen sub-2 mm² slivers, each 0.21 mm over the solid +3V3 plane so lateral pickup
 is plane-shunted (~10:1) — audio/hum coupling negligible. Every larger pocket is
-grounded by a hand-placed GND stitching via in `gen_pcb.py` (relay/bus region, opto
+grounded by a hand-placed GND stitching via in KiCad (relay/bus region, opto
 block, OC3 jumper, bus corner, NW of U3, SE of J1, the opto-output column, and the
 three gaps of the OUT/MIC column under T1, where the grounded strips also guard the
 OUT pair from the MIC pair). `route.py` enforces a hard sliver limit post-fill: **the build FAILS on any
@@ -510,33 +498,21 @@ float island ≥ 2 mm² or ≥ 10 mm long** (the length test catches thin sliver
 dodge the area test). Sub-limit slivers are electrically inert and pass without
 ceremony — there is no waiver mechanism.
 Vias are never auto-placed: the remedy for an unwanted island is a hand-placed GND
-stitching via in `gen_pcb.py` (the pocket then joins the GND thieve) or shrinking the
-pocket. Note `route.py` is not idempotent — it assumes a fresh board from
-`gen_pcb.py`; rerunning it standalone duplicates the thieving zones.
+stitching via in KiCad (the pocket then joins the GND thieve on the next fill) or
+shrinking the pocket. `route.py` only refills the existing zones (idempotent) and
+checks — it never creates copper.
 
-**The board is 100% hand-routed** — every net is pre-placed geometry in
-`gen_pcb.py`.
-`route.py` checks the ratsnest after filling the inner planes and FAILS the build
-if any connection is unrouted — missing copper is added in `gen_pcb.py`.
-The last stragglers: GATE1/GATE2 share one pattern per channel — a perfectly
-vertical drop ties the pull-down's pad 1 into the gate resistor's pad 2 (R4/R5/R6
-sit x-aligned over their pull-downs), then a straight run east on the y=36.9
-resistor row with a 45° drop into the FET gate; GATE3's FET
-leg instead ducks under on B.Cu west of the relay block (GATE1_DRV's escape
-channel crosses the y=36.9 row at x=16.34). EN leaves U1 pad 3 and 45°s onto the
-RST button's pad column (x=19.925, clear of MCLK's riser), running one straight
-line — F.Cu vertical, via, B.Cu hop under the SDA/SCL lane stack, via,
-stub into the button — and branches west into C_en and R_en. OT_BRIDGE is a single near-vertical slant K2.4 → R16.2; LED_A is a
-dead-straight vertical.
+**The board is 100% hand-routed** in KiCad — every net is hand-placed geometry in
+`kicad/doorbell.kicad_pcb`.
+`route.py` refills the inner planes and checks the ratsnest, FAILING the build
+if any connection is unrouted — missing copper is routed in KiCad.
 
-**Routing + plane recipe.** All copper is placed by `gen_pcb.py`; `route.py` pours
-+3V3 on In1 and GND on In2 as copper-fill zones (the filler leaves clearance gaps
-around anything else on those layers), then verifies connectivity.
-Result: **0 unconnected, 0 DRC**.
+**Routing + plane recipe.** All copper is hand-placed in KiCad; the inner planes
+(+3V3 on In1, GND on In2) are copper-fill zones in the board. `route.py` refills
+every zone and verifies connectivity. Result: **0 unconnected, 0 DRC**.
 
-**Floorplan** (`PCB_PLACE` in `gen_pcb.py`; the audio block is additionally re-packed by
-rigid-body transforms in `gen_pcb.py`, so on-board positions differ from the raw table —
-the generated `doorbell.kicad_pcb` is authoritative). Board ≈ **52 × 58 mm**, all parts on
+**Floorplan** (positions live in the authoritative `doorbell.kicad_pcb`; the audio block is
+tightly re-packed, so on-board positions differ from any tidy grid). Board ≈ **52 × 58 mm**, all parts on
 the **top side**. **U1 bottom-left, rotated 180°, antenna flush on the bottom edge** over a
 copper keepout; **J1 (USB-C) on the bottom edge** right of the antenna, mouth overhanging;
 **J2 (WF26 terminal) flush on the top edge**, right side; the **opto sense block** (optos,
@@ -552,7 +528,7 @@ the top edge; the remaining edges get a 1 mm margin off the tight bounding box.
 `check_pcb.py` verifies the overhangs and that every other footprint stays inside the
 outline.
 
-**Antenna keepout:** `gen_pcb.py` adds an all-copper rule area (no tracks/vias/plane pour)
+**Antenna keepout:** an all-copper rule area (no tracks/vias/plane pour)
 ±15 mm either side of the WROOM-1 antenna, from just below U1's south pad row to the
 bottom edge — clears the GND/+3V3 planes around the antenna. Fiducial placement avoids it.
 
@@ -563,8 +539,8 @@ spreads board-wide. A global rule in `kicad/doorbell.kicad_dru` keeps KiCad's DR
 consistent; hole-to-copper is 0.2 mm to match. Trade-off: the
 board routes at the fab limit rather than keeping a clearance design margin.
 
-**Track widths:** signal nets route at the 0.2 mm default; the hand-routed geometry in
-`gen_pcb.py` widens the current-carrying nets to **0.5 mm**: `+5V` (LDO input — ESP32
+**Track widths:** signal nets route at the 0.2 mm default; the current-carrying nets
+are widened to **0.5 mm** in KiCad: `+5V` (LDO input — ESP32
 WiFi-TX peaks ~350 mA — plus three relay coils) and every net at WF26-bus potential —
 `P1/P2/P3/P4/P5/IN_P4` (line 4 carries the TV20/S's Türruf signal through K3's NC
 contact; the "gong" is an electronically generated tone played through the WF26's 16 Ω
@@ -575,118 +551,18 @@ the transformer secondary (`SEC_*`/`OUT_*`/`MIC_*`), and K3's interlock pole
 (`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. KiCad's DRC does not
 enforce these widths.
 
-**GPIO escape bundle** (`gen_pcb.py`, pre-routes like the VBUS star): the six MCU
-lines into the opto/relay-driver block (`OC1/2/3_OUT`, `GATE1/2/3_DRV`) leave U1's left
-pad column as six parallel vertical lanes hugging the module's left edge (0.329 mm pitch,
-nested in pad order so stubs/corners never cross; geometry derived from U1/OK3 pad
-positions, not absolute coordinates). `OC3_OUT` (leftmost lane) is completed into OK3
-pad 4 via a 45° diagonal; the other five follow the same vertical → 45° → finish pattern
-but flatten east instead: their diagonals nest parallel to OC3's (0.4625 mm vertical
-steps = 0.327 mm perpendicular), and the horizontal runs stack from just clear of the
-opto pad row (OC2 on top at 0.15 mm copper gap) downward at one lane pitch. OC2_OUT and
-OC1_OUT are completed: each runs east under the opto pad row, rises 45° (clearing the
-neighbouring pad 3's rounded corner by the same margin as OC3's landing) and drops into
-OK2/OK1 pad 4. The GATE pad assignment (pad 18=K2, 19=K3, 20=K1) orders the lane stack's
-targets strictly west→east (OK2, OK1, R6, R5, R4), so every north-bend is crossing-free
-and the bundle hand-routes completely, via-free: the GATE lanes run east below the opto
-row and rise north into their gate resistors' pad 1 (GATE1 rises beside R6 — R5's pad
-limits the lane — and finishes with a 45° jog into the pad centre; GATE3/GATE2 rise
-straight into R5/R4).
-
-**I2C/I2S escape bundle** (`gen_pcb.py`, pre-routes, north of U1): BOOT leads
-from U1 pad 15 east + 45° NE to its switch and on to R_boot. I2C SDA/SCL (pads 16/17 — a GPIO-matrix pin swap with I2S, free on the C6)
-follow as nested parallel diagonals (0.327 mm perpendicular) flattening east at
-y = 43.0/43.329, just north of the module; I2S MCLK/BCLK (pads 6/7) run north on inner
-verticals 0.129 mm off U1's east pad column and join the stack with eastward turns at
-y = 43.658/43.987 (MCLK, the outer vertical, takes the upper of the two so its turn
-clears BCLK's vertical). The pin swap exists to make the lane order into U3 come out
-**SDA, SCL, MCLK, BCLK** (top→bottom) without crossings: west-column lines own the
-upper lanes, east-column risers slot in beneath. SDA, SCL and MCLK are completed. SCL
-and MCLK drop 45° SE west of the R20/R19 stack (MCLK, the lower lane, turns first; SCL
-nests 0.4625 mm behind; both clear R19's +3V3 pad corner) and run east through the
-R19↔C8 gap (~1.0 mm; R19 moved north, R20 to y=42.25) sitting exactly on U3 pin 1's and
-pin 2's rows — 0.4 mm apart, the QFN pad pitch — straight into CCLK and MCLK; SCL taps
-R19 pad 2 (its pull-up) with a stub on the way. R20 sits stacked directly above R19 at
-the C7↔C8 pitch (1.2 mm), its GND pad on a dedicated via 0.88 mm west (to the In2
-plane); since its pads straddle the old top lane, SDA hops north over R20 — bending up
-in the same column as the SCL/MCLK down-turns, clear of the EN switch's pads and the
-GND via — rises to R18 pad 2's row and runs straight east into the pull-up dead
-centre, then exits 45° SE and descends into CDATA (pin 19) from the north, threading
-the 0.175 mm gaps to pins 20/18. The stack carries only SDA/SCL/MCLK: the I2S data/clock group (BCLK/DIN/WS/DOUT,
-U1 pads 12/11/8/7 top→bottom by GPIO-matrix permutation) instead fans east through the
-gap between C7's pad row and T1 as four lanes (0.329 mm pitch, top lane 0.165 mm under
-C7's pads, bottom lane ~1.0 mm clear of T1), rising north into U3's south row (SCLK 6 /
-ASDOUT 7 / LRCK 8 / DSDIN 9) whose pin order matches the pad order — each line's lane
-sits below the previous one's, so the long 45° rises from the lower pads top out before
-reaching any upper lane — BCLK/DIN via short shallow 45°s, WS/DOUT on aggressive
-vertical risers beside U1's pad column (east of GPIO8's via), clear of T1's west pads.
-T1 sits 2.35 mm below U3 (its south edge clear of R12 below).
-
-**U3 analog / CE / supply hookups** (`gen_pcb.py` — with the I2C/I2S bundles
-this makes every U3 net fully hand-routed, all on F.Cu): on the east column, OUTN /
-DACVREF / ADCVREF drop into their caps' pad-1 centres on three nested parallel 45°
-diagonals (0.85 mm apart; DACVREF/ADCVREF via short staircase verticals at
-x=34.805/34.405 so the diagonals land dead-on). OUTP runs dead on its own pad row
-(0.2 mm clear of OUTN's stub one row below), east past the column, and rises 45°
-into C_op. On the north row, MIC1P/MIC1N rise as a
-symmetric pair into C_mp/C_mn, VMID does the same one column over, and CE rises off
-pad 20 and 45°s onto R_ce's row — nested parallel to the SDA drop one pad
-over. Supplies: DVDD/PVDD (pads 3/4) tie west onto a shared rail with an In1 via
-mid-rail, continuing straight into C_pv pad 1 and up the pad-1 column into C_dv;
-AVDD (pad 11) runs straight east into C_avb pad 1 and up into C_av with an In1 via
-below. GND: pad 5 stubs west into an In2 via, pad 10 runs straight north into the
-exposed pad (no EP vias; grounded by the F.Cu pour), each cap GND column (C_av/C_avb, C_vref/C_aref, C_dv/C_pv)
-gets a pad-2 column tie + In2 via, C_vmid taps a via 0.9 mm east, and R_sda's +3V3
-pad stubs north into its own In1 via.
-
-T1's bus winding ties in
-on B.Cu at bus width (0.5 mm): the bus owns T1's EAST pads (6/4) after the winding
-swap, with launch vias tucked inside T1's courtyard 2.4 mm west of the pads (east of
-them they'd collide with D4) and straight F.Cu stubs into the pads, then east and up
-the east strip (verticals x=49.13/49.79, B.Cu free under the LED block and 0.127
-clear of U2's tab PTH pads), west above
-J2's pad row (lanes y=13.2/12.54) and down into J2 pins 1/5 from the top — PTH pads
-connect on B.Cu, so no extra vias. The pad assignment (P1 = pad 6 north, P5 = pad 4
-south; winding swap and polarity are inaudible) makes P5 the outer loop with P1
-nested inside, zero crossings. The secondary owns the WEST pads (1/3): SEC_A/SEC_B
-exit the pads east and drop south past the pad column as a tight 0.329 mm pair
-(x=28.929/28.6) into the series-resistor row south of T1 (R24–R27, pad 1 north).
-The W→E resistor order R_op/R_on/R_mn/R_mp is what makes the whole front-end route
-crossing-free: SEC_A ties the two outer pads — entering R_op.2 from the west and
-linking on to R_mp.2 through the resistors' own inter-pad gaps (one track at
-y=60.5 under R_on/R_mn's bodies) — while SEC_B dives below the row to y=62.2 and
-rises into R_on.2 from the south, tying R_on.2→R_mn.2 along the pad-2 row. Each
-pad 1 then launches a vertical straight north under T1's body (the pad-free
-channel between its pad columns), peels east on its own lane between T1's pads
-and courtyard top (y=49.871–50.858, 0.329 pitch), and wraps T1's NE corner on
-nested verticals: the OUT pair inside (x=39.043/39.372), landing 45° into C14 pad
-2 and via a y=44.169 jog into C15 pad 2; the MIC pair outside (x=39.701/40.03,
-the pre-split SEC wrap x's), continuing north past the cap field and returning
-west on lanes y=39.032/39.361 to drop 45° into C16/C17 pad 2 (the C17 lane and
-drop reuse the pre-split link geometry verbatim). Keeping each direction's legs
-paired at 0.329 mm preserves the floating audio pair's small pickup loop.
-
-The entire WF26 bus group — **P1–P5 and IN_P4 — is hand-routed** in
-`gen_pcb.py`. P5 runs from the polarity-switch
-cluster to J2.5, branching the J2 loop at its (30.48, 12.54) corner and
-running west above the J2 pad row on B.Cu into a via clear east of SW_OC1 pad 1, 45° into
-the pad. The rest: P3 west off J2.3 into R16; P4 45° over the J2 pad row (y=13.317)
-and a long 45° down into K3 COM; P2 from J2.2 into K1.4 with a branch west along
-y=21.593 into K2.3, then a weave between K3 and the J2 row into SW_OC1 pad 4 and a
-B.Cu via pair under the switch row to pad 3; IN_P4 from J2.6 into K3.2 (NC), west
-along y=15 on B.Cu up to SW_OC2 pads 1/6, and a loop north of K1 from its COM (pad 3)
-back to J2.6; P1 from J2.1 on a B.Cu trunk along y=23.613 under the relay contact row
-to vias feeding SW_OC2 pads 4/3 and SW_OC3 pads 4/3. OC3_RET (SW_OC3's centre pad 2 →
-R2) is pinned along its proven path too — 45° onto the y=12.321 lane and down the
-far-west column x=0.316 — the one escape that threads the bus walls. The rest of
-the opto block is hand-routed as well: each JP net drops from its switch's centre
-pad 5 down a vertical between the switch columns, 45°s into the clamp diode's anode
-pad and hops 45° onward into the opto's pad 1 (three near-identical channels);
-OC1_RET/OC2_RET run their switch's centre pad 2 down a vertical beside the cathode
-channel into the limiter's pad 2; OC_EMIT's west tail lands on R3's pad with one
-near-horizontal slant. Together with the CATH/EMIT chains and the OC*_OUT
-escape bundle, every opto net is hand-routed. Branches in
-the pre-placed wiring only meet at segment endpoints or pad centres.
+**Routing notes (rationale; the trace geometry itself lives in the board).** A few
+design choices behind the layout, worth keeping even though the coordinates are now in
+`kicad/doorbell.kicad_pcb`:
+- **Pin assignment exploits the C6 GPIO matrix** so the escape fans route crossing-free:
+  the GPIO/relay-driver lanes leave U1 in west→east target order, and an I²C/I²S pin swap
+  makes U3's control lanes land in **SDA, SCL, MCLK, BCLK** order with no crossings.
+- **The floating audio front-end** (T1 secondary → R24–R27 series resistors → coupling
+  caps) keeps each direction's legs **paired tightly (~0.329 mm)** to minimise the audio
+  pair's pickup loop; the W→E resistor order is chosen so the whole nest routes without
+  crossings. T1's bus winding owns the east pads (winding swap/polarity are inaudible).
+- **The WF26 bus group** (P1–P5, IN_P4) and the opto block are fully hand-routed at bus
+  width (see **Track widths**).
 To free the NE corridor, the ESP-side USB pair takes a south
 detour on B.Cu: straight stubs on the pad rows into vias in line with U1 pads 14/13
 (DM's on its vertical at x=23.85; DP's 0.58 mm east so its drop clears DM's via,
@@ -716,7 +592,7 @@ both sides, CC1/CC2) is hand-routed.
 **DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published
 capabilities (e.g. 0.127 mm spacing, 0.3 mm board-edge copper).
 
-**Fiducials** (`gen_pcb.py`): three `Fiducial_1mm_Mask2mm` marks (1 mm copper / 2 mm mask)
+**Fiducials:** three `Fiducial_1mm_Mask2mm` marks (1 mm copper / 2 mm mask)
 in an **asymmetric triangle** so the pick-and-place camera resolves orientation
 unambiguously. The search grows inward from three corners (top-left, bottom-left,
 bottom-right; top-right deliberately empty) on a 0.5 mm grid and takes the first spot
@@ -835,9 +711,8 @@ into 16 Ω.
 ## Verification status
 
 Automated gates (run by `./build.sh all-route`): **ERC 0 errors, DRC 0/0, routes
-0 unrouted, `check_pcb.py` PASS**. The generated board must be rebuilt whenever
-`doorbell_design.py` / `gen_pcb.py` change — the committed `.kicad_pcb`/gerbers are
-outputs, not sources. The firmware config passes `esphome config firmware/doorbell-v4.yaml`
+0 unrouted, `check_pcb.py` PASS** — these verify the authoritative KiCad files; the
+gerbers/BOM/CPL in `kicad/fab/` are exported from them. The firmware config passes `esphome config firmware/doorbell-v4.yaml`
 (ESPHome 2026.5.3; needs a `secrets.yaml` with `wifi_ssid`/`wifi_password` alongside).
 
 An independent blind review (no DESIGN.md / generator scripts; netlist re-extracted from

@@ -1,32 +1,34 @@
-# Doorbell V4 — code-generated KiCad project
+# Doorbell V4 — KiCad project
 
-## Build pipeline (everything regenerates from `doorbell_design.py`)
+## Build pipeline (verify + fab; the KiCad files are authoritative)
 
-`doorbell_design.py` is the single source of truth (components, nets, footprints,
-placement). Two generators consume it; `build.sh` orchestrates them:
+`kicad/doorbell.kicad_sch` / `kicad/doorbell.kicad_pcb` are the authoritative source —
+edit them in KiCad. `build.sh` never authors copper; it runs the checks KiCad's own
+DRC/ERC can't express and exports the fab outputs:
 
 ```
-./build.sh            # schematic + PCB (unrouted) + ERC + schematic PDF
-./build.sh route      # finalize the PCB (planes/groups/thieving; fails if unrouted)
+./build.sh            # verify + fab (full run; = all-route)
+./build.sh sch        # schematic ERC + PDF export
+./build.sh check      # PCB placement constraints (check_pcb.py)
+./build.sh route      # verify planes/thieving/connectivity (route.py) + DRC
 ./build.sh fab        # Gerbers + drill + position + BOM -> kicad/fab/
-./build.sh all-route  # schematic + PCB + route + fab (full run)
+./build.sh all-route  # sch + check + route + fab (full run)
 ```
 
-| Script | Interpreter | Output |
-|--------|-------------|--------|
-| `gen_schematic.py` | `.venv/bin/python` (kiutils) | `doorbell.kicad_sch` — ERC 0 errors |
-| `gen_pcb.py` | KiCad bundled python (pcbnew) | `doorbell.kicad_pcb` — placed + netted, 0 DRC |
-| `route.py` | KiCad bundled python (pcbnew) | finalizes the board (planes, groups, thieving); fails if any connection is unrouted |
+| Script | Interpreter | Role |
+|--------|-------------|------|
+| `check_pcb.py` | KiCad bundled python (pcbnew) | verify placement (edge flush/overhang, parts inside outline) |
+| `route.py` | KiCad bundled python (pcbnew) | refill zones + verify connectivity + copper-thieving sliver limit |
+| `jlcpcb_cpl.py` | KiCad bundled python (pcbnew) | JLCPCB CPL (pad-centroid positions) |
+| `jlcpcb_files.py` | `.venv/bin/python` (kiutils) | JLCPCB BOM (from the schematic) |
 
-The board is **100% hand-routed** in `gen_pcb.py`.
-`route.py` fills the inner planes, adds groups and copper thieving, and FAILS the
-build if any connection is left unrouted — missing copper is added in `gen_pcb.py`,
-never invented by a tool. Re-running `gen_pcb.py` rebuilds the board from scratch,
-so iterate as: edit `doorbell_design.py` → `./build.sh` → `./build.sh route`.
+`doorbell_design.py` is the reference-data module the checks and BOM/CPL export import
+(refdes map, edge constraints, LCSC numbers). The board is hand-routed **in KiCad**;
+`route.py` fails the build on any unrouted connection or any copper-thieving float island
+over the sliver limit (≥ 2 mm² or ≥ 10 mm) — fix those in KiCad, never with a tool.
 
-> The PCB uses the explicit compact floorplan in `gen_pcb.py` (`PCB_PLACE`): logic/USB in the
-> lower-left, bus interface on the right; ~35.8×47.7 mm, 4-layer (F.Cu / +3V3 / GND / B.Cu).
-> J1/J2/U1 sit flush on their board edges (`EDGE_FLUSH`); `check_pcb.py` gates the placement.
+> Board ≈ 52 × 58 mm, 4-layer (F.Cu / +3V3 / GND / B.Cu); J1/J2/U1 sit flush on their
+> board edges, `check_pcb.py` gates the placement. See `../DESIGN.md` for the full layout.
 
 ---
 

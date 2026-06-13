@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
-# Regenerate the doorbell design from code. One source of truth: kicad/doorbell_design.py
+# Verify + package the doorbell design. The KiCad files
+# (kicad/doorbell.kicad_sch / kicad/doorbell.kicad_pcb) are the AUTHORITATIVE
+# source — edit them in KiCad. This script never authors copper; it runs the
+# checks KiCad's own DRC/ERC can't express and exports the fab outputs.
 #
-#   ./build.sh           schematic + PCB + route + fab   (full run)   [default = all-route]
-#   ./build.sh sch       schematic only (+ ERC + PDF)
-#   ./build.sh pcb       PCB only (placed + netted, unrouted)
-#   ./build.sh route     finalize the PCB (planes/groups/thieving; fails if unrouted)
+#   ./build.sh           verify + fab            (full run)   [default = all-route]
+#   ./build.sh sch       schematic ERC (+ PDF export)
+#   ./build.sh check     PCB placement constraints (check_pcb.py)
+#   ./build.sh route     verify planes/thieving/connectivity (route.py) + DRC
 #   ./build.sh fab       export Gerbers/drill/position + BOM to kicad/fab/
-#   ./build.sh all       schematic + PCB (unrouted) + ERC + schematic PDF
-#   ./build.sh all-route schematic + PCB + route + fab   (full run)
+#   ./build.sh all       sch + check + route   (all checks, no fab)
+#   ./build.sh all-route sch + check + route + fab   (full run)
 set -euo pipefail
 cd "$(dirname "$0")"
 
-VENVPY="./.venv/bin/python"                       # kiutils lives here (schematic)
+VENVPY="./.venv/bin/python"                       # kiutils lives here (BOM)
 KPY="/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3"  # owns pcbnew
 SCH="kicad/doorbell.kicad_sch"
 PCB="kicad/doorbell.kicad_pcb"
@@ -19,23 +22,17 @@ NOISE='fontconfig|invalid attribute|invalid constant|assert|traits|wxApp|Analyti
 q() { grep -vE "$NOISE" || true; }
 
 sch() {
-  echo "▶ schematic"
-  "$VENVPY" kicad/gen_schematic.py
+  echo "▶ schematic ERC"
   kicad-cli sch erc "$SCH" -o /tmp/doorbell_erc.txt 2>&1 | q >/dev/null || true
   grep "ERC messages" /tmp/doorbell_erc.txt
   kicad-cli sch export pdf "$SCH" -o kicad/doorbell.pdf 2>&1 | q | tail -1
-}
-pcb() {
-  echo "▶ pcb (unrouted)"
-  "$KPY" kicad/gen_pcb.py 2>&1 | q
-  check
 }
 check() {
   echo "▶ check placement constraints"
   "$KPY" kicad/check_pcb.py 2>&1 | q
 }
 route() {
-  echo "▶ route (hand-routed: planes + finalize)"
+  echo "▶ verify planes/thieving/connectivity + DRC"
   "$KPY" kicad/route.py 2>&1 | q
   kicad-cli pcb drc "$PCB" -o /tmp/doorbell_drc.txt 2>&1 | q | tail -1
   grep -iE "unconnected pads|DRC violations" /tmp/doorbell_drc.txt || true
@@ -60,12 +57,11 @@ fab() {
 
 case "${1:-all-route}" in
   sch)        sch ;;
-  pcb)        pcb ;;
   check)      check ;;
   route)      route ;;
   fab)        fab ;;
-  all)        sch; pcb ;;
-  all-route)  sch; pcb; route; fab ;;
-  *) echo "usage: $0 {sch|pcb|check|route|fab|all|all-route}"; exit 1 ;;
+  all)        sch; check; route ;;
+  all-route)  sch; check; route; fab ;;
+  *) echo "usage: $0 {sch|check|route|fab|all|all-route}"; exit 1 ;;
 esac
 echo "✓ done"
