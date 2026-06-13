@@ -95,12 +95,9 @@
 			(outputdirectory "")
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "02a96f20-dfc2-4ac0-86a1-613249c949e8")
-		(path "/5eeef7f3-81e6-4e11-be51-cdc2e5caedde")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 33.185001 40.823999 90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -165,6 +162,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8c0225c0-f1eb-4509-8af2-c1401832e4b5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/5eeef7f3-81e6-4e11-be51-cdc2e5caedde")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -288,12 +301,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "0e384a23-28be-4558-b41e-79d16a307853")
-		(path "/13f56206-71b6-4bb5-80eb-ae52371720e3")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 25.6 61.2 -90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -358,6 +368,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ca8445f9-e053-468d-aee5-1cd223bbc32e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/13f56206-71b6-4bb5-80eb-ae52371720e3")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -481,12 +507,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "148511ff-1e79-4d8d-a3ce-5db46480cd69")
-		(path "/94048026-d79f-4ec5-a98b-3e1da966763d")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 43.923999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -551,6 +574,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "92c42fd0-1af8-4f7f-8b28-bcd44ebaf4ad")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/94048026-d79f-4ec5-a98b-3e1da966763d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -674,7 +713,7 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "14970937-05d4-41a7-b031-ce4564a64bf0")
 		(at 32.799999 60.5 -90)
@@ -734,6 +773,19 @@
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "56c06ed2-27c3-4ee8-bb40-dff6bf30b37f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1001T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "032396bb-c12c-4213-b605-c0807d45faf2")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -867,12 +919,199 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
-		(uuid "21765f84-fddf-4ec6-b483-ca31605e1f4e")
-		(path "/50212151-7c28-4705-b21c-3592c034b045")
+		(uuid "194daaa4-8281-4dbe-9ff9-5186c928d2f3")
+		(at 90.25 89)
+		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
+		(tags "resistor")
+		(property "Reference" "R28"
+			(at 0 -1.3 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "6c1be33d-5937-4fe4-9f39-9b55a572625c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "100Ω"
+			(at 0 1.43 0)
+			(layer "F.Fab")
+			(uuid "b52aa18b-763b-4e0b-ace5-5a007e3deeea")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a62c267c-a7de-4159-a85f-32011ea458a9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e92cbaa2-b468-48a8-bc48-da7278207244")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "R_*")
+		(path "/e511e47a-25d0-421a-8451-e1580634ff5e")
 		(sheetname "/")
 		(sheetfile "doorbell.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
+		(solder_mask_margin 0.038)
+		(attr smd)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_line
+			(start -1.3 -0.6)
+			(end 1.3 -0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "3e9170df-119c-450c-8947-7fb1ca1ce891")
+		)
+		(fp_line
+			(start -1.3 0.6)
+			(end -1.3 -0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "bb233c7d-a5f8-41cf-b06c-bcb041a2e3d6")
+		)
+		(fp_line
+			(start 1.3 -0.6)
+			(end 1.3 0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "38d24745-3a89-437b-8c4a-92a91f0c710e")
+		)
+		(fp_line
+			(start 1.3 0.6)
+			(end -1.3 0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "3fd247d2-0663-48d9-bee8-ad971b4e708d")
+		)
+		(fp_line
+			(start -0.8 -0.41)
+			(end 0.8 -0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "74ffc209-218c-4fcd-8a32-8d015c08f3af")
+		)
+		(fp_line
+			(start -0.8 0.41)
+			(end -0.8 -0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "3ea7bfcd-0626-4883-a7a9-a198daabd365")
+		)
+		(fp_line
+			(start 0.8 -0.41)
+			(end 0.8 0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "2fb89af2-0355-49ca-8803-af90ffed726a")
+		)
+		(fp_line
+			(start 0.8 0.41)
+			(end -0.8 0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "c26e99e2-3d16-4f47-ba64-a66170eaf8b8")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "463492eb-dfb7-4507-8873-8b4026bc253c")
+			(effects
+				(font
+					(size 0.4 0.4)
+					(thickness 0.06)
+				)
+			)
+		)
+		(pad "1" smd roundrect
+			(at -0.82 0)
+			(size 0.8 0.95)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(roundrect_rratio 0.25)
+			(net "unconnected-(R28-Pad1)")
+			(pintype "passive")
+			(uuid "2bf0203e-2875-4bc5-9a39-9ff7075ebf59")
+		)
+		(pad "2" smd roundrect
+			(at 0.82 0)
+			(size 0.8 0.95)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(roundrect_rratio 0.25)
+			(net "/TEST_A")
+			(pintype "passive")
+			(uuid "112df2da-a329-4e61-add5-76e53989f1d9")
+		)
+		(embedded_fonts no)
+		(model "${KICAD8_3RD_PARTY}/3dmodels/com_github_CDFER_JLCPCB-Kicad-Library/JLCPCB.3dshapes/R_0603.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
+	(footprint "PCM_JLCPCB:C_0603"
+		(layer "F.Cu")
+		(uuid "21765f84-fddf-4ec6-b483-ca31605e1f4e")
 		(at 37.485001 45.123999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -937,6 +1176,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d304fd16-5065-4ebd-87ec-ffa814b04a63")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/50212151-7c28-4705-b21c-3592c034b045")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -1060,12 +1315,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "2516a9a0-214a-481b-af62-4eb741151ade")
-		(path "/642ffeda-ff4b-46ba-b343-f5e328ade4e1")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 42.723999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -1130,6 +1382,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c22600db-efd3-49f4-a808-f0a2c9048774")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/642ffeda-ff4b-46ba-b343-f5e328ade4e1")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -1253,12 +1521,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "28158d13-a739-4cde-957e-30c9c3973289")
-		(path "/18b966e7-a18e-4271-935d-0bd1cd5fe388")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 48 13.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -1323,6 +1588,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1001T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9d88302d-fad9-45b7-92b1-bb51bcf5615b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/18b966e7-a18e-4271-935d-0bd1cd5fe388")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -1446,12 +1727,9 @@
 			)
 		)
 	)
-	(footprint "Q_SOT-23"
+	(footprint "PCM_JLCPCB:Q_SOT-23"
 		(layer "F.Cu")
 		(uuid "284eb30e-e880-487c-be88-372529f5fc1f")
-		(path "/66dea724-e5f7-403d-b317-2e411c1ab143")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 23.5 34 180)
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
@@ -1515,6 +1793,22 @@
 				)
 			)
 		)
+		(property "MPN" "2N7002"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7da01a28-16be-4a7f-8b2a-30155f11f1ee")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/66dea724-e5f7-403d-b317-2e411c1ab143")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1707,12 +2001,9 @@
 			)
 		)
 	)
-	(footprint "XFMR-SMD_SM-LP-5001E"
+	(footprint "SM_LP_5001:XFMR-SMD_SM-LP-5001E"
 		(layer "F.Cu")
 		(uuid "29130614-6584-4c51-b747-ca9e7c906979")
-		(path "/36e53789-6c02-4ba4-a9f4-9a48b24e901c")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 32.75 54.498999)
 		(property "Reference" "T1"
 			(at 0 0 0)
@@ -1782,6 +2073,22 @@
 				)
 			)
 		)
+		(property "MPN" "SM-LP-5001"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8c8308e7-bb5c-4e16-9d1a-203586b157ba")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/36e53789-6c02-4ba4-a9f4-9a48b24e901c")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2032,12 +2339,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "2c5e8210-b516-410e-9ff6-5bdb5d5e69ab")
-		(path "/634f8dd7-d779-496f-9e3c-b47f8e2c6288")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 43.25 48.25)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -2102,6 +2406,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0bca2b03-ddf3-492d-b775-bc1716ea3d80")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/634f8dd7-d779-496f-9e3c-b47f8e2c6288")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -2225,12 +2545,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "32291240-e759-49ea-a647-88b32f7a17db")
-		(path "/ec43a01f-5c1b-4437-986e-5cb32649b14e")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 27 34 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -2295,6 +2612,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3c764aeb-e42c-4164-b58d-b9553eb246fb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/ec43a01f-5c1b-4437-986e-5cb32649b14e")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -2418,17 +2751,14 @@
 			)
 		)
 	)
-	(footprint "SW-SMD_NIDEC_CAS-220XBX"
+	(footprint "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
 		(layer "F.Cu")
 		(uuid "38d1e0ce-fe1e-42d3-8158-220119de36bd")
-		(path "/551c2a7c-7cd9-422f-9055-cc31abd18201")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 3 16 180)
 		(property "Reference" "SW5"
 			(at 0 0 0)
 			(layer "F.SilkS")
-			(uuid "98e330e2-cd04-4224-a236-99855bb2f625")
+			(uuid "9357120a-4393-4d50-8ee1-7435e8f38847")
 			(effects
 				(font
 					(size 1 1)
@@ -2439,7 +2769,7 @@
 		(property "Value" "CAS-220TB1"
 			(at 0 6.65 180)
 			(layer "F.Fab")
-			(uuid "28535750-d183-46ef-8c4c-fdd3819ca666")
+			(uuid "1c989268-e42c-4790-942d-5cb2bd5f3286")
 			(effects
 				(font
 					(size 1 1)
@@ -2451,7 +2781,7 @@
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "181ce23e-220b-4f6e-bd2d-c7029c950791")
+			(uuid "7a3d3d62-2506-446b-8d96-86e583a040d5")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2462,7 +2792,7 @@
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "0fee7c1b-e6ac-4cfa-9799-7acd459c21c8")
+			(uuid "de893363-9b62-47a5-8adb-a63e3fb0572b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2491,6 +2821,28 @@
 					(size 1.27 1.27)
 					(thickness 0.15)
 				)
+			)
+		)
+		(property "MPN" "CAS-220TB1"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1d486398-3961-46df-a8b3-58c3cc13ad5a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/551c2a7c-7cd9-422f-9055-cc31abd18201")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "4" "1" "5" "2" "6" "3")
 			)
 		)
 		(attr smd)
@@ -2745,12 +3097,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "3cddae56-ef9b-49b8-8dc6-4e5f4f35661f")
-		(path "/c062db83-78f4-4405-adcf-1ac3b1851084")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 44.053999 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -2815,6 +3164,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b4a9b57d-1e2f-447c-b798-dfe1e99c79d0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/c062db83-78f4-4405-adcf-1ac3b1851084")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -2938,12 +3303,9 @@
 			)
 		)
 	)
-	(footprint "SOP-4_4.4x2.6mm_P1.27mm"
+	(footprint "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
 		(layer "F.Cu")
 		(uuid "3f17e10f-9f4d-43f1-9195-d353baa4e342")
-		(path "/c379b159-68bd-4c35-84c5-a8e1aa4d20bf")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 10.74 31.6 -90)
 		(descr "SOP, 4 Pin (http://www.vishay.com/docs/83510/tcmt1100.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOP SO")
@@ -3005,6 +3367,22 @@
 				)
 			)
 		)
+		(property "MPN" "LTV-217-B-G"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "407b4fee-eee1-45f9-af8e-82d0580d0b7f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/c379b159-68bd-4c35-84c5-a8e1aa4d20bf")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3245,12 +3623,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "4015fd0a-5d5c-44f1-a27f-c9a2d9a4a504")
-		(path "/e11a182c-a29e-49b5-9f86-5f2ecb2be20f")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 6.74 21.35)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -3315,6 +3690,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF5101T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "37680ec5-4679-4ef1-922a-cf8e1d229e7b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/e11a182c-a29e-49b5-9f86-5f2ecb2be20f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -3438,12 +3829,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "45548c0b-d73f-4e5b-ba0c-28fca8edeb91")
-		(path "/6d9c82a7-172e-4603-83cc-2005e43fc664")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 15.5 34 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -3508,6 +3896,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1307e2fe-b443-4c17-b6a6-c5c021e597de")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/6d9c82a7-172e-4603-83cc-2005e43fc664")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -3631,12 +4035,9 @@
 			)
 		)
 	)
-	(footprint "Fuse_1206_3216Metric"
+	(footprint "Fuse:Fuse_1206_3216Metric"
 		(layer "F.Cu")
 		(uuid "4589ace1-34f2-445f-81ad-91c1d55fbb1a")
-		(path "/cae71a9d-1721-47d1-8214-7270bff4df8f")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 46.5 55.25 90)
 		(descr "Fuse SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf)")
 		(tags "fuse")
@@ -3708,6 +4109,9 @@
 				)
 			)
 		)
+		(path "/cae71a9d-1721-47d1-8214-7270bff4df8f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3792,12 +4196,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "45b3dc8a-189e-4458-b560-1d01d2f690cc")
-		(path "/78243ee0-f845-4c5d-8c25-8e44e2c37610")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 41.523999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -3862,6 +4263,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5963ff68-747f-41ff-9519-f91bb519c58f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/78243ee0-f845-4c5d-8c25-8e44e2c37610")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -3985,12 +4402,9 @@
 			)
 		)
 	)
-	(footprint "ESP32-C6-WROOM-1"
+	(footprint "PCM_Espressif:ESP32-C6-WROOM-1"
 		(layer "F.Cu")
 		(uuid "4bc51ebc-70ce-4fe3-acaf-72a01662e065")
-		(path "/537ad7fc-6572-4a27-ad37-b059f16f6e62")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 13 53.7 180)
 		(descr "ESP32-C6-WROOM-1: https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_datasheet_en.pdf")
 		(tags "esp32-c6")
@@ -4050,6 +4464,9 @@
 				)
 			)
 		)
+		(path "/537ad7fc-6572-4a27-ad37-b059f16f6e62")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4551,12 +4968,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "500dbc7b-3600-4f78-b9dd-aae4f5858b22")
-		(path "/41adc09d-2870-4630-92dd-83319e9e3e15")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 17 40)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -4621,6 +5035,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "40fb3fef-1190-490a-afe9-62b4e93bdfe6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/41adc09d-2870-4630-92dd-83319e9e3e15")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -4744,12 +5174,9 @@
 			)
 		)
 	)
-	(footprint "Relay_DPDT_Omron_G6K-2F-Y"
+	(footprint "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y"
 		(layer "F.Cu")
 		(uuid "53c3aac8-af5e-4a0e-bfac-b617b33c1886")
-		(path "/3c5b10b8-af2b-4327-9f8d-41a6d601a0bb")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 31 27 -90)
 		(descr "Omron G6K-2F-Y relay package http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf")
 		(tags "Omron G6K-2F-Y relay")
@@ -4813,6 +5240,9 @@
 				)
 			)
 		)
+		(path "/3c5b10b8-af2b-4327-9f8d-41a6d601a0bb")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5121,12 +5551,9 @@
 			)
 		)
 	)
-	(footprint "USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal"
+	(footprint "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal"
 		(layer "F.Cu")
 		(uuid "58bea0ab-fb88-4af7-b854-a8123e40313b")
-		(path "/54315f86-3771-4272-a04b-6d33d668d27d")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 44.1 66.109999)
 		(descr "USB 2.0 Type C Receptacle, GCT, 16P, top mounted, horizontal, 5A: https://gct.co/files/drawings/usb4105.pdf")
 		(tags "USB C Type-C Receptacle SMD USB 2.0 16P 16C USB4105-15-A USB4105-15-A-060 USB4105-15-A-120 USB4105-GF-A USB4105-GF-A-060 USB4105-GF-A-120")
@@ -5192,6 +5619,9 @@
 				)
 			)
 		)
+		(path "/54315f86-3771-4272-a04b-6d33d668d27d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5463,12 +5893,9 @@
 			)
 		)
 	)
-	(footprint "SW_TS-1088-AR02016"
+	(footprint "PCM_JLCPCB:SW_TS-1088-AR02016"
 		(layer "F.Cu")
 		(uuid "5e9d2fb1-77e7-4074-a187-d8eeaae0070e")
-		(path "/3b711b43-30f8-4ae0-a389-4adfc2e5621d")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 8.5 41 180)
 		(property "Reference" "SW1"
 			(at 0.425 -2.635 180)
@@ -5529,6 +5956,22 @@
 				)
 			)
 		)
+		(property "MPN" "TS-1088-AR02016"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bc732207-1aa1-49de-8bd7-169343d50172")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/3b711b43-30f8-4ae0-a389-4adfc2e5621d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5682,12 +6125,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "5e9ea75b-eb1f-436d-9263-6e632ccdda6f")
-		(path "/7583b703-fb24-4d46-9dfa-cb71c32b2a17")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 30.585001 40.823999 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -5752,6 +6192,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d839057e-69d2-42c4-a117-16c174fb8892")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/7583b703-fb24-4d46-9dfa-cb71c32b2a17")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -5875,12 +6331,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "5f860a66-9626-4827-bcb6-a172cfcad85f")
-		(path "/1d63870e-ac90-4408-bdeb-eb2909c6a900")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 49.21 59.75 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -5945,6 +6398,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF5101T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3f51c566-f38c-4641-8121-69e20875204c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/1d63870e-ac90-4408-bdeb-eb2909c6a900")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -6068,12 +6537,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "5fbf68b0-c260-4b7f-967e-5be07079caf8")
-		(path "/5e48f818-483c-42b2-bbe7-8dda6ad956a7")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 47.253999 180)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -6138,6 +6604,22 @@
 				)
 			)
 		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0b61415b-e98d-453a-a31d-d0e46016fb82")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/5e48f818-483c-42b2-bbe7-8dda6ad956a7")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -6261,12 +6743,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "615c2d39-09c0-4bca-974b-0741beeb3ca1")
-		(path "/a6ad5c9f-0d20-4db1-91b3-3b2bf1b74b85")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 10.555 36.9 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -6331,6 +6810,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3ee04644-068f-44f6-b649-61e690819827")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/a6ad5c9f-0d20-4db1-91b3-3b2bf1b74b85")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -6454,12 +6949,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "63083740-673c-4fff-b9c6-57decbbf0db3")
-		(path "/1ce4a394-96da-403e-aacf-1073fbc022cf")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 35.4 60.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -6524,6 +7016,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "682dbd59-b1cf-4c56-8c2d-5b23a4a6241e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/1ce4a394-96da-403e-aacf-1073fbc022cf")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -6647,17 +7155,14 @@
 			)
 		)
 	)
-	(footprint "SW-SMD_NIDEC_CAS-220XBX"
+	(footprint "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
 		(layer "F.Cu")
 		(uuid "63a52966-8e7e-497d-9bf7-d312f9ec286f")
-		(path "/6ea72009-0268-4090-bfe6-a67c2f81712b")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 15 16 180)
 		(property "Reference" "SW3"
 			(at 0 0 0)
 			(layer "F.SilkS")
-			(uuid "57fd731c-830a-43ed-9d21-12d80620ec6d")
+			(uuid "2efd0f91-d6d1-4a2c-9279-4c405cb09510")
 			(effects
 				(font
 					(size 1 1)
@@ -6668,7 +7173,7 @@
 		(property "Value" "CAS-220TB1"
 			(at 0 6.65 180)
 			(layer "F.Fab")
-			(uuid "2fceaa80-f626-4a59-872e-858d5aa83629")
+			(uuid "ebde6723-8190-49fd-9968-81910bf46fcd")
 			(effects
 				(font
 					(size 1 1)
@@ -6680,7 +7185,7 @@
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "000f5f76-15b8-472d-9168-5a71b9b7f6b9")
+			(uuid "3222cfe6-4b0d-4c29-b68f-112d085c9331")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6691,7 +7196,7 @@
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "75b32ecc-01be-4429-9200-6670985ab444")
+			(uuid "6c5999b4-4d92-44c5-b646-844590e7079b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6720,6 +7225,28 @@
 					(size 1.27 1.27)
 					(thickness 0.15)
 				)
+			)
+		)
+		(property "MPN" "CAS-220TB1"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ff9ff120-8621-4cd2-bbe5-b1aeed04a0d0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/6ea72009-0268-4090-bfe6-a67c2f81712b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "4" "1" "5" "2" "6" "3")
 			)
 		)
 		(attr smd)
@@ -6974,12 +7501,9 @@
 			)
 		)
 	)
-	(footprint "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1"
+	(footprint "TPD2S017:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL"
 		(layer "F.Cu")
 		(uuid "68fa178e-830f-46e0-a28b-353a6ded1025")
-		(path "/3cada404-0183-4d53-aeb7-3d2777f2ff51")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 44 59.25)
 		(descr "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1 footprint")
 		(tags "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1 footprint C7420376")
@@ -7041,6 +7565,22 @@
 				)
 			)
 		)
+		(property "MPN" "TPD2S017DBVR"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "af0a4b2f-2f8b-44b4-9bb8-2dbe6a5c39ad")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/3cada404-0183-4d53-aeb7-3d2777f2ff51")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7197,12 +7737,9 @@
 			)
 		)
 	)
-	(footprint "WQFN-20_L3.0-W3.0-P0.40-BL-EP1.7"
+	(footprint "ES8311:WQFN-20_L3.0-W3.0-P0.40-BL-EP1.7"
 		(layer "F.Cu")
 		(uuid "699a534c-9f8a-48aa-b4a4-7900790d9ab8")
-		(path "/7f71897f-0f41-4871-a004-ce39d6c56c6b")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 32.285001 45.623999 -90)
 		(property "Reference" "U3"
 			(at 2.4 -2.4 0)
@@ -7272,6 +7809,22 @@
 				)
 			)
 		)
+		(property "MPN" "ES8311"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a37e28a9-ccc5-4f5f-850d-def0b3012eb3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/7f71897f-0f41-4871-a004-ce39d6c56c6b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -7518,12 +8071,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "69b4c6f2-cf45-489e-bbc8-f7fbd66b470d")
-		(path "/b7767f52-3091-4ec5-b28b-edd17e46b0df")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 14.68 36.9)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -7588,6 +8138,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1000T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bcb036bc-fe06-4438-98ff-fe03fb30da52")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/b7767f52-3091-4ec5-b28b-edd17e46b0df")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -7711,12 +8277,9 @@
 			)
 		)
 	)
-	(footprint "D_SOD-123"
+	(footprint "PCM_JLCPCB:D_SOD-123"
 		(layer "F.Cu")
 		(uuid "6a3c4766-6f7b-4f68-9522-566779571617")
-		(path "/4cd32f8e-7a4c-4afe-bfee-93c655e87d31")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 6.74 24.6 90)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -7780,6 +8343,22 @@
 				)
 			)
 		)
+		(property "MPN" "1N4148W"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b081f7ce-10db-475a-ae24-b417a1d75bdb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/4cd32f8e-7a4c-4afe-bfee-93c655e87d31")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -8003,12 +8582,9 @@
 			)
 		)
 	)
-	(footprint "D_SOD-123"
+	(footprint "PCM_JLCPCB:D_SOD-123"
 		(layer "F.Cu")
 		(uuid "6dbe523d-ec67-4989-bc28-1fc4f33a2bd2")
-		(path "/293b6704-2c94-4cb6-bc49-0d94f5f6e7bb")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 41.8 33.6)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -8072,6 +8648,22 @@
 				)
 			)
 		)
+		(property "MPN" "1N4148W"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0d1b7fc5-7303-4b89-80b9-97eda4be20de")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/293b6704-2c94-4cb6-bc49-0d94f5f6e7bb")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -8295,12 +8887,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "70c54529-eb5e-4bf6-acb5-60f10a1b5254")
-		(path "/7c6138ea-e012-486a-905b-28c940ac36f2")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 26.18 36.9)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -8365,6 +8954,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1000T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cc32ff3e-afb9-4863-9244-7ccd0787b906")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/7c6138ea-e012-486a-905b-28c940ac36f2")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -8488,12 +9093,9 @@
 			)
 		)
 	)
-	(footprint "SOP-4_4.4x2.6mm_P1.27mm"
+	(footprint "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
 		(layer "F.Cu")
 		(uuid "72a52754-2f2e-4c72-8a09-9af6398fba29")
-		(path "/6f980e6a-cc58-4166-a38a-440068b0231d")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 6.74 31.6 -90)
 		(descr "SOP, 4 Pin (http://www.vishay.com/docs/83510/tcmt1100.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOP SO")
@@ -8555,6 +9157,22 @@
 				)
 			)
 		)
+		(property "MPN" "LTV-217-B-G"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "89f23c38-e27c-4671-b8c1-7f033dd73873")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/6f980e6a-cc58-4166-a38a-440068b0231d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8795,12 +9413,9 @@
 			)
 		)
 	)
-	(footprint "Relay_DPDT_Omron_G6K-2F-Y"
+	(footprint "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y"
 		(layer "F.Cu")
 		(uuid "783b491b-46ca-45c7-bc5c-74be3fb58195")
-		(path "/9fab850e-3ff9-4a72-89b0-2f5856f04ffd")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 42.5 27 -90)
 		(descr "Omron G6K-2F-Y relay package http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf")
 		(tags "Omron G6K-2F-Y relay")
@@ -8864,6 +9479,9 @@
 				)
 			)
 		)
+		(path "/9fab850e-3ff9-4a72-89b0-2f5856f04ffd")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9172,12 +9790,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "78eaf22a-4b47-423a-983c-6d4e7c59f603")
-		(path "/a7bb1c8c-7185-4fb1-86f5-bf20fd96098c")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 46.053999 180)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -9242,6 +9857,22 @@
 				)
 			)
 		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "536aa2a6-04fd-4474-b888-a739a29528d7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/a7bb1c8c-7185-4fb1-86f5-bf20fd96098c")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -9365,12 +9996,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "7a14c8df-9c17-40e2-a217-d04f0e9940fc")
-		(path "/1f38e03f-0753-4491-8eb4-4f01d238c7f0")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 10.74 21.35)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -9435,6 +10063,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF5101T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9e8e19b7-a463-4359-a637-22de405bbefb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/1f38e03f-0753-4491-8eb4-4f01d238c7f0")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -9558,12 +10202,9 @@
 			)
 		)
 	)
-	(footprint "D_SOD-123"
+	(footprint "PCM_JLCPCB:D_SOD-123"
 		(layer "F.Cu")
 		(uuid "7a373581-13d8-4874-861b-57851d608704")
-		(path "/7091aebf-6297-4467-826b-8757a68e4006")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 2.74 24.6 90)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -9627,6 +10268,22 @@
 				)
 			)
 		)
+		(property "MPN" "1N4148W"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6aa8422d-a634-45bf-b998-1296d94ec76c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/7091aebf-6297-4467-826b-8757a68e4006")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -9850,12 +10507,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "7e7a6d8b-c740-4835-8a28-1d44d4a85e7a")
-		(path "/6d6d4283-1dde-44e2-855c-a0598662da41")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 2.555 36.9 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -9920,6 +10574,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1023afa3-5822-4901-b092-d915b2484de5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/6d6d4283-1dde-44e2-855c-a0598662da41")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -10043,12 +10713,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "83beaeba-9652-4762-95e0-71b2e1d03b3d")
-		(path "/7f07ed5c-de7e-4190-8b52-8851cbe9c67b")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 31.5 60.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -10113,6 +10780,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1001T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "823cdca2-8e18-46ee-8c10-4bf526278e9f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/7f07ed5c-de7e-4190-8b52-8851cbe9c67b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -10236,12 +10919,9 @@
 			)
 		)
 	)
-	(footprint "Q_SOT-23"
+	(footprint "PCM_JLCPCB:Q_SOT-23"
 		(layer "F.Cu")
 		(uuid "88400974-bd61-4a51-81ce-2788a3c21aa7")
-		(path "/16392b46-b690-498d-a37d-4494fab432f8")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 46.5 34 180)
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
@@ -10305,6 +10985,22 @@
 				)
 			)
 		)
+		(property "MPN" "2N7002"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ba315f04-67e8-4dab-95d5-f539f1f45aa5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/16392b46-b690-498d-a37d-4494fab432f8")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10497,12 +11193,9 @@
 			)
 		)
 	)
-	(footprint "D_SOD-123"
+	(footprint "PCM_JLCPCB:D_SOD-123"
 		(layer "F.Cu")
 		(uuid "91bae3f3-8c5d-473c-b106-e84af7913293")
-		(path "/c1d68b48-7fba-41f2-b817-96df2e939433")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 10.74 24.6 90)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -10566,6 +11259,22 @@
 				)
 			)
 		)
+		(property "MPN" "1N4148W"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2888bde7-a60b-45af-aad7-ec88844b1f29")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/c1d68b48-7fba-41f2-b817-96df2e939433")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -10789,12 +11498,9 @@
 			)
 		)
 	)
-	(footprint "SW_TS-1088-AR02016"
+	(footprint "PCM_JLCPCB:SW_TS-1088-AR02016"
 		(layer "F.Cu")
 		(uuid "94fded40-719d-4038-9cc2-64def48f1726")
-		(path "/33d59996-1bda-4a24-99c8-716fb30c4e4b")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 22 41)
 		(property "Reference" "SW2"
 			(at 0.425 -2.635 0)
@@ -10855,6 +11561,22 @@
 				)
 			)
 		)
+		(property "MPN" "TS-1088-AR02016"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "65c25b24-cf06-45b6-b383-96c115f6b3cb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/33d59996-1bda-4a24-99c8-716fb30c4e4b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11008,12 +11730,9 @@
 			)
 		)
 	)
-	(footprint "D_SOD-123"
+	(footprint "PCM_JLCPCB:D_SOD-123"
 		(layer "F.Cu")
 		(uuid "97cab641-81d1-41f5-9945-74346b1618a4")
-		(path "/b782e548-dc19-4a67-897b-cc03023a4b37")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 30.3 33.6)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -11077,6 +11796,22 @@
 				)
 			)
 		)
+		(property "MPN" "1N4148W"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "75533706-9270-4c4f-aa7f-f297dcb30cfa")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/b782e548-dc19-4a67-897b-cc03023a4b37")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -11398,12 +12133,9 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "Relay_DPDT_Omron_G6K-2F-Y"
+	(footprint "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y"
 		(layer "F.Cu")
 		(uuid "9bc7318d-30ad-41ac-b2a0-8bc8a2d2fb49")
-		(path "/bb4ec0d3-65b1-4007-b16b-518564449393")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 19.5 27 -90)
 		(descr "Omron G6K-2F-Y relay package http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf")
 		(tags "Omron G6K-2F-Y relay")
@@ -11467,6 +12199,9 @@
 				)
 			)
 		)
+		(path "/bb4ec0d3-65b1-4007-b16b-518564449393")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11777,12 +12512,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "9c8b6074-0ab8-45db-9762-53594743b9af")
-		(path "/d58f8929-2fe6-4d2d-85a3-b6ef11f2d85c")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 2.74 21.35)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -11847,6 +12579,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF5101T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "39291bb1-d8f2-412a-b0e6-3ffedc8c1cf8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/d58f8929-2fe6-4d2d-85a3-b6ef11f2d85c")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -11970,12 +12718,9 @@
 			)
 		)
 	)
-	(footprint "SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR"
+	(footprint "PCM_JLCPCB:SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR"
 		(layer "F.Cu")
 		(uuid "a15b61c0-7e99-4f28-8cc7-2e2e8bd6a674")
-		(path "/a87bc91d-b121-4ced-9fb2-2cfc99a09c3f")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 45.44 44 180)
 		(descr "SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR footprint")
 		(tags "SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR footprint C6186")
@@ -12037,6 +12782,9 @@
 				)
 			)
 		)
+		(path "/a87bc91d-b121-4ced-9fb2-2cfc99a09c3f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -12227,12 +12975,9 @@
 			)
 		)
 	)
-	(footprint "TerminalBlock_4Ucon_1x06_P3.50mm_Vertical"
+	(footprint "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "a27190c1-19bd-4979-9d79-5df06e5921af")
-		(path "/a0fd1854-a2a8-4daa-b44f-68cb5995e40f")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 44.15 15 180)
 		(descr "Terminal Block 4Ucon ItemNo. 10697, vertical (cable from top), 6 pins, pitch 3.5mm, size 22x8.3mm, drill diameter 1.3mm, pad diameter 2.6mm, http://www.4uconnector.com/online/object/4udrawing/10697.pdf")
 		(tags "THT Terminal Block 4Ucon ItemNo. 10697 vertical pitch 3.5mm size 22x8.3mm drill 1.3mm pad 2.6mm")
@@ -12305,6 +13050,9 @@
 				)
 			)
 		)
+		(path "/a0fd1854-a2a8-4daa-b44f-68cb5995e40f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -12967,12 +13715,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "a2fc4a8d-a425-44bd-a419-e777743c354f")
-		(path "/e297ac5f-ce2f-4459-92c8-f38689957909")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 27 61.2 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -13037,6 +13782,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF3301T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bcc19729-c356-4310-afa3-d8aa36803883")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/e297ac5f-ce2f-4459-92c8-f38689957909")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -13160,6 +13921,196 @@
 			)
 		)
 	)
+	(footprint "PCM_JLCPCB:R_0603"
+		(layer "F.Cu")
+		(uuid "b09e2672-23e6-453a-91a8-33b31466accc")
+		(at 90.18 95.75)
+		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
+		(tags "resistor")
+		(property "Reference" "R29"
+			(at 0 -1.3 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "8aa720f9-80ff-4dd0-a3de-3f4f74ba314e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "100Ω"
+			(at 0 1.43 0)
+			(layer "F.Fab")
+			(uuid "ab7ba009-90c2-445a-90da-992767e06d6c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f69cca4a-9d34-410d-b731-4a2b3eb96eed")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6561c481-0b27-48f6-bb87-513ad9a81d05")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "R_*")
+		(path "/ed6553b9-1b4d-4588-b75d-ed9bf79a6419")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
+		(solder_mask_margin 0.038)
+		(attr smd)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_line
+			(start -1.3 -0.6)
+			(end 1.3 -0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "8c22abee-bb88-4cb3-b7a3-aaa015c3c457")
+		)
+		(fp_line
+			(start -1.3 0.6)
+			(end -1.3 -0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "8f555ff3-df33-4dc8-af66-cc653629b1b5")
+		)
+		(fp_line
+			(start 1.3 -0.6)
+			(end 1.3 0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "c86054d9-56e0-48d4-b45f-9eae11b8dc2b")
+		)
+		(fp_line
+			(start 1.3 0.6)
+			(end -1.3 0.6)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "cf4ff10b-561c-4ca1-9353-6c0c9741ccc4")
+		)
+		(fp_line
+			(start -0.8 -0.41)
+			(end 0.8 -0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "4104c448-fb2d-44d5-b302-78234e770a60")
+		)
+		(fp_line
+			(start -0.8 0.41)
+			(end -0.8 -0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "72973131-bdbb-4c33-9139-63e38c523ac9")
+		)
+		(fp_line
+			(start 0.8 -0.41)
+			(end 0.8 0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "e716fa6c-1ed9-4416-b3de-d37ae65f6e01")
+		)
+		(fp_line
+			(start 0.8 0.41)
+			(end -0.8 0.41)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "6aa6a7f6-b53a-4df9-a9fc-980d8938701f")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "ef8bd1c2-7705-4435-bea8-15d6191258aa")
+			(effects
+				(font
+					(size 0.4 0.4)
+					(thickness 0.06)
+				)
+			)
+		)
+		(pad "1" smd roundrect
+			(at -0.82 0)
+			(size 0.8 0.95)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(roundrect_rratio 0.25)
+			(net "unconnected-(R29-Pad1)")
+			(pintype "passive")
+			(uuid "14cbf1cc-c791-44e6-b64c-2481fb39c927")
+		)
+		(pad "2" smd roundrect
+			(at 0.82 0)
+			(size 0.8 0.95)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(roundrect_rratio 0.25)
+			(net "/TEST_A")
+			(pintype "passive")
+			(uuid "837e027f-51fa-43ad-84fa-6989e71eb380")
+		)
+		(embedded_fonts no)
+		(model "${KICAD8_3RD_PARTY}/3dmodels/com_github_CDFER_JLCPCB-Kicad-Library/JLCPCB.3dshapes/R_0603.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
 	(footprint "TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "b21792f5-80bd-468d-a6d9-388632fbb5e0")
@@ -13258,12 +14209,9 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "b2c8a0ba-519a-475c-b59d-19f99d75c077")
-		(path "/14734a9a-2a4b-4281-b158-edddcb7ce4ef")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 24.2 61.2 -90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -13328,6 +14276,22 @@
 				)
 			)
 		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c3b2e00c-ede2-469a-8abf-3a2d403f6ef5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/14734a9a-2a4b-4281-b158-edddcb7ce4ef")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -13451,17 +14415,14 @@
 			)
 		)
 	)
-	(footprint "SW-SMD_NIDEC_CAS-220XBX"
+	(footprint "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
 		(layer "F.Cu")
 		(uuid "b2fe9f7d-1d80-4fe8-ac3e-2f9d339e6b7b")
-		(path "/850ebb42-178b-4133-9a13-a8fde73fd64a")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 9 16 180)
 		(property "Reference" "SW4"
 			(at 0 0 0)
 			(layer "F.SilkS")
-			(uuid "0a3e6745-7b07-43d7-bafb-15a51a6f08d5")
+			(uuid "1770692f-0999-4edb-84f6-64f23b199f31")
 			(effects
 				(font
 					(size 1 1)
@@ -13472,7 +14433,7 @@
 		(property "Value" "CAS-220TB1"
 			(at 0 6.65 180)
 			(layer "F.Fab")
-			(uuid "2683d8dc-5674-4ef8-948b-736b19e82fc2")
+			(uuid "1ed2c1cd-5967-467e-8353-e3f653d602ae")
 			(effects
 				(font
 					(size 1 1)
@@ -13484,7 +14445,7 @@
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "b8f2cdec-93ec-464e-8b4e-b0f9567e9b27")
+			(uuid "5aef23d7-332c-40a1-896b-0a2717f97a30")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13495,7 +14456,7 @@
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "aab657c5-e27d-4859-a05b-b599ba282206")
+			(uuid "7560e332-57c7-4054-bd6c-541938627cc9")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13524,6 +14485,28 @@
 					(size 1.27 1.27)
 					(thickness 0.15)
 				)
+			)
+		)
+		(property "MPN" "CAS-220TB1"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e207feb1-c339-4407-b9a4-e7cdb61eb541")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/850ebb42-178b-4133-9a13-a8fde73fd64a")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "4" "1" "5" "2" "6" "3")
 			)
 		)
 		(attr smd)
@@ -13778,12 +14761,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "b30607b8-e888-4e23-8578-7b4a069781ce")
-		(path "/32f2b5e8-9feb-4b4c-9be3-4b64ecdcb488")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 31.885001 40.823999 90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -13848,6 +14828,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bc3efaf4-95f2-451e-83af-0e5090f06890")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/32f2b5e8-9feb-4b4c-9be3-4b64ecdcb488")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -13971,12 +14967,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "b55f02d6-548c-4578-a254-d918fea039a8")
-		(path "/bdcf9a28-43e9-46ef-8e7e-1ab3bc8ec972")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 47.93 59.75 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -14041,6 +15034,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF5101T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d1600a29-05e4-4742-b1c4-457bab94baaf")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/bdcf9a28-43e9-46ef-8e7e-1ab3bc8ec972")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -14164,12 +15173,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "b9174d42-a159-49c4-abf7-b9e647e07a60")
-		(path "/cae5010f-87fe-405f-b64a-627c3c1719dc")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 46.323999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -14234,6 +15240,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6e4f14f9-9a62-4779-8129-85353b443467")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/cae5010f-87fe-405f-b64a-627c3c1719dc")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -14357,12 +15379,9 @@
 			)
 		)
 	)
-	(footprint "D_SOD-123"
+	(footprint "PCM_JLCPCB:D_SOD-123"
 		(layer "F.Cu")
 		(uuid "b929508a-03d0-4f0c-83ca-2db8ef32f2d5")
-		(path "/540148be-63c2-4dc5-8281-2b4ad1360f9e")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 18.8 33.6)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -14426,6 +15445,22 @@
 				)
 			)
 		)
+		(property "MPN" "1N4148W"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "32702893-cb6a-446d-8060-7b9cb79d36f0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/540148be-63c2-4dc5-8281-2b4ad1360f9e")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -14649,12 +15684,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "bbf0848d-efa2-48b0-ad2e-d607f9490d0e")
-		(path "/1cc7b71b-83a9-4971-a468-6d1232c8a9c0")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 37.68 36.9)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -14719,6 +15751,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1000T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4711f93a-c31f-45a2-aeb0-9e94aed8a2b8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/1cc7b71b-83a9-4971-a468-6d1232c8a9c0")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -14842,12 +15890,9 @@
 			)
 		)
 	)
-	(footprint "D_SMA"
+	(footprint "PCM_JLCPCB:D_SMA"
 		(layer "F.Cu")
 		(uuid "c2429c0f-9ec8-4b16-bcf7-aaa4b7770922")
-		(path "/839a9d09-6f8c-47ee-9b88-99f94b81c600")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 44.25 51)
 		(descr "Diode SMA (DO-214AC)")
 		(tags "Diode SMA (DO-214AC)")
@@ -14911,6 +15956,22 @@
 				)
 			)
 		)
+		(property "MPN" "SS14"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ea5ce7a3-aacc-44be-b45f-da59d9c7ca95")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/839a9d09-6f8c-47ee-9b88-99f94b81c600")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -15124,12 +16185,9 @@
 			)
 		)
 	)
-	(footprint "Q_SOT-23"
+	(footprint "PCM_JLCPCB:Q_SOT-23"
 		(layer "F.Cu")
 		(uuid "c551c3fd-4b68-4e92-998f-6a89ec1d5787")
-		(path "/0fd9a1d3-6b7e-4698-980e-ec866e1af331")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 35 34 180)
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
@@ -15193,6 +16251,22 @@
 				)
 			)
 		)
+		(property "MPN" "2N7002"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "34494503-11e4-4187-aa27-7621c7f4a654")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/0fd9a1d3-6b7e-4698-980e-ec866e1af331")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -15385,12 +16459,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "c5d2cb1a-8b4a-4a13-9b42-6531f5ada173")
-		(path "/e43c5f6a-c865-43c1-8b80-735a9e00df2d")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 13.5 41 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -15455,6 +16526,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "794ece56-a8d1-4f27-9674-869a4b4c3683")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/e43c5f6a-c865-43c1-8b80-735a9e00df2d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -15578,12 +16665,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "c62f81cd-c47b-46e0-be11-7e2fe9f6ca0e")
-		(path "/ae264dae-9c52-4da5-8f5a-3c311c4ef396")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 42.853998 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -15648,6 +16732,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7e087c3f-b5b3-4e8a-9f96-dcb8b51f5be2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/ae264dae-9c52-4da5-8f5a-3c311c4ef396")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -15771,12 +16871,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "c7b54058-477f-474d-badc-7966cac41ee5")
-		(path "/efd011fe-403a-4d6f-adcd-81ac3e6dd277")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 6.555 36.9 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -15841,6 +16938,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e90acc85-a7c9-44b9-bcb7-d59f483ef992")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/efd011fe-403a-4d6f-adcd-81ac3e6dd277")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -15964,12 +17077,9 @@
 			)
 		)
 	)
-	(footprint "SOP-4_4.4x2.6mm_P1.27mm"
+	(footprint "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
 		(layer "F.Cu")
 		(uuid "ced337b7-26ec-47cd-9b33-a9c9d8058085")
-		(path "/61a33a2d-7ea2-4556-8f5b-b3a2cfde8ac9")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 2.74 31.6 -90)
 		(descr "SOP, 4 Pin (http://www.vishay.com/docs/83510/tcmt1100.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOP SO")
@@ -16031,6 +17141,22 @@
 				)
 			)
 		)
+		(property "MPN" "LTV-217-B-G"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ad608351-f8a1-41f2-b1d9-4261603a5898")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/61a33a2d-7ea2-4556-8f5b-b3a2cfde8ac9")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -16271,12 +17397,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "d441cfbf-f39d-4c0f-a9ce-7e2b448394a5")
-		(path "/d4840c3a-2ce6-4b0a-ac82-fcae5437522d")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 38.5 34 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -16341,6 +17464,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "671794a1-9118-420a-8283-237cbe550843")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/d4840c3a-2ce6-4b0a-ac82-fcae5437522d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -16464,12 +17603,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "d6fc52db-d44d-4b3c-b702-c352a0b8f57c")
-		(path "/dec53da5-1d74-4791-9b2f-326941870174")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 0 33.92 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -16534,6 +17670,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1001T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4d47c799-7189-4d75-ba95-abad7a7e753d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/dec53da5-1d74-4791-9b2f-326941870174")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -16657,12 +17809,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "e0ab0a22-70b8-4cec-9a29-2d954b93bc93")
-		(path "/248dd4e9-33d6-4a7d-b0cc-e1fc38bf6a56")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 17 42 180)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -16727,6 +17876,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2e85641c-15a8-4b68-a49f-480141071ee8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/248dd4e9-33d6-4a7d-b0cc-e1fc38bf6a56")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -16850,12 +18015,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "e34c2bde-6dde-43b3-b0a1-86130bc6e9ed")
-		(path "/42eb0c80-8374-4e26-9e50-70c6fe9a97cf")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 34.485001 40.823999 90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -16920,6 +18082,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9218ba3e-30e5-4f6e-ab17-f9ca4d0e9654")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/42eb0c80-8374-4e26-9e50-70c6fe9a97cf")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -17043,12 +18221,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "e3e53f4d-d2c6-4cfa-8c51-bc0e5cbcbb0c")
-		(path "/da8391a0-5132-49ef-bc6c-d808a8d443ef")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 34.1 60.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -17113,6 +18288,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c19d5155-ba58-4696-9e7b-2847977df4cf")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/da8391a0-5132-49ef-bc6c-d808a8d443ef")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -17236,12 +18427,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "ee1d3e9f-0a6c-441a-a55c-d33177ec09b7")
-		(path "/76d4a7d3-f153-48e3-9389-ae5e62c6cca3")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 47.523999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -17306,6 +18494,22 @@
 				)
 			)
 		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "51c32a61-620b-41fe-a7ec-04c08053bea1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/76d4a7d3-f153-48e3-9389-ae5e62c6cca3")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -17429,12 +18633,9 @@
 			)
 		)
 	)
-	(footprint "D_0603"
+	(footprint "PCM_JLCPCB:D_0603"
 		(layer "F.Cu")
 		(uuid "f3102604-fbf3-4a72-9c17-8c4ff894a5b3")
-		(path "/7ded89a5-7efc-4005-b503-c7a418023290")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 48 16.5 90)
 		(descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
 		(tags "LED")
@@ -17499,6 +18700,22 @@
 				)
 			)
 		)
+		(property "MPN" "KT-0603R"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6d3507b4-0444-49aa-987f-98fafb52c2bd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/7ded89a5-7efc-4005-b503-c7a418023290")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -17662,12 +18879,9 @@
 			)
 		)
 	)
-	(footprint "C_0603"
+	(footprint "PCM_JLCPCB:C_0603"
 		(layer "F.Cu")
 		(uuid "f6c22502-86f5-471d-951d-9674c68e0b73")
-		(path "/bad94277-7f7b-4be7-8afe-1cf82d76cce3")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 42.47 38.75 -90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -17732,6 +18946,22 @@
 				)
 			)
 		)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ed2ab5f8-3940-4e12-a3c2-54429c0874af")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/bad94277-7f7b-4be7-8afe-1cf82d76cce3")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -17855,12 +19085,9 @@
 			)
 		)
 	)
-	(footprint "D_SOD-123FL"
+	(footprint "PCM_JLCPCB:D_SOD-123FL"
 		(layer "F.Cu")
 		(uuid "fb80c402-c1b0-4786-bf19-7bf1c41aeb14")
-		(path "/a1ea1a0d-50d7-4340-8c02-26c7c698c742")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 43 54 180)
 		(descr "D_SOD-123F")
 		(tags "D_SOD-123F")
@@ -17924,6 +19151,22 @@
 				)
 			)
 		)
+		(property "MPN" "SMF5.0A"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7e3ad9bb-3819-458b-951b-e8b592fc757f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/a1ea1a0d-50d7-4340-8c02-26c7c698c742")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -18147,12 +19390,9 @@
 			)
 		)
 	)
-	(footprint "R_0603"
+	(footprint "PCM_JLCPCB:R_0603"
 		(layer "F.Cu")
 		(uuid "fba0a561-4086-4760-abc4-cb15e26d3d13")
-		(path "/b067f8ff-06ba-429e-a28c-6bfa4d0550ea")
-		(sheetname "/")
-		(sheetfile "doorbell.kicad_sch")
 		(at 28 21.25 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -18217,6 +19457,22 @@
 				)
 			)
 		)
+		(property "MPN" "0603WAF2201T5E"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8f4c1913-f1ed-443e-bab1-bb6e6b6915ff")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/b067f8ff-06ba-429e-a28c-6bfa4d0550ea")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -23429,6 +24685,22 @@
 		(net "P3")
 		(uuid "c634e431-ff5b-4132-a80b-34dc34431fcd")
 	)
+	(segment
+		(start 91.07 95.68)
+		(end 91 95.75)
+		(width 0.2)
+		(layer "F.Cu")
+		(net "/TEST_A")
+		(uuid "47e514c2-4111-45f2-8079-e3624e2ce592")
+	)
+	(segment
+		(start 91.07 89)
+		(end 91.07 95.68)
+		(width 0.2)
+		(layer "F.Cu")
+		(net "/TEST_A")
+		(uuid "c5da0b39-9386-40fe-a280-d9f4b48908a2")
+	)
 	(zone
 		(net "GND")
 		(layer "F.Cu")
@@ -27953,12 +29225,6 @@
 		(members "6dbe523d-ec67-4989-bc28-1fc4f33a2bd2" "783b491b-46ca-45c7-bc5c-74be3fb58195"
 			"88400974-bd61-4a51-81ce-2788a3c21aa7" "bbf0848d-efa2-48b0-ad2e-d607f9490d0e"
 			"d441cfbf-f39d-4c0f-a9ce-7e2b448394a5"
-		)
-	)
-	(group "Polarity switches"
-		(uuid "a44a18bf-b18c-4fbc-8dc0-c0c985646d19")
-		(members "38d1e0ce-fe1e-42d3-8158-220119de36bd" "63a52966-8e7e-497d-9bf7-d312f9ec286f"
-			"b2fe9f7d-1d80-4fe8-ac3e-2f9d339e6b7b"
 		)
 	)
 	(group "K3 chime-suppress relay"
