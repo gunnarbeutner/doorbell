@@ -98,6 +98,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "02a96f20-dfc2-4ac0-86a1-613249c949e8")
+		(path "/5eeef7f3-81e6-4e11-be51-cdc2e5caedde")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 33.185001 40.823999 90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -288,6 +291,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "0e384a23-28be-4558-b41e-79d16a307853")
+		(path "/13f56206-71b6-4bb5-80eb-ae52371720e3")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 25.6 61.2 -90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -478,6 +484,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "148511ff-1e79-4d8d-a3ce-5db46480cd69")
+		(path "/94048026-d79f-4ec5-a98b-3e1da966763d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 43.923999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -732,6 +741,9 @@
 				)
 			)
 		)
+		(path "/00a6d5f1-ef58-46ae-9488-2539018b5845")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(solder_mask_margin 0.038)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -858,6 +870,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "21765f84-fddf-4ec6-b483-ca31605e1f4e")
+		(path "/50212151-7c28-4705-b21c-3592c034b045")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 45.123999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -1048,6 +1063,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "2516a9a0-214a-481b-af62-4eb741151ade")
+		(path "/642ffeda-ff4b-46ba-b343-f5e328ade4e1")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 42.723999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -1238,6 +1256,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "28158d13-a739-4cde-957e-30c9c3973289")
+		(path "/18b966e7-a18e-4271-935d-0bd1cd5fe388")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 48 13.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -1428,6 +1449,9 @@
 	(footprint "Q_SOT-23"
 		(layer "F.Cu")
 		(uuid "284eb30e-e880-487c-be88-372529f5fc1f")
+		(path "/66dea724-e5f7-403d-b317-2e411c1ab143")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 23.5 34 180)
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
@@ -1686,6 +1710,9 @@
 	(footprint "XFMR-SMD_SM-LP-5001E"
 		(layer "F.Cu")
 		(uuid "29130614-6584-4c51-b747-ca9e7c906979")
+		(path "/36e53789-6c02-4ba4-a9f4-9a48b24e901c")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 32.75 54.498999)
 		(property "Reference" "T1"
 			(at 0 0 0)
@@ -2008,6 +2035,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "2c5e8210-b516-410e-9ff6-5bdb5d5e69ab")
+		(path "/634f8dd7-d779-496f-9e3c-b47f8e2c6288")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 43.25 48.25)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -2198,6 +2228,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "32291240-e759-49ea-a647-88b32f7a17db")
+		(path "/ec43a01f-5c1b-4437-986e-5cb32649b14e")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 27 34 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -2388,6 +2421,9 @@
 	(footprint "SW-SMD_NIDEC_CAS-220XBX"
 		(layer "F.Cu")
 		(uuid "38d1e0ce-fe1e-42d3-8158-220119de36bd")
+		(path "/551c2a7c-7cd9-422f-9055-cc31abd18201")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 3 16 180)
 		(property "Reference" "SW5"
 			(at 0 0 0)
@@ -2712,6 +2748,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "3cddae56-ef9b-49b8-8dc6-4e5f4f35661f")
+		(path "/c062db83-78f4-4405-adcf-1ac3b1851084")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 44.053999 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -2902,6 +2941,9 @@
 	(footprint "SOP-4_4.4x2.6mm_P1.27mm"
 		(layer "F.Cu")
 		(uuid "3f17e10f-9f4d-43f1-9195-d353baa4e342")
+		(path "/c379b159-68bd-4c35-84c5-a8e1aa4d20bf")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 10.74 31.6 -90)
 		(descr "SOP, 4 Pin (http://www.vishay.com/docs/83510/tcmt1100.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOP SO")
@@ -3206,6 +3248,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "4015fd0a-5d5c-44f1-a27f-c9a2d9a4a504")
+		(path "/e11a182c-a29e-49b5-9f86-5f2ecb2be20f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 6.74 21.35)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -3396,6 +3441,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "45548c0b-d73f-4e5b-ba0c-28fca8edeb91")
+		(path "/6d9c82a7-172e-4603-83cc-2005e43fc664")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 15.5 34 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -3586,6 +3634,9 @@
 	(footprint "Fuse_1206_3216Metric"
 		(layer "F.Cu")
 		(uuid "4589ace1-34f2-445f-81ad-91c1d55fbb1a")
+		(path "/cae71a9d-1721-47d1-8214-7270bff4df8f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 46.5 55.25 90)
 		(descr "Fuse SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf)")
 		(tags "fuse")
@@ -3744,6 +3795,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "45b3dc8a-189e-4458-b560-1d01d2f690cc")
+		(path "/78243ee0-f845-4c5d-8c25-8e44e2c37610")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 41.523999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -3934,6 +3988,9 @@
 	(footprint "ESP32-C6-WROOM-1"
 		(layer "F.Cu")
 		(uuid "4bc51ebc-70ce-4fe3-acaf-72a01662e065")
+		(path "/537ad7fc-6572-4a27-ad37-b059f16f6e62")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 13 53.7 180)
 		(descr "ESP32-C6-WROOM-1: https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_datasheet_en.pdf")
 		(tags "esp32-c6")
@@ -4497,6 +4554,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "500dbc7b-3600-4f78-b9dd-aae4f5858b22")
+		(path "/41adc09d-2870-4630-92dd-83319e9e3e15")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 17 40)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -4687,6 +4747,9 @@
 	(footprint "Relay_DPDT_Omron_G6K-2F-Y"
 		(layer "F.Cu")
 		(uuid "53c3aac8-af5e-4a0e-bfac-b617b33c1886")
+		(path "/3c5b10b8-af2b-4327-9f8d-41a6d601a0bb")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 31 27 -90)
 		(descr "Omron G6K-2F-Y relay package http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf")
 		(tags "Omron G6K-2F-Y relay")
@@ -5061,6 +5124,9 @@
 	(footprint "USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal"
 		(layer "F.Cu")
 		(uuid "58bea0ab-fb88-4af7-b854-a8123e40313b")
+		(path "/54315f86-3771-4272-a04b-6d33d668d27d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 44.1 66.109999)
 		(descr "USB 2.0 Type C Receptacle, GCT, 16P, top mounted, horizontal, 5A: https://gct.co/files/drawings/usb4105.pdf")
 		(tags "USB C Type-C Receptacle SMD USB 2.0 16P 16C USB4105-15-A USB4105-15-A-060 USB4105-15-A-120 USB4105-GF-A USB4105-GF-A-060 USB4105-GF-A-120")
@@ -5400,6 +5466,9 @@
 	(footprint "SW_TS-1088-AR02016"
 		(layer "F.Cu")
 		(uuid "5e9d2fb1-77e7-4074-a187-d8eeaae0070e")
+		(path "/3b711b43-30f8-4ae0-a389-4adfc2e5621d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 8.5 41 180)
 		(property "Reference" "SW1"
 			(at 0.425 -2.635 180)
@@ -5616,6 +5685,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "5e9ea75b-eb1f-436d-9263-6e632ccdda6f")
+		(path "/7583b703-fb24-4d46-9dfa-cb71c32b2a17")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 30.585001 40.823999 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -5806,6 +5878,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "5f860a66-9626-4827-bcb6-a172cfcad85f")
+		(path "/1d63870e-ac90-4408-bdeb-eb2909c6a900")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 49.21 59.75 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -5996,6 +6071,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "5fbf68b0-c260-4b7f-967e-5be07079caf8")
+		(path "/5e48f818-483c-42b2-bbe7-8dda6ad956a7")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 47.253999 180)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -6186,6 +6264,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "615c2d39-09c0-4bca-974b-0741beeb3ca1")
+		(path "/a6ad5c9f-0d20-4db1-91b3-3b2bf1b74b85")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 10.555 36.9 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -6376,6 +6457,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "63083740-673c-4fff-b9c6-57decbbf0db3")
+		(path "/1ce4a394-96da-403e-aacf-1073fbc022cf")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 35.4 60.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -6566,6 +6650,9 @@
 	(footprint "SW-SMD_NIDEC_CAS-220XBX"
 		(layer "F.Cu")
 		(uuid "63a52966-8e7e-497d-9bf7-d312f9ec286f")
+		(path "/6ea72009-0268-4090-bfe6-a67c2f81712b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 15 16 180)
 		(property "Reference" "SW3"
 			(at 0 0 0)
@@ -6890,6 +6977,9 @@
 	(footprint "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1"
 		(layer "F.Cu")
 		(uuid "68fa178e-830f-46e0-a28b-353a6ded1025")
+		(path "/3cada404-0183-4d53-aeb7-3d2777f2ff51")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 44 59.25)
 		(descr "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1 footprint")
 		(tags "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL-1 footprint C7420376")
@@ -7110,6 +7200,9 @@
 	(footprint "WQFN-20_L3.0-W3.0-P0.40-BL-EP1.7"
 		(layer "F.Cu")
 		(uuid "699a534c-9f8a-48aa-b4a4-7900790d9ab8")
+		(path "/7f71897f-0f41-4871-a004-ce39d6c56c6b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 32.285001 45.623999 -90)
 		(property "Reference" "U3"
 			(at 2.4 -2.4 0)
@@ -7428,6 +7521,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "69b4c6f2-cf45-489e-bbc8-f7fbd66b470d")
+		(path "/b7767f52-3091-4ec5-b28b-edd17e46b0df")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 14.68 36.9)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -7618,6 +7714,9 @@
 	(footprint "D_SOD-123"
 		(layer "F.Cu")
 		(uuid "6a3c4766-6f7b-4f68-9522-566779571617")
+		(path "/4cd32f8e-7a4c-4afe-bfee-93c655e87d31")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 6.74 24.6 90)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -7907,6 +8006,9 @@
 	(footprint "D_SOD-123"
 		(layer "F.Cu")
 		(uuid "6dbe523d-ec67-4989-bc28-1fc4f33a2bd2")
+		(path "/293b6704-2c94-4cb6-bc49-0d94f5f6e7bb")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 41.8 33.6)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -8196,6 +8298,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "70c54529-eb5e-4bf6-acb5-60f10a1b5254")
+		(path "/7c6138ea-e012-486a-905b-28c940ac36f2")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 26.18 36.9)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -8386,6 +8491,9 @@
 	(footprint "SOP-4_4.4x2.6mm_P1.27mm"
 		(layer "F.Cu")
 		(uuid "72a52754-2f2e-4c72-8a09-9af6398fba29")
+		(path "/6f980e6a-cc58-4166-a38a-440068b0231d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 6.74 31.6 -90)
 		(descr "SOP, 4 Pin (http://www.vishay.com/docs/83510/tcmt1100.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOP SO")
@@ -8690,6 +8798,9 @@
 	(footprint "Relay_DPDT_Omron_G6K-2F-Y"
 		(layer "F.Cu")
 		(uuid "783b491b-46ca-45c7-bc5c-74be3fb58195")
+		(path "/9fab850e-3ff9-4a72-89b0-2f5856f04ffd")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 42.5 27 -90)
 		(descr "Omron G6K-2F-Y relay package http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf")
 		(tags "Omron G6K-2F-Y relay")
@@ -9064,6 +9175,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "78eaf22a-4b47-423a-983c-6d4e7c59f603")
+		(path "/a7bb1c8c-7185-4fb1-86f5-bf20fd96098c")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 46.053999 180)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -9254,6 +9368,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "7a14c8df-9c17-40e2-a217-d04f0e9940fc")
+		(path "/1f38e03f-0753-4491-8eb4-4f01d238c7f0")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 10.74 21.35)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -9444,6 +9561,9 @@
 	(footprint "D_SOD-123"
 		(layer "F.Cu")
 		(uuid "7a373581-13d8-4874-861b-57851d608704")
+		(path "/7091aebf-6297-4467-826b-8757a68e4006")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 2.74 24.6 90)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -9733,6 +9853,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "7e7a6d8b-c740-4835-8a28-1d44d4a85e7a")
+		(path "/6d6d4283-1dde-44e2-855c-a0598662da41")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 2.555 36.9 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -9923,6 +10046,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "83beaeba-9652-4762-95e0-71b2e1d03b3d")
+		(path "/7f07ed5c-de7e-4190-8b52-8851cbe9c67b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 31.5 60.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -10113,6 +10239,9 @@
 	(footprint "Q_SOT-23"
 		(layer "F.Cu")
 		(uuid "88400974-bd61-4a51-81ce-2788a3c21aa7")
+		(path "/16392b46-b690-498d-a37d-4494fab432f8")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 46.5 34 180)
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
@@ -10371,6 +10500,9 @@
 	(footprint "D_SOD-123"
 		(layer "F.Cu")
 		(uuid "91bae3f3-8c5d-473c-b106-e84af7913293")
+		(path "/c1d68b48-7fba-41f2-b817-96df2e939433")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 10.74 24.6 90)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -10660,6 +10792,9 @@
 	(footprint "SW_TS-1088-AR02016"
 		(layer "F.Cu")
 		(uuid "94fded40-719d-4038-9cc2-64def48f1726")
+		(path "/33d59996-1bda-4a24-99c8-716fb30c4e4b")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 22 41)
 		(property "Reference" "SW2"
 			(at 0.425 -2.635 0)
@@ -10876,6 +11011,9 @@
 	(footprint "D_SOD-123"
 		(layer "F.Cu")
 		(uuid "97cab641-81d1-41f5-9945-74346b1618a4")
+		(path "/b782e548-dc19-4a67-897b-cc03023a4b37")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 30.3 33.6)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -11263,6 +11401,9 @@
 	(footprint "Relay_DPDT_Omron_G6K-2F-Y"
 		(layer "F.Cu")
 		(uuid "9bc7318d-30ad-41ac-b2a0-8bc8a2d2fb49")
+		(path "/bb4ec0d3-65b1-4007-b16b-518564449393")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 19.5 27 -90)
 		(descr "Omron G6K-2F-Y relay package http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf")
 		(tags "Omron G6K-2F-Y relay")
@@ -11639,6 +11780,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "9c8b6074-0ab8-45db-9762-53594743b9af")
+		(path "/d58f8929-2fe6-4d2d-85a3-b6ef11f2d85c")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 2.74 21.35)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -11829,6 +11973,9 @@
 	(footprint "SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR"
 		(layer "F.Cu")
 		(uuid "a15b61c0-7e99-4f28-8cc7-2e2e8bd6a674")
+		(path "/a87bc91d-b121-4ced-9fb2-2cfc99a09c3f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 45.44 44 180)
 		(descr "SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR footprint")
 		(tags "SOT-223-3_L6.5-W3.4-P2.30-LS7.0-BR footprint C6186")
@@ -12083,6 +12230,9 @@
 	(footprint "TerminalBlock_4Ucon_1x06_P3.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "a27190c1-19bd-4979-9d79-5df06e5921af")
+		(path "/a0fd1854-a2a8-4daa-b44f-68cb5995e40f")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 44.15 15 180)
 		(descr "Terminal Block 4Ucon ItemNo. 10697, vertical (cable from top), 6 pins, pitch 3.5mm, size 22x8.3mm, drill diameter 1.3mm, pad diameter 2.6mm, http://www.4uconnector.com/online/object/4udrawing/10697.pdf")
 		(tags "THT Terminal Block 4Ucon ItemNo. 10697 vertical pitch 3.5mm size 22x8.3mm drill 1.3mm pad 2.6mm")
@@ -12820,6 +12970,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "a2fc4a8d-a425-44bd-a419-e777743c354f")
+		(path "/e297ac5f-ce2f-4459-92c8-f38689957909")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 27 61.2 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -13108,6 +13261,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "b2c8a0ba-519a-475c-b59d-19f99d75c077")
+		(path "/14734a9a-2a4b-4281-b158-edddcb7ce4ef")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 24.2 61.2 -90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -13298,6 +13454,9 @@
 	(footprint "SW-SMD_NIDEC_CAS-220XBX"
 		(layer "F.Cu")
 		(uuid "b2fe9f7d-1d80-4fe8-ac3e-2f9d339e6b7b")
+		(path "/850ebb42-178b-4133-9a13-a8fde73fd64a")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 9 16 180)
 		(property "Reference" "SW4"
 			(at 0 0 0)
@@ -13622,6 +13781,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "b30607b8-e888-4e23-8578-7b4a069781ce")
+		(path "/32f2b5e8-9feb-4b4c-9be3-4b64ecdcb488")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 31.885001 40.823999 90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -13812,6 +13974,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "b55f02d6-548c-4578-a254-d918fea039a8")
+		(path "/bdcf9a28-43e9-46ef-8e7e-1ab3bc8ec972")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 47.93 59.75 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -14002,6 +14167,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "b9174d42-a159-49c4-abf7-b9e647e07a60")
+		(path "/cae5010f-87fe-405f-b64a-627c3c1719dc")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 46.323999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -14192,6 +14360,9 @@
 	(footprint "D_SOD-123"
 		(layer "F.Cu")
 		(uuid "b929508a-03d0-4f0c-83ca-2db8ef32f2d5")
+		(path "/540148be-63c2-4dc5-8281-2b4ad1360f9e")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 18.8 33.6)
 		(descr "SOD-123")
 		(tags "SOD-123")
@@ -14481,6 +14652,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "bbf0848d-efa2-48b0-ad2e-d607f9490d0e")
+		(path "/1cc7b71b-83a9-4971-a468-6d1232c8a9c0")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 37.68 36.9)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -14671,6 +14845,9 @@
 	(footprint "D_SMA"
 		(layer "F.Cu")
 		(uuid "c2429c0f-9ec8-4b16-bcf7-aaa4b7770922")
+		(path "/839a9d09-6f8c-47ee-9b88-99f94b81c600")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 44.25 51)
 		(descr "Diode SMA (DO-214AC)")
 		(tags "Diode SMA (DO-214AC)")
@@ -14950,6 +15127,9 @@
 	(footprint "Q_SOT-23"
 		(layer "F.Cu")
 		(uuid "c551c3fd-4b68-4e92-998f-6a89ec1d5787")
+		(path "/0fd9a1d3-6b7e-4698-980e-ec866e1af331")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 35 34 180)
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
@@ -15208,6 +15388,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "c5d2cb1a-8b4a-4a13-9b42-6531f5ada173")
+		(path "/e43c5f6a-c865-43c1-8b80-735a9e00df2d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 13.5 41 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -15398,6 +15581,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "c62f81cd-c47b-46e0-be11-7e2fe9f6ca0e")
+		(path "/ae264dae-9c52-4da5-8f5a-3c311c4ef396")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 27.585001 42.853998 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -15588,6 +15774,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "c7b54058-477f-474d-badc-7966cac41ee5")
+		(path "/efd011fe-403a-4d6f-adcd-81ac3e6dd277")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 6.555 36.9 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -15778,6 +15967,9 @@
 	(footprint "SOP-4_4.4x2.6mm_P1.27mm"
 		(layer "F.Cu")
 		(uuid "ced337b7-26ec-47cd-9b33-a9c9d8058085")
+		(path "/61a33a2d-7ea2-4556-8f5b-b3a2cfde8ac9")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 2.74 31.6 -90)
 		(descr "SOP, 4 Pin (http://www.vishay.com/docs/83510/tcmt1100.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOP SO")
@@ -16082,6 +16274,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "d441cfbf-f39d-4c0f-a9ce-7e2b448394a5")
+		(path "/d4840c3a-2ce6-4b0a-ac82-fcae5437522d")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 38.5 34 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -16272,6 +16467,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "d6fc52db-d44d-4b3c-b702-c352a0b8f57c")
+		(path "/dec53da5-1d74-4791-9b2f-326941870174")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 0 33.92 90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -16462,6 +16660,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "e0ab0a22-70b8-4cec-9a29-2d954b93bc93")
+		(path "/248dd4e9-33d6-4a7d-b0cc-e1fc38bf6a56")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 17 42 180)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -16652,6 +16853,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "e34c2bde-6dde-43b3-b0a1-86130bc6e9ed")
+		(path "/42eb0c80-8374-4e26-9e50-70c6fe9a97cf")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 34.485001 40.823999 90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -16842,6 +17046,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "e3e53f4d-d2c6-4cfa-8c51-bc0e5cbcbb0c")
+		(path "/da8391a0-5132-49ef-bc6c-d808a8d443ef")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 34.1 60.5 -90)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
@@ -17032,6 +17239,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "ee1d3e9f-0a6c-441a-a55c-d33177ec09b7")
+		(path "/76d4a7d3-f153-48e3-9389-ae5e62c6cca3")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 37.485001 47.523999)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -17222,6 +17432,9 @@
 	(footprint "D_0603"
 		(layer "F.Cu")
 		(uuid "f3102604-fbf3-4a72-9c17-8c4ff894a5b3")
+		(path "/7ded89a5-7efc-4005-b503-c7a418023290")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 48 16.5 90)
 		(descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
 		(tags "LED")
@@ -17452,6 +17665,9 @@
 	(footprint "C_0603"
 		(layer "F.Cu")
 		(uuid "f6c22502-86f5-471d-951d-9674c68e0b73")
+		(path "/bad94277-7f7b-4be7-8afe-1cf82d76cce3")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 42.47 38.75 -90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
@@ -17642,6 +17858,9 @@
 	(footprint "D_SOD-123FL"
 		(layer "F.Cu")
 		(uuid "fb80c402-c1b0-4786-bf19-7bf1c41aeb14")
+		(path "/a1ea1a0d-50d7-4340-8c02-26c7c698c742")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 43 54 180)
 		(descr "D_SOD-123F")
 		(tags "D_SOD-123F")
@@ -17931,6 +18150,9 @@
 	(footprint "R_0603"
 		(layer "F.Cu")
 		(uuid "fba0a561-4086-4760-abc4-cb15e26d3d13")
+		(path "/b067f8ff-06ba-429e-a28c-6bfa4d0550ea")
+		(sheetname "/")
+		(sheetfile "doorbell.kicad_sch")
 		(at 28 21.25 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
