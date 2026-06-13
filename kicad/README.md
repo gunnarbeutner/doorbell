@@ -18,7 +18,7 @@ placement). Two generators consume it; `build.sh` orchestrates them:
 | `gen_pcb.py` | KiCad bundled python (pcbnew) | `doorbell.kicad_pcb` — placed + netted, 0 DRC |
 | `route.py` | KiCad bundled python (pcbnew) | finalizes the board (planes, groups, thieving); fails if any connection is unrouted |
 
-The board is **100% hand-routed** in `gen_pcb.py` (there is no autorouter).
+The board is **100% hand-routed** in `gen_pcb.py`.
 `route.py` fills the inner planes, adds groups and copper thieving, and FAILS the
 build if any connection is left unrouted — missing copper is added in `gen_pcb.py`,
 never invented by a tool. Re-running `gen_pcb.py` rebuilds the board from scratch,

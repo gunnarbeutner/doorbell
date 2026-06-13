@@ -516,7 +516,7 @@ pocket. Note `route.py` is not idempotent — it assumes a fresh board from
 `gen_pcb.py`; rerunning it standalone duplicates the thieving zones.
 
 **The board is 100% hand-routed** — every net is pre-placed geometry in
-`gen_pcb.py` (nothing is locked; there is no autorouter in the pipeline).
+`gen_pcb.py`.
 `route.py` checks the ratsnest after filling the inner planes and FAILS the build
 if any connection is unrouted — missing copper is added in `gen_pcb.py`.
 The last stragglers: GATE1/GATE2 share one pattern per channel — a perfectly
@@ -557,11 +557,10 @@ outline.
 ±15 mm either side of the WROOM-1 antenna, from just below U1's south pad row to the
 bottom edge — clears the GND/+3V3 planes around the antenna. Fiducial placement avoids it.
 
-**Fine-pitch clearance:** the ES8311's 0.40 mm pitch does not autoroute under a 0.2 mm
+**Fine-pitch clearance:** the ES8311's 0.40 mm pitch can't be routed under a 0.2 mm
 net-class clearance (a 0.6 mm via can't sit beside a fine-pitch pin), so routing clearance
 is set to JLCPCB's published **0.127 mm** capability — globally, since the tighter spacing
-spreads board-wide once the autorouter packs the escapes. `route.py` patches the DSN
-(`clearance 200→127`); a global rule in `kicad/doorbell.kicad_dru` keeps KiCad's DRC
+spreads board-wide. A global rule in `kicad/doorbell.kicad_dru` keeps KiCad's DRC
 consistent; hole-to-copper is 0.2 mm to match. Trade-off: the
 board routes at the fab limit rather than keeping a clearance design margin.
 
@@ -596,8 +595,7 @@ limits the lane — and finishes with a 45° jog into the pad centre; GATE3/GATE
 straight into R5/R4).
 
 **I2C/I2S escape bundle** (`gen_pcb.py`, pre-routes, north of U1): BOOT leads
-from U1 pad 15 east + 45° NE to its switch and on to R_boot (its proven autoroute path,
-locked). I2C SDA/SCL (pads 16/17 — a GPIO-matrix pin swap with I2S, free on the C6)
+from U1 pad 15 east + 45° NE to its switch and on to R_boot. I2C SDA/SCL (pads 16/17 — a GPIO-matrix pin swap with I2S, free on the C6)
 follow as nested parallel diagonals (0.327 mm perpendicular) flattening east at
 y = 43.0/43.329, just north of the module; I2S MCLK/BCLK (pads 6/7) run north on inner
 verticals 0.129 mm off U1's east pad column and join the stack with eastward turns at
@@ -670,11 +668,10 @@ drop reuse the pre-split link geometry verbatim). Keeping each direction's legs
 paired at 0.329 mm preserves the floating audio pair's small pickup loop.
 
 The entire WF26 bus group — **P1–P5 and IN_P4 — is hand-routed** in
-`gen_pcb.py` (geometry originally lifted from a clean autorouter solution and
-normalized, plus the one link the autorouter consistently failed to close: P5 from the polarity-switch
-cluster to J2.5, which branches the J2 loop at its (30.48, 12.54) corner and
-runs west above the J2 pad row on B.Cu into a via clear east of SW_OC1 pad 1, 45° into
-the pad). The rest: P3 west off J2.3 into R16; P4 45° over the J2 pad row (y=13.317)
+`gen_pcb.py`. P5 runs from the polarity-switch
+cluster to J2.5, branching the J2 loop at its (30.48, 12.54) corner and
+running west above the J2 pad row on B.Cu into a via clear east of SW_OC1 pad 1, 45° into
+the pad. The rest: P3 west off J2.3 into R16; P4 45° over the J2 pad row (y=13.317)
 and a long 45° down into K3 COM; P2 from J2.2 into K1.4 with a branch west along
 y=21.593 into K2.3, then a weave between K3 and the J2 row into SW_OC1 pad 4 and a
 B.Cu via pair under the switch row to pad 3; IN_P4 from J2.6 into K3.2 (NC), west

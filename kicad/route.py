@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Finalize kicad/doorbell.kicad_pcb: inner planes, groups, thieving, density report.
 
-The board is fully hand-routed by gen_pcb.py; there is no autorouter. After the
+The board is fully hand-routed by gen_pcb.py. After the
 inner planes are filled, any remaining unrouted connection FAILS the build -- the
 missing copper must be added to gen_pcb.py, not invented by a tool.
 

@@ -377,7 +377,7 @@ for ref, (nick, entry, value) in COMP.items():
         try:
             px, py, _ = pin_pos(sym, pad)
         except KeyError:
-            continue   # footprint-only NC pad (e.g. ES8388 pads 9/25): covered on the PCB by NOCONN
+            continue   # footprint-only pad with no symbol pin: covered on the PCB by NOCONN
         dx, dy = screen_offset(px, py, rang)
         pin_xy[(ref, pad)] = (ox + dx, oy + dy)
         pin_ang[(ref, pad)] = (pin_angle_of(sym, pad) + rang) % 360

@@ -20,8 +20,8 @@
 # Fine-pitch routing clearance. The board defaults to a conservative 0.2 mm clearance, but two
 # fine-pitch parts need tighter spacing to route: J1 (USB4085, pads 0.15 mm apart) and U3 (ES8311,
 # 0.40 mm-pitch QFN-20 whose power/GND pins can't escape -- a 0.6 mm via won't sit beside a pin at
-# 0.2 mm clearance). Both are well within JLCPCB's published 0.10 mm minimum spacing. Once the
-# autorouter packs the fine-pitch escapes the tighter spacing spreads board-wide, so this relaxes
+# 0.2 mm clearance). Both are well within JLCPCB's published 0.10 mm minimum spacing. The
+# tighter spacing spreads board-wide once the fine-pitch escapes are packed, so this relaxes
 # the routing clearance to 0.127 mm globally (the 0.2 mm value was design margin, not a fab limit;
 # JLCPCB's actual capability is 0.10 mm but 0.127 mm gives margin). Tracks stay 0.2 mm;
 # plane/zone clearances are unaffected.

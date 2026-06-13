@@ -114,12 +114,12 @@ Legend: ✅ meets it · ⚠️ partial / optional gap · ❌ violates · ➖ N/A
 | 3 | GPIO2 pull-up (optional) | ⚠️ | **Left floating.** Espressif fn-2 recommends 10 kΩ. Logged as review finding #4 (Minor, optional) |
 | 3/4 | Outputs off strapping pins, defined boot state | ✅ | Relays on IO4/IO5 (non-strapping) + 10 kΩ gate pull-downs ⇒ relays default OFF at boot. This is textbook-correct |
 | 4 | Avoid internal-flash GPIOs | ✅➖ | Only IO4–IO9, IO18–IO21 used; module hides flash pins |
-| 5 | USB D± tight pair over GND | ⚠️ | 4-layer with In2=GND under B.Cu so D± references GND. But D± are **autorouted, not hand-routed as a locked pair** (review #3). FS USB (12 Mbps) tolerates it; hand-route+lock for by-the-book |
+| 5 | USB D± tight pair over GND | ✅ | 4-layer with In2=GND under B.Cu so D± reference GND; D± **hand-routed as a coupled 0.329 mm pair** (ESP side drops to B.Cu over the plane, connector side on F.Cu). FS USB (12 Mbps) |
 | 5 | USB series R + ESD | ✅ | SRV05-4 ESD array on D±; native USB has internal pull-up |
 | 5 | CC 5.1 kΩ pulldowns | ✅ | R_cc1/R_cc2 5.1 kΩ each |
 | 6 | **Antenna off board edge** | ✅ | U1 overhangs the left edge by 5.4 mm — antenna sits **off-board**. Best-case choice; sidesteps the 15 mm keep-out entirely |
 | 6 | No copper/parts under antenna | ✅ | Nothing on board under it (it's off the edge). Just keep no metal enclosure over it (noted in build notes) |
-| 7 | Solid GND plane, no signals on it | ✅ | In2 = solid GND, In1 = solid +3V3; signals only on F.Cu/B.Cu. Autorouter forced off the planes (LT_POWER) |
+| 7 | Solid GND plane, no signals on it | ✅ | In2 = solid GND, In1 = solid +3V3; signals only on F.Cu/B.Cu, kept off the planes by design |
 | 7 | Don't carve up the plane | ✅ | Planes kept solid by design; stitch vias offset (no via-in-pad) |
 | 8 | In-stock parts, second source | ✅ | LCSC parts mapped; K1/K2 given a second source |
 | 8 | Polarized-part rotation check | ✅ | ROT_FIX verified at the Confirm-Placement gate |

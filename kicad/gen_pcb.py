@@ -6,8 +6,10 @@ layer stack. Circuit data (components, nets, footprints) comes from doorbell_des
 the PCB-specific placement lives HERE in `PCB_PLACE` (a schematic's layout and a board's
 layout are different problems, so the board gets its own deliberate, compact placement).
 
-The board comes out *placed and netted* (full ratsnest) but UNROUTED — route it with
-route.py / `build.sh route`. Run with KiCad's bundled Python (owns pcbnew); see build.sh.
+The board comes out placed, netted, and hand-routed on the signal layers; the +3V3/GND
+plane nets are completed by route.py / `build.sh route`, which fills the inner planes,
+adds groups + copper thieving, and verifies every connection is routed.
+Run with KiCad's bundled Python (owns pcbnew); see build.sh.
 """
 import os, sys, math, datetime
 from collections import defaultdict
@@ -113,7 +115,7 @@ PCB_PLACE = {
                                 # GATE1 drops perfectly vertical)
     "R_pd1":  (38.5, 34, 90),
     "D1":     (41.8, 33.6, 0),
-    # === Audio codec (ES8388) cluster: open right region (x>70); board grows rightward.
+    # === Audio codec (ES8311) cluster: open right region (x>70); board grows rightward.
     #     Provisional placement — reorganise later. ===
     # ES8311 rot 180. Support passives packed tight against the edge carrying their U3 pin, each
     # oriented so its U3-connected pad faces inward (rot: 0=pad1 W, 90=pad1 S, 180=pad1 E, 270=pad1 N).
@@ -355,7 +357,7 @@ for edge, refs in by_edge.items():
 
 # --- ESP32-C6 (U1) EPAD: NO vias in the pad field (solder-wicking avoidance; the
 #     window-pane paste then solders cleanly with nothing to drain into). The nine
-#     0.8 mm sub-pads are laced together with unlocked F.Cu tracks (grid neighbours),
+#     0.8 mm sub-pads are laced together with F.Cu tracks (grid neighbours),
 #     so the whole EPAD is one explicit copper net; the pad-28 tie (below) lands on
 #     it and pad 28's own via west of the module is its plane bond. A no-via rule
 #     area over the field keeps any future tooling from re-perforating it.
@@ -437,7 +439,7 @@ def _pre_track(a, b, layer, w=0.3, net=None):
     t = pcbnew.PCB_TRACK(board)
     t.SetStart(a); t.SetEnd(b); t.SetLayer(layer)
     t.SetWidth(pcbnew.FromMM(w)); t.SetNet(net or _vbus_net)
-    board.Add(t)   # nothing is locked: pre-routes are plain copper
+    board.Add(t)   # pre-routes are plain copper
 def _pre_via(pos, net=None):
     if not _pre_enabled(f"via {(net or _vbus_net).GetNetname()} "
                         f"({pcbnew.ToMM(pos.x):.3f},{pcbnew.ToMM(pos.y):.3f})"):
@@ -652,7 +654,7 @@ for _rp in ("R_pu1", "R_pu2", "R_pu3"):
     _pre_via(_vp, net=nets["+3V3"])
 
 # --- I2C/I2S escape bundle (north of U1): BOOT leads from U1 pad 15 east + 45° NE up
-#     to its switch and on to R_boot (its proven autoroute path, now locked). I2C
+#     to its switch and on to R_boot. I2C
 #     SDA/SCL (pads 16/17 — GPIO-matrix swap, see doorbell_design.py) follow as nested
 #     parallel diagonals (0.4625 mm/lane = 0.327 mm perpendicular) and flatten east
 #     just north of the module at y=43.0 / 43.329. I2S MCLK (pad 6, east column) runs
@@ -667,9 +669,8 @@ _bC = _TOMM(_sw1.x) + _TOMM(_sw1.y)            # BOOT's 45° line: x + y = _bC
 _pre_track(_b15, vmm(_bC - _TOMM(_b15.y), _TOMM(_b15.y)), pcbnew.F_Cu, _BW, nets["BOOT"])
 _pre_track(vmm(_bC - _TOMM(_b15.y), _TOMM(_b15.y)), _sw1, pcbnew.F_Cu, _BW, nets["BOOT"])
 _pre_track(_sw1, _rb2, pcbnew.F_Cu, _BW, nets["BOOT"])
-# R_boot's +3V3 pad sits right against the locked BOOT wire; the (since-removed) autorouter NPEs trying
-# to drop a plane via at a pad hemmed in by locked wiring (degenerate connection), so
-# pre-place its In1 tap.
+# R_boot's +3V3 pad sits right against the BOOT wire, hemmed in by wiring, so its
+# In1 tap is pre-placed here.
 _rb1 = _padpos("R_boot", "1")
 _v_rb1 = vmm(_TOMM(_rb1.x) + 0.88, _TOMM(_rb1.y))
 _pre_track(_rb1, _v_rb1, pcbnew.F_Cu, _BW, nets["+3V3"])
@@ -720,8 +721,8 @@ _pre_track(vmm(21.5, _yl_scl), vmm(_yl_scl + _c_scl, _yl_scl),
            pcbnew.F_Cu, _BW, nets["I2C_SCL"])
 _pre_track(vmm(_yl_scl + _c_scl, _yl_scl), vmm(_p1y + _c_scl, _p1y),
            pcbnew.F_Cu, _BW, nets["I2C_SCL"])
-# run split at the pull-up tap so the stub joins at segment ENDPOINTS (the (since-removed) autorouter
-# mishandles mid-segment T-junctions in protected wiring)
+# run split at the pull-up tap so the stub joins at segment ENDPOINTS (no mid-segment
+# T-junction)
 _pre_track(vmm(_p1y + _c_scl, _p1y), vmm(_TOMM(_r19p2.x), _p1y),
            pcbnew.F_Cu, _BW, nets["I2C_SCL"])
 _pre_track(vmm(_TOMM(_r19p2.x), _p1y), _u3p1, pcbnew.F_Cu, _BW, nets["I2C_SCL"])
@@ -799,7 +800,7 @@ for _unum, _cnet, _cpad in (("2", "+3V3", "1"), ("1", "GND", "2")):
     _pre_track(_c6p, _c3p, pcbnew.F_Cu, 0.5, nets[_cnet])
 _c3v3 = _padpos("C_3v3", "1")
 # pad rows differ by only ~0.05 mm: one straight (slightly slanted) segment instead
-# of a micro-45° jog, which the (since-removed) autorouter chokes on
+# of a micro-45° jog
 _pre_track(_c3v3, _rio2, pcbnew.F_Cu, 0.5, nets["+3V3"])
 # In1-plane tap for the rail: via just east of R_io8 pad 2
 _v_io8b = vmm(_TOMM(_rio2.x) + 0.88, _TOMM(_rio2.y))
@@ -899,8 +900,7 @@ for _net, _t1p, _jp, _vx2, _ytop in (
             ((_jx, _ytop + _BCH), (_jx, _TOMM(_jp.y)))):
         _pre_track(vmm(*_a), vmm(*_b), pcbnew.B_Cu, _BUSW, nets[_net])
 
-# --- Opto LED cathode + emitter nets: geometry lifted from a clean the (since-removed) autorouter
-#     solution, normalized and locked. Per CATH channel (opto pin 2 -> clamp diode
+# --- Opto LED cathode + emitter nets, hand-routed. Per CATH channel (opto pin 2 -> clamp diode
 #     pad 2 -> limiter pad 1, bus width): 45° jog west off the opto pad (the vertical
 #     sits 0.9934 west of the diode column, clearing the diode's anode pad by 0.29),
 #     down, 45° into the diode pad, 45° across into the limiter. OC_EMIT (0.2 mm)
@@ -909,9 +909,9 @@ for _net, _t1p, _jp, _vx2, _ytop in (
 def _pxy(_key, _num):
     _p = _padpos(_key, _num)
     return _TOMM(_p.x), _TOMM(_p.y)
-def _chain(_net, _pts, _w):
+def _chain(_net, _pts, _lay=pcbnew.F_Cu, _w=0.5):
     for _a, _b in zip(_pts, _pts[1:]):
-        _pre_track(vmm(*_a), vmm(*_b), pcbnew.F_Cu, _w, nets[_net])
+        _pre_track(vmm(*_a), vmm(*_b), _lay, _w, nets[_net])
 for _cnet, _ok, _do, _rl in (("OC1_CATH", "OC1", "D_oc1", "R_lim3"),
                              ("OC2_CATH", "OC2", "D_oc2", "R_lim1"),
                              ("OC3_CATH", "OC3", "D_oc3", "R_lim2")):
@@ -922,7 +922,7 @@ for _cnet, _ok, _do, _rl in (("OC1_CATH", "OC1", "D_oc1", "R_lim3"),
                    (_vx, _d[1] + (_d[0] - _vx)),
                    _d,
                    (_r[0], _d[1] - (_d[0] - _r[0])),
-                   _r], _BUSW)
+                   _r], _w=_BUSW)
 _e1, _e2, _e3 = _pxy("OC1", "3"), _pxy("OC2", "3"), _pxy("OC3", "3")
 _rem = _pxy("R_em", "1")
 _YH = _e1[1] - 1.05   # hop lane 1.05 above the emitter pad row (under the packages)
@@ -930,14 +930,13 @@ _YH = _e1[1] - 1.05   # hop lane 1.05 above the emitter pad row (under the packa
 # 0.178 clear of the neighbouring pad 4's rounded corner (straight-in clips it)
 _chain("OC_EMIT", [_e1, (_e1[0] - (_e1[1] - _YH), _YH),
                    (_e2[0] + (_e2[1] - 0.1483 - _YH), _YH),
-                   (_e2[0], _e2[1] - 0.1483), _e2], _BW)
+                   (_e2[0], _e2[1] - 0.1483), _e2], _w=_BW)
 _chain("OC_EMIT", [_e2, (_e2[0] - (_e2[1] - _YH), _YH),
                    (_e3[0] + (_e3[1] - 0.1483 - _YH), _YH),
-                   (_e3[0], _e3[1] - 0.1483), _e3], _BW)
-_chain("OC_EMIT", [_e3, _rem], _BW)   # single near-horizontal slant into R_em pad 1
+                   (_e3[0], _e3[1] - 0.1483), _e3], _w=_BW)
+_chain("OC_EMIT", [_e3, _rem], _w=_BW)   # single near-horizontal slant into R_em pad 1
 
-# --- Relay coil drain nets (K*_DRAIN), geometry lifted from an autorouter run and
-#     normalized (its K3 solution even contained a 0.1 um micro-segment): from the
+# --- Relay coil drain nets (K*_DRAIN), hand-routed: from the
 #     FET drain (Q pad 3) west, 45° down onto the flyback diode's row, T-junction at
 #     x = K-pin-8 - 1.65; from there west into D pad 2, and 45° NE + vertical north
 #     into K pin 8 (the coil).
@@ -946,14 +945,12 @@ for _dnet, _q, _k, _d in (("K1_DRAIN", "Q1", "K1", "D1"),
                           ("K3_DRAIN", "Q3", "K3", "D3")):
     _qp, _kp, _dp = _pxy(_q, "3"), _pxy(_k, "8"), _pxy(_d, "2")
     _vx = _kp[0] - 1.65
-    _chain(_dnet, [_qp, (_vx + (_qp[1] - _dp[1]), _qp[1]), (_vx, _dp[1])], _BW)
-    _chain(_dnet, [(_vx, _dp[1]), _dp], _BW)
+    _chain(_dnet, [_qp, (_vx + (_qp[1] - _dp[1]), _qp[1]), (_vx, _dp[1])], _w=_BW)
+    _chain(_dnet, [(_vx, _dp[1]), _dp], _w=_BW)
     _chain(_dnet, [(_vx, _dp[1]),
-                   (_kp[0], _dp[1] - (_kp[0] - _vx)), _kp], _BW)
+                   (_kp[0], _dp[1] - (_kp[0] - _vx)), _kp], _w=_BW)
 
-# --- WF26 bus nets (P1-P5, IN_P4), fully hand-routed at bus width. Geometry lifted
-#     from a clean autorouter solution and normalized, PLUS the one link the autorouter
-#     consistently failed to close (P5: switch cluster -> J2.5). The T1/J2 sections
+# --- WF26 bus nets (P1-P5, IN_P4), fully hand-routed at bus width. The T1/J2 sections
 #     above already land P1/P5 from T1 around J2 into the J2 pins; this section does
 #     the rest:
 #       P3    J2.3 west + 45° SW into R_ot pad 1 (F.Cu).
@@ -973,76 +970,71 @@ for _dnet, _q, _k, _d in (("K1_DRAIN", "Q1", "K1", "D1"),
 #             J2 pad row, via at x=17.85 (clear east of SW_OC1 pad 1), 45° F.Cu drop
 #             into pad 1; cluster runs on F.Cu: 45° to SW_OC1 pad 6, the y=12.321
 #             lane north of the switch pad rows to SW_OC3 pad 1, 45° to its pad 6.
-#     Branches only ever meet at segment ENDPOINTS or pad centres (the (since-removed) autorouter
-#     mishandles mid-segment T-junctions in protected wiring).
-def _chainl(_net, _pts, _lay, _w=0.5):
-    for _a, _b in zip(_pts, _pts[1:]):
-        _pre_track(vmm(*_a), vmm(*_b), _lay, _w, nets[_net])
+#     Branches only ever meet at segment ENDPOINTS or pad centres (no mid-segment
+#     T-junctions).
 _j2p = {n: _pxy("J2", n) for n in "123456"}
 # P3
-_chainl("P3", [_j2p["3"], (36.486, 15.0), (30.236, 21.25), _pxy("R_ot", "1")], pcbnew.F_Cu)
+_chain("P3", [_j2p["3"], (36.486, 15.0), (30.236, 21.25), _pxy("R_ot", "1")], pcbnew.F_Cu)
 # P4
-_chainl("P4", [_j2p["4"], (31.967, 13.317), (25.908, 13.317), (17.9, 21.325),
+_chain("P4", [_j2p["4"], (31.967, 13.317), (25.908, 13.317), (17.9, 21.325),
                _pxy("K3", "3")], pcbnew.F_Cu)
 # P2
-_chainl("P2", [_j2p["2"], (40.65, 20.271), (38.7, 22.221), _pxy("K1", "4")], pcbnew.F_Cu)
-_chainl("P2", [(38.7, 22.221), (38.07, 21.593), (30.783, 21.593), (30.154, 22.221),
+_chain("P2", [_j2p["2"], (40.65, 20.271), (38.7, 22.221), _pxy("K1", "4")], pcbnew.F_Cu)
+_chain("P2", [(38.7, 22.221), (38.07, 21.593), (30.783, 21.593), (30.154, 22.221),
                (29.4, 22.221), _pxy("K2", "3")], pcbnew.F_Cu)
-# K2.3 -> SW_OC1.4: the old autorouter-derived weave shaved K2.4 / K3.1 / K3.2 /
+# K2.3 -> SW_OC1.4: an earlier weave shaved K2.4 / K3.1 / K3.2 /
 # K3.3 at 0.13 (the DRC floor). Reworked: under-body runs at y=25.0 (0.35 clear of
 # the pad row), the row crossing on the single 45° line (x - y = 1.75) that clears
 # BOTH K2.4's SW corner and K3.1's NE corner at 0.21, a short y=21.9 lane north of
 # K3.1 (0.45), and the pad-1/2 gap vertical at x=21.548 with chamfered 90s (0.8 to
 # either pad). West of K3.1 the y=25.0 lane stays clear of the +5V coil spine
 # (which enters K3.1 at x=23.3 from the south-east).
-_chainl("P2", [_pxy("K2", "3"), (29.4, 25.0), (26.75, 25.0), (23.65, 21.9),
+_chain("P2", [_pxy("K2", "3"), (29.4, 25.0), (26.75, 25.0), (23.65, 21.9),
                (21.798, 21.9), (21.548, 22.15), (21.548, 24.75), (21.298, 25.0),
                (17.4, 25.0), (16.75, 24.35), _pxy("SW_OC1", "4")], pcbnew.F_Cu)
-_chainl("P2", [_pxy("SW_OC1", "4"), (16.75, 17.172)], pcbnew.F_Cu)
+_chain("P2", [_pxy("SW_OC1", "4"), (16.75, 17.172)], pcbnew.F_Cu)
 _pre_via(vmm(16.75, 17.172), net=nets["P2"])
-_chainl("P2", [(16.75, 17.172), (14.311, 17.172), (11.869, 14.731)], pcbnew.B_Cu)
+_chain("P2", [(16.75, 17.172), (14.311, 17.172), (11.869, 14.731)], pcbnew.B_Cu)
 _pre_via(vmm(11.869, 14.731), net=nets["P2"])
-_chainl("P2", [(11.869, 14.731), _pxy("SW_OC1", "3")], pcbnew.F_Cu)
+_chain("P2", [(11.869, 14.731), _pxy("SW_OC1", "3")], pcbnew.F_Cu)
 # IN_P4
-_chainl("IN_P4", [_j2p["6"], (20.1, 21.55), _pxy("K3", "2")], pcbnew.F_Cu)
-_chainl("IN_P4", [_j2p["6"], (13.176, 15.0), (11.721, 13.545)], pcbnew.B_Cu)
+_chain("IN_P4", [_j2p["6"], (20.1, 21.55), _pxy("K3", "2")], pcbnew.F_Cu)
+_chain("IN_P4", [_j2p["6"], (13.176, 15.0), (11.721, 13.545)], pcbnew.B_Cu)
 _pre_via(vmm(11.721, 13.545), net=nets["IN_P4"])
-_chainl("IN_P4", [(11.721, 13.545), (11.526, 13.35), _pxy("SW_OC2", "1")], pcbnew.F_Cu)
-_chainl("IN_P4", [_pxy("SW_OC2", "1"), (7.25, 16.85), _pxy("SW_OC2", "6")], pcbnew.F_Cu)
+_chain("IN_P4", [(11.721, 13.545), (11.526, 13.35), _pxy("SW_OC2", "1")], pcbnew.F_Cu)
+_chain("IN_P4", [_pxy("SW_OC2", "1"), (7.25, 16.85), _pxy("SW_OC2", "6")], pcbnew.F_Cu)
 # K1.3 -> J2.6 return: under-body run dropped to y=25.0 (was 24.779 = 0.13 from
 # K1.4's pad bottom; now 0.35) and the 45° up to the x=37.262 riser starts at
 # y=24.54 so its diagonal passes K1.4's SW corner at 0.39 (a 45° straight off the
 # old horizontal clipped it).
-_chainl("IN_P4", [_pxy("K1", "3"), (40.9, 25.0), (37.722, 25.0), (37.262, 24.54),
+_chain("IN_P4", [_pxy("K1", "3"), (40.9, 25.0), (37.722, 25.0), (37.262, 24.54),
                   (37.262, 22.908)], pcbnew.F_Cu)
 _pre_via(vmm(37.262, 22.908), net=nets["IN_P4"])
-_chainl("IN_P4", [(37.262, 22.908), (34.558, 22.908), _j2p["6"]], pcbnew.B_Cu)
+_chain("IN_P4", [(37.262, 22.908), (34.558, 22.908), _j2p["6"]], pcbnew.B_Cu)
 # P1
-_chainl("P1", [_j2p["1"], (44.15, 17.091), (37.628, 23.613), (17.492, 23.613),
+_chain("P1", [_j2p["1"], (44.15, 17.091), (37.628, 23.613), (17.492, 23.613),
                (10.75, 16.871)], pcbnew.B_Cu)
 _pre_via(vmm(10.75, 16.871), net=nets["P1"])
-_chainl("P1", [(10.75, 16.871), _pxy("SW_OC2", "4")], pcbnew.F_Cu)
-_chainl("P1", [(10.75, 16.871), (6.96, 16.871)], pcbnew.B_Cu)
-_chainl("P1", [(6.96, 16.871), (6.96, 14.489)], pcbnew.B_Cu)
+_chain("P1", [(10.75, 16.871), _pxy("SW_OC2", "4")], pcbnew.F_Cu)
+_chain("P1", [(10.75, 16.871), (6.96, 16.871)], pcbnew.B_Cu)
+_chain("P1", [(6.96, 16.871), (6.96, 14.489)], pcbnew.B_Cu)
 _pre_via(vmm(6.96, 14.489), net=nets["P1"])
-_chainl("P1", [(6.96, 14.489), (7.25, 14.199), _pxy("SW_OC2", "3")], pcbnew.F_Cu)
-_chainl("P1", [(6.96, 16.871), (4.923, 16.871), (4.75, 17.044)], pcbnew.B_Cu)
+_chain("P1", [(6.96, 14.489), (7.25, 14.199), _pxy("SW_OC2", "3")], pcbnew.F_Cu)
+_chain("P1", [(6.96, 16.871), (4.923, 16.871), (4.75, 17.044)], pcbnew.B_Cu)
 _pre_via(vmm(4.75, 17.044), net=nets["P1"])
-_chainl("P1", [(4.75, 17.044), _pxy("SW_OC3", "4")], pcbnew.F_Cu)
-_chainl("P1", [(4.75, 17.044), (4.461, 17.044), (1.85, 14.432)], pcbnew.B_Cu)
+_chain("P1", [(4.75, 17.044), _pxy("SW_OC3", "4")], pcbnew.F_Cu)
+_chain("P1", [(4.75, 17.044), (4.461, 17.044), (1.85, 14.432)], pcbnew.B_Cu)
 _pre_via(vmm(1.85, 14.432), net=nets["P1"])
-_chainl("P1", [(1.85, 14.432), (1.25, 13.832), _pxy("SW_OC3", "3")], pcbnew.F_Cu)
+_chain("P1", [(1.85, 14.432), (1.25, 13.832), _pxy("SW_OC3", "3")], pcbnew.F_Cu)
 # P5
-_chainl("P5", [(30.48, 12.54), (17.85, 12.54)], pcbnew.B_Cu)
+_chain("P5", [(30.48, 12.54), (17.85, 12.54)], pcbnew.B_Cu)
 _pre_via(vmm(17.85, 12.54), net=nets["P5"])
-_chainl("P5", [(17.85, 12.54), (17.04, 13.35), _pxy("SW_OC1", "1")], pcbnew.F_Cu)
-_chainl("P5", [_pxy("SW_OC1", "1"), (13.25, 16.85), _pxy("SW_OC1", "6")], pcbnew.F_Cu)
-_chainl("P5", [_pxy("SW_OC1", "1"), (15.721, 12.321), (6.548, 12.321), (5.519, 13.35),
+_chain("P5", [(17.85, 12.54), (17.04, 13.35), _pxy("SW_OC1", "1")], pcbnew.F_Cu)
+_chain("P5", [_pxy("SW_OC1", "1"), (13.25, 16.85), _pxy("SW_OC1", "6")], pcbnew.F_Cu)
+_chain("P5", [_pxy("SW_OC1", "1"), (15.721, 12.321), (6.548, 12.321), (5.519, 13.35),
                _pxy("SW_OC3", "1")], pcbnew.F_Cu)
-_chainl("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.F_Cu)
-# OC3_RET rides along: with the bus nets pre-placed, the old autorouter could not find the
-# escape for SW_OC3's centre pad 2 (greedy, no rip-up across protected wiring), so
-# its previously-proven path is locked as well — 45° NW onto the y=12.321 lane,
+_chain("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.F_Cu)
+# OC3_RET rides along: SW_OC3's centre pad 2 escapes 45° NW onto the y=12.321 lane,
 # west, down the far-west column at x=0.316 (between the board edge and the SW_OC3 /
 # P1 column), 45° SE into R_lim2 pad 2. All F.Cu, bus width (bus potential).
 # OC3_RET's final approach: with the opto cluster 2.5 mm further north, a single 45°
@@ -1052,11 +1044,11 @@ _chainl("P5", [_pxy("SW_OC3", "1"), (1.25, 16.85), _pxy("SW_OC3", "6")], pcbnew.
 # the channel centreline (y=19.7875), east past the switch, 45° NE up into pad 2.
 _rl2 = _pxy("R_lim2", "2")
 _YCH = 19.7875                     # channel centre: SW pad row bottom 19.3 + 0.4875
-_chainl("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
+_chain("OC3_RET", [_pxy("SW_OC3", "2"), (1.971, 12.321), (0.541, 12.321),
                     (0.316, 12.546), (0.316, _YCH - 0.25), (0.566, _YCH),
                     (_rl2[0] - (_rl2[1] - _YCH), _YCH), _rl2], pcbnew.F_Cu)
-# Remaining opto switch-pad nets (bus width, F.Cu; geometry lifted from a clean
-# the (since-removed) autorouter solution). Each JP net drops from its switch's centre pad 5 down a
+# Remaining opto switch-pad nets (bus width, F.Cu, hand-routed). Each JP net drops
+# from its switch's centre pad 5 down a
 # vertical between the switch columns, 45°s into the clamp diode's pad 1 and hops
 # 45° onward into the opto's anode (pad 1) — the three channels are near-identical,
 # OC1/OC3 with a 45° entry into the vertical, OC2's pad 5 already on its column.
@@ -1070,25 +1062,25 @@ _o1p, _o2p, _o3p = _pxy("OC1", "1"), _pxy("OC2", "1"), _pxy("OC3", "1")
 # OC3's vertical runs at x=4.6 (not 4.378): 0.39 clear of R_lim2 pad 2's east edge
 # instead of 0.17.
 _sw1p5, _sw3p5 = _pxy("SW_OC1", "5"), _pxy("SW_OC3", "5")
-_chainl("OC1_JP", [_sw1p5, (_sw1p5[0], _sw1p5[1] + 0.4),
+_chain("OC1_JP", [_sw1p5, (_sw1p5[0], _sw1p5[1] + 0.4),
                    (13.212, _sw1p5[1] + 0.4 + (_sw1p5[0] - 13.212)),
                    (13.212, _d1p[1] - (13.212 - _d1p[0])), _d1p], pcbnew.F_Cu)
-_chainl("OC1_JP", [_d1p, (_o1p[0], _d1p[1] + (_o1p[0] - _d1p[0])), _o1p],
+_chain("OC1_JP", [_d1p, (_o1p[0], _d1p[1] + (_o1p[0] - _d1p[0])), _o1p],
         pcbnew.F_Cu)
-_chainl("OC2_JP", [_pxy("SW_OC2", "5"), (9.0, _d2p[1] - (9.0 - _d2p[0])), _d2p],
+_chain("OC2_JP", [_pxy("SW_OC2", "5"), (9.0, _d2p[1] - (9.0 - _d2p[0])), _d2p],
         pcbnew.F_Cu)
-_chainl("OC2_JP", [_d2p, (_o2p[0], _d2p[1] + (_o2p[0] - _d2p[0])), _o2p],
+_chain("OC2_JP", [_d2p, (_o2p[0], _d2p[1] + (_o2p[0] - _d2p[0])), _o2p],
         pcbnew.F_Cu)
-_chainl("OC3_JP", [_sw3p5, (_sw3p5[0], _sw3p5[1] + 0.4),
+_chain("OC3_JP", [_sw3p5, (_sw3p5[0], _sw3p5[1] + 0.4),
                    (4.6, _sw3p5[1] + 0.4 + (4.6 - _sw3p5[0])),
                    (4.6, _d3p[1] - (4.6 - _d3p[0])), _d3p], pcbnew.F_Cu)
-_chainl("OC3_JP", [_d3p, (_o3p[0], _d3p[1] + (_o3p[0] - _d3p[0])), _o3p],
+_chain("OC3_JP", [_d3p, (_o3p[0], _d3p[1] + (_o3p[0] - _d3p[0])), _o3p],
         pcbnew.F_Cu)
 _rl3 = _pxy("R_lim3", "2")
-_chainl("OC1_RET", [_rl3, (_rl3[0] + 0.1015, _rl3[1] - 0.069),
+_chain("OC1_RET", [_rl3, (_rl3[0] + 0.1015, _rl3[1] - 0.069),
                     (_rl3[0] + 0.1015, 16.721), _pxy("SW_OC1", "2")], pcbnew.F_Cu)
 _rl1 = _pxy("R_lim1", "2")
-_chainl("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
+_chain("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
                     (6.371, _rl1[1] - (_rl1[0] - 6.371)), _rl1], pcbnew.F_Cu)
 
 # --- ES8311 (U3) analog / CE / supply hookups, fully hand-routed (0.2 mm, F.Cu).
@@ -1110,56 +1102,56 @@ _chainl("OC2_RET", [_pxy("SW_OC2", "2"), (9.0, 13.706), (6.371, 16.334),
 #     straight north into the exposed pad (grounded by the F.Cu pour, no EP vias); the cap GND columns
 #     (C_av/C_avb, C_vref/C_aref, C_dv/C_pv) each get a pad-2 column tie + In2 via;
 #     C_vmid's GND pad taps a via 0.9 mm east. R_sda's +3V3 pad stubs north into its
-#     own In1 via (the FR-proven spot).
-_chainl("ES_OUTP", [_pxy("U3", "12"), (35.805, 46.024), _pxy("C_op", "1")],
+#     own In1 via.
+_chain("ES_OUTP", [_pxy("U3", "12"), (35.805, 46.024), _pxy("C_op", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("ES_OUTN", [_pxy("U3", "13"), (35.005, 45.624), _pxy("C_on", "1")],
+_chain("ES_OUTN", [_pxy("U3", "13"), (35.005, 45.624), _pxy("C_on", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("ES_DACVREF", [_pxy("U3", "14"), (34.805, 45.224), (34.805, 44.624),
+_chain("ES_DACVREF", [_pxy("U3", "14"), (34.805, 45.224), (34.805, 44.624),
                        _pxy("C_vref", "1")], pcbnew.F_Cu, _BW)
-_chainl("ES_ADCVREF", [_pxy("U3", "15"), (34.405, 44.824), (34.405, 43.824),
+_chain("ES_ADCVREF", [_pxy("U3", "15"), (34.405, 44.824), (34.405, 43.824),
                        _pxy("C_aref", "1")], pcbnew.F_Cu, _BW)
-_chainl("ES_VMID", [_pxy("U3", "16"), (33.085, 43.004), _pxy("C_vmid", "1")],
+_chain("ES_VMID", [_pxy("U3", "16"), (33.085, 43.004), _pxy("C_vmid", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("ES_MICN", [_pxy("U3", "17"), (32.685, 42.104), _pxy("C_mn", "1")],
+_chain("ES_MICN", [_pxy("U3", "17"), (32.685, 42.104), _pxy("C_mn", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("ES_MICP", [_pxy("U3", "18"), (32.285, 42.004), _pxy("C_mp", "1")],
+_chain("ES_MICP", [_pxy("U3", "18"), (32.285, 42.004), _pxy("C_mp", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("ES_CE", [_pxy("U3", "20"), (31.485, 43.495), (30.844, 42.854),
+_chain("ES_CE", [_pxy("U3", "20"), (31.485, 43.495), (30.844, 42.854),
                   _pxy("R_ce", "1")], pcbnew.F_Cu, _BW)
 # +3V3 east (AVDD): pad 11 -> C_avb -> C_av -> plane via
-_chainl("+3V3", [_pxy("U3", "11"), (36.605, 46.424), _pxy("C_avb", "1")],
+_chain("+3V3", [_pxy("U3", "11"), (36.605, 46.424), _pxy("C_avb", "1")],
         pcbnew.F_Cu, _BW)
-_chainl("+3V3", [_pxy("C_avb", "1"), _pxy("C_av", "1"), (36.705, 48.457)],
+_chain("+3V3", [_pxy("C_avb", "1"), _pxy("C_av", "1"), (36.705, 48.457)],
         pcbnew.F_Cu, _BW)
 _pre_via(vmm(36.705, 48.457), net=nets["+3V3"])
 # +3V3 west (DVDD/PVDD): pads 3/4 onto the shared rail at x=29.885, via mid-rail,
 # straight on into C_pv pad 1, pad-1 column up into C_dv
-_chainl("+3V3", [_pxy("U3", "3"), (29.885, 45.624), (29.885, 45.824)],
+_chain("+3V3", [_pxy("U3", "3"), (29.885, 45.624), (29.885, 45.824)],
         pcbnew.F_Cu, _BW)
 _pre_via(vmm(29.885, 45.824), net=nets["+3V3"])
-_chainl("+3V3", [_pxy("U3", "4"), (29.885, 46.024), (29.885, 45.824)],
+_chain("+3V3", [_pxy("U3", "4"), (29.885, 46.024), (29.885, 45.824)],
         pcbnew.F_Cu, _BW)
-_chainl("+3V3", [(29.885, 46.024), (28.365, 46.024)], pcbnew.F_Cu, _BW)
-_chainl("+3V3", [_pxy("C_pv", "1"), _pxy("C_dv", "1")], pcbnew.F_Cu, _BW)
+_chain("+3V3", [(29.885, 46.024), (28.365, 46.024)], pcbnew.F_Cu, _BW)
+_chain("+3V3", [_pxy("C_pv", "1"), _pxy("C_dv", "1")], pcbnew.F_Cu, _BW)
 # R_sda pull-up supply: stub north + plane via
-_chainl("+3V3", [_pxy("R_sda", "1"), (30.585, 39.152)], pcbnew.F_Cu, _BW)
+_chain("+3V3", [_pxy("R_sda", "1"), (30.585, 39.152)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(30.585, 39.152), net=nets["+3V3"])
 # GND: U3 pad 5 + west cap column + via; pad 10 into the EP; east cap columns + vias
-_chainl("GND", [_pxy("U3", "5"), (30.185, 46.424), (29.935, 46.674)],
+_chain("GND", [_pxy("U3", "5"), (30.185, 46.424), (29.935, 46.674)],
         pcbnew.F_Cu, _BW)
 _pre_via(vmm(29.935, 46.674), net=nets["GND"])
-_chainl("GND", [_pxy("C_pv", "2"), _pxy("C_dv", "2"), (25.925, 47.254)],
+_chain("GND", [_pxy("C_pv", "2"), _pxy("C_dv", "2"), (25.925, 47.254)],
         pcbnew.F_Cu, _BW)
 _pre_via(vmm(25.925, 47.254), net=nets["GND"])
-_chainl("GND", [_pxy("U3", "10"), (33.085, 46.274)], pcbnew.F_Cu, _BW)
-_chainl("GND", [_pxy("C_avb", "2"), _pxy("C_av", "2"), (38.265, 48.454)],
+_chain("GND", [_pxy("U3", "10"), (33.085, 46.274)], pcbnew.F_Cu, _BW)
+_chain("GND", [_pxy("C_avb", "2"), _pxy("C_av", "2"), (38.265, 48.454)],
         pcbnew.F_Cu, _BW)
 _pre_via(vmm(38.265, 48.454), net=nets["GND"])
-_chainl("GND", [_pxy("C_vref", "2"), _pxy("C_aref", "2"), (38.265, 40.612)],
+_chain("GND", [_pxy("C_vref", "2"), _pxy("C_aref", "2"), (38.265, 40.612)],
         pcbnew.F_Cu, _BW)
 _pre_via(vmm(38.265, 40.612), net=nets["GND"])
-_chainl("GND", [_pxy("C_vmid", "2"), (35.385, 40.044)], pcbnew.F_Cu, _BW)
+_chain("GND", [_pxy("C_vmid", "2"), (35.385, 40.044)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(35.385, 40.044), net=nets["GND"])
 
 # --- +5V distribution, fully hand-routed (0.5 mm, F.Cu). One spine: D4 (Schottky
@@ -1174,33 +1166,33 @@ _pre_via(vmm(35.385, 40.044), net=nets["GND"])
 #     crosses the relay block on y=27.099 / the 45° staircase, tapping each coil
 #     pin (K2, K3) with a short stub off the y=24.779 row and each flyback anode
 #     (D2, D3) dead-centre from above.
-_chainl("+5V", [_pxy("D_vbus", "1"), (42.47, 50.78), _pxy("C_in", "1")], pcbnew.F_Cu)
-_chainl("+5V", [_pxy("C_in", "1"), _pxy("U2", "3")], pcbnew.F_Cu)  # near-vertical slant
-_chainl("+5V", [_pxy("U2", "3"), (41.225, 46.3), (40.6, 45.675), (40.6, 38.795),
+_chain("+5V", [_pxy("D_vbus", "1"), (42.47, 50.78), _pxy("C_in", "1")], pcbnew.F_Cu)
+_chain("+5V", [_pxy("C_in", "1"), _pxy("U2", "3")], pcbnew.F_Cu)  # near-vertical slant
+_chain("+5V", [_pxy("U2", "3"), (41.225, 46.3), (40.6, 45.675), (40.6, 38.795),
                 (40.355, 38.55), (37.773, 38.55), (37.64, 38.417),
                 (37.64, 34.372), (38.012, 34.0),
                 (39.75, 34.0), _pxy("D1", "1")], pcbnew.F_Cu)
-_chainl("+5V", [_pxy("D1", "1"), (41.688, 32.062), (41.688, 27.099)], pcbnew.F_Cu)
-_chainl("+5V", [(41.688, 27.099), (43.98, 27.099), (46.3, 24.779), _pxy("K1", "1")],
+_chain("+5V", [_pxy("D1", "1"), (41.688, 32.062), (41.688, 27.099)], pcbnew.F_Cu)
+_chain("+5V", [(41.688, 27.099), (43.98, 27.099), (46.3, 24.779), _pxy("K1", "1")],
         pcbnew.F_Cu)
-_chainl("+5V", [(41.688, 27.099), (37.12, 27.099), (34.8, 24.779)], pcbnew.F_Cu)
-_chainl("+5V", [(34.8, 24.779), _pxy("K2", "1")], pcbnew.F_Cu)
-_chainl("+5V", [(34.8, 24.779), (30.898, 28.681), (28.566, 28.681)], pcbnew.F_Cu)
-_chainl("+5V", [(28.566, 28.681), (28.566, 33.516), _pxy("D2", "1")], pcbnew.F_Cu)
-_chainl("+5V", [(28.566, 28.681), (24.664, 24.779), (23.3, 24.779)], pcbnew.F_Cu)
-_chainl("+5V", [(23.3, 24.779), _pxy("K3", "1")], pcbnew.F_Cu)
-_chainl("+5V", [(23.3, 24.779), (18.679, 29.4), (18.679, 32.071), _pxy("D3", "1")],
+_chain("+5V", [(41.688, 27.099), (37.12, 27.099), (34.8, 24.779)], pcbnew.F_Cu)
+_chain("+5V", [(34.8, 24.779), _pxy("K2", "1")], pcbnew.F_Cu)
+_chain("+5V", [(34.8, 24.779), (30.898, 28.681), (28.566, 28.681)], pcbnew.F_Cu)
+_chain("+5V", [(28.566, 28.681), (28.566, 33.516), _pxy("D2", "1")], pcbnew.F_Cu)
+_chain("+5V", [(28.566, 28.681), (24.664, 24.779), (23.3, 24.779)], pcbnew.F_Cu)
+_chain("+5V", [(23.3, 24.779), _pxy("K3", "1")], pcbnew.F_Cu)
+_chain("+5V", [(23.3, 24.779), (18.679, 29.4), (18.679, 32.071), _pxy("D3", "1")],
         pcbnew.F_Cu)
 
-# --- GND / +3V3 plane taps for every remaining SMD pad, locked (0.2 mm stub +
-#     through-via to the In2 / In1 plane; via spots FR-proven, stubs normalized to a
+# --- GND / +3V3 plane taps for every remaining SMD pad (0.2 mm stub +
+#     through-via to the In2 / In1 plane; each stub is a
 #     straight run or a single 45°). With these, the power nets are fully
 #     hand-routed: U2's tab and J1's shield stakes are PTH (barrel-connected to the
 #     planes); the U1/U3 exposed pads carry NO vias (solder-wicking avoidance) --
 #     each is laced/tied on F.Cu and bonds to the planes through a via outside the
 #     pad field (U1: pad 28's via; U3: pad 10's via).
 def _tapvia(_net, _key, _num, _pts, _w=_BW):
-    _chainl(_net, [_pxy(_key, _num)] + _pts, pcbnew.F_Cu, _w)
+    _chain(_net, [_pxy(_key, _num)] + _pts, pcbnew.F_Cu, _w)
     _pre_via(vmm(*_pts[-1]), net=nets[_net])
 # FET / pull-down GND row (vias in line with the pads, clear of the drain wiring)
 _tapvia("GND", "Q1", "2", [(47.44, 33.785)])
@@ -1235,31 +1227,27 @@ _tapvia("+3V3", "R_led", "1", [(47.455, 12.135), (47.455, 11.857)])
 # vertical GND run with the shared via on it; U2.2 / C_out.1 take their own +3V3
 # vias. All LDO-column stubs run 0.5 mm: U2.2's stub carries the full +3V3 load
 # into the In1 plane, and C_out's stubs carry its ripple current.
-_chainl("GND", [_pxy("U2", "1"), (42.47, 40.446)], pcbnew.F_Cu, 0.5)
+_chain("GND", [_pxy("U2", "1"), (42.47, 40.446)], pcbnew.F_Cu, 0.5)
 _pre_via(vmm(42.47, 40.446), net=nets["GND"])
-_chainl("GND", [(42.47, 40.446), _pxy("C_out", "2")], pcbnew.F_Cu, 0.5)
+_chain("GND", [(42.47, 40.446), _pxy("C_out", "2")], pcbnew.F_Cu, 0.5)
 _tapvia("+3V3", "U2", "2", [(42.47, 43.006)], _w=0.5)
 _tapvia("+3V3", "C_out", "1", [(43.5, 37.9625)], _w=0.5)  # straight east on the pad centreline, clear of GATE1
 # R_en's pull-up supply: single (near-45°) slant onto R_boot's locked +3V3 via
-_chainl("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
+_chain("+3V3", [_pxy("R_en", "1"), (15.2, 41.0)], pcbnew.F_Cu, _BW)
 
-# --- GATE1_PRE + T1 secondary (SEC_A/SEC_B): locked along their proven paths.
-#     Like OC3_RET, these are casualties of the locked walls around them (the +5V
-#     spine and the U3/audio hookups): valid corridors exist — these exact routes
-#     coexisted with identical +5V geometry — but the (since-removed) autorouter (greedy, no rip-up
-#     through protected wiring) stops finding them on its own.
+# --- GATE1_PRE + T1 secondary (SEC_A/SEC_B), hand-routed.
 #     GATE1_PRE ducks onto B.Cu to cross under the relay-driver block (K3.6 -> via
 #     -> east -> 45° staircase) and stays there all the way to a via just LEFT of
 #     R_g1 pad 1, surfacing into the pad with one straight stub; SEC_A/SEC_B leave
 #     T1's west pads as a 0.329 mm pair (see their section below).
-_chainl("GATE1_PRE", [_pxy("K3", "6"), (17.9, 31.839)], pcbnew.F_Cu, _BW)
+_chain("GATE1_PRE", [_pxy("K3", "6"), (17.9, 31.839)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(17.9, 31.839), net=nets["GATE1_PRE"])
-_chainl("GATE1_PRE", [(17.9, 31.839), (23.966, 31.839), (26.886, 34.759),
+_chain("GATE1_PRE", [(17.9, 31.839), (23.966, 31.839), (26.886, 34.759),
                       (34.259, 34.759), (36.0, 36.5)], pcbnew.B_Cu, _BW)
 _pre_via(vmm(36.0, 36.5), net=nets["GATE1_PRE"])
-_chainl("GATE1_PRE", [(36.0, 36.5), (36.4, 36.9), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
+_chain("GATE1_PRE", [(36.0, 36.5), (36.4, 36.9), _pxy("R_g1", "1")], pcbnew.F_Cu, _BW)
 # --- T1 secondary <-> series resistors <-> coupling caps (SEC_*/OUT_*/MIC_*),
-#     hand-routed and locked (restores the pre-resistor hand routes, adapted to the
+#     hand-routed (restores the pre-resistor hand routes, adapted to the
 #     net split). The resistors sit in a row south of T1 (see PCB_PLACE); every
 #     route is F.Cu, 0.2 mm, no vias.
 #     SEC pair: T1's west pads exit east and drop south past the pad column as a
@@ -1283,28 +1271,28 @@ _chainl("GATE1_PRE", [(36.0, 36.5), (36.4, 36.9), _pxy("R_g1", "1")], pcbnew.F_C
 #     verbatim; MIC_A runs one pitch north and drops into C_mp.2). Keeping each
 #     direction's two legs paired at 0.329 mm preserves the small pickup loop the
 #     floating differential pair had before the split.
-_chainl("SEC_A", [_pxy("T1", "1"), (28.684, 51.959), (28.929, 52.204),
+_chain("SEC_A", [_pxy("T1", "1"), (28.684, 51.959), (28.929, 52.204),
                   (28.929, 61.075), (29.174, 61.32), _pxy("R_op", "2")],
         pcbnew.F_Cu, _BW)
-_chainl("SEC_A", [_pxy("R_op", "2"), (31.5, 60.745), (31.745, 60.5),
+_chain("SEC_A", [_pxy("R_op", "2"), (31.5, 60.745), (31.745, 60.5),
                   (35.155, 60.5), (35.4, 60.745), _pxy("R_mp", "2")],
         pcbnew.F_Cu, _BW)
-_chainl("SEC_B", [_pxy("T1", "3"), (28.355, 57.039), (28.6, 57.284),
+_chain("SEC_B", [_pxy("T1", "3"), (28.355, 57.039), (28.6, 57.284),
                   (28.6, 61.955), (28.845, 62.2), (32.555, 62.2),
                   (32.8, 61.955), _pxy("R_on", "2")], pcbnew.F_Cu, _BW)
-_chainl("SEC_B", [_pxy("R_on", "2"), _pxy("R_mn", "2")], pcbnew.F_Cu, _BW)
-_chainl("OUT_A", [_pxy("R_op", "1"), (31.5, 50.116), (31.745, 49.871),
+_chain("SEC_B", [_pxy("R_on", "2"), _pxy("R_mn", "2")], pcbnew.F_Cu, _BW)
+_chain("OUT_A", [_pxy("R_op", "1"), (31.5, 50.116), (31.745, 49.871),
                   (38.798, 49.871), (39.043, 49.626), (39.043, 45.902),
                   _pxy("C_op", "2")], pcbnew.F_Cu, _BW)
-_chainl("OUT_B", [_pxy("R_on", "1"), (32.8, 50.445), (33.045, 50.2),
+_chain("OUT_B", [_pxy("R_on", "1"), (32.8, 50.445), (33.045, 50.2),
                   (39.127, 50.2), (39.372, 49.955), (39.372, 44.414),
                   (39.127, 44.169), (38.51, 44.169), _pxy("C_on", "2")],
         pcbnew.F_Cu, _BW)
-_chainl("MIC_B", [_pxy("R_mn", "1"), (34.1, 50.774), (34.345, 50.529),
+_chain("MIC_B", [_pxy("R_mn", "1"), (34.1, 50.774), (34.345, 50.529),
                   (39.456, 50.529), (39.701, 50.284), (39.701, 39.606),
                   (39.456, 39.361), (33.868, 39.361), _pxy("C_mn", "2")],
         pcbnew.F_Cu, _BW)
-_chainl("MIC_A", [_pxy("R_mp", "1"), (35.4, 51.103), (35.645, 50.858),
+_chain("MIC_A", [_pxy("R_mp", "1"), (35.4, 51.103), (35.645, 50.858),
                   (39.785, 50.858), (40.03, 50.613), (40.03, 39.277),
                   (39.785, 39.032), (32.897, 39.032), _pxy("C_mp", "2")],
         pcbnew.F_Cu, _BW)
@@ -1355,28 +1343,28 @@ for _a, _b in (
         ((42.7, 60.45), (_TOMM(_d5p1.x), _TOMM(_d5p1.y)))):
     _pre_track(vmm(*_a), vmm(*_b), pcbnew.F_Cu, _BW, nets["USB_DM_ESP"])
 
-# --- USB-C connector side, fully hand-routed (0.2 mm, F.Cu; geometry lifted from a
-#     clean the (since-removed) autorouter solution). D+/D− each tie their A/B pad pair together and
+# --- USB-C connector side, fully hand-routed (0.2 mm, F.Cu). D+/D− each tie their
+#     A/B pad pair together and
 #     rise into the TPD2S017 inputs: DP joins A6<->B6 with a shallow U just south of
 #     the pad row and runs B6 -> 45° -> vertical at x=45.5 -> 45° into D5 pin 4;
 #     DM tees at (44.152, 61.598) — B7 and A7 join there and one 45° leads into
 #     D5 pin 3. The CC lines wrap around J1's south side as two nested staircases
 #     (CC2 inside, CC1 outside via y=64.695) up into their pulldowns' pad 1.
-_chainl("USB_DP", [_pxy("J1", "B6"), (44.85, 61.697), (45.5, 61.047), (45.5, 58.6),
+_chain("USB_DP", [_pxy("J1", "B6"), (44.85, 61.697), (45.5, 61.047), (45.5, 58.6),
                    _pxy("D_esd", "4")], pcbnew.F_Cu, _BW)
-_chainl("USB_DP", [_pxy("J1", "A6"), (43.85, 62.961), (44.162, 63.273),
+_chain("USB_DP", [_pxy("J1", "A6"), (43.85, 62.961), (44.162, 63.273),
                    (44.537, 63.273), (44.85, 62.96), _pxy("J1", "B6")],
         pcbnew.F_Cu, _BW)
-_chainl("USB_DM", [_pxy("J1", "B7"), (43.35, 61.873), (43.625, 61.598),
+_chain("USB_DM", [_pxy("J1", "B7"), (43.35, 61.873), (43.625, 61.598),
                    (44.152, 61.598)], pcbnew.F_Cu, _BW)
-_chainl("USB_DM", [(44.152, 61.598), (44.35, 61.796), _pxy("J1", "A7")],
+_chain("USB_DM", [(44.152, 61.598), (44.35, 61.796), _pxy("J1", "A7")],
         pcbnew.F_Cu, _BW)
-_chainl("USB_DM", [(44.152, 61.598), (44.95, 60.8), _pxy("D_esd", "3")],
+_chain("USB_DM", [(44.152, 61.598), (44.95, 60.8), _pxy("D_esd", "3")],
         pcbnew.F_Cu, _BW)
-_chainl("USB_CC1", [_pxy("J1", "A5"), (42.85, 62.979), (44.566, 64.695),
+_chain("USB_CC1", [_pxy("J1", "A5"), (42.85, 62.979), (44.566, 64.695),
                     (48.836, 64.695), (49.539, 63.993), (49.539, 60.899),
                     _pxy("R_cc1", "1")], pcbnew.F_Cu, _BW)
-_chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
+_chain("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
                     (48.756, 64.31), (49.153, 63.913), (49.153, 61.793),
                     _pxy("R_cc2", "1")], pcbnew.F_Cu, _BW)
 
@@ -1385,41 +1373,41 @@ _chainl("USB_CC2", [_pxy("J1", "B5"), (45.85, 63.545), (46.615, 64.31),
 #     ties the pull-down's pad 1 into the gate resistor's pad 2 (the R_g* sit
 #     x-aligned over their pull-downs), then a straight run east on the y=36.9
 #     resistor row and a 45° drop into the FET's gate pad — all F.Cu, no vias
-#     (replaces the (since-removed) autorouter's two-via B.Cu detour on GATE3). EN leaves U1 pad 3
+#     (GATE3 is the exception — it ducks under on B.Cu, see below). EN leaves U1 pad 3
 #     west and 45°s onto the RST button's pad column (x=19.925, clear of MCLK's
 #     riser), running one straight line — F.Cu vertical, via, B.Cu hop under the
-#     locked SDA/SCL lane stack, via, stub into the button; from the north via it
+#     SDA/SCL lane stack, via, stub into the button; from the north via it
 #     also runs west into C_en pad 1 (45° landing); R_en's EN pad ties to C_en
 #     with one near-vertical slant. OT_BRIDGE is
-#     a single near-vertical slant K2.4 -> R16.2 (bus width); LED_A's dead-straight
-#     vertical is kept as the autorouter laid it.
+#     a single near-vertical slant K2.4 -> R16.2 (bus width); LED_A is a
+#     dead-straight vertical.
 for _gq, _gpd, _grg, _gx45 in (("Q1", "R_pd1", "R_g1", 45.49),
                                ("Q2", "R_pd2", "R_g2", 33.99)):
     _gnet = "GATE" + _gq[1]
-    _chainl(_gnet, [_pxy(_gpd, "1"), _pxy(_grg, "2")], pcbnew.F_Cu, _BW)
-    _chainl(_gnet, [_pxy(_grg, "2"), (_gx45, 36.9), _pxy(_gq, "1")], pcbnew.F_Cu, _BW)
-# GATE3 can't run the y=36.9 row east — GATE1_DRV's locked escape channel crosses it
+    _chain(_gnet, [_pxy(_gpd, "1"), _pxy(_grg, "2")], pcbnew.F_Cu, _BW)
+    _chain(_gnet, [_pxy(_grg, "2"), (_gx45, 36.9), _pxy(_gq, "1")], pcbnew.F_Cu, _BW)
+# GATE3 can't run the y=36.9 row east — GATE1_DRV's escape channel crosses it
 # at x=16.34 — so its FET leg ducks under on B.Cu west of the relay block instead:
 # Q3 gate west on y=34.95, 45° down to a via, B.Cu west + 45° up to a second via,
 # and a 45° F.Cu landing into R_pd3's pad 1.
-_chainl("GATE3", [_pxy("R_pd3", "1"), _pxy("R_g3", "2")], pcbnew.F_Cu, _BW)
-_chainl("GATE3", [_pxy("Q3", "1"), (20.552, 34.95), (19.377, 33.774),
+_chain("GATE3", [_pxy("R_pd3", "1"), _pxy("R_g3", "2")], pcbnew.F_Cu, _BW)
+_chain("GATE3", [_pxy("Q3", "1"), (20.552, 34.95), (19.377, 33.774),
                   (19.377, 33.11)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(19.377, 33.11), net=nets["GATE3"])
-_chainl("GATE3", [(19.377, 33.11), (15.811, 33.11), (14.8, 34.121)],
+_chain("GATE3", [(19.377, 33.11), (15.811, 33.11), (14.8, 34.121)],
         pcbnew.B_Cu, _BW)
 _pre_via(vmm(14.8, 34.121), net=nets["GATE3"])
-_chainl("GATE3", [(14.8, 34.121), _pxy("R_pd3", "1")], pcbnew.F_Cu, _BW)
-_chainl("EN", [_pxy("U1", "3"), (20.984, 59.42), (19.925, 58.361),
+_chain("GATE3", [(14.8, 34.121), _pxy("R_pd3", "1")], pcbnew.F_Cu, _BW)
+_chain("EN", [_pxy("U1", "3"), (20.984, 59.42), (19.925, 58.361),
                (19.925, 44.894)], pcbnew.F_Cu, _BW)
 _pre_via(vmm(19.925, 44.894), net=nets["EN"])
-_chainl("EN", [(19.925, 44.894), (19.925, 42.36)], pcbnew.B_Cu, _BW)
+_chain("EN", [(19.925, 44.894), (19.925, 42.36)], pcbnew.B_Cu, _BW)
 _pre_via(vmm(19.925, 42.36), net=nets["EN"])
-_chainl("EN", [(19.925, 42.36), (18.14, 42.36), _pxy("C_en", "1")], pcbnew.F_Cu, _BW)
-_chainl("EN", [(19.925, 42.36), _pxy("SW_en", "1")], pcbnew.F_Cu, _BW)
-_chainl("EN", [_pxy("C_en", "1"), _pxy("R_en", "2")], pcbnew.F_Cu, _BW)
-_chainl("OT_BRIDGE", [_pxy("K2", "4"), _pxy("R_ot", "2")], pcbnew.F_Cu)
-_chainl("LED_A", [_pxy("R_led", "2"), _pxy("LED1", "2")], pcbnew.F_Cu, _BW)
+_chain("EN", [(19.925, 42.36), (18.14, 42.36), _pxy("C_en", "1")], pcbnew.F_Cu, _BW)
+_chain("EN", [(19.925, 42.36), _pxy("SW_en", "1")], pcbnew.F_Cu, _BW)
+_chain("EN", [_pxy("C_en", "1"), _pxy("R_en", "2")], pcbnew.F_Cu, _BW)
+_chain("OT_BRIDGE", [_pxy("K2", "4"), _pxy("R_ot", "2")], pcbnew.F_Cu)
+_chain("LED_A", [_pxy("R_led", "2"), _pxy("LED1", "2")], pcbnew.F_Cu, _BW)
 
 # --- board outline: tight bbox + margin on free edges, pinned on flush edges ---
 L = edge_line.get("left",   min(fext(f)[0] for f in fps.values()) - MARGIN)
@@ -1506,10 +1494,10 @@ def _fid_clear(fx, fy):
     if any(((fx-ox)**2+(fy-oy)**2)**0.5 <= orad+1.5 for ox, oy, orad in _fid_obst): return False
     return all(_rect_dist(fx, fy, *R) >= 1.4 for R in _fid_rects)
 def _fid_maskwin_keepout(fx, fy):
-    # Minimal fence: keep autorouted F.Cu tracks/vias out of the fiducial's 2 mm mask WINDOW so no
+    # Minimal fence: keep F.Cu tracks/vias out of the fiducial's 2 mm mask WINDOW so no
     # foreign-net copper gets exposed in its aperture (a solder-mask bridge). F.Cu ONLY -- the mask
     # is front-side, so B.Cu / inner planes are left free; an all-layer keepout starved the dense
-    # autorouting and broke a net. r = mask radius (1.0) + 0.1 margin. Pads allowed (the fiducial's
+    # routing and broke a net. r = mask radius (1.0) + 0.1 margin. Pads allowed (the fiducial's
     # own pad sits here); pours are irrelevant on F.Cu (signals-only, no F.Cu plane).
     z = pcbnew.ZONE(board); z.SetIsRuleArea(True); z.SetLayer(pcbnew.F_Cu)
     z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True)
@@ -1530,14 +1518,10 @@ def _place_fiducial(ref, cx, cy):              # cx,cy = the board corner to gro
                 fp.Reference().SetVisible(False)       # keep silk out of the fiducial clear area
                 # Courtyard is KEPT (cleared of every part by >=1.4 mm above) so DRC courtyard-
                 # overlap catches any future regression that puts a fiducial under a component.
-                # The stock fiducial pad carries a 0.6 mm LOCAL clearance override. the (since-removed) autorouter
-                # (driven from the DSN) does not honour per-pad local clearance on a netless pad,
-                # so it routes to the 0.2 mm board default and KiCad's DRC then flags 0.2-0.6 mm
-                # "violations" against the override. Drop the override (inherit the 0.2 mm board
-                # clearance the router actually used) instead of fencing the fiducial off with a
-                # keepout -- a keepout steals routing channels on this dense board and the
-                # autorouter then fails to complete a net. 1.5 mm placement clearance keeps real
-                # copper comfortably clear regardless.
+                # The stock fiducial pad carries a 0.6 mm LOCAL clearance override; drop it
+                # (inherit the 0.2 mm board clearance) instead of fencing the fiducial off
+                # with a keepout -- a keepout steals routing channels on this dense board.
+                # 1.5 mm placement clearance keeps real copper comfortably clear regardless.
                 for _p in fp.Pads():
                     _p.SetLocalClearance(0)            # 0 => inherit board/net clearance
                 fp.SetPosition(vmm(fx, fy))
@@ -1566,7 +1550,7 @@ print(f"  fiducials: disabled")
 # NOTE: J1 is the GCT USB4105 -- single-row SMD Type-C (only the shell stakes are THT).
 # All 16 signal contacts escape from one fine-pitch pad row on F.Cu, so placement around
 # J1 must leave the escape fan room and D+/D- want to drop to B.Cu over the GND plane;
-# verify the (since-removed) autorouter copes after any reshuffle near the bottom edge.
+# re-check the escape fan after any reshuffle near the bottom edge.
 
 
 # J2 (WF26 terminal) per-screw labels on the front silk so the bus lines are unambiguous when
@@ -1764,9 +1748,9 @@ for _ref, _net, (_tx, _ty), _via, (_lx, _ly) in TP_TABLE:
         _pre_via(vmm(*_via), net=nets[_net])
     print(f"  test point {_ref} ({_net}) at ({_tx},{_ty})")
 # TP2 stub straight south into K1's coil pad 1 (+5V)
-_chainl("+5V", [TP_TABLE[1][2], _pxy("K1", "1")], pcbnew.F_Cu, 0.4)
+_chain("+5V", [TP_TABLE[1][2], _pxy("K1", "1")], pcbnew.F_Cu, 0.4)
 # TP3 stub straight east onto R18's (R_sda) +3V3 plane via
-_chainl("+3V3", [TP_TABLE[2][2], (30.585, 39.152)], pcbnew.F_Cu, 0.4)
+_chain("+3V3", [TP_TABLE[2][2], (30.585, 39.152)], pcbnew.F_Cu, 0.4)
 
 # GND stitching vias grounding float-thieving pockets (the GND thieve claims a
 # pocket once it touches the via): relay/bus region (nearest copper: IN_P4/P4

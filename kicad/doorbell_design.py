@@ -27,7 +27,7 @@ REF = {
     "R_pu1":"R21","R_pu2":"R22","R_pu3":"R23",   # opto collector pull-ups to +3V3
     # audio front-end series resistors (one per transformer leg, both directions)
     "R_op":"R24","R_on":"R25","R_mp":"R26","R_mn":"R27",
-    # --- audio codec (ES8388) support caps ---
+    # --- audio codec (ES8311) support caps ---
     "C_dv":"C7","C_pv":"C8","C_av":"C9","C_avb":"C10","C_vref":"C11",
     "C_vmid":"C12","C_aref":"C13","C_op":"C14","C_on":"C15","C_mp":"C16","C_mn":"C17",
     "C_in":"C2","C_3v3":"C3","C_out":"C4","C_en":"C5","C_dec":"C6",

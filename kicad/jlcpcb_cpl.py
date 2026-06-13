@@ -23,7 +23,7 @@ ROT_FIX = {
     "OK1": 180, "OK2": 180, "OK3": 180,   # LTV-217 SOP-4 optos: JLCPCB pin 1 is 180° off KiCad
     "Q1": 180,  "Q2": 180,  "Q3": 180,    # 2N7002 SOT-23: classic JLCPCB 180° offset
     "K1": -90,  "K2": -90,  "K3": -90,    # G6K relay: 90° clockwise
-    "U3": -90,                            # ES8388 QFN-28: 90° clockwise to match JLCPCB library
+    "U3": -90,                            # ES8311 QFN-20: 90° clockwise to match JLCPCB library
 }
 
 
