@@ -1,6 +1,6 @@
 # Klingel V4 — ESPHome config for the ESP32-C6-WROOM-1 board.
 #
-# Ported from the V3 doorbell.yaml (ESP32 WROOM-32 dev board). All automation logic is
+# Ported from the V3 doorbell-v3.yaml (ESP32 WROOM-32 dev board). All automation logic is
 # preserved verbatim; only the things that change with the new MCU/board were touched:
 #
 #   1. board/framework  : esp32dev  ->  esp32-c6-devkitc-1  (generic ESP32-C6 board def; fits the WROOM-1)

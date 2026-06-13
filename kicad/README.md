@@ -121,7 +121,7 @@ equivalent); swap for `PC817S` for the exact V3 part.
 All four active GPIOs are on the north castellated row (pads 10–18), facing both the relay cluster
 and the opto block. IO20/U0RXD is safe as a gate driver: high-Z input at reset, 10 kΩ pull-down
 holds K2 off. IO21/U0TXD (pad 12) is N/C — ROM drives it HIGH at boot. Non-strapping: IO1/IO3/IO10/IO20
-(strapping = IO2/IO8/IO9). Firmware: `../doorbell-v4.yaml`, `board: esp32-c3-devkitm-1`.
+(strapping = IO2/IO8/IO9). Firmware: `../firmware/doorbell-v4.yaml`, `board: esp32-c3-devkitm-1`.
 
 ## Net list (draw these connections)
 

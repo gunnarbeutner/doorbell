@@ -2,16 +2,16 @@
 
 **V4 source of truth: `kicad/doorbell_design.py`** (nets, parts, footprints; `gen_schematic.py`
 and `gen_pcb.py` generate the schematic and PCB from it — build with `./build.sh all-route`).
-V4 firmware: `doorbell-v4.yaml`. LCSC part numbers: `kicad/doorbell_design.py` (`LCSC` dict for
+V4 firmware: `firmware/doorbell-v4.yaml`. LCSC part numbers: `kicad/doorbell_design.py` (`LCSC` dict for
 parts whose symbol carries none or a stand-in's; the JLCPCB library symbols supply the rest) —
 embedded in the schematic as hidden `LCSC`/`Description`/`MPN`/`Datasheet` fields and reused by
 `kicad/jlcpcb_files.py` for the BOM.
 Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
-Intercom system reference: `STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`.
+Intercom system reference: `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`.
 
 V3 — the board currently deployed in the wall — is documented in its own section below
-(sources: `KlingelV4.fzz` Fritzing schematic, `doorbell.yaml`, netlist via
-`scripts/extract_netlist.py` → `build/netlist.txt`).
+(sources: `docs/KlingelV4.fzz` Fritzing schematic, `firmware/doorbell-v3.yaml`, netlist via
+`reference/extract_netlist.py` → `reference/netlist.txt`).
 
 ---
 
@@ -108,7 +108,7 @@ IN-P4→P4 (gong rings, OC2 senses); energised it opens the line (gong silenced)
 
 ## TV20/S reference facts (confirmed from the STR PDF)
 
-From `STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehlersuchhilfe*):
+From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehlersuchhilfe*):
 
 - **Power:** NTR201 transformer, 230 V~ → **12 VAC**; feeds the TV20/S control unit.
 - **Door opener (Türöffner Tö):** **8–12 VAC, 1 A max** (~5–15 Ω), switched by the TV20/S
@@ -147,7 +147,7 @@ audio-related contact requirement. The V4 audio path itself taps P1/P5, not line
 The apartment handset (Sprechstelle **WF26/G**, PCB silk "…WF26") has **no MCU**, but it is
 **not purely passive**: it contains an internal signal relay, an RC network and two
 switches. The full internals are captured in **`wf26/wf26.kicad_sch`** (standalone,
-ERC-clean KiCad project; teardown photos `IMG_5082.jpg` / `m53n9gtxg41f1.png`). Parts:
+ERC-clean KiCad project; teardown photos `IMG_5082.jpg` / `reference/intercom-teardown-collage.png`). Parts:
 LS1 (16 Ω speaker/mic), S2 (Sprechen/Hören, DPDT), S1 (Türöffner/ÖT, DPDT), R1 (2.2 kΩ,
 confirmed by colour bands red-red-red-gold), C1 (22 µF/50 V, value image-read), K2 (relay),
 J1 (5-way bus = P1–P5).
@@ -213,7 +213,7 @@ Key facts:
 ## V3 — the deployed board (perfboard)
 
 The system currently in the wall: an ESP32 DevKit + relay module on hand-wired perfboard,
-running `doorbell.yaml` (`board: esp32dev`). Its sense/relay topology is what V4 carries
+running `firmware/doorbell-v3.yaml` (`board: esp32dev`). Its sense/relay topology is what V4 carries
 over.
 
 | Ref | Part | Role |
@@ -232,7 +232,7 @@ over.
 | 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K2 (ÖT bridge) | IO20 |
 | 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K3 (chime suppress) | IO21 |
 
-V3 netlist verified against `build/netlist.txt` (nets `WF26-P4`/`WF26-P5`, `N9`–`N12`;
+V3 netlist verified against `reference/netlist.txt` (nets `WF26-P4`/`WF26-P5`, `N9`–`N12`;
 V3's `WF26-IN-P4` is V4's `IN_P4`).
 
 **Reliability problem (the reason for V4):** Dupont jumper headers between perfboard and
@@ -268,7 +268,7 @@ rectified).
 | Audio | **Half-duplex path on-board**: ES8311 mono codec + SM-LP-5001 isolation transformer + K1 virtual-PTT relay + OC1 session-sense; analog front-end provisional | The bus is half-duplex by design (single LS1 transducer) ⇒ no echo cancellation needed ⇒ within the C6's reach |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
-### ESP32-C6 GPIO map (matches `doorbell_design.py` NETS and `doorbell-v4.yaml`)
+### ESP32-C6 GPIO map (matches `doorbell_design.py` NETS and `firmware/doorbell-v4.yaml`)
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
@@ -331,7 +331,7 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
 - **OC1 (session sense)** parallels the WF26's internal relay coil (P5↔P2, ~320 Ω,
   energised by the TV20/S only during a live session). R_lim3 = 5.1 k provisional pending
   the measured session voltage.
-- **Cross-talk masking** (`doorbell-v4.yaml`, lambda filters ahead of the debounce):
+- **Cross-talk masking** (`firmware/doorbell-v4.yaml`, lambda filters ahead of the debounce):
   - **House Doorbell (OC2)** is forced off while PTT is engaged **or a session is
     active**: K1 ties IN_P4 to P2, and during an armed session the resident's own S2 +
     WF26 relay do the same, so OC2 sees the P1↔P2 standing voltage and would report a
@@ -347,7 +347,7 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   - All masked interferers are AC, so the raw input keeps toggling and the masks
     re-evaluate continuously while active. The masks must never gate a *steady-DC*
     signal that outlives the mask window — the lambda only re-runs on raw-input edges.
-- **OC3 tone detection** (`doorbell-v4.yaml`): the opto conducts only on positive
+- **OC3 tone detection** (`firmware/doorbell-v4.yaml`): the opto conducts only on positive
   half-cycles above the LED threshold, so OC3's raw input toggles at audio rate
   (~1 ms low / ~1.4 ms high) and a plain `delayed_on` would never latch. The filter
   chain stretches the conduction pulses into a level first (`delayed_off: 50ms`), then
@@ -376,7 +376,7 @@ K1 (virtual PTT):         COM=IN_P4, NO→P2, NC open   — energise (talk) to t
   would short P2↔P3 via the WF26's at-rest S2 strap and fire the door opener.
 - **Release sequencing (firmware):** dropping K3 while K1 is held would reclose K3's
   pole-A NC (~1 ms) before K1's armature releases (~1–3 ms), momentarily dead-shorting
-  P2↔P3 via the S2 strap. `doorbell-v4.yaml` guards this in the `doorbell_sound_state`
+  P2↔P3 via the S2 strap. `firmware/doorbell-v4.yaml` guards this in the `doorbell_sound_state`
   sensor's `on_press` — the only code path that de-energises K3 — with
   `switch.turn_off: intercom_ptt` → `delay: 10ms` → K3 off. Using the switch (not the raw
   output) keeps the HA-visible PTT state in sync when a session ends with PTT latched on.
@@ -841,7 +841,7 @@ into 16 Ω.
 Automated gates (run by `./build.sh all-route`): **ERC 0 errors, DRC 0/0, routes
 0 unrouted, `check_pcb.py` PASS**. The generated board must be rebuilt whenever
 `doorbell_design.py` / `gen_pcb.py` change — the committed `.kicad_pcb`/gerbers are
-outputs, not sources. The firmware config passes `esphome config doorbell-v4.yaml`
+outputs, not sources. The firmware config passes `esphome config firmware/doorbell-v4.yaml`
 (ESPHome 2026.5.3; needs a `secrets.yaml` with `wifi_ssid`/`wifi_password` alongside).
 
 An independent blind review (no DESIGN.md / generator scripts; netlist re-extracted from

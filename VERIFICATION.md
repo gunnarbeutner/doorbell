@@ -4,7 +4,7 @@ Independent pre-fabrication review of `kicad/doorbell.kicad_sch`, performed blin
 (without consulting DESIGN.md or the generator scripts). Connectivity was extracted
 from the routed PCB netlist, every pin assignment was checked against the official
 manufacturer datasheets, and the intercom-side logic was cross-checked against the
-STR TV20S service documentation (`STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`) and the
+STR TV20S service documentation (`docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`) and the
 reverse-engineered WF26 station schematic (`wf26/wf26.kicad_sch`).
 
 **Verdict: no polarity errors, no pin-mapping errors, no unusable-pin problems.**
@@ -135,7 +135,7 @@ The JLCPCB symbols draw pin 1 as cathode, matching the KiCad footprint conventio
   detection still works while the local gong is muted); OC3 on 1 ↔ 5 (floor call);
   OC1 on 2 ↔ 5 — this is the pair the TV20S puts ~12 VDC on to arm the WF26 talk
   relay, so **OC1 detects the speech window opening**.
-- Firmware disambiguation (hardware is fine; handled in `doorbell-v4.yaml`):
+- Firmware disambiguation (hardware is fine; handled in `firmware/doorbell-v4.yaml`):
   - OC3 sits across the speaker pair, so it fires on *any* loud speaker audio —
     door gong, floor-call tone, and speech alike. The Apartment Doorbell sensor is
     masked while House Doorbell / session / PTT are active, and uses a
@@ -160,7 +160,7 @@ The JLCPCB symbols draw pin 1 as cathode, matching the KiCad footprint conventio
    pull-ups.)* OC1_OUT/OC2_OUT/OC3_OUT collectors go
    straight to GPIO23/GPIO3/GPIO2 with nothing else on the net (emitters share R3,
    1 k, to GND). The circuit works *only* if firmware enables the internal ~45 k
-   pull-ups — otherwise the inputs float. `doorbell-v4.yaml` sets `pullup: true` on
+   pull-ups — otherwise the inputs float. `firmware/doorbell-v4.yaml` sets `pullup: true` on
    all three inputs, so the dependency is satisfied; three 10 k pull-ups to 3V3
    would still make the hardware self-sufficient. (R3 contributes little — it adds
    ~70 mV to the low level.)

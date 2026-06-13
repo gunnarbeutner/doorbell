@@ -40,10 +40,10 @@ C1's *capacitance* is fine — only its **voltage rating** (and part type) must 
 - Doc mismatch: `DESIGN.md` says 470 µF.
 - **Fix:** ~100 µF (or 470 µF) at **≥16 V**, aluminium-polymer or 25 V MLCC (not tantalum on a hot-plug rail). Needs a footprint change (CASE-B can't hold 100 µF/16 V).
 
-**[CRITICAL] doorbell.yaml is the V3 firmware**
-- `doorbell.yaml:5` `board: esp32dev`; relay outputs `pin: 25` `:135`, `pin: 26` `:139` (+ bell inputs on 32/33). ESP32-C3 has only **GPIO0–GPIO21** — `esp32-c3_datasheet_en.pdf` Pin Definitions (no GPIO25/26/32/33).
+**[CRITICAL] doorbell-v3.yaml is the V3 firmware**
+- `firmware/doorbell-v3.yaml:5` `board: esp32dev`; relay outputs `pin: 25` `:135`, `pin: 26` `:139` (+ bell inputs on 32/33). ESP32-C3 has only **GPIO0–GPIO21** — `esp32-c3_datasheet_en.pdf` Pin Definitions (no GPIO25/26/32/33).
 - Correct V4 map: IO4=K1, IO5=K2, IO6=OC1, IO7=OC2 — `DESIGN.md` GPIO table + `kicad/doorbell_design.py` NETS.
-- Relay polarity: `inverted: true` on outputs `doorbell.yaml:137,141` must be **removed** — V4 driver is NMOS + gate pull-down = active-high (`DESIGN.md` relay-driver section).
+- Relay polarity: `inverted: true` on outputs `firmware/doorbell-v3.yaml:137,141` must be **removed** — V4 driver is NMOS + gate pull-down = active-high (`DESIGN.md` relay-driver section).
 
 **[SHOULD-FIX] U1/K1/K2 CPL rotations unverified**
 - `kicad/doorbell_design.py:59` U1 = `PCM_Espressif`, `:63–64` K1/K2 = `Relay_SMD` (KiCad stock) — not the CDFER `PCM_JLCPCB` library the passives use, so not pre-aligned to JLCPCB 0°. Verify in JLCPCB preview; add `ROT_FIX` in `kicad/jlcpcb_cpl.py`.
@@ -54,6 +54,6 @@ C1's *capacitance* is fine — only its **voltage rating** (and part type) must 
 - **Fix:** 10 kΩ pull-up on GPIO8 (and GPIO2). GPIO9 already has 10 k + button.
 
 **[Confirmed OK]**
-- Netlist vs Fritzing `KlingelV4.fzz`: front-end matches `doorbell_design.py` NETS; only documented V4 changes differ.
+- Netlist vs Fritzing `KlingelV4.fzz` (in this `docs/` folder): front-end matches `doorbell_design.py` NETS; only documented V4 changes differ.
 - USB flashing: D+ = J1 A6+B6→IO19, D− = A7+B7→IO18; CC1/CC2 own 5.1 k; VBUS→LDO (`doorbell_design.py` NETS `:82`,`:86`).
 - BOM parts verified at lcsc.com (relay C397193 = G6K-2F-Y-TR DC4.5, MCU C2838502, opto C115450, USB C7095263, terminal C5290323).

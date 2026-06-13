@@ -10,7 +10,7 @@ import zipfile, re, sys, os
 from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FZZ = os.path.join(HERE, "..", "KlingelV4.fzz")
+FZZ = os.path.join(HERE, "..", "docs", "KlingelV4.fzz")
 
 Z = zipfile.ZipFile(FZZ)
 fzmember = next(n for n in Z.namelist() if n.endswith(".fz"))
