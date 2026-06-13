@@ -9812,6 +9812,129 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(in_pos_files no)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 	)
 	(rectangle
 		(start 97.5 13)
@@ -9826,8 +9949,8 @@
 		(uuid "710ff74f-f111-47f9-bf6c-73b485611e44")
 	)
 	(rectangle
-		(start 217.5 51)
-		(end 267.5 86)
+		(start 217.5 55)
+		(end 267.5 95.5)
 		(stroke
 			(width 0.254)
 			(type dash)
@@ -9899,7 +10022,7 @@
 	)
 	(rectangle
 		(start 217.5 13)
-		(end 267.5 49)
+		(end 267.5 53)
 		(stroke
 			(width 0.254)
 			(type dash)
@@ -9923,7 +10046,7 @@
 	)
 	(text "POWER LED"
 		(exclude_from_sim no)
-		(at 219 54 0)
+		(at 219 58 0)
 		(effects
 			(font
 				(size 2 2)
@@ -10082,12 +10205,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "0b1e0a7c-e3fc-4b16-8573-7fa0aa9c04b5")
-	)
-	(junction
-		(at 306.07 223.52)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "16fe8550-a753-46e8-b7a1-e14ea06dc23b")
 	)
 	(junction
 		(at 185.42 113.03)
@@ -10442,16 +10559,6 @@
 			(type default)
 		)
 		(uuid "0b2f3e56-cb91-4a14-a732-d9f5bff81286")
-	)
-	(wire
-		(pts
-			(xy 306.07 223.52) (xy 311.15 223.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0b7950a4-00e8-4916-a683-3a0ff32dec14")
 	)
 	(wire
 		(pts
@@ -12025,16 +12132,6 @@
 	)
 	(wire
 		(pts
-			(xy 302.26 223.52) (xy 306.07 223.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ea5d51a8-698d-491a-b43a-de7e65007601")
-	)
-	(wire
-		(pts
 			(xy 173.99 60.96) (xy 179.07 60.96)
 		)
 		(stroke
@@ -12082,16 +12179,6 @@
 			(type default)
 		)
 		(uuid "f240fb58-8d38-46a9-9fd6-d68aeb72b019")
-	)
-	(wire
-		(pts
-			(xy 306.07 223.52) (xy 306.07 227.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f289b49a-4be4-4adb-8f77-234f04ecffc7")
 	)
 	(wire
 		(pts
@@ -12211,6 +12298,36 @@
 		)
 		(uuid "0110e47b-1005-48ed-82a8-26685901d986")
 	)
+	(label "K2_DRAIN"
+		(at 321.31 105.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0121f70e-a6bc-4de3-a7ce-b6db0ad9facd")
+	)
+	(label "ES_DACVREF"
+		(at 252.73 217.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "08ca9e2f-1e9f-4cb2-8307-da3a017b9735")
+	)
+	(label "OC2_RET"
+		(at 68.58 189.23 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "08cddce8-95b6-44a8-a820-b7809d63ad20")
+	)
 	(label "IN_P4"
 		(at 60.96 191.77 90)
 		(effects
@@ -12228,6 +12345,16 @@
 			)
 		)
 		(uuid "10a97f10-c566-43cc-8cd4-0be2dea0d0ca")
+	)
+	(label "ES_MICN"
+		(at 232.41 217.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1597e68a-c4fd-48c4-a1b8-bca1aab74321")
 	)
 	(label "USB_DM_ESP"
 		(at 179.07 38.1 0)
@@ -12273,6 +12400,16 @@
 			)
 		)
 		(uuid "1bb87fee-b2ab-4728-a539-e5d0230199d0")
+	)
+	(label "MIC_A"
+		(at 242.57 224.79 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1f2d3f15-7721-440c-8cf8-9cb944c98288")
 	)
 	(label "GATE2_DRV"
 		(at 283.21 93.98 90)
@@ -12346,6 +12483,26 @@
 		)
 		(uuid "27315767-1dff-4316-a031-9e809f77f5ec")
 	)
+	(label "ES_ADCVREF"
+		(at 252.73 232.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "29933a0c-30ee-4848-a618-f853abebaff1")
+	)
+	(label "USB_CC2"
+		(at 63.5 43.18 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2d2bc021-8ca0-42e7-ae28-8251c015d185")
+	)
 	(label "GND"
 		(at 186.69 190.5 0)
 		(effects
@@ -12391,6 +12548,16 @@
 		)
 		(uuid "3527dccb-9af5-4e5f-9f01-5c29561893ea")
 	)
+	(label "USB_CC1"
+		(at 63.5 40.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "37a4cbfb-8abf-47d0-996c-ba36e6007d36")
+	)
 	(label "VBUS"
 		(at 66.04 35.56 90)
 		(effects
@@ -12427,6 +12594,16 @@
 		)
 		(uuid "4367be3c-a9fc-453e-9964-a1435a2edbe7")
 	)
+	(label "OC3_RET"
+		(at 68.58 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "43b76f29-e5f1-4fc1-bb5d-dd3c5f97d158")
+	)
 	(label "OC1_OUT"
 		(at 179.07 73.66 0)
 		(effects
@@ -12435,6 +12612,16 @@
 			)
 		)
 		(uuid "463c8e48-fb23-4f51-bb96-b7833ee41047")
+	)
+	(label "OC1_CATH"
+		(at 115.57 129.54 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "477e9177-814b-462b-9fba-fc2717f0b98c")
 	)
 	(label "P2"
 		(at 21.59 175.26 0)
@@ -12472,6 +12659,16 @@
 		)
 		(uuid "49f7fbb2-7b1f-4098-8e0d-7e7f19852493")
 	)
+	(label "ES_OUTP"
+		(at 212.09 217.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "4e9688b5-32a9-4902-bdf0-f989554427a3")
+	)
 	(label "I2S_MCLK"
 		(at 113.03 53.34 0)
 		(effects
@@ -12480,16 +12677,6 @@
 			)
 		)
 		(uuid "4fa735a6-2fff-49c2-a9c7-69fa82fbb95c")
-	)
-	(label "TEST_A"
-		(at 306.07 227.33 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "5103d814-5d96-4b53-9633-d6dd32861e1c")
 	)
 	(label "+3V3"
 		(at 144.78 165.1 90)
@@ -12545,6 +12732,16 @@
 		)
 		(uuid "63d22028-fcec-4656-84c2-76e2d74f82f1")
 	)
+	(label "GPIO8"
+		(at 173.99 48.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "660a011b-7304-4ec1-80dd-c657a37f4efa")
+	)
 	(label "GND"
 		(at 252.73 177.8 0)
 		(effects
@@ -12553,6 +12750,16 @@
 			)
 		)
 		(uuid "68ad0f2d-983d-4f22-aa8b-1ac91cc876a5")
+	)
+	(label "K1_DRAIN"
+		(at 321.31 44.45 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6a7cbfc1-0618-441f-a648-0c9eeea1e995")
 	)
 	(label "I2C_SCL"
 		(at 168.91 180.34 0)
@@ -12580,6 +12787,16 @@
 			)
 		)
 		(uuid "76cc66d3-4761-4dfb-9aa8-34198fd2792d")
+	)
+	(label "OUT_B"
+		(at 222.25 224.79 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
 	)
 	(label "OC2_OUT"
 		(at 113.03 40.64 0)
@@ -12644,6 +12861,16 @@
 		)
 		(uuid "8618603b-fbd8-45ff-9698-86796533bd89")
 	)
+	(label "GATE3"
+		(at 283.21 176.53 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "86951783-8a0f-45e3-bdae-185bdfcd0637")
+	)
 	(label "I2S_BCLK"
 		(at 186.69 193.04 0)
 		(effects
@@ -12680,6 +12907,16 @@
 		)
 		(uuid "8db0053e-9bc3-4545-99d1-7dedada5afc9")
 	)
+	(label "OC_EMIT"
+		(at 130.81 129.54 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8ea1e430-9862-4886-a335-966787a693fa")
+	)
 	(label "OC1_JP"
 		(at 72.39 102.87 0)
 		(effects
@@ -12698,6 +12935,16 @@
 		)
 		(uuid "940b13bd-0aea-4190-9aa7-72bcfafa377c")
 	)
+	(label "OC3_CATH"
+		(at 115.57 231.14 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "946e12d3-bace-40ec-8baa-df16bb10865c")
+	)
 	(label "+3V3"
 		(at 186.69 187.96 0)
 		(effects
@@ -12707,6 +12954,16 @@
 		)
 		(uuid "959fcd91-d5d4-4b70-8543-77805f21672c")
 	)
+	(label "GATE2"
+		(at 283.21 115.57 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "95e97d36-1078-4efd-bfd5-ae619a8de571")
+	)
 	(label "P5"
 		(at 184.15 233.68 0)
 		(effects
@@ -12715,6 +12972,16 @@
 			)
 		)
 		(uuid "967f5a32-7310-47a0-9f2c-a6916e106696")
+	)
+	(label "OUT_A"
+		(at 212.09 224.79 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "96ab3603-fab2-45eb-b6a2-2309b5126fde")
 	)
 	(label "ES_VMID"
 		(at 200.66 210.82 0)
@@ -12733,6 +13000,16 @@
 			)
 		)
 		(uuid "a35a239e-f77f-4f7b-88fc-7c3620820054")
+	)
+	(label "OC1_RET"
+		(at 68.58 138.43 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a3ecae80-e78a-4ed7-8391-4e1caf5d0893")
 	)
 	(label "USB_DP_ESP"
 		(at 68.58 85.09 0)
@@ -12833,6 +13110,16 @@
 		)
 		(uuid "bee079a3-c88c-445f-8df5-83b5c313026f")
 	)
+	(label "OT_BRIDGE"
+		(at 334.01 90.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c64a4472-d3e0-45c5-be02-7027147a2978")
+	)
 	(label "P1"
 		(at 60.96 163.83 90)
 		(effects
@@ -12841,6 +13128,16 @@
 			)
 		)
 		(uuid "c910ef8a-49c3-4e45-aee9-ae3793d3199e")
+	)
+	(label "SEC_B"
+		(at 222.25 233.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "cabb70b4-a13a-4475-b8aa-1eebcd3e3625")
 	)
 	(label "P3"
 		(at 21.59 177.8 0)
@@ -12860,6 +13157,16 @@
 		)
 		(uuid "d260669d-8a2f-4330-8863-869a9e4bc4e9")
 	)
+	(label "MIC_B"
+		(at 232.41 224.79 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d4427718-cbd3-4b7f-add5-098fd70b73ef")
+	)
 	(label "I2S_DOUT"
 		(at 186.69 200.66 0)
 		(effects
@@ -12868,6 +13175,16 @@
 			)
 		)
 		(uuid "d8baed0b-312e-4389-92c6-8146367dac46")
+	)
+	(label "ES_MICP"
+		(at 242.57 217.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "da1e7001-706b-4642-850e-0605a2c8c24d")
 	)
 	(label "OC3_OUT"
 		(at 113.03 38.1 0)
@@ -12887,6 +13204,16 @@
 		)
 		(uuid "e037377d-190b-4f39-88f2-8781fb0594bd")
 	)
+	(label "ES_OUTN"
+		(at 222.25 217.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e074b554-25cd-40ac-8907-120a41dfbbfe")
+	)
 	(label "IN_P4"
 		(at 328.93 148.59 90)
 		(effects
@@ -12895,6 +13222,16 @@
 			)
 		)
 		(uuid "e2f2aa65-8d90-4a4f-9e1f-4f13ef99cf72")
+	)
+	(label "LED_A"
+		(at 240.03 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e5fe4edd-1b70-4c6d-82e5-0509ab8115bf")
 	)
 	(label "EN"
 		(at 198.12 113.03 0)
@@ -12913,6 +13250,26 @@
 			)
 		)
 		(uuid "e7c41bbf-d745-4b68-92e1-f6c4c2615f64")
+	)
+	(label "K3_DRAIN"
+		(at 321.31 166.37 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e951e547-09c9-4b08-b01b-704d87b47792")
+	)
+	(label "GATE1"
+		(at 283.21 54.61 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "eafa7ad2-8687-4d61-93ce-aca2a6c4b271")
 	)
 	(label "+3V3"
 		(at 144.78 114.3 90)
@@ -12977,285 +13334,6 @@
 		)
 		(uuid "fcb0c401-9235-4ee3-bfed-e880b08b0ba0")
 	)
-	(label "GATE2_DRV"
-		(at 179.07 66.04 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "fdef035f-4ec7-40a0-8ec1-b968aab826b0")
-	)
-	(label "ES_DACVREF"
-		(at 252.73 217.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "08ca9e2f-1e9f-4cb2-8307-da3a017b9735")
-	)
-	(label "ES_ADCVREF"
-		(at 252.73 232.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "29933a0c-30ee-4848-a618-f853abebaff1")
-	)
-	(label "ES_OUTP"
-		(at 212.09 217.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "4e9688b5-32a9-4902-bdf0-f989554427a3")
-	)
-	(label "OUT_A"
-		(at 212.09 224.79 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "96ab3603-fab2-45eb-b6a2-2309b5126fde")
-	)
-	(label "ES_OUTN"
-		(at 222.25 217.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e074b554-25cd-40ac-8907-120a41dfbbfe")
-	)
-	(label "OUT_B"
-		(at 222.25 224.79 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
-	)
-	(label "ES_MICP"
-		(at 242.57 217.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "da1e7001-706b-4642-850e-0605a2c8c24d")
-	)
-	(label "MIC_A"
-		(at 242.57 224.79 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1f2d3f15-7721-440c-8cf8-9cb944c98288")
-	)
-	(label "ES_MICN"
-		(at 232.41 217.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1597e68a-c4fd-48c4-a1b8-bca1aab74321")
-	)
-	(label "MIC_B"
-		(at 232.41 224.79 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d4427718-cbd3-4b7f-add5-098fd70b73ef")
-	)
-	(label "K1_DRAIN"
-		(at 321.31 44.45 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6a7cbfc1-0618-441f-a648-0c9eeea1e995")
-	)
-	(label "K2_DRAIN"
-		(at 321.31 105.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0121f70e-a6bc-4de3-a7ce-b6db0ad9facd")
-	)
-	(label "K3_DRAIN"
-		(at 321.31 166.37 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e951e547-09c9-4b08-b01b-704d87b47792")
-	)
-	(label "OC1_CATH"
-		(at 115.57 129.54 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "477e9177-814b-462b-9fba-fc2717f0b98c")
-	)
-	(label "OC2_CATH"
-		(at 115.57 180.34 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "fe983df2-56a3-47d0-8399-99cd4064f055")
-	)
-	(label "OC3_CATH"
-		(at 115.57 231.14 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "946e12d3-bace-40ec-8baa-df16bb10865c")
-	)
-	(label "USB_CC1"
-		(at 63.5 40.64 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "37a4cbfb-8abf-47d0-996c-ba36e6007d36")
-	)
-	(label "USB_CC2"
-		(at 63.5 43.18 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2d2bc021-8ca0-42e7-ae28-8251c015d185")
-	)
-	(label "OT_BRIDGE"
-		(at 334.01 90.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c64a4472-d3e0-45c5-be02-7027147a2978")
-	)
-	(label "OC_EMIT"
-		(at 130.81 129.54 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "8ea1e430-9862-4886-a335-966787a693fa")
-	)
-	(label "GATE1"
-		(at 283.21 54.61 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "eafa7ad2-8687-4d61-93ce-aca2a6c4b271")
-	)
-	(label "GATE2"
-		(at 283.21 115.57 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "95e97d36-1078-4efd-bfd5-ae619a8de571")
-	)
-	(label "GATE3"
-		(at 283.21 176.53 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "86951783-8a0f-45e3-bdae-185bdfcd0637")
-	)
-	(label "OC2_RET"
-		(at 68.58 189.23 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "08cddce8-95b6-44a8-a820-b7809d63ad20")
-	)
-	(label "OC3_RET"
-		(at 68.58 240.03 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "43b76f29-e5f1-4fc1-bb5d-dd3c5f97d158")
-	)
-	(label "GPIO8"
-		(at 173.99 48.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "660a011b-7304-4ec1-80dd-c657a37f4efa")
-	)
-	(label "OC1_RET"
-		(at 68.58 138.43 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a3ecae80-e78a-4ed7-8391-4e1caf5d0893")
-	)
 	(label "SEC_A"
 		(at 212.09 233.68 0)
 		(effects
@@ -13266,25 +13344,24 @@
 		)
 		(uuid "fd854069-56cd-4483-a168-0fe4fe4ec441")
 	)
-	(label "SEC_B"
-		(at 222.25 233.68 0)
+	(label "GATE2_DRV"
+		(at 179.07 66.04 0)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 1 1)
 			)
-			(justify left bottom)
 		)
-		(uuid "cabb70b4-a13a-4475-b8aa-1eebcd3e3625")
+		(uuid "fdef035f-4ec7-40a0-8ec1-b968aab826b0")
 	)
-	(label "LED_A"
-		(at 240.03 68.58 0)
+	(label "OC2_CATH"
+		(at 115.57 180.34 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "e5fe4edd-1b70-4c6d-82e5-0509ab8115bf")
+		(uuid "fe983df2-56a3-47d0-8399-99cd4064f055")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -24537,274 +24614,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,100Ω")
-		(at 302.26 219.71 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e511e47a-25d0-421a-8451-e1580634ff5e")
-		(property "Reference" "R28"
-			(at 304.8 219.7099 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100Ω"
-			(at 302.26 219.71 90)
-			(show_name no)
-			(do_not_autoplace yes)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 300.482 219.71 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "100mW Thick Film Resistors 75V ±1% ±200ppm/°C 100Ω 0603 Chip Resistor - Surface Mount ROHS"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C22775"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Stock" "8202320"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Price" "0.004USD"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Process" "SMT"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Minimum Qty" "20"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Attrition Qty" "10"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Class" "Basic Component"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Category" "Resistors,Chip Resistor - Surface Mount"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Part" "0603WAF1000T5E"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Resistance" "100Ω"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Power(Watts)" "100mW"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Type" "Thick Film Resistors"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Overload Voltage (Max)" "75V"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Operating Temperature Range" "-55°C~+155°C"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Tolerance" "±1%"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Temperature Coefficient" "±200ppm/°C"
-			(at 302.26 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c6078f3d-7aae-4914-b4d3-ee003e008e64")
-		)
-		(pin "2"
-			(uuid "9be9703a-74e2-4ee8-a1a2-588a8b2d0e4a")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R28")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+3V3")
 		(at 201.93 151.13 0)
 		(unit 1)
@@ -24976,274 +24785,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "R7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,100Ω")
-		(at 311.15 219.71 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "ed6553b9-1b4d-4588-b75d-ed9bf79a6419")
-		(property "Reference" "R29"
-			(at 313.69 219.7099 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100Ω"
-			(at 311.15 219.71 90)
-			(show_name no)
-			(do_not_autoplace yes)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 309.372 219.71 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "100mW Thick Film Resistors 75V ±1% ±200ppm/°C 100Ω 0603 Chip Resistor - Surface Mount ROHS"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C22775"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Stock" "8202320"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Price" "0.004USD"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Process" "SMT"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Minimum Qty" "20"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Attrition Qty" "10"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Class" "Basic Component"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Category" "Resistors,Chip Resistor - Surface Mount"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Part" "0603WAF1000T5E"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Resistance" "100Ω"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Power(Watts)" "100mW"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Type" "Thick Film Resistors"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Overload Voltage (Max)" "75V"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Operating Temperature Range" "-55°C~+155°C"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Tolerance" "±1%"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Temperature Coefficient" "±200ppm/°C"
-			(at 311.15 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "89a32ace-9efe-4218-b3ca-d32133f843b4")
-		)
-		(pin "2"
-			(uuid "d7863aa1-29ac-4ceb-9230-eea49abe39e0")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R29")
 					(unit 1)
 				)
 			)
@@ -25649,6 +25190,447 @@
 				)
 			)
 		)
+	)
+	(rectangle
+		(start 272.5 204.5)
+		(end 395 240)
+		(stroke
+			(width 0.254)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "e0f5ea75-9f94-4f0a-bfc9-93f192f67261")
+	)
+	(text "TEST POINTS"
+		(exclude_from_sim no)
+		(at 274 207.5 0)
+		(effects
+			(font
+				(size 2 2)
+				(bold yes)
+			)
+			(justify left)
+		)
+		(uuid "b435b7d0-8575-429b-977e-a705ee1743ff")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 304.8 218.44 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "06ade135-77a1-4286-a520-1c90e6c076b3")
+		(property "Reference" "TP1"
+			(at 304.8 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 307.34000000000003 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 304.8 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 304.8 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 304.8 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1ca47d98-aa03-49f3-a307-95737a9fd969")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "TP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 304.8 226.06 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "87c51dce-a8a3-4225-9be1-9ccf80829abb")
+		(property "Reference" "#PWR52"
+			(at 304.8 229.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 304.8 230.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 304.8 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 304.8 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 304.8 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5b83e3c7-8a04-425d-8f9b-4055b9788bb2")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR52")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 304.8 218.44) (xy 304.8 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4ad57b7c-58fa-4b3b-aa51-74b42f47973e")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 330.2 218.44 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "a0bc1979-1868-45ee-8507-f6b7b4d55a4c")
+		(property "Reference" "TP2"
+			(at 330.2 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+5V"
+			(at 332.74 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 330.2 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 330.2 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 330.2 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f88c3e01-02ff-4039-99bd-5be29a4f4258")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "TP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 330.2 226.06 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "0df84083-8292-453b-a0be-f19e215549c8")
+		(property "Reference" "#PWR53"
+			(at 330.2 229.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "+5V"
+			(at 330.2 230.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 330.2 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 330.2 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 330.2 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8b54556b-2eb5-40d2-ba2c-b853f0adb884")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR53")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 330.2 218.44) (xy 330.2 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1de21a12-e02d-470d-807f-d227087a5b39")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 355.6 218.44 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "e3e6a27f-5920-48de-ae03-142c739e650b")
+		(property "Reference" "TP3"
+			(at 355.6 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 358.14000000000004 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 355.6 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 355.6 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 355.6 218.44 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b9b2d15a-42f8-404c-83f1-bc3552ed3d75")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "TP3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 355.6 226.06 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5f61e513-bfbd-47fb-b876-99d1b44b90d7")
+		(property "Reference" "#PWR54"
+			(at 355.6 229.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 355.6 230.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 355.6 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 355.6 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 355.6 226.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "222f5309-3ff3-4eff-bd81-6082f51dcbe7")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR54")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 355.6 218.44) (xy 355.6 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "39ba5384-6d78-420c-a4b7-449c0c5ebcdd")
 	)
 	(sheet_instances
 		(path "/"

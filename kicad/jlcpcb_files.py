@@ -19,8 +19,8 @@ HANDSOLDER = set()                 # parts hand-soldered after SMT assembly (exc
 sch = Schematic.from_file(SCH)
 comp = OrderedDict()   # ref -> (value, footprint, lcsc); de-dupes multi-unit symbols
 for sym in sch.schematicSymbols:
-    if getattr(sym, "dnp", False):
-        continue
+    if getattr(sym, "dnp", False) or not getattr(sym, "inBom", True):
+        continue   # skip DNP and "exclude from BOM" parts (e.g. test points)
     p = {x.key: x.value for x in sym.properties}
     ref = (p.get("Reference") or "").strip()
     if not ref or ref.startswith("#") or ref in HANDSOLDER:
