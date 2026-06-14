@@ -193,11 +193,14 @@ NX, NY = 40.64, 158.0
 LINES = [
     "WF26/G intercom handset - internal wiring (reverse-engineered)",
     "5-wire bus to TV20/S central unit:  J1.1..5 = lines P1..P5",
-    "  P1 common/ref (speech+ring return)   P2 speech-TALK node",
-    "  P3 speech-LISTEN / on-hook            P4 Tuerruf ring (~12V) + PTT common",
+    "  P1 common / reference (speech + ring return)",
+    "  P2 idle/listen leg - P4 ties here at rest (via K1 NO during a session)",
+    "  P3 talk leg - P4 ties here when the Sprechen button is pressed  [measured: P3<->P4]",
+    "  P4 Tuerruf ring (~12V) + Sprechen/Hoeren PTT common (S2)",
     "  P5 Etagenruf floor-call + speaker + relay-coil feed",
-    "S2 rest: P4-P3 listen/on-hook (gong sounds).  S2 pressed: P4-K1_COM-(K1 NO)-P2 talk.",
-    "S1 (OT) pressed: P2-R1(2.2k)-P3 door-release bridge.",
+    "S2 PRESSED = talk: P4-P3.   S2 RELEASED = idle/listen: P4-K1_COM->P2 via K1 NO (session active).",
+    "S1 (OeT) pressed: P2-R1(2.2k)-P3 door-release bridge.",
+    "Note: S1 and S2 share a footprint but are mounted in opposite orientations on the PCB.",
 ]
 for i, t in enumerate(LINES):
     e = Effects(); e.font.width = 1.4; e.font.height = 1.4; e.justify = Justify(horizontally="left")
