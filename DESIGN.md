@@ -129,20 +129,42 @@ From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehl
 - **Tones:** Türruf = **3-Klang-Gong** (3-chime); Etagenruf = **Dauerton** (continuous).
 - **ÖT door-opener trigger (authoritative):** the troubleshooting test says
   *"Zum Test, Klemmen 2 u. 3 brücken"* — **bridge terminals 2 & 3** → opener voltage
-  appears at 8/9. This is exactly what relay **K2** does (COM=P2, NO→R_ot→P3).
-- **ET (Etagenruftaster):** floor-call button on the WF26; **ÖT** is the *additional*
-  door-opener button. Both are momentary contacts across the 5-wire bus.
-- **Speech:** only enabled *after* a bell; ~25 s talk window, auto-off after ~60 s. At the
-  WF26, speech is on the **P1/P5** transducer; the P2/P3 pair carries no audio — it is the
-  door-opener (ÖT) trigger.
+  appears at 8/9. This is exactly what relay **K2** does (COM→R_ot→P3, NO=P2).
+- **ET (Etagenruftaster) vs ÖT:** the **ÖT** (door-opener) button momentarily bridges
+  **2↔3** across the bus through R1 (2.2 kΩ). The **ET** (Etagenruf / floor-call) sits **in
+  line 5**, between the WF26's terminal 5 and the onward bus conductor — so **P5 does not run
+  directly to the TV20/S**; line 5 reaches the central unit through the ET button, which is
+  **not among the WF26's captured internals** (J1/S1/S2/WF26_K1/C1/R1/LS1). The exact ET
+  wiring (series break vs. tap/inject) isn't fully pinned down; what's certain is that line 5
+  carries the Etagenruf function with the ET button in its path.
+- **Speech:** only enabled *after* a bell; ~25 s talk window, auto-off after ~60 s. The bus
+  speech pair is **lines 2/3** (STR Fehlersuchhilfe: *Sprechverkehr* on 1/2/3, door side 6/7);
+  at the WF26 it couples into the sole transducer via **C1 (P1↔P2)**. The door-opener *also*
+  momentarily bridges **2↔3** through 2.2 kΩ, so that pair is shared between speech and the ÖT
+  trigger — it is **not** opener-only.
 
 ### TV20/S audio behaviour
 
-Half-duplex speech through the TV20/S amp, enabled only after a bell. **All of it is on
-P1/P5** — LS1 (the only transducer) sits across P1↔P5 and both reproduces and picks up the
-speech; the half-duplex *direction* is set by the PTT handshake (S2: talk = P4↔P3, listen =
-P4↔P2). **P2/P3 carry no speech** — that pair is solely the door-opener (ÖT) buzzer trigger
-(bridge P2↔P3).
+Half-duplex speech through the TV20/S amp, enabled only after a bell. The **bus** speech pair
+is **lines 2/3** (STR Fehlersuchhilfe); inside the WF26 the sole transducer **LS1 (P1↔P5)**
+both reproduces and picks up that speech, coupled to the 2/3 pair via **C1 (P1↔P2)**. So at
+the *transducer* everything is on P1/P5, but on the *bus* the speech rides 2/3 (with the
+opener sharing the same pair as a momentary 2↔3 bridge). The half-duplex *direction* is set by
+the PTT handshake (S2: talk = P4↔P3, listen = P4↔P2).
+
+**Mithörsperre (eavesdrop lock) — working hypothesis.** The 2/3 speech pair is a *shared*
+bus, yet a station only reaches it on the listen leg through its **internal relay**
+(`S2 released → P4↔K1_COM → relay → P2`). An idle station sits with the coil off and that leg
+open, so it has no copper path to the bus — it cannot listen in even though the pair is
+common. The coil-drive loop (TV20/S → P5 → coil → P2) deliberately returns through P2, not P1,
+so C1 DC-blocks the holding current away from the 16 Ω speaker. For this to give per-apartment
+privacy, **only the addressed station's coil may pull in** — but the coil measures across the
+*shared* **P5↔P2**, so a holding loop on those lines would energise *every* station's coil
+unless something gates it per-station. The only per-station signal the system has is the
+non-shared **line 4**, yet there is no measured line-4↔coil connection — so this selectivity
+is **unconfirmed** (see Open/inferred; settle it by checking whether this unit's coil sees
+voltage during a *different* apartment's session). Talk (P4↔P3) is a direct strap; listen is
+relay-gated. Either way, the relay is why the WF26 doesn't hardwire S2 to the bus.
 
 - **Bell required first** — TV20/S only enables speech *after* a bell button press.
 - **Talk** — resident presses Lautsprechertaste on WF26; LS1 (P1/P5) acts as the mic and
@@ -165,19 +187,20 @@ The apartment handset (Sprechstelle **WF26/G**, PCB silk "…WF26") has **no MCU
 switches. The full internals are captured in **`wf26/wf26.kicad_sch`** (standalone,
 ERC-clean KiCad project; teardown photos `IMG_5082.jpg` / `reference/intercom-teardown-collage.png`). Parts:
 LS1 (16 Ω speaker/mic), S2 (Sprechen/Hören, DPDT), S1 (Türöffner/ÖT, DPDT), R1 (2.2 kΩ,
-confirmed by colour bands red-red-red-gold), C1 (22 µF/50 V, value image-read), K2 (V23101 relay),
+confirmed by colour bands red-red-red-gold), C1 (22 µF/50 V, value image-read),
+WF26_K1 (6-pin DIL SPDT signal relay; schematic symbol/footprint HJR-4102-N-12V),
 J1 (5-way bus = P1–P5).
 
 | Net | Pins |
 |-----|------|
 | P1 | J1.1, LS1.2, C1.1(+) |
-| P2 | J1.2, R1.1, C1.2(−), K2.7 (NO), K2.8 (coil) |
+| P2 | J1.2, R1.1, C1.2(−), WF26_K1.6 (NO), WF26_K1.8 (coil) |
 | P3 | J1.3, S2.3, S2.4, S1.3, S1.4 |
 | P4 | J1.4, S2.1, S2.2, S2.5 |
-| P5 | J1.5, LS1.1, K2.5 (coil) |
-| S1_COM | R1.2, S1.2, S1.5 |
-| K2_COM | K2.1, K2.12, S2.6 |
-| n/c | S1.1, S1.6, K2.6 (NC) |
+| P5 | J1.5, LS1.1, WF26_K1.5 (coil) |
+| OT_BRIDGE | R1.2, S1.2, S1.5 |
+| K1_COM | WF26_K1.1, WF26_K1.12, S2.6 |
+| n/c | S1.1, S1.6, WF26_K1.7 (NC) |
 
 Key facts:
 
@@ -186,35 +209,55 @@ Key facts:
   exactly.
 - **Line 4 is dual-purpose (ring *and* PTT handshake).** Line 4 carries the incoming
   house-door ring (the controller's opto across P1/IN-P4 detects it), **and** it is the
-  common (P4) of the Sprechen/Hören switch S2, whose two throws are P3 and K2_COM:
+  common (P4) of the Sprechen/Hören switch S2, whose two throws are P3 and K1_COM:
   - **Pressed → talk: P4↔P3** (measured) — a direct switch contact, independent of the
     relay or whether a session is up.
-  - **Released → idle/listen: P4↔K2_COM**, which the internal relay routes to **P2** while
-    a session powers the coil (K2 energised, COM→NO=P2), or leaves **floating** with no
-    session (COM on dead NC).
+  - **Released → idle/listen: P4↔K1_COM**, which the internal relay routes to **P2** while
+    a session powers the coil (WF26_K1 energised, COM→NO=P2 on pin 6), or leaves **floating**
+    with no session (COM resting on the unused NC, pin 7).
 
   So **talk = P4↔P3, listen = P4↔P2** (relay-gated). The talk leg exists *only* while S2 is
   physically engaged; the relay only ever parks the released default on P2 or open — never
   on P3. Chime suppression breaks line 4 to block the Türruf trigger and never touches S2,
   so it cannot create the P4↔P3 talk strap or key the mic.
-- **Internal relay K2:** **V23101** (Siemens/AXICOM series) signal relay, 6-pin DIL
-  **SPDT (1 Form C)**, **11.5 ± 0.2 mm** tall — coil **5/8** (~320 Ω, across
-  **P5↔P2**), common **1+12** (tied), contacts **6** (NC, unused) / **7** (NO = P2). The
-  coil is energised by the TV20/S powering the line (session active); it **gates the
-  released (listen) leg** — S2's K2_COM throw reaches P2 only while the coil is on, else P4
-  floats. (Talk, P4↔P3, is a direct S2 contact and does not depend on the coil.)
+- **Internal relay WF26_K1:** 6-pin DIL **SPDT (1 Form C)** signal relay, **11.5 ± 0.2 mm**
+  tall (schematic symbol/footprint **HJR-4102-N-12V**) — coil **5/8** (~320 Ω, across
+  **P5↔P2**), common **1+12** (tied), contacts **pin 6 = NO (= P2, the listen leg)** /
+  **pin 7 = NC (unused)**. *Confirmed by datasheet + in-circuit continuity:* de-energised,
+  COM↔P2 reads open, so P2 sits on the **normally-open** contact, and the HJR-4102's NO is
+  **pin 6** (the symbol had NO/NC swapped and was corrected). The coil is energised by the
+  TV20/S powering the line (session active); it **gates the listen leg** — S2's K1_COM throw
+  reaches P2 only while the coil is on (NO closed), else COM rests on the unused NC and **P4
+  floats**. (Talk, P4↔P3, is a direct S2 contact and does not depend on the coil.)
 - **Single transducer:** LS1 (16 Ω) is the **only** transducer — there is no separate
   microphone — wired directly across **P1↔P5** and reused as speaker and mic for tone
-  output and both speech directions. So everything the handset reproduces or picks up
-  (tones and both speech directions) is on **P1/P5**. P2/P3 carry no speech at all — that pair is solely the door-opener (ÖT) trigger.
+  output and both speech directions. So everything the handset *acoustically* reproduces or
+  picks up is on **P1/P5** — but the *bus* speech pair it couples to (via C1) is **2/3**, and
+  that pair also carries the momentary ÖT bridge. This is why V4 taps the transducer node
+  P1/P5 directly: it captures both speech directions at the sole transducer regardless of
+  where the bus signal sits.
+- **C1 is the only audio crossover into LS1.** The signalling wires (P2/P3/P4) and the
+  transducer (P1/P5) share **no node** — the sole components straddling the gap are **C1**
+  (P1↔P2) and the coil (P5↔P2), and the coil is the DC/hold element, not an audio path. So
+  inbound speech reaches LS1 **only through C1**. It is **not** a 2-vs-3 differential drive:
+  during listen S2 (released) leaves **P3 open inside the handset**, so nothing here drives
+  P3. Instead the relay puts the listen audio on **P2**, C1 passes it to the P1 end of LS1,
+  and P5 is the return. C1 and the coil thus split the same **P2↔P5** pair by frequency —
+  **audio → C1/LS1 (~23 Ω branch at 1 kHz), DC hold → coil (≥320 Ω).** Open: which *external*
+  wire the TV20/S injects the down-audio on before it lands on P2 (per-station line 4, which
+  would also make listening selective = Mithörsperre, vs. line 5 direct across LS1 like the
+  gong) — scope a live listen session to settle it.
 
 > Takeaway: nothing in the WF26 is "smart" — our board emulates its button presses
 > (ÖT = bridge P2↔P3 via 2.2 kΩ, PTT = drive P4) and senses the tone-drive lines (P4, P5).
 > No firmware handshake exists.
 
 **Open / inferred (verify on the bench):**
-- C1 polarity (+ assumed toward P1); NC vs NO of K2 pins 6/7 (de-energised, COM 1/12
-  closes to NC).
+- C1 polarity (+ assumed toward P1).
+- **How the listen-gate relay is selectively energised per station.** Its coil measures
+  across the *shared* P5↔P2, yet the Mithörsperre requires only the *addressed* station's coil
+  to pull in. The selecting signal is presumably the non-shared line 4, but the exact internal
+  energising path is unconfirmed against the STR schematic.
 
 **Interfacing takeaways (audio tap / virtual PTT):**
 - Record incoming audio: high-Z tap on **P1/P5** (speaker stays live, no board contact).
@@ -349,9 +392,9 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   the measured session voltage.
 - **Cross-talk masking** (`firmware/doorbell-v4.yaml`, lambda filters ahead of the debounce):
   - **House Doorbell (OC2)** is forced off while PTT is engaged **or a session is
-    active**: K1 ties IN_P4 to P2, and during an armed session the resident's own S2 +
-    WF26 relay do the same, so OC2 sees the P1↔P2 standing voltage and would report a
-    phantom ring — which can pulse the door buzzer via auto-open. A real ring during a
+    active**: PTT (K1) ties IN_P4 to P3, and a session ties IN_P4 (via line 4) to P2
+    through the WF26 relay — either way OC2's P1/IN_P4 node sees a standing bridge voltage
+    and would report a phantom ring — which can pulse the door buzzer via auto-open. A real ring during a
     talk bridge is hardware-indistinguishable from the bridge, so masking the whole
     session loses nothing.
   - **Apartment Doorbell (OC3)** taps the speaker pair, so it pulses on *any* loud
@@ -376,28 +419,37 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
 ### Relays
 
 ```
-K2 (door opener / ÖT):    COM=P2, NO→R_ot(2.2k)→P3, NC open — energise to bridge P2↔P3 like the genuine button
-K3 (chime suppress):      COM=P4, NC=IN_P4            — at rest passes the Türruf; energise to break it
-K1 (virtual PTT):         COM=IN_P4, NO→P2, NC open   — ties TV20/S line 4 (IN_P4) to P2 = the *listen* leg (talk is P4↔P3, so as-built this targets the wrong line — see note)
+K2 (door opener / ÖT):    COM→R_ot(2.2k)→P3, NO=P2, NC open — energise to bridge P2↔P3 like the genuine button
+K3 (chime suppress):      COM=P4, NC=IN_P4               — at rest passes the Türruf; energise to break it
+K1 (virtual PTT):         COM=P3, NO=IN_P4, NC open      — energise to tie IN_P4↔P3 = talk
+(K1 and K2 are pin-3/4 swapped vs the part's COM/NO labels — both poles are symmetric bridges, done for routing; see erratum.)
 ```
 
 - **G6K-2F-Y pinout:** coil 1/8; pole A COM=3, NC=2, NO=4; pole B COM=6, NC=7, NO=5
   (datasheet-verified).
-- **K1 targets the wrong line as built — board-initiated talk is unavailable on V4.** Talk
-  is **P4↔P3** (measured); K1 bridges `IN_P4↔P2`, the WF26's *listen* leg, so energising K1
-  asserts listen, not talk. Firmware can't route around it either: **P3 is reachable only
-  through the door-opener path (`K2 → R_ot → P3`)**, so any attempt to drive line 3 also
-  fires the opener. Next-spin fix is **move K1's NO from P2 to P3**; until then board audio
-  is **receive-only** — recording the visitor and playing audio locally in the flat both
-  work unassisted (LS1 sits on P1/P5 where the iso-transformer taps), but talking *out*
-  needs a human holding the Sprechen button.
+- **Virtual-PTT erratum — fabricated V4 boards talk on the wrong line; fixed in layout via
+  the K1 pin swap.** Talk is **P4↔P3** (measured), so K1 must close **IN_P4↔P3**. The current
+  schematic/PCB do this with **K1 pins 3/4 swapped** (COM=P3, NO=IN_P4) — symmetric, so same
+  function, and it routes cleanly (K2 is swapped the same way to suit). **The already-
+  fabricated V4 boards are un-swapped — K1.4 (NO) is on P2** (the WF26 *listen* leg), so on
+  them virtual PTT asserts listen, not talk, with no firmware workaround (P3 is reachable
+  only via the door-opener path `K2 → R_ot → P3`, which would fire the opener). **Bodge (top
+  copper):** scratch the short stub off **K1 pad 4** — its only P2 link; the rest of P2
+  branches off a junction ~0.5 mm above the pad, so the cut leaves P2 intact (no P2 pour) —
+  then jumper **K1.4 → J2.3** (the P3 screw-terminal pad, ~8.6 mm). Un-bodged the board is
+  **receive-only**: recording the visitor and playing audio locally both work unassisted
+  (LS1 is on P1/P5, where the iso-transformer taps), but talking *out* needs a held Sprechen
+  button.
 - **K1's NC is deliberately open** (not wired): a contact onto P3 here would permanently
   strap P4↔P3 (= talk) and fight the WF26's own S2.
 - **Hardware interlock:** K3's spare pole-B NO contact sits in series with Q1's gate drive
   (`GATE1_PRE`: R_g1 → K3.5; `GATE1`: K3.6 → Q1 gate + R_pd1). K1 physically cannot
-  energise unless K3 is already on. Still wanted: with line 4 through (K3 off), a human
-  pressing Sprechen (P4↔P3) while K1 ties IN_P4↔P2 would short P2↔P3 and fire the opener;
-  K3-on breaks line 4, isolating the board's P2 from the handset's P4 and removing the path.
+  energise unless K3 is already on. With the swap, energising K1 closes **IN_P4↔P3** (talk),
+  which never touches P2 — so the interlock no longer prevents a P2↔P3 short; it now only
+  keeps virtual talk clean, breaking line 4 so the board asserts IN_P4↔P3 on the TV20/S side
+  rather than also forcing P4↔P3 at the handset. (On the un-swapped fabbed boards K1 ties
+  IN_P4↔P2, where it *does* prevent a short: a Sprechen press while K1 is up could bridge
+  P2↔P3 and fire the opener.)
 - **Release sequencing (firmware):** dropping K3 while K1 is held would reclose K3's
   pole-A NC (~1 ms) before K1's armature releases (~1–3 ms); if a Sprechen press (P4↔P3) is
   held at that instant it momentarily shorts P2↔P3. `firmware/doorbell-v4.yaml` guards this in the `doorbell_sound_state`
@@ -654,9 +706,9 @@ belt-and-suspenders local references. Gotchas handled in code, so DRC stays 0/0:
 single 16 Ω transducer (LS1, across P1/P5) reused for both directions; the Sprechen/Hören
 switch S2 (which K1 emulates) picks which:
 
-- **PTT released → listen (P4↔P3):** LS1 is the **speaker** — door-station mic → handset →
+- **PTT released → listen (P4↔P2):** LS1 is the **speaker** — door-station mic → handset →
   our **RX/capture** window.
-- **PTT engaged → talk (P4↔P2):** LS1 is the **mic** — handset → door-station speaker →
+- **PTT engaged → talk (P4↔P3):** LS1 is the **mic** — handset → door-station speaker →
   our **TX/inject** window.
 
 Consequences:
@@ -689,8 +741,9 @@ and S2 only reaches P2 while that coil is on. OC1 + K1 fully define the audio st
   DACVREF/ADCVREF/VMID=14/15/16, MIC1N/P=17/18, CDATA=19, CE=20 (pull-down → addr 0x18),
   EP=GND.
 - **T1 = Bourns SM-LP-5001** (600:600 1:1 line/audio transformer; LCSC C7503474), winding A
-  (pads 1,3) across **P1/P5** — directly across the WF26's LS1, i.e. on the actual audio — P2/P3 are the door-opener pair, not speech, so this is the right tap point. Winding B (pads 4,6) is the secondary;
-  centre taps 2,5 = NC.
+  (pads 1,3) across **P1/P5** — directly across the WF26's **sole transducer** LS1, which
+  carries both speech directions (the bus speech pair 2/3 couples into it via C1), so this is
+  the right tap point. Winding B (pads 4,6) is the secondary; centre taps 2,5 = NC.
 - **Analog:** ES8311 differential OUTP/OUTN and MIC1P/MIC1N, AC-coupled (C_op/C_on/
   C_mp/C_mn, 1 µF) to T1 winding B. Out and mic share the secondary; **firmware mutes the
   idle direction** (standard ES8311 half-duplex), so no analog switch is needed and K1
@@ -723,9 +776,10 @@ into 16 Ω.
 - Coupling-cap values, MIC1P/N input **biasing**, and whether to tie unused analog to
   AGND — all datasheet-typical, unverified on hardware.
 - **TX-out reach:** injected audio sits on P1/P5 (where LS1 is) and reaches the door
-  station via the TV20/S amplifying that in the talk direction — there is *no* P1/P5-to-
-  P2/P3 coupling to trace (P2/P3 is the door-opener pair, not speech). The only gate is
-  being in talk mode, which the board can't assert (see virtual-PTT note).
+  station via the TV20/S in the talk direction. No P1/P5-to-2/3 coupling needs to be traced
+  **on the V4 board** — the WF26's own **C1** (P1↔P2) couples the transducer node onto the
+  bus speech pair **2/3** internally, the same path the handset's mic signal takes. The only
+  gate is being in talk mode, which the board can't assert (see virtual-PTT note).
 - **R_lim3** (OC1 limiter) = 5.1 k provisional pending the measured session voltage.
 
 ---
