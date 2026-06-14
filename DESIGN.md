@@ -10,7 +10,8 @@ parts whose symbol carries none or a stand-in's; the JLCPCB library symbols supp
 embedded in the schematic as hidden `LCSC`/`Description`/`MPN`/`Datasheet` fields and reused by
 `kicad/jlcpcb_files.py` for the BOM.
 Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
-Intercom system reference: `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`.
+Intercom system reference: `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`;
+central-unit photo: `reference/tv20s-board.jpg`.
 
 V3 — the board currently deployed in the wall — is documented in its own section below
 (sources: `docs/KlingelV4.fzz` Fritzing schematic, `firmware/doorbell-v3.yaml`, netlist via
@@ -115,7 +116,13 @@ From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehl
 
 - **Power:** NTR201 transformer, 230 V~ → **12 VAC**; feeds the TV20/S control unit.
 - **Door opener (Türöffner Tö):** **8–12 VAC, 1 A max** (~5–15 Ω), switched by the TV20/S
-  on its terminals **8/9** — our board never carries this current.
+  on its terminals **8/9** — our board never carries this current. The central unit
+  (`reference/tv20s-board.jpg`, a discrete relay/analog board) carries a **1–12 + earth +
+  `8V~`** screw-terminal strip; the opener is fed from a **separate ~8 V/1 A bell transformer
+  (Klingeltrafo)** wired to that `8V~` terminal — a third AC domain, distinct from the
+  NTR201 12 VAC that supplies the bus and bell-sense voltages, and one the board never taps.
+  The bus we tap (lines 1–5 at the WF26) and the bell-sense voltage (~12 VDC) stay on the
+  NTR201 domain, so the opener's 8 V supply does **not** affect the opto sense-current sizing.
 - **Bell signals:** Türruf (house door) ≈ **12 VDC across terminals 4 & 1**; Etagenruf
   (floor call) measured across **5 & 1**. Line **1 is the common** reference.
 - **Tones:** Türruf = **3-Klang-Gong** (3-chime); Etagenruf = **Dauerton** (continuous).
@@ -159,12 +166,12 @@ J1 (5-way bus = P1–P5).
 |-----|------|
 | P1 | J1.1, LS1.2, C1.1(+) |
 | P2 | J1.2, R1.1, C1.2(−), K2.7 (NO), K2.8 (coil) |
-| P3 | J1.3, S2.1, S2.4, S1.1, S1.4 |
-| P4 | J1.4, S2.2, S2.3, S2.5 |
+| P3 | J1.3, S2.3, S2.4, S1.3, S1.4 |
+| P4 | J1.4, S2.1, S2.2, S2.5 |
 | P5 | J1.5, LS1.1, K2.5 (coil) |
 | S1_COM | R1.2, S1.2, S1.5 |
 | K2_COM | K2.1, K2.12, S2.6 |
-| n/c | S1.3, S1.6, K2.6 (NC) |
+| n/c | S1.1, S1.6, K2.6 (NC) |
 
 Key facts:
 
