@@ -9974,7 +9974,7 @@
 	)
 	(rectangle
 		(start 13.5 99)
-		(end 156 252.5)
+		(end 156 208.28)
 		(stroke
 			(width 0.254)
 			(type dash)
@@ -10116,7 +10116,7 @@
 		)
 		(uuid "90af6d3f-cf42-4528-8de3-f3f9f74aaa7f")
 	)
-	(text "VIRTUAL PTT\nbridges IN_P4<->P3 (talk);\ngate runs via K3 interlock"
+	(text "VIRTUAL PTT\nbridges IN_P4<->P3 (talk)"
 		(exclude_from_sim no)
 		(at 361 54.61 0)
 		(effects
@@ -10140,18 +10140,6 @@
 		)
 		(uuid "ace26706-bdcf-4294-b374-a0984010ee2f")
 	)
-	(text "SESSION ACTIVE (talk relay, P5->P2)"
-		(exclude_from_sim no)
-		(at 56 144.5 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(italic yes)
-			)
-			(justify right)
-		)
-		(uuid "afbd08de-1514-4565-bccc-936d0ae1de48")
-	)
 	(text "TEST POINTS"
 		(exclude_from_sim no)
 		(at 274 207.5 0)
@@ -10166,7 +10154,7 @@
 	)
 	(text "HOUSE BELL / Tuerruf (P1->IN_P4)"
 		(exclude_from_sim no)
-		(at 56 195.3 0)
+		(at 54.73 148.31 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10190,7 +10178,7 @@
 	)
 	(text "APARTMENT BELL / Etagenruf (P1->P5)"
 		(exclude_from_sim no)
-		(at 56 246.1 0)
+		(at 54.73 199.11 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10249,7 +10237,7 @@
 		(uuid "2af579d2-6ba9-4d3a-a67b-9d50e5572ea7")
 	)
 	(junction
-		(at 102.87 153.67)
+		(at 101.6 106.68)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "66730206-f3db-4792-80ae-24c3509f5d4d")
@@ -10261,16 +10249,10 @@
 		(uuid "6961541d-46eb-4cdd-8f3b-aed7afd5daa3")
 	)
 	(junction
-		(at 102.87 204.47)
+		(at 101.6 157.48)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6bc7b71b-7916-42d8-ad35-165553baba1c")
-	)
-	(junction
-		(at 153.67 180.34)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "7c9ae8fc-9d8d-4378-8eae-31a296fcbf40")
 	)
 	(junction
 		(at 222.25 236.22)
@@ -10279,13 +10261,13 @@
 		(uuid "950b16e0-de8d-4c4f-8861-02e3e78fbf4c")
 	)
 	(junction
-		(at 102.87 248.92)
+		(at 101.6 201.93)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "9524d704-3d2b-48f1-b554-0aa125732fc1")
 	)
 	(junction
-		(at 102.87 201.93)
+		(at 101.6 154.94)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "971918c1-b3e1-4010-ac5e-117c967abc1b")
@@ -10303,22 +10285,10 @@
 		(uuid "9a472c09-4ebf-4027-9a00-34bbc0c05bef")
 	)
 	(junction
-		(at 102.87 102.87)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a788dc77-f720-4ae9-b864-4a39c6db236f")
-	)
-	(junction
 		(at 312.42 85.09)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a99908f3-e942-4d28-873b-49ec4a1f3f3d")
-	)
-	(junction
-		(at 153.67 231.14)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b5002bbd-41e6-4922-8951-d840373256ca")
 	)
 	(junction
 		(at 283.21 54.61)
@@ -10327,16 +10297,16 @@
 		(uuid "e589d1f3-a86d-46b1-bbb9-240dbe2b2d36")
 	)
 	(junction
-		(at 102.87 147.32)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e5fc8e03-9101-4ef5-98ae-60b8f68f75ff")
-	)
-	(junction
 		(at 283.21 115.57)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e6542ffe-6306-4684-ae99-31e3cd62e2fd")
+	)
+	(junction
+		(at 152.4 184.15)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f0cb1f32-01d2-4ffb-911b-b3704f31c9c5")
 	)
 	(junction
 		(at 303.53 49.53)
@@ -10399,6 +10369,10 @@
 		(uuid "631c551a-814a-4bad-8817-ebe599011d1c")
 	)
 	(no_connect
+		(at 344.17 151.13)
+		(uuid "72358a69-d776-467d-ab0c-e48a9ef47433")
+	)
+	(no_connect
 		(at 118.11 35.56)
 		(uuid "909d619b-3f3b-40ab-a327-c98d99283235")
 	)
@@ -10417,6 +10391,14 @@
 	(no_connect
 		(at 334.01 151.13)
 		(uuid "d7a210a8-d384-4d6a-9c47-95b17332d241")
+	)
+	(no_connect
+		(at 341.63 166.37)
+		(uuid "da2b566f-6927-4af1-90ba-204a496f8aeb")
+	)
+	(no_connect
+		(at 173.99 73.66)
+		(uuid "dd27092b-c719-4f5a-ab4e-99bae254d2fe")
 	)
 	(no_connect
 		(at 339.09 151.13)
@@ -10486,16 +10468,6 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 138.43) (xy 76.2 140.97)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0801f46c-3075-495c-8cd7-3bbc0d9c84ed")
-	)
-	(wire
-		(pts
 			(xy 331.47 166.37) (xy 331.47 168.91)
 		)
 		(stroke
@@ -10506,7 +10478,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 189.23) (xy 68.58 201.93)
+			(xy 67.31 142.24) (xy 67.31 154.94)
 		)
 		(stroke
 			(width 0)
@@ -10526,6 +10498,16 @@
 	)
 	(wire
 		(pts
+			(xy 152.4 133.35) (xy 152.4 184.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "08c3c6bb-a806-440f-8b25-23dfcf39b5d6")
+	)
+	(wire
+		(pts
 			(xy 260.35 185.42) (xy 260.35 215.9)
 		)
 		(stroke
@@ -10536,7 +10518,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 166.37) (xy 76.2 163.83)
+			(xy 74.93 119.38) (xy 74.93 116.84)
 		)
 		(stroke
 			(width 0)
@@ -10696,7 +10678,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 240.03) (xy 68.58 248.92)
+			(xy 67.31 193.04) (xy 67.31 201.93)
 		)
 		(stroke
 			(width 0)
@@ -10706,7 +10688,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 201.93) (xy 74.93 201.93)
+			(xy 67.31 154.94) (xy 73.66 154.94)
 		)
 		(stroke
 			(width 0)
@@ -10716,7 +10698,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 177.8) (xy 21.59 177.8)
+			(xy 22.86 130.81) (xy 20.32 130.81)
 		)
 		(stroke
 			(width 0)
@@ -10756,33 +10738,13 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 115.57) (xy 76.2 113.03)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "219384df-51b8-4f13-a8a9-0a61c0c83cb5")
-	)
-	(wire
-		(pts
-			(xy 130.81 231.14) (xy 153.67 231.14)
+			(xy 129.54 184.15) (xy 152.4 184.15)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "21fc0c7d-5955-4e58-a067-634b4190cf6f")
-	)
-	(wire
-		(pts
-			(xy 68.58 147.32) (xy 74.93 147.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "22cdfe80-9940-4369-8055-5287fa0409ac")
 	)
 	(wire
 		(pts
@@ -10816,7 +10778,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 248.92) (xy 115.57 248.92)
+			(xy 81.28 201.93) (xy 114.3 201.93)
 		)
 		(stroke
 			(width 0)
@@ -10826,17 +10788,7 @@
 	)
 	(wire
 		(pts
-			(xy 331.47 44.45) (xy 331.47 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "29ca3654-3286-4044-9847-e2ed3d5a7364")
-	)
-	(wire
-		(pts
-			(xy 60.96 240.03) (xy 60.96 242.57)
+			(xy 59.69 193.04) (xy 59.69 195.58)
 		)
 		(stroke
 			(width 0)
@@ -10886,23 +10838,13 @@
 	)
 	(wire
 		(pts
-			(xy 130.81 226.06) (xy 144.78 226.06)
+			(xy 129.54 179.07) (xy 143.51 179.07)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "2c73ca84-b154-4bd2-b6ca-76c2df3a1f47")
-	)
-	(wire
-		(pts
-			(xy 68.58 102.87) (xy 115.57 102.87)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2c9b5a3c-314f-4669-a3f2-090f8315eac8")
 	)
 	(wire
 		(pts
@@ -10936,16 +10878,6 @@
 	)
 	(wire
 		(pts
-			(xy 341.63 166.37) (xy 341.63 168.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "303bddd9-0e67-46ed-8f14-987009f9a1aa")
-	)
-	(wire
-		(pts
 			(xy 118.11 27.94) (xy 113.03 27.94)
 		)
 		(stroke
@@ -10956,7 +10888,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 217.17) (xy 60.96 214.63)
+			(xy 59.69 170.18) (xy 59.69 167.64)
 		)
 		(stroke
 			(width 0)
@@ -10966,17 +10898,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 102.87) (xy 102.87 123.19)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "32f1152b-a392-464d-8ebb-5d2c2b554621")
-	)
-	(wire
-		(pts
-			(xy 24.13 182.88) (xy 21.59 182.88)
+			(xy 22.86 135.89) (xy 20.32 135.89)
 		)
 		(stroke
 			(width 0)
@@ -11006,36 +10928,6 @@
 	)
 	(wire
 		(pts
-			(xy 153.67 129.54) (xy 153.67 234.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "372f3f5a-68fb-4618-bef5-92743a6c04ff")
-	)
-	(wire
-		(pts
-			(xy 82.55 147.32) (xy 115.57 147.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "378b69e6-adde-4183-ab68-809c14d94006")
-	)
-	(wire
-		(pts
-			(xy 173.99 73.66) (xy 179.07 73.66)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3856670a-addc-433b-b69b-8b3a0fd6568c")
-	)
-	(wire
-		(pts
 			(xy 355.6 218.44) (xy 355.6 226.06)
 		)
 		(stroke
@@ -11056,7 +10948,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 166.37) (xy 60.96 163.83)
+			(xy 59.69 119.38) (xy 59.69 116.84)
 		)
 		(stroke
 			(width 0)
@@ -11076,7 +10968,7 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 201.93) (xy 115.57 180.34)
+			(xy 114.3 154.94) (xy 114.3 133.35)
 		)
 		(stroke
 			(width 0)
@@ -11106,7 +10998,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 180.34) (xy 21.59 180.34)
+			(xy 22.86 133.35) (xy 20.32 133.35)
 		)
 		(stroke
 			(width 0)
@@ -11146,7 +11038,7 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 167.64) (xy 144.78 165.1)
+			(xy 143.51 120.65) (xy 143.51 118.11)
 		)
 		(stroke
 			(width 0)
@@ -11166,7 +11058,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 201.93) (xy 102.87 181.61)
+			(xy 101.6 154.94) (xy 101.6 134.62)
 		)
 		(stroke
 			(width 0)
@@ -11196,43 +11088,13 @@
 	)
 	(wire
 		(pts
-			(xy 130.81 129.54) (xy 153.67 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4d017f07-968f-494f-a5ee-a1e166e6c4f2")
-	)
-	(wire
-		(pts
-			(xy 144.78 218.44) (xy 144.78 215.9)
+			(xy 143.51 171.45) (xy 143.51 168.91)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "4f40e47a-7f6c-4568-ae94-b351a5b26f97")
-	)
-	(wire
-		(pts
-			(xy 68.58 138.43) (xy 68.58 147.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "52026d2c-d5a9-46e9-a8b2-0be313784eea")
-	)
-	(wire
-		(pts
-			(xy 144.78 116.84) (xy 144.78 114.3)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "549f2df6-078b-4988-bda6-4a965cb5e9d9")
 	)
 	(wire
 		(pts
@@ -11243,16 +11105,6 @@
 			(type default)
 		)
 		(uuid "55aeb644-fc02-41bc-b770-250a5ee57c01")
-	)
-	(wire
-		(pts
-			(xy 130.81 124.46) (xy 144.78 124.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5622293f-5e46-42ef-9644-7e795f914872")
 	)
 	(wire
 		(pts
@@ -11283,16 +11135,6 @@
 			(type default)
 		)
 		(uuid "58f0cba1-179c-46ca-a012-dbdba532b90c")
-	)
-	(wire
-		(pts
-			(xy 115.57 147.32) (xy 115.57 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5bec12e7-a06f-4e46-93ed-dbc8654fa0ac")
 	)
 	(wire
 		(pts
@@ -11336,7 +11178,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 248.92) (xy 102.87 232.41)
+			(xy 101.6 201.93) (xy 101.6 185.42)
 		)
 		(stroke
 			(width 0)
@@ -11386,7 +11228,7 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 153.67) (xy 115.57 175.26)
+			(xy 114.3 106.68) (xy 114.3 128.27)
 		)
 		(stroke
 			(width 0)
@@ -11416,23 +11258,23 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 153.67) (xy 102.87 173.99)
+			(xy 331.47 58.42) (xy 331.47 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6d72c5e5-ff3c-42ee-9e1e-bd1b4d6bcdf5")
+	)
+	(wire
+		(pts
+			(xy 101.6 106.68) (xy 101.6 127)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "726374d5-f243-42e1-a7b6-1aae018be821")
-	)
-	(wire
-		(pts
-			(xy 331.47 105.41) (xy 331.47 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "72852491-deff-4d4a-ab22-3b9f7f610c3c")
 	)
 	(wire
 		(pts
@@ -11456,17 +11298,7 @@
 	)
 	(wire
 		(pts
-			(xy 344.17 151.13) (xy 344.17 148.59)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "73a9edf0-b770-4380-be61-58d9a31adaaf")
-	)
-	(wire
-		(pts
-			(xy 60.96 189.23) (xy 60.96 191.77)
+			(xy 59.69 142.24) (xy 59.69 144.78)
 		)
 		(stroke
 			(width 0)
@@ -11506,7 +11338,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 201.93) (xy 115.57 201.93)
+			(xy 81.28 154.94) (xy 114.3 154.94)
 		)
 		(stroke
 			(width 0)
@@ -11576,7 +11408,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 175.26) (xy 21.59 175.26)
+			(xy 22.86 128.27) (xy 20.32 128.27)
 		)
 		(stroke
 			(width 0)
@@ -11586,7 +11418,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 153.67) (xy 115.57 153.67)
+			(xy 67.31 106.68) (xy 114.3 106.68)
 		)
 		(stroke
 			(width 0)
@@ -11626,7 +11458,7 @@
 	)
 	(wire
 		(pts
-			(xy 130.81 180.34) (xy 153.67 180.34)
+			(xy 129.54 133.35) (xy 152.4 133.35)
 		)
 		(stroke
 			(width 0)
@@ -11666,7 +11498,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 204.47) (xy 115.57 204.47)
+			(xy 67.31 157.48) (xy 114.3 157.48)
 		)
 		(stroke
 			(width 0)
@@ -11676,7 +11508,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 204.47) (xy 102.87 224.79)
+			(xy 101.6 157.48) (xy 101.6 177.8)
 		)
 		(stroke
 			(width 0)
@@ -11686,7 +11518,7 @@
 	)
 	(wire
 		(pts
-			(xy 130.81 175.26) (xy 144.78 175.26)
+			(xy 129.54 128.27) (xy 143.51 128.27)
 		)
 		(stroke
 			(width 0)
@@ -11716,6 +11548,16 @@
 	)
 	(wire
 		(pts
+			(xy 152.4 184.15) (xy 152.4 187.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9bdce11f-bf26-48dd-80b3-cb545bf76412")
+	)
+	(wire
+		(pts
 			(xy 118.11 33.02) (xy 113.03 33.02)
 		)
 		(stroke
@@ -11736,23 +11578,13 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 217.17) (xy 76.2 214.63)
+			(xy 74.93 170.18) (xy 74.93 167.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "aa9abe69-7c6a-40a5-a877-2cccc6bcf174")
-	)
-	(wire
-		(pts
-			(xy 331.47 115.57) (xy 331.47 118.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ab35b727-cffe-426b-a820-7e7fba5fa3a6")
 	)
 	(wire
 		(pts
@@ -11766,7 +11598,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 166.37) (xy 68.58 153.67)
+			(xy 67.31 119.38) (xy 67.31 106.68)
 		)
 		(stroke
 			(width 0)
@@ -11796,7 +11628,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 189.23) (xy 76.2 191.77)
+			(xy 74.93 142.24) (xy 74.93 144.78)
 		)
 		(stroke
 			(width 0)
@@ -11926,7 +11758,7 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 204.47) (xy 115.57 226.06)
+			(xy 114.3 157.48) (xy 114.3 179.07)
 		)
 		(stroke
 			(width 0)
@@ -12016,7 +11848,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 185.42) (xy 21.59 185.42)
+			(xy 22.86 138.43) (xy 20.32 138.43)
 		)
 		(stroke
 			(width 0)
@@ -12026,7 +11858,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 248.92) (xy 74.93 248.92)
+			(xy 67.31 201.93) (xy 73.66 201.93)
 		)
 		(stroke
 			(width 0)
@@ -12086,7 +11918,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 240.03) (xy 76.2 242.57)
+			(xy 74.93 193.04) (xy 74.93 195.58)
 		)
 		(stroke
 			(width 0)
@@ -12126,7 +11958,7 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 248.92) (xy 115.57 231.14)
+			(xy 114.3 201.93) (xy 114.3 184.15)
 		)
 		(stroke
 			(width 0)
@@ -12136,7 +11968,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 217.17) (xy 68.58 204.47)
+			(xy 67.31 170.18) (xy 67.31 157.48)
 		)
 		(stroke
 			(width 0)
@@ -12166,16 +11998,6 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 115.57) (xy 60.96 113.03)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e9a2e560-c34b-4b38-be70-db88a0325f1c")
-	)
-	(wire
-		(pts
 			(xy 283.21 167.64) (xy 283.21 185.42)
 		)
 		(stroke
@@ -12196,7 +12018,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 172.72) (xy 21.59 172.72)
+			(xy 22.86 125.73) (xy 20.32 125.73)
 		)
 		(stroke
 			(width 0)
@@ -12236,6 +12058,16 @@
 	)
 	(wire
 		(pts
+			(xy 331.47 48.26) (xy 331.47 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f4781d94-e855-416c-a929-c29c7d256741")
+	)
+	(wire
+		(pts
 			(xy 321.31 110.49) (xy 321.31 105.41)
 		)
 		(stroke
@@ -12253,26 +12085,6 @@
 			(type default)
 		)
 		(uuid "f527336c-0cdd-4808-a216-363a02d30af5")
-	)
-	(wire
-		(pts
-			(xy 60.96 138.43) (xy 60.96 140.97)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f575a6c0-9cd5-4c51-a45c-8513e7e90a43")
-	)
-	(wire
-		(pts
-			(xy 102.87 147.32) (xy 102.87 130.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f6984500-172c-4e10-9e40-786721421c16")
 	)
 	(wire
 		(pts
@@ -12296,16 +12108,6 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 115.57) (xy 68.58 102.87)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fac2ab70-4ffa-4dca-9217-21906e7bb7c0")
-	)
-	(wire
-		(pts
 			(xy 222.25 224.79) (xy 222.25 226.06)
 		)
 		(stroke
@@ -12314,18 +12116,8 @@
 		)
 		(uuid "fb894a5e-e599-4714-b036-f466ab3eb36d")
 	)
-	(wire
-		(pts
-			(xy 115.57 102.87) (xy 115.57 124.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ffaf321d-38f1-4716-9947-575e9db34a4e")
-	)
-	(label "OC2_JP"
-		(at 72.39 153.67 0)
+	(label "OC1_JP"
+		(at 71.12 106.68 0)
 		(effects
 			(font
 				(size 1 1)
@@ -12362,8 +12154,8 @@
 		)
 		(uuid "08ca9e2f-1e9f-4cb2-8307-da3a017b9735")
 	)
-	(label "OC2_RET"
-		(at 68.58 189.23 0)
+	(label "OC1_RET"
+		(at 67.31 142.24 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12373,7 +12165,7 @@
 		(uuid "08cddce8-95b6-44a8-a820-b7809d63ad20")
 	)
 	(label "IN_P4"
-		(at 60.96 191.77 90)
+		(at 59.69 144.78 90)
 		(effects
 			(font
 				(size 1 1)
@@ -12389,16 +12181,6 @@
 			)
 		)
 		(uuid "10a97f10-c566-43cc-8cd4-0be2dea0d0ca")
-	)
-	(label "OT_BRIDGE"
-		(at 331.47 107.95 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "11cbc93a-6d99-4276-bce9-f5584b650c04")
 	)
 	(label "ES_MICN"
 		(at 232.41 217.17 0)
@@ -12418,15 +12200,6 @@
 			)
 		)
 		(uuid "164806d5-521a-4d49-ab80-788c6d5347c0")
-	)
-	(label "P5"
-		(at 76.2 113.03 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "165e44ad-fbfc-4375-9134-2c90fe9310c2")
 	)
 	(label "I2S_BCLK"
 		(at 179.07 55.88 0)
@@ -12456,15 +12229,6 @@
 		)
 		(uuid "1b22a3e1-aa64-472d-8517-74f464d6d4e4")
 	)
-	(label "P2"
-		(at 60.96 113.03 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "1bb87fee-b2ab-4728-a539-e5d0230199d0")
-	)
 	(label "MIC_A"
 		(at 242.57 224.79 0)
 		(effects
@@ -12484,8 +12248,8 @@
 		)
 		(uuid "1fd621a1-452f-4a95-a528-ba5dda117abc")
 	)
-	(label "OC3_JP"
-		(at 72.39 204.47 0)
+	(label "OC2_JP"
+		(at 71.12 157.48 0)
 		(effects
 			(font
 				(size 1 1)
@@ -12494,7 +12258,7 @@
 		(uuid "2308df58-15b4-4fdb-aa14-1ebcd619655f")
 	)
 	(label "P5"
-		(at 21.59 182.88 0)
+		(at 20.32 135.89 0)
 		(effects
 			(font
 				(size 1 1)
@@ -12528,15 +12292,6 @@
 			)
 		)
 		(uuid "26aaeca1-f0e2-4f6a-bffa-3b689a933d3d")
-	)
-	(label "P2"
-		(at 76.2 140.97 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "272b933a-cf4d-4cbf-878a-7ffb75339f93")
 	)
 	(label "+3V3"
 		(at 252.73 203.2 0)
@@ -12577,7 +12332,7 @@
 		(uuid "309abeb1-5a20-424c-8067-2cfa72a724f5")
 	)
 	(label "P1"
-		(at 21.59 172.72 0)
+		(at 20.32 125.73 0)
 		(effects
 			(font
 				(size 1 1)
@@ -12586,7 +12341,7 @@
 		(uuid "30f34d85-66e7-4e8a-b757-60715cfd5d19")
 	)
 	(label "+3V3"
-		(at 144.78 215.9 90)
+		(at 143.51 168.91 90)
 		(effects
 			(font
 				(size 1 1)
@@ -12594,8 +12349,8 @@
 		)
 		(uuid "3470815d-b69a-4554-8745-e40d807da2c7")
 	)
-	(label "OC3_OUT"
-		(at 133.35 226.06 0)
+	(label "OC2_OUT"
+		(at 132.08 179.07 0)
 		(effects
 			(font
 				(size 1 1)
@@ -12649,8 +12404,8 @@
 		)
 		(uuid "4367be3c-a9fc-453e-9964-a1435a2edbe7")
 	)
-	(label "OC3_RET"
-		(at 68.58 240.03 0)
+	(label "OC2_RET"
+		(at 67.31 193.04 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12659,27 +12414,8 @@
 		)
 		(uuid "43b76f29-e5f1-4fc1-bb5d-dd3c5f97d158")
 	)
-	(label "OC1_OUT"
-		(at 179.07 73.66 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "463c8e48-fb23-4f51-bb96-b7833ee41047")
-	)
-	(label "OC1_CATH"
-		(at 115.57 129.54 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "477e9177-814b-462b-9fba-fc2717f0b98c")
-	)
 	(label "P2"
-		(at 21.59 175.26 0)
+		(at 20.32 128.27 0)
 		(effects
 			(font
 				(size 1 1)
@@ -12734,7 +12470,7 @@
 		(uuid "4fa735a6-2fff-49c2-a9c7-69fa82fbb95c")
 	)
 	(label "+3V3"
-		(at 144.78 165.1 90)
+		(at 143.51 118.11 90)
 		(effects
 			(font
 				(size 1 1)
@@ -12742,7 +12478,7 @@
 		)
 		(uuid "519bca77-633a-49c6-b9ec-dfa12ce10d39")
 	)
-	(label "GATE1_DRV"
+	(label "GATE2_DRV"
 		(at 179.07 68.58 0)
 		(effects
 			(font
@@ -12761,13 +12497,23 @@
 		(uuid "557e94d3-9749-4512-a76c-bd7b31fc5c87")
 	)
 	(label "P3"
-		(at 331.47 46.99 90)
+		(at 331.47 58.42 90)
 		(effects
 			(font
 				(size 1 1)
 			)
 		)
 		(uuid "59423534-d54e-4a6e-b3f7-0133ee534477")
+	)
+	(label "TALK_BRIDGE"
+		(at 331.47 48.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5d8617ca-df69-4f86-84e4-49e709940b44")
 	)
 	(label "IN_P4"
 		(at 334.01 26.67 90)
@@ -12835,7 +12581,7 @@
 		(uuid "70659cce-b6eb-4bcf-9aa8-ca74b40056e4")
 	)
 	(label "P1"
-		(at 60.96 214.63 90)
+		(at 59.69 167.64 90)
 		(effects
 			(font
 				(size 1 1)
@@ -12853,7 +12599,7 @@
 		)
 		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
 	)
-	(label "OC2_OUT"
+	(label "OC1_OUT"
 		(at 113.03 40.64 0)
 		(effects
 			(font
@@ -12881,7 +12627,7 @@
 		(uuid "7e20bee1-feb2-48b4-85b4-c17a585521eb")
 	)
 	(label "P5"
-		(at 76.2 214.63 90)
+		(at 74.93 167.64 90)
 		(effects
 			(font
 				(size 1 1)
@@ -12936,7 +12682,7 @@
 		(uuid "89665ac7-8ffe-4d35-8d68-b8495748d42a")
 	)
 	(label "P1"
-		(at 76.2 242.57 90)
+		(at 74.93 195.58 90)
 		(effects
 			(font
 				(size 1 1)
@@ -12945,7 +12691,7 @@
 		(uuid "8a23801f-510e-4189-ac40-d1dd8f2bd089")
 	)
 	(label "P5"
-		(at 60.96 242.57 90)
+		(at 59.69 195.58 90)
 		(effects
 			(font
 				(size 1 1)
@@ -12963,35 +12709,17 @@
 		(uuid "8db0053e-9bc3-4545-99d1-7dedada5afc9")
 	)
 	(label "OC_EMIT"
-		(at 130.81 129.54 0)
+		(at 152.4 154.94 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
-		(uuid "8ea1e430-9862-4886-a335-966787a693fa")
+		(uuid "93e3a1d3-d1e3-4518-b965-3b72456a6068")
 	)
-	(label "OC1_JP"
-		(at 72.39 102.87 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "902196a0-9908-4531-8b0c-f6ba6ab551a9")
-	)
-	(label "OC1_OUT"
-		(at 133.35 124.46 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "940b13bd-0aea-4190-9aa7-72bcfafa377c")
-	)
-	(label "OC3_CATH"
-		(at 115.57 231.14 0)
+	(label "OC2_CATH"
+		(at 114.3 184.15 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -13048,23 +12776,13 @@
 		(uuid "9bd32639-8dbf-4352-8fa6-2a186c3eb329")
 	)
 	(label "P3"
-		(at 331.47 118.11 90)
+		(at 331.47 105.41 90)
 		(effects
 			(font
 				(size 1 1)
 			)
 		)
 		(uuid "a35a239e-f77f-4f7b-88fc-7c3620820054")
-	)
-	(label "OC1_RET"
-		(at 68.58 138.43 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a3ecae80-e78a-4ed7-8391-4e1caf5d0893")
 	)
 	(label "USB_DP_ESP"
 		(at 68.58 85.09 0)
@@ -13076,7 +12794,7 @@
 		(uuid "a63086dc-eefd-4134-8b1f-e6f23f8a2105")
 	)
 	(label "P1"
-		(at 76.2 191.77 90)
+		(at 74.93 144.78 90)
 		(effects
 			(font
 				(size 1 1)
@@ -13120,8 +12838,8 @@
 		)
 		(uuid "b32f7f85-a8f1-441d-aacd-c9c9149030a0")
 	)
-	(label "OC2_OUT"
-		(at 133.35 175.26 0)
+	(label "OC1_OUT"
+		(at 132.08 128.27 0)
 		(effects
 			(font
 				(size 1 1)
@@ -13147,26 +12865,8 @@
 		)
 		(uuid "bb930ac1-73ec-4d03-99a9-ca742502c5a2")
 	)
-	(label "P5"
-		(at 60.96 140.97 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "be6dbb12-1f17-416e-8273-145661b0b39c")
-	)
-	(label "GATE1_PRE"
-		(at 341.63 168.91 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "bee079a3-c88c-445f-8df5-83b5c313026f")
-	)
 	(label "P1"
-		(at 60.96 163.83 90)
+		(at 59.69 116.84 90)
 		(effects
 			(font
 				(size 1 1)
@@ -13185,7 +12885,7 @@
 		(uuid "cabb70b4-a13a-4475-b8aa-1eebcd3e3625")
 	)
 	(label "P3"
-		(at 21.59 177.8 0)
+		(at 20.32 130.81 0)
 		(effects
 			(font
 				(size 1 1)
@@ -13194,7 +12894,7 @@
 		(uuid "cc84102a-6465-45d9-a236-2c7b41f9bcff")
 	)
 	(label "P4"
-		(at 21.59 180.34 0)
+		(at 20.32 133.35 0)
 		(effects
 			(font
 				(size 1 1)
@@ -13231,7 +12931,7 @@
 		)
 		(uuid "da1e7001-706b-4642-850e-0605a2c8c24d")
 	)
-	(label "OC3_OUT"
+	(label "OC2_OUT"
 		(at 113.03 38.1 0)
 		(effects
 			(font
@@ -13316,25 +13016,7 @@
 		)
 		(uuid "eafa7ad2-8687-4d61-93ce-aca2a6c4b271")
 	)
-	(label "+3V3"
-		(at 144.78 114.3 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "ebf1d9ed-949a-4bdb-b038-6739c2ad7742")
-	)
 	(label "GATE1_DRV"
-		(at 344.17 148.59 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "ebf97232-f297-40de-8707-e11ec635c6ba")
-	)
-	(label "GATE1_PRE"
 		(at 283.21 33.02 90)
 		(effects
 			(font
@@ -13353,7 +13035,7 @@
 		(uuid "f81b4725-36d5-4ad1-b005-c2bad8be203d")
 	)
 	(label "IN_P4"
-		(at 21.59 185.42 0)
+		(at 20.32 138.43 0)
 		(effects
 			(font
 				(size 1 1)
@@ -13371,7 +13053,7 @@
 		(uuid "fabbb3ed-db30-4959-8bc7-368d883b9b5f")
 	)
 	(label "IN_P4"
-		(at 76.2 163.83 90)
+		(at 74.93 116.84 90)
 		(effects
 			(font
 				(size 1 1)
@@ -13389,7 +13071,7 @@
 		)
 		(uuid "fd854069-56cd-4483-a168-0fe4fe4ec441")
 	)
-	(label "GATE2_DRV"
+	(label "GATE1_DRV"
 		(at 179.07 66.04 0)
 		(effects
 			(font
@@ -13398,8 +13080,8 @@
 		)
 		(uuid "fdef035f-4ec7-40a0-8ec1-b968aab826b0")
 	)
-	(label "OC2_CATH"
-		(at 115.57 180.34 0)
+	(label "OC1_CATH"
+		(at 114.3 133.35 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -15005,107 +14687,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR50")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
-		(at 78.74 147.32 270)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "1f38e03f-0753-4491-8eb4-4f01d238c7f0")
-		(property "Reference" "R17"
-			(at 78.74 142.24 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "5.1k"
-			(at 78.74 144.78 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 78.74 147.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
-			(at 78.74 147.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "OK1 LED current limiter (value TBD pending measured session voltage)"
-			(at 78.74 147.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C23186"
-			(at 78.74 147.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF5101T5E"
-			(at 78.74 147.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ab522a0a-7891-40ea-b8f5-66efe134215d")
-		)
-		(pin "2"
-			(uuid "c651c451-9833-4b06-a0d8-20ae49c95fe2")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R17")
 					(unit 1)
 				)
 			)
@@ -17130,7 +16711,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
-		(at 102.87 177.8 180)
+		(at 101.6 130.81 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -17140,7 +16721,7 @@
 		(dnp no)
 		(uuid "4cd32f8e-7a4c-4afe-bfee-93c655e87d31")
 		(property "Reference" "D8"
-			(at 102.87 166.37 0)
+			(at 101.6 119.38 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -17150,7 +16731,7 @@
 			)
 		)
 		(property "Value" "1N4148W"
-			(at 102.87 168.91 0)
+			(at 101.6 121.92 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -17160,7 +16741,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:D_SOD-123"
-			(at 102.87 177.8 0)
+			(at 101.6 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17171,7 +16752,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
-			(at 102.87 177.8 0)
+			(at 101.6 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17181,8 +16762,8 @@
 				)
 			)
 		)
-		(property "Description" "OK2 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
-			(at 102.87 177.8 0)
+		(property "Description" "OC1 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
+			(at 101.6 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17193,7 +16774,7 @@
 			)
 		)
 		(property "LCSC" "C81598"
-			(at 102.87 177.8 0)
+			(at 101.6 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17204,7 +16785,7 @@
 			)
 		)
 		(property "MPN" "1N4148W"
-			(at 102.87 177.8 0)
+			(at 101.6 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17891,7 +17472,7 @@
 	)
 	(symbol
 		(lib_id "cas220tb1:CAS-220TB1")
-		(at 67.31 228.6 0)
+		(at 66.04 181.61 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -17901,7 +17482,7 @@
 		(dnp no)
 		(uuid "551c2a7c-7cd9-422f-9055-cc31abd18201")
 		(property "Reference" "SW5"
-			(at 56.81 227.33 0)
+			(at 55.54 180.34 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -17912,7 +17493,7 @@
 			)
 		)
 		(property "Value" "CAS-220TB1"
-			(at 56.81 229.87 0)
+			(at 55.54 182.88 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -17923,7 +17504,7 @@
 			)
 		)
 		(property "Footprint" "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
-			(at 67.31 228.6 0)
+			(at 66.04 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17934,7 +17515,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
-			(at 67.31 228.6 0)
+			(at 66.04 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17944,8 +17525,8 @@
 				)
 			)
 		)
-		(property "Description" "OK3 polarity selector (DPDT slide flips LED feed + return together)"
-			(at 67.31 228.6 0)
+		(property "Description" "OC2 polarity selector (DPDT slide flips LED feed + return together)"
+			(at 66.04 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17956,7 +17537,7 @@
 			)
 		)
 		(property "LCSC" "C2921541"
-			(at 67.31 228.6 0)
+			(at 66.04 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17967,7 +17548,7 @@
 			)
 		)
 		(property "MPN" "CAS-220TB1"
-			(at 67.31 228.6 0)
+			(at 66.04 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18286,7 +17867,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G")
-		(at 123.19 228.6 0)
+		(at 121.92 181.61 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -18295,8 +17876,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "61a33a2d-7ea2-4556-8f5b-b3a2cfde8ac9")
-		(property "Reference" "OK3"
-			(at 123.19 226.06 0)
+		(property "Reference" "OC2"
+			(at 121.92 179.07 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -18306,7 +17887,7 @@
 			)
 		)
 		(property "Value" "LTV-217 (PC817)"
-			(at 123.19 234.95 0)
+			(at 121.92 187.96 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -18316,7 +17897,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
-			(at 123.19 228.6 0)
+			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18327,7 +17908,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
-			(at 123.19 228.6 0)
+			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18338,7 +17919,7 @@
 			)
 		)
 		(property "Description" "Apartment-bell (Etagenruf) sense opto across P1<->P5"
-			(at 123.19 228.6 0)
+			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18349,7 +17930,7 @@
 			)
 		)
 		(property "LCSC" "C115450"
-			(at 123.19 228.6 0)
+			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18360,7 +17941,7 @@
 			)
 		)
 		(property "MPN" "LTV-217-B-G"
-			(at 123.19 228.6 0)
+			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18385,7 +17966,7 @@
 		(instances
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "OK3")
+					(reference "OC2")
 					(unit 1)
 				)
 			)
@@ -18853,7 +18434,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
-		(at 144.78 222.25 180)
+		(at 143.51 175.26 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -18863,7 +18444,7 @@
 		(dnp no)
 		(uuid "6d6d4283-1dde-44e2-855c-a0598662da41")
 		(property "Reference" "R23"
-			(at 146.56 220.98 0)
+			(at 145.29 173.99 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -18874,7 +18455,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 146.56 223.52 0)
+			(at 145.29 176.53 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -18885,7 +18466,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 144.78 222.25 0)
+			(at 143.51 175.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18896,7 +18477,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
-			(at 144.78 222.25 0)
+			(at 143.51 175.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18906,8 +18487,8 @@
 				)
 			)
 		)
-		(property "Description" "OC3 collector pull-up: defined sense level without the ESP32's internal pull-up"
-			(at 144.78 222.25 0)
+		(property "Description" "OC2 collector pull-up: defined sense level without the ESP32's internal pull-up"
+			(at 143.51 175.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18918,7 +18499,7 @@
 			)
 		)
 		(property "LCSC" "C25804"
-			(at 144.78 222.25 0)
+			(at 143.51 175.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18929,7 +18510,7 @@
 			)
 		)
 		(property "MPN" "0603WAF1002T5E"
-			(at 144.78 222.25 0)
+			(at 143.51 175.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19132,121 +18713,6 @@
 		)
 	)
 	(symbol
-		(lib_id "cas220tb1:CAS-220TB1")
-		(at 67.31 127 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "6ea72009-0268-4090-bfe6-a67c2f81712b")
-		(property "Reference" "SW3"
-			(at 56.81 125.73 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "CAS-220TB1"
-			(at 56.81 128.27 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
-			(at 67.31 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
-			(at 67.31 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "OK1 polarity selector (DPDT slide flips LED feed + return together)"
-			(at 67.31 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C2921541"
-			(at 67.31 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "CAS-220TB1"
-			(at 67.31 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "6479e991-f556-4998-aee8-550243b2d8ed")
-		)
-		(pin "3"
-			(uuid "6f85bee5-ef65-4fd3-877d-0d747778040f")
-		)
-		(pin "1"
-			(uuid "9577ccfe-8a0f-42fc-8083-575e10083897")
-		)
-		(pin "4"
-			(uuid "e96295ad-1a91-40b8-9d8b-18d468c9b836")
-		)
-		(pin "6"
-			(uuid "1ecd0187-eafc-4396-b7d2-f7fa6742aea8")
-		)
-		(pin "5"
-			(uuid "45bf55c9-c5c3-487b-b158-08db103a18e0")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "SW3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 238.76 36.83 0)
 		(unit 1)
@@ -19322,7 +18788,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G")
-		(at 123.19 177.8 0)
+		(at 121.92 130.81 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -19331,8 +18797,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6f980e6a-cc58-4166-a38a-440068b0231d")
-		(property "Reference" "OK2"
-			(at 123.19 175.26 0)
+		(property "Reference" "OC1"
+			(at 121.92 128.27 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -19342,7 +18808,7 @@
 			)
 		)
 		(property "Value" "LTV-217 (PC817)"
-			(at 123.19 184.15 0)
+			(at 121.92 137.16 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -19352,7 +18818,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
-			(at 123.19 177.8 0)
+			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19363,7 +18829,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
-			(at 123.19 177.8 0)
+			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19374,7 +18840,7 @@
 			)
 		)
 		(property "Description" "House-bell (Türruf) sense opto across P1<->IN_P4"
-			(at 123.19 177.8 0)
+			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19385,7 +18851,7 @@
 			)
 		)
 		(property "LCSC" "C115450"
-			(at 123.19 177.8 0)
+			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19396,7 +18862,7 @@
 			)
 		)
 		(property "MPN" "LTV-217-B-G"
-			(at 123.19 177.8 0)
+			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19421,7 +18887,7 @@
 		(instances
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "OK2")
+					(reference "OC1")
 					(unit 1)
 				)
 			)
@@ -19429,7 +18895,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
-		(at 102.87 228.6 180)
+		(at 101.6 181.61 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -19439,7 +18905,7 @@
 		(dnp no)
 		(uuid "7091aebf-6297-4467-826b-8757a68e4006")
 		(property "Reference" "D9"
-			(at 102.87 217.17 0)
+			(at 101.6 170.18 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -19449,7 +18915,7 @@
 			)
 		)
 		(property "Value" "1N4148W"
-			(at 102.87 219.71 0)
+			(at 101.6 172.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -19459,7 +18925,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:D_SOD-123"
-			(at 102.87 228.6 0)
+			(at 101.6 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19470,7 +18936,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
-			(at 102.87 228.6 0)
+			(at 101.6 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19480,8 +18946,8 @@
 				)
 			)
 		)
-		(property "Description" "OK3 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
-			(at 102.87 228.6 0)
+		(property "Description" "OC2 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
+			(at 101.6 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19492,7 +18958,7 @@
 			)
 		)
 		(property "LCSC" "C81598"
-			(at 102.87 228.6 0)
+			(at 101.6 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19503,7 +18969,7 @@
 			)
 		)
 		(property "MPN" "1N4148W"
-			(at 102.87 228.6 0)
+			(at 101.6 181.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20553,7 +20019,7 @@
 	)
 	(symbol
 		(lib_id "cas220tb1:CAS-220TB1")
-		(at 67.31 177.8 0)
+		(at 66.04 130.81 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -20563,7 +20029,7 @@
 		(dnp no)
 		(uuid "850ebb42-178b-4133-9a13-a8fde73fd64a")
 		(property "Reference" "SW4"
-			(at 56.81 176.53 0)
+			(at 55.54 129.54 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -20574,7 +20040,7 @@
 			)
 		)
 		(property "Value" "CAS-220TB1"
-			(at 56.81 179.07 0)
+			(at 55.54 132.08 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -20585,7 +20051,7 @@
 			)
 		)
 		(property "Footprint" "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
-			(at 67.31 177.8 0)
+			(at 66.04 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20596,7 +20062,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
-			(at 67.31 177.8 0)
+			(at 66.04 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20606,8 +20072,8 @@
 				)
 			)
 		)
-		(property "Description" "OK2 polarity selector (DPDT slide flips LED feed + return together)"
-			(at 67.31 177.8 0)
+		(property "Description" "OC1 polarity selector (DPDT slide flips LED feed + return together)"
+			(at 66.04 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20618,7 +20084,7 @@
 			)
 		)
 		(property "LCSC" "C2921541"
-			(at 67.31 177.8 0)
+			(at 66.04 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20629,7 +20095,7 @@
 			)
 		)
 		(property "MPN" "CAS-220TB1"
-			(at 67.31 177.8 0)
+			(at 66.04 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21328,7 +20794,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x06")
-		(at 29.21 177.8 0)
+		(at 27.94 130.81 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -21338,7 +20804,7 @@
 		(dnp no)
 		(uuid "a0fd1854-a2a8-4daa-b44f-68cb5995e40f")
 		(property "Reference" "J2"
-			(at 29.21 175.26 0)
+			(at 27.94 128.27 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -21348,7 +20814,7 @@
 			)
 		)
 		(property "Value" "WF26 (6-way screw)"
-			(at 29.21 189.23 0)
+			(at 27.94 142.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -21358,7 +20824,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x06_P3.50mm_Vertical"
-			(at 29.21 177.8 0)
+			(at 27.94 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21369,7 +20835,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 29.21 177.8 0)
+			(at 27.94 130.81 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -21379,7 +20845,7 @@
 			)
 		)
 		(property "Description" "WF26 intercom bus tap: P1-P3, P4/IN_P4 (line-4 break-in), P5"
-			(at 29.21 177.8 0)
+			(at 27.94 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21390,7 +20856,7 @@
 			)
 		)
 		(property "LCSC" "C5290323"
-			(at 29.21 177.8 0)
+			(at 27.94 130.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21821,109 +21287,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR03")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
-		(at 144.78 120.65 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "a6ad5c9f-0d20-4db1-91b3-3b2bf1b74b85")
-		(property "Reference" "R21"
-			(at 146.56 119.38 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "10k"
-			(at 146.56 121.92 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 144.78 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
-			(at 144.78 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "OC1 collector pull-up: defined sense level without the ESP32's internal pull-up"
-			(at 144.78 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C25804"
-			(at 144.78 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1002T5E"
-			(at 144.78 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "4203c3c6-a8b5-4ae8-9575-5ec9a41bbc5d")
-		)
-		(pin "2"
-			(uuid "3cefa0a2-ac86-4c8f-8d54-401fe87ec491")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R21")
 					(unit 1)
 				)
 			)
@@ -22454,7 +21817,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ")
-		(at 331.47 111.76 180)
+		(at 331.47 52.07 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -22464,7 +21827,7 @@
 		(dnp no)
 		(uuid "b067f8ff-06ba-429e-a28c-6bfa4d0550ea")
 		(property "Reference" "R16"
-			(at 329.69 113.03 0)
+			(at 329.69 53.34 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22475,7 +21838,7 @@
 			)
 		)
 		(property "Value" "2.2k"
-			(at 329.69 110.49 0)
+			(at 329.69 50.8 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22486,7 +21849,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 331.47 111.76 0)
+			(at 331.47 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22497,7 +21860,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf"
-			(at 331.47 111.76 0)
+			(at 331.47 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22508,7 +21871,7 @@
 			)
 		)
 		(property "Description" "ÖT bridge series R; matches the WF26's genuine 2.2k button resistor"
-			(at 331.47 111.76 0)
+			(at 331.47 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22519,7 +21882,7 @@
 			)
 		)
 		(property "LCSC" "C4190"
-			(at 331.47 111.76 0)
+			(at 331.47 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22530,7 +21893,7 @@
 			)
 		)
 		(property "MPN" "0603WAF2201T5E"
-			(at 331.47 111.76 0)
+			(at 331.47 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23227,7 +22590,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 153.67 242.57 0)
+		(at 152.4 195.58 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -23237,7 +22600,7 @@
 		(dnp no)
 		(uuid "c039356d-3e75-4143-aff3-8650467fbe71")
 		(property "Reference" "#PWR34"
-			(at 153.67 242.57 0)
+			(at 152.4 195.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23248,7 +22611,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 153.67 247.07 0)
+			(at 152.4 200.08 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23258,7 +22621,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 153.67 242.57 0)
+			(at 152.4 195.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23268,7 +22631,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 153.67 242.57 0)
+			(at 152.4 195.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23278,7 +22641,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 153.67 242.57 0)
+			(at 152.4 195.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23397,214 +22760,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "R19")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
-		(at 102.87 127 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "c1d68b48-7fba-41f2-b817-96df2e939433")
-		(property "Reference" "D7"
-			(at 102.87 115.57 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1N4148W"
-			(at 102.87 118.11 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:D_SOD-123"
-			(at 102.87 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
-			(at 102.87 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "OK1 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
-			(at 102.87 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C81598"
-			(at 102.87 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "1N4148W"
-			(at 102.87 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "fadd6a58-16f5-4b0f-8c3d-164f84ae95d6")
-		)
-		(pin "1"
-			(uuid "e28375cb-6e5b-4771-9a35-949943ab5fbf")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "D7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G")
-		(at 123.19 127 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "c379b159-68bd-4c35-84c5-a8e1aa4d20bf")
-		(property "Reference" "OK1"
-			(at 123.19 124.46 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "LTV-217 (PC817)"
-			(at 123.19 133.35 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
-			(at 123.19 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
-			(at 123.19 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Session-active sense opto: conducts when the WF26 talk relay is energised (P5->P2)"
-			(at 123.19 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C115450"
-			(at 123.19 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "LTV-217-B-G"
-			(at 123.19 127 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "52fa0253-a610-4603-978a-2d1de354b3d8")
-		)
-		(pin "2"
-			(uuid "35608b07-b7b0-40ea-8138-92b6ffc8ba9f")
-		)
-		(pin "3"
-			(uuid "aee77ce4-6cea-4bc1-ae6a-79c43df720a0")
-		)
-		(pin "4"
-			(uuid "1ed81c46-b8a1-48f7-9dfe-e67a610b1d89")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "OK1")
 					(unit 1)
 				)
 			)
@@ -24204,7 +23359,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
-		(at 78.74 248.92 270)
+		(at 77.47 201.93 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -24214,7 +23369,7 @@
 		(dnp no)
 		(uuid "d58f8929-2fe6-4d2d-85a3-b6ef11f2d85c")
 		(property "Reference" "R2"
-			(at 78.74 243.84 90)
+			(at 77.47 196.85 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24224,7 +23379,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 78.74 246.38 90)
+			(at 77.47 199.39 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24234,7 +23389,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 78.74 248.92 0)
+			(at 77.47 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24245,7 +23400,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
-			(at 78.74 248.92 0)
+			(at 77.47 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24255,8 +23410,8 @@
 				)
 			)
 		)
-		(property "Description" "OK3 LED current limiter (per-channel, unshared to avoid cross-talk)"
-			(at 78.74 248.92 0)
+		(property "Description" "OC2 LED current limiter (per-channel, unshared to avoid cross-talk)"
+			(at 77.47 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24267,7 +23422,7 @@
 			)
 		)
 		(property "LCSC" "C23186"
-			(at 78.74 248.92 0)
+			(at 77.47 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24278,7 +23433,7 @@
 			)
 		)
 		(property "MPN" "0603WAF5101T5E"
-			(at 78.74 248.92 0)
+			(at 77.47 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24556,7 +23711,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,1kΩ")
-		(at 153.67 238.76 0)
+		(at 152.4 191.77 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -24566,7 +23721,7 @@
 		(dnp no)
 		(uuid "dec53da5-1d74-4791-9b2f-326941870174")
 		(property "Reference" "R3"
-			(at 151.13 237.49 0)
+			(at 149.86 190.5 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24577,7 +23732,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 151.13 240.03 0)
+			(at 149.86 193.04 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24588,7 +23743,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 153.67 238.76 0)
+			(at 152.4 191.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24599,7 +23754,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
-			(at 153.67 238.76 0)
+			(at 152.4 191.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24610,7 +23765,7 @@
 			)
 		)
 		(property "Description" "Shared opto emitter resistor to GND (uA only)"
-			(at 153.67 238.76 0)
+			(at 152.4 191.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24621,7 +23776,7 @@
 			)
 		)
 		(property "LCSC" "C21190"
-			(at 153.67 238.76 0)
+			(at 152.4 191.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24632,7 +23787,7 @@
 			)
 		)
 		(property "MPN" "0603WAF1001T5E"
-			(at 153.67 238.76 0)
+			(at 152.4 191.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24733,7 +23888,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
-		(at 78.74 201.93 270)
+		(at 77.47 154.94 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -24743,7 +23898,7 @@
 		(dnp no)
 		(uuid "e11a182c-a29e-49b5-9f86-5f2ecb2be20f")
 		(property "Reference" "R1"
-			(at 78.74 196.85 90)
+			(at 77.47 149.86 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24753,7 +23908,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 78.74 199.39 90)
+			(at 77.47 152.4 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24763,7 +23918,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 78.74 201.93 0)
+			(at 77.47 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24774,7 +23929,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
-			(at 78.74 201.93 0)
+			(at 77.47 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24784,8 +23939,8 @@
 				)
 			)
 		)
-		(property "Description" "OK2 LED current limiter (per-channel, unshared to avoid cross-talk)"
-			(at 78.74 201.93 0)
+		(property "Description" "OC1 LED current limiter (per-channel, unshared to avoid cross-talk)"
+			(at 77.47 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24796,7 +23951,7 @@
 			)
 		)
 		(property "LCSC" "C23186"
-			(at 78.74 201.93 0)
+			(at 77.47 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24807,7 +23962,7 @@
 			)
 		)
 		(property "MPN" "0603WAF5101T5E"
-			(at 78.74 201.93 0)
+			(at 77.47 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25365,7 +24520,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
-		(at 144.78 171.45 180)
+		(at 143.51 124.46 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -25375,7 +24530,7 @@
 		(dnp no)
 		(uuid "efd011fe-403a-4d6f-adcd-81ac3e6dd277")
 		(property "Reference" "R22"
-			(at 146.56 170.18 0)
+			(at 145.29 123.19 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25386,7 +24541,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 146.56 172.72 0)
+			(at 145.29 125.73 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25397,7 +24552,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 144.78 171.45 0)
+			(at 143.51 124.46 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25408,7 +24563,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
-			(at 144.78 171.45 0)
+			(at 143.51 124.46 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25418,8 +24573,8 @@
 				)
 			)
 		)
-		(property "Description" "OC2 collector pull-up: defined sense level without the ESP32's internal pull-up"
-			(at 144.78 171.45 0)
+		(property "Description" "OC1 collector pull-up: defined sense level without the ESP32's internal pull-up"
+			(at 143.51 124.46 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25430,7 +24585,7 @@
 			)
 		)
 		(property "LCSC" "C25804"
-			(at 144.78 171.45 0)
+			(at 143.51 124.46 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25441,7 +24596,7 @@
 			)
 		)
 		(property "MPN" "0603WAF1002T5E"
-			(at 144.78 171.45 0)
+			(at 143.51 124.46 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

@@ -60,29 +60,27 @@ into the WF26 — see "Why line 4 needs two pins" below.
 | J2 pin | TV20/S line | Signal | Role in our circuit |
 |-----|-------------|--------|---------------------|
 | P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Opto LED return: each LED → its own 5.1 kΩ limiter → P1 (via polarity switch). T1 winding A leg |
-| P2 | Line 2 | ÖT door-opener pair with line 3; listen-PTT leg | Relay K2 **COM**; K1 **NO** (listen leg); OC1 session-sense leg |
-| P3 | Line 3 | ÖT door-opener pair with line 2; talk-PTT leg (P4↔P3) | Relay K2 **NO** → **R_ot (2.2 kΩ)** → P3 |
+| P2 | Line 2 | ÖT door-opener pair with line 3; listen-PTT leg | Relay K2 **COM**; K1 **NO** (listen leg) |
+| P3 | Line 3 | ÖT door-opener pair with line 2; talk-PTT leg (P4↔P3) | Relay K2 **NO** → P3 (direct short); K1 talk strap via **R16 (2.2 kΩ)** → P3 |
 | P4 | Line 4 (WF26 side, J2.4) | Türruf path to the handset | Relay K3 **COM** → WF26 terminal 4. K3 opens this to suppress the chime |
-| IN-P4 | Line 4 (TV20/S side, **incoming**, J2.6) | Türruf — ~12 VDC house-door gong, **in**; also the PTT handshake line | Relay K3 **NC** → OC2 sense **and** K1 **COM**. K3 NC retains the TV20/S signal when K3 is energised |
-| P5 | Line 5 | Etagenruf — floor/apartment call (tone) | OC3 sense; OC1 session-sense leg; T1 winding A leg |
+| IN-P4 | Line 4 (TV20/S side, **incoming**, J2.6) | Türruf — ~12 VDC house-door gong, **in**; also the PTT handshake line | Relay K3 **NC** → OC1 sense **and** K1 **COM**. K3 NC retains the TV20/S signal when K3 is energised |
+| P5 | Line 5 | Etagenruf — floor/apartment call (tone) | OC2 sense; T1 winding A leg |
 
-**Relay K2** (P2 on COM; NO → R_ot → P3) bridges **P2↔P3 through R_ot (2.2 kΩ)** when energised
-→ TV20/S activates the door opener. ⚠ **R_ot rests on a wrong premise:** the genuine WF26
-door-release (S1) is a **direct P2↔P3 short** — the *dead short* the test *"Klemmen 2 u. 3
-brücken"* uses. The 2.2 kΩ in the handset (R1) is on the **talk** switch, not the door opener
-(see "WF26 internal circuit"). So a 2.2 kΩ door bridge may still trigger but isn't the replica
-it was meant to be — bench-confirm K2 fires the opener through R_ot, or drop R_ot toward a
-near-short on V4.1. **Relay K3** (P4 on COM, IN-P4 on NC) breaks the Türruf line when energised
-to suppress the chime.
+**Relay K2** (P2 on COM; NO → P3) bridges **P2↔P3 directly** when energised → TV20/S activates
+the door opener. This is a **direct short**, matching the genuine WF26 door-release (S1) — the
+*dead short* the test *"Klemmen 2 u. 3 brücken"* uses. The handset's 2.2 kΩ (R1) belongs on the
+**talk** switch, not the door opener (see "WF26 internal circuit"); on this board it sits on the
+**K1 talk strap (R16)**, not here — there is no resistor in K2's bridge. **Relay K3** (P4 on COM,
+IN-P4 on NC) breaks the Türruf line when energised to suppress the chime.
 
 **Why line 4 needs two pins.** K2 (door opener) *adds* a contact across P2+P3 — a parallel
 closure, fine from a parallel bus tap. K3 (chime suppress) must *break* the Türruf so it
 stops reaching the WF26 gong — a **series** operation, so line 4 is split at the board:
 **P4** = WF26-handset side (J2.4 → K3 COM → WF26 terminal 4),
 **IN-P4** = TV20/S-incoming side (J2.6 → K3 NC; "IN" = incoming from TV20/S).
-OC2 and K1 COM both sit on IN-P4 (K3 NC side): K3 NC retains the TV20/S signal when K3 is
+OC1 and K1 COM both sit on IN-P4 (K3 NC side): K3 NC retains the TV20/S signal when K3 is
 energised, so gong sensing and PTT both work during chime suppression. At rest K3 passes
-IN-P4→P4 (gong rings, OC2 senses); energised it opens the line (gong silenced).
+IN-P4→P4 (gong rings, OC1 senses); energised it opens the line (gong silenced).
 
 > **Line 4 carries the Türruf** (PCB net **IN_P4** on the TV20/S side, **P4** on the WF26 side).
 > Inside the handset it is the junction of C1, R1, the relay coil and the relay NO: the ring's
@@ -92,11 +90,9 @@ IN-P4→P4 (gong rings, OC2 senses); energised it opens the line (gong silenced)
 > audio never reaches the WF26 speaker (observed: remove P4 → no gong) — there is no local tone
 > generator (no ICs), the chime *is* the audio on line 4. See "WF26 internal circuit" below.
 
-> **K2 door bridge:** COM=P2, NO→P3, NC unconnected, with **R_ot (2.2 kΩ)** in series on the
-> NO→P3 leg (net `OT_BRIDGE`). R_ot was meant to match the genuine ÖT button — but that button
-> is a **dead short** (the handset's 2.2 kΩ R1 is on the *talk* switch), so R_ot is an added
-> resistance, not a replica. Keep it only if a bench test shows 2.2 kΩ reliably fires the
-> opener; otherwise move toward a near-short on V4.1.
+> **K2 door bridge:** COM=P2, NO→P3 (direct, on net `P3`), NC unconnected. The genuine ÖT button
+> is a **dead short** (the handset's 2.2 kΩ R1 is on the *talk* switch, not here), so K2 is a
+> plain short with **no `R_ot`**. The 2.2 kΩ lives on the talk strap (K1) as **R16**.
 
 ### Wire colour map (existing flat Ethernet cable, confirmed)
 
@@ -133,7 +129,7 @@ From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehl
 - **Tones:** Türruf = **3-Klang-Gong** (3-chime); Etagenruf = **Dauerton** (continuous).
 - **ÖT door-opener trigger (authoritative):** the troubleshooting test says
   *"Zum Test, Klemmen 2 u. 3 brücken"* — **bridge terminals 2 & 3** → opener voltage
-  appears at 8/9. This is exactly what relay **K2** does (COM→R_ot→P3, NO=P2).
+  appears at 8/9. This is exactly what relay **K2** does (COM=P2, NO→P3, a direct short).
 - **ET (Etagenruftaster) vs ÖT:** the **ÖT** (door-opener) button momentarily bridges **2↔3**
   across the bus as a **direct short** (the handset's S1; the 2.2 kΩ R1 is on the *talk* switch,
   not here). The **ET** (Etagenruf / floor-call) sits **in line 5**, between the WF26's terminal
@@ -172,8 +168,9 @@ triggers (line 4 Türruf, line 5 Etagenruf) are separate conductors.
 
 Implications: the V4 audio path taps **P1/P5** (the transducer), capturing both directions
 regardless of bus routing — see "Audio path." For the door bridge (K2) and the virtual-talk
-strap (K1), note the genuine handset puts the **2.2 kΩ on *talk*, a dead short on the door
-opener** — the reverse of V4's current K2/R_ot (see Relays).
+strap (K1), the genuine handset puts the **2.2 kΩ on *talk*, a dead short on the door opener** —
+which the V4 board mirrors: K2 is a direct P2↔P3 short and the 2.2 kΩ (R16) sits on the K1 talk
+strap (see Relays).
 
 ---
 
@@ -214,13 +211,11 @@ Key facts:
 - **Talk = P4↔P3 through R1 (2.2 kΩ).** S2 (Sprechen) *pressed* ties R1_BRIDGE↔P3, putting R1
   across **P4↔P3**; *released* it parks on the unused NC (open). The talk handshake the TV20/S
   sees is a **2.2 kΩ bridge of line 4 to line 3** — so the genuine handset puts the resistor on
-  *talk* and uses a *dead short* for the door opener, the **reverse of what V4 assumed** (see the
-  R_ot note under Relays).
+  *talk* and uses a *dead short* for the door opener (the V4 board mirrors this — see Relays).
 - **The relay coil is across P1↔P4 = common ↔ Türruf, so the house ring energises it directly.**
   The ~12 V Türruf DC on line 4 drives ~12 V/320 Ω ≈ 37 mA through the coil to common and pulls
-  WF26_K1 in — the ring *is* the coil drive; no external "session" supply needed. (This dissolves
-  the old P5↔P2-coil / Mithörsperre / cone-offset puzzles — artifacts of the earlier wrong net
-  map.) **WF26_K1:** 6-pin DIL SPDT (1 Form C), HJR-4102-N-12V, coil 5/8 (~320 Ω), common
+  WF26_K1 in — the ring *is* the coil drive; no external "session" supply needed. **WF26_K1:**
+  6-pin DIL SPDT (1 Form C), HJR-4102-N-12V, coil 5/8 (~320 Ω), common
   1+12 = K1_COM, **NO pin 6 = P4**, NC pin 7 = open. Energised → K1_COM↔P4.
 - **Single transducer:** LS1 (16 Ω) is the **only** transducer (no separate mic), across
   **P1↔P5**, reused as speaker and mic for tone output and both speech directions. Everything
@@ -283,7 +278,7 @@ over.
 |------|---------------|-----------|----------|----|
 | 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC3 collector (P5 / Etagenruf) | IO2 |
 | 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (IN-P4 / Türruf) | IO3 |
-| 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K2 (ÖT bridge) | IO20 |
+| 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K2 (ÖT bridge) | IO21 |
 | 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K3 (chime suppress) | IO22 |
 
 V3 netlist verified against `reference/netlist.txt` (nets `WF26-P4`/`WF26-P5`, `N9`–`N12`;
@@ -301,7 +296,7 @@ integrating everything onto one PCB.
 the relay contact arrangement (K2 COM=P2/NO=P3, K3 COM=P4/NC=IN-P4) are reproduced, with
 deliberate improvements: per-opto LED limiters (a shared limiter would let a ringing channel
 reverse-bias the idle opto's LED past its 6 V VR), anti-parallel reverse-clamp diodes and
-polarity switches on each opto, the ÖT bridge through R_ot, and the audio/PTT additions.
+polarity switches on each opto, the direct ÖT bridge (K2), and the audio/PTT additions.
 Line 4 carries the Türruf as a ~12 V DC level with the 3-Klang tone riding on it: the opto
 (on IN_P4↔P1, **ahead of C1**) sees the DC-dominated level — so it is debounced in firmware
 (`delayed_on`/`delayed_off`), not rectified — while C1 downstream blocks that DC and passes
@@ -314,26 +309,26 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | MCU | **ESP32-C6-WROOM-1-N8** (LCSC C5366877) | ESPHome-supported, native USB, enough GPIO for the audio path (I²S + I²C + 3 relay gates + 3 opto inputs) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
-| Relays | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts beat silver at these low "wetting" currents. 4.5 V coil (must-operate 3.6 V) clears the post-Schottky ~4.5 V rail by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%) coil max. PhotoMOS SSRs (AQY212/TLP222A class, AC/DC type) were considered for click noise but rejected: K3 needs the fail-safe NC contact + hardware interlock pole, clicks are rare and event-correlated, and no second board spin is planned. If K2's click ever bothers in the field, its land refits to a dead-bugged SOP-4 PhotoMOS (LED across coil pads 1/8 via ~680 Ω, output across contact pads 3/4) |
+| Relays | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts beat silver at these low "wetting" currents. 4.5 V coil (must-operate 3.6 V) clears the post-Schottky ~4.5 V rail by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%) coil max. PhotoMOS SSRs (AQY212/TLP222A class, AC/DC type) were considered for click noise but rejected: K3 needs the fail-safe NC contact, clicks are rare and event-correlated, and no second board spin is planned. If K2's click ever bothers in the field, its land refits to a dead-bugged SOP-4 PhotoMOS (LED across coil pads 1/8 via ~680 Ω, output across contact pads 3/4) |
 | Relay driver | **Discrete: 2N7002 + 1N4148W flyback + 10 k gate pull-down** | Pull-down ⇒ relays default OFF at boot |
 | Opto polarity | **DPDT slide switch per opto** (NIDEC CAS-220TB1, C2921541) + **anti-parallel 1N4148W clamp** across each LED | Bus signal polarity is unconfirmed per channel; the switch selects it without rework, the clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on AC content |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT) | See "WF26 connector"; 6-way because line 4 needs in + out for the series chime-break |
 | USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers (D+/D− on B.Cu over GND) |
 | Layers | **4-layer** (F.Cu / +3V3 / GND / B.Cu) | Solid planes; GND on In2 (under B.Cu) so the USB D+/D− pair references GND |
 | Power | **USB-C 5 V** → SS14 reverse-protection Schottky → **SGM2212-3.3** low-dropout LDO (C3294699) | The ~0.45 V Schottky drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
-| Audio | **Half-duplex path on-board**: ES8311 mono codec + SM-LP-5001 isolation transformer + K1 virtual-PTT relay + OC1 (intended session-sense — mis-targeted, see Bell-sense); analog front-end provisional | The bus is half-duplex by design (single LS1 transducer) ⇒ no echo cancellation needed ⇒ within the C6's reach |
+| Audio | **Half-duplex path on-board**: ES8311 mono codec + SM-LP-5001 isolation transformer + K1 virtual-PTT relay (session is firmware-derived from the OC1 Türruf event + a timer — see Bell-sense); analog front-end provisional | The bus is half-duplex by design (single LS1 transducer) ⇒ no echo cancellation needed ⇒ within the C6's reach |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
 ### ESP32-C6 GPIO map (matches `doorbell_design.py` NETS and `firmware/doorbell-v4.yaml`)
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
-| IO20 | 18 | K2 gate — front door buzzer / ÖT (bridge P2+P3) | out | 10 k gate pull-down ⇒ off at boot |
-| IO21 | 19 | K1 drive — virtual PTT (talk: IN_P4↔P3) | out | straight into K3's pole-B interlock contact; series R (R6) sits gate-side |
+| IO20 | 18 | K1 drive — virtual PTT (talk: IN_P4↔P3 via R16 2.2 kΩ) | out | series R (R6) gate-side; 10 k pull-down ⇒ off at boot |
+| IO21 | 19 | K2 gate — front door buzzer / ÖT (bridge P2↔P3 direct) | out | 10 k gate pull-down ⇒ off at boot |
 | IO22 | 20 | K3 gate — chime suppress (break IN_P4→P4) | out | 10 k gate pull-down ⇒ off at boot |
-| IO3  | 26 | OC2 collector — house bell (Türruf, IN_P4) | in | internal pull-up (firmware) |
-| IO2  | 27 | OC3 collector — apartment bell (Etagenruf, P5) | in | internal pull-up (firmware) |
-| IO23 | 21 | OC1 collector — P5↔P2 (intended session sense; mis-targeted — coil is P1↔P4, see Bell-sense) | in | internal pull-up (firmware) |
+| IO3  | 26 | OC1 collector — house bell (Türruf, IN_P4) | in | internal pull-up (firmware) |
+| IO2  | 27 | OC2 collector — apartment bell (Etagenruf, P5) | in | internal pull-up (firmware) |
+| IO23 | 21 | **spare** — unused GPIO, pad free | — | available for reuse |
 | IO12 / IO13 | 13 / 14 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
 | IO18 / IO19 | 16 / 17 | I²C SDA / SCL (10 k pull-ups R18/R19) | — | ES8311 control, addr 0x18 |
 | IO11 / IO10 / IO0 | 12 / 11 / 8 | I²S BCLK / DIN(ASDOUT) / WS | — | ES8311; pad order matches U3's south-row pins for a crossing-free fan |
@@ -347,8 +342,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 
 ### Bell / session sense front-end
 
-Three identical channels (OC2 = house bell on IN_P4↔P1, OC3 = apartment bell on P5↔P1,
-OC1 = on P5↔P2 — intended as session sense, but mis-targeted; see the OC1 note below):
+Two identical channels (OC1 = house bell on IN_P4↔P1, OC2 = apartment bell on P5↔P1):
 
 ```
 bus line A ──┬─[SW pole 1]─► opto LED anode ── LED ── cathode ──┬── R_lim (5.1k) ──[SW pole 2]──┬── bus line B
@@ -357,125 +351,84 @@ bus line A ──┬─[SW pole 1]─► opto LED anode ── LED ── cathod
 opto collector ──► GPIO (internal pull-up)   opto emitters ──┬── R_em (1k, shared) ──► GND
 ```
 
-- **Polarity switches (SW3–SW5, CAS-220TB1):** DPDT slide, commons on the centre pins 2/5
+- **Polarity switches (SW4–SW5, CAS-220TB1):** DPDT slide, commons on the centre pins 2/5
   (verified against the NIDEC CAS datasheet: throws 1/3 and 4/6, both poles ganged; contact
   rating non-switching DC 50 V / 100 mA — fine for the ~2 mA, ≤12 V opto loop). Pin 2 feeds
   the LED anode, pin 5 the R_lim return; throws 1+6 on one bus line, 3+4 on the other.
   Either position gives a complete loop of opposite polarity; a mirrored mounting is
   harmless. **Wrong position = silent false-negative, not damage:** the LED is held
-  reverse-biased, D7–D9 divert the ~2 mA limiter current and clamp the LED to ~0.7 V
-  (< 6 V VR), so nothing is harmed but the channel never detects (SPICE-confirmed,
-  `kicad/sim/oc2_polarity.cir`: V(coll) stays ~3 V). Bring-up check: ring the real bell
+  reverse-biased, D8–D9 divert the ~2 mA limiter current and clamp the LED to ~0.7 V
+  (< 6 V VR), so nothing is harmed but the channel never detects. Bring-up check: ring the real bell
   and confirm detection, or look for the ~10.7 V drop across R_lim (≈2 mA) when active —
   near-0 V across R_lim with ~0.7 V across the LED means flip the switch.
-- **Reverse clamps (D7–D9, 1N4148W):** anti-parallel across each opto LED — clamp anode on
+- **Reverse clamps (D8–D9, 1N4148W):** anti-parallel across each opto LED — clamp anode on
   the LED-cathode net, clamp cathode on the LED-anode net — so the clamp conducts only on
   the reverse half-wave and limits the LED's reverse voltage to ~0.7 V (< its 6 V VR).
   **Lib convention: 1N4148W pin 1 = cathode, pin 2 = anode** (CDFER JLCPCB lib, same as the
   flybacks D1–D3 and Schottky D4 — pin 1 toward +5V there).
-- **Per-opto limiters (R_lim1–3, 5.1 kΩ):** one per channel; a shared limiter would let a
+- **Per-opto limiters (R_lim1–2, 5.1 kΩ):** one per channel; a shared limiter would let a
   ringing channel lift the common node and reverse-bias the idle LED. R_em (1 kΩ emitter,
   shared) carries only µA and is not part of any reverse path.
 - Bell present → LED conducts → phototransistor pulls the GPIO low → ESPHome
   `inverted: true` ⇒ "on". GPIO LOW level ≈ 0.12–0.27 V.
-- **Sense margin is SPICE-verified** (`kicad/sim/oc2_sense.cir`, `oc2_sense_ctr.cir`,
-  run with `ngspice -b`): at IF ≈ 1.7–2.1 mA (10–12 V line) the collector sits at
+- **Sense margin (by analysis):** at IF ≈ 1.7–2.1 mA (10–12 V line) the collector sits at
   ≈ 0.14 V — far below the ESP32 V_IL (~0.825 V) — and stays there across CTR 0.5→2.6,
   because the weak ~45 kΩ internal pull-up demands only ~56 µA while the opto can sink
   ~0.85 mA even at abused-low CTR. Result is insensitive to opto part variation; the
   shared 1 kΩ R_em is immaterial at these currents.
-- ⚠ **OC1 (session sense) is mis-targeted.** OC1 taps **P5↔P2** on the premise that the WF26
-  relay coil sits there — but the corrected model puts the **coil across P1↔P4** (common↔Türruf),
-  driven by the **ring's own DC** (see "WF26 internal circuit"). So OC1 across P5↔P2 senses
-  **line 5 ↔ line 2 (Etagenruf ↔ the listen leg)**, *not* the coil — it gives **no** clean
-  "session active" signal. And since coil-energised ≡ Türruf-present, the session indicator is
-  already what **OC2** (house-bell sense on line 4) reports; a dedicated coil sense is redundant.
-  **Implication:** on V4.1, drop or re-purpose OC1; in firmware, derive "session active" from the
-  Türruf event + the talk-window timer. R_lim3's value is moot.
 - **Cross-talk masking** (`firmware/doorbell-v4.yaml`, lambda filters ahead of the debounce):
-  - **House Doorbell (OC2)** is forced off while PTT is engaged **or a session is
-    active**: PTT (K1) ties IN_P4 to P3, and a session ties IN_P4 (via line 4) to P2
-    through the WF26 relay — either way OC2's P1/IN_P4 node sees a standing bridge voltage
-    and would report a phantom ring — which can pulse the door buzzer via auto-open. A real ring during a
-    talk bridge is hardware-indistinguishable from the bridge, so masking the whole
-    session loses nothing.
-  - **Apartment Doorbell (OC3)** taps the speaker pair, so it pulses on *any* loud
+  - **House Doorbell (OC1)** is forced off while PTT is engaged: K1 ties IN_P4 to P3 (via
+    R16), so OC1's P1/IN_P4 node sees a bridge voltage and would report a phantom ring —
+    which can pulse the door buzzer via auto-open. A real ring during a talk bridge is
+    hardware-indistinguishable from the bridge, so masking the PTT window loses nothing.
+  - **Apartment Doorbell (OC2)** taps the speaker pair, so it pulses on *any* loud
     speaker audio — Etagenruf tone, Türruf gong and session speech alike. It is forced
-    off while House Doorbell / session / PTT are active; what remains is a genuine floor
+    off while House Doorbell / PTT are active; what remains is a genuine floor
     call.
-  - **Intercom Session (OC1)** is masked while the Apartment Doorbell is ringing (the Etagenruf
-    rides line 5, one of OC1's legs). Moot once OC1 is dropped/re-purposed — it doesn't sense
-    the session coil (see the OC1 note).
   - All masked interferers are AC, so the raw input keeps toggling and the masks
     re-evaluate continuously while active. The masks must never gate a *steady-DC*
     signal that outlives the mask window — the lambda only re-runs on raw-input edges.
-- **OC3 tone detection** (`firmware/doorbell-v4.yaml`): the opto conducts only on positive
-  half-cycles above the LED threshold, so OC3's raw input toggles at audio rate
+- **OC2 tone detection** (`firmware/doorbell-v4.yaml`): the opto conducts only on positive
+  half-cycles above the LED threshold, so OC2's raw input toggles at audio rate
   (~1 ms low / ~1.4 ms high) and a plain `delayed_on` would never latch. The filter
   chain stretches the conduction pulses into a level first (`delayed_off: 50ms`), then
   requires it to persist (`delayed_on: 150ms` — also outlasts House Doorbell's 50 ms
   latch so a gong starting together with a house ring cannot beat the mask), then holds
-  the result (`delayed_off: 2s`). OC2 senses a **DC-dominated** level (line 4's Türruf is a
+  the result (`delayed_off: 2s`). OC1 senses a **DC-dominated** level (line 4's Türruf is a
   ~12 V bias with the chime tone riding on it), so a plain `delayed_on`-first filter latches
-  where it never would on chatter — OC2 keeps the plain `delayed_on: 50ms` debounce, which
-  doubles as AC-interference reject (no audio-rate pulsing can hold it low for 50 ms). (OC1 is
-  mis-targeted — see its note.) The chime *tone* is still on line 4 — it
-  reaches LS1 via C1, which strips the DC the opto rides on — so OC2's `delayed_off: 2s` also
+  where it never would on chatter — OC1 keeps the plain `delayed_on: 50ms` debounce, which
+  doubles as AC-interference reject (no audio-rate pulsing can hold it low for 50 ms). The chime *tone* is still on line 4 — it
+  reaches LS1 via C1, which strips the DC the opto rides on — so OC1's `delayed_off: 2s` also
   bridges the gaps between the three Klang so one ring = one event.
 
 ### Relays
 
 ```
-K2 (door opener / ÖT):    COM→R_ot(2.2k)→P3, NO=P2, NC open — energise to bridge P2↔P3 (genuine S1 is a DIRECT short; R_ot is added R — see erratum)
+K2 (door opener / ÖT):    COM=P3 (direct), NO=P2, NC open — energise to bridge P2↔P3 (direct short; matches genuine S1)
 K3 (chime suppress):      COM=P4, NC=IN_P4               — at rest passes the Türruf; energise to break it
-K1 (virtual PTT):         COM=P3, NO=IN_P4, NC open      — energise to tie IN_P4↔P3 = talk
-(K1 and K2 are pin-3/4 swapped vs the part's COM/NO labels — both poles are symmetric bridges, done for routing; see erratum.)
+K1 (virtual PTT):         COM→R16(2.2k)→P3, NO=IN_P4, NC open — energise to tie IN_P4↔P3 through R16 = talk (matches genuine R1)
+(K1 and K2 are pin-3/4 swapped vs the part's COM/NO labels — both poles are symmetric bridges, done for routing.)
 ```
 
 - **G6K-2F-Y pinout:** coil 1/8; pole A COM=3, NC=2, NO=4; pole B COM=6, NC=7, NO=5
   (datasheet-verified).
-- **Virtual-PTT erratum — fabricated V4 boards talk on the wrong line; fixed in layout via
-  the K1 pin swap.** Talk is **P4↔P3** (measured), so K1 must close **IN_P4↔P3**. The current
-  schematic/PCB do this with **K1 pins 3/4 swapped** (COM=P3, NO=IN_P4) — symmetric, so same
-  function, and it routes cleanly (K2 is swapped the same way to suit). **The already-
-  fabricated V4 boards are un-swapped — K1.4 (NO) is on P2** (line 2, the listen leg), so on
-  them K1 ties **line 4↔line 2** — the wrong bridge, *not* the talk handshake (line 4↔line 3);
-  they can't talk, with no firmware workaround (P3 is reachable only via the door-opener path
-  `K2 → R_ot → P3`, which would fire the opener). **Bodge (top
-  copper):** scratch the short stub off **K1 pad 4** — its only P2 link; the rest of P2
-  branches off a junction ~0.5 mm above the pad, so the cut leaves P2 intact (no P2 pour) —
-  then jumper **K1.4 → J2.3** (the P3 screw-terminal pad, ~8.6 mm). Un-bodged the board is
-  **receive-only**: recording the visitor and playing audio locally both work unassisted
-  (LS1 is on P1/P5, where the iso-transformer taps), but talking *out* needs a held Sprechen
-  button. *(V4.1: the bodge / K1 only fix the talk **handshake** line — **autonomous** talk still
-  delivers no audio, because K3 breaks line 4 and strands the C1→P4 injection path; see "TX-out
-  reach" under Audio path and `TODO.md`. Separately, the fixed K1 makes a direct IN_P4↔P3 strap
-  while genuine talk goes through R1's 2.2 kΩ — fold that into the same re-architecture.)*
+- **Talk strap (K1).** Talk is **P4↔P3** (measured), so K1 closes **IN_P4↔P3 through R16
+  (2.2 kΩ)** when energised — matching the handset's R1. K1's pins 3/4 are swapped vs the part's
+  COM/NO labels (COM = pin 3 → R16 → P3; NO = pin 4 → IN_P4): both poles are symmetric, so the
+  function is identical and it routes cleanly (K2 is swapped the same way). K1, K2 and K3 are
+  driven independently (no interlock — like the genuine handset). The board can always RX
+  (record/monitor — LS1 is on P1/P5, where the iso-transformer taps). The firmware now keeps **K3
+  de-energised whenever PTT or a session is active**, so line 4 stays continuous during talk —
+  whether the injected audio then actually reaches the door station is the open **outgoing-path**
+  question (see "TX-out reach").
 - **K1's NC is deliberately open** (not wired): a contact onto P3 here would permanently
   strap P4↔P3 (= talk) and fight the WF26's own S2.
-- **Hardware interlock:** K3's spare pole-B NO contact sits in series with Q1's gate drive
-  (`GATE1_PRE`: R_g1 → K3.5; `GATE1`: K3.6 → Q1 gate + R_pd1). K1 physically cannot
-  energise unless K3 is already on. With the swap, energising K1 closes **IN_P4↔P3** (talk),
-  which never touches P2 — so the interlock no longer prevents a P2↔P3 short; it now only
-  keeps virtual talk clean, breaking line 4 so the board asserts IN_P4↔P3 on the TV20/S side
-  rather than also forcing P4↔P3 at the handset. (On the un-swapped fabbed boards K1 ties
-  IN_P4↔P2, where it *does* prevent a bridge: with line 4 unbroken, a Sprechen press while K1 is
-  up could otherwise bridge **P2↔P3 via R1 (2.2 kΩ)** and possibly fire the opener.)
-- **Release sequencing (firmware):** dropping K3 while K1 is held would reclose K3's
-  pole-A NC (~1 ms) before K1's armature releases (~1–3 ms); if a Sprechen press (P4↔P3) is
-  held at that instant it momentarily shorts P2↔P3. `firmware/doorbell-v4.yaml` guards this in the `doorbell_sound_state`
-  sensor's `on_press` — the only code path that de-energises K3 — with
-  `switch.turn_off: intercom_ptt` → `delay: 10ms` → K3 off. Using the switch (not the raw
-  output) keeps the HA-visible PTT state in sync when a session ends with PTT latched on.
 - **K1 armature feedback: not fitted, by decision.** Wiring K1's spare pole B to a GPIO
   would only catch a welded/stuck contact — not a realistic failure mode for bifurcated
-  gold contacts switching µA–mA dry loads — and the worst case it would prevent (a few-ms
-  P2↔P3 short) equals the TV20/S's own documented test action, too short to pull in the
-  opener relay. The ≥10 ms firmware gap covers the bounded G6K release time with large
-  margin; a simultaneous drop on power loss is equally benign and feedback wouldn't help.
-  K1 pole B stays spare. (If telemetry is ever wanted: K1.6 COM → spare GPIO w/ internal
-  pull-up, K1.5 NO → GND; LOW = engaged. Precedent for logic signals on a bus relay's
-  pole B exists: K3's interlock.)
+  gold contacts switching µA–mA dry loads — and a stuck-closed K1 only holds the talk strap
+  (IN_P4↔P3 via R16, 2.2 kΩ), which the handset's own S2 asserts on every call anyway, too
+  soft to fire the opener. K1 pole B stays spare. (If telemetry is ever wanted: K1.6 COM →
+  spare GPIO w/ internal pull-up, K1.5 NO → GND; LOW = engaged.)
 
 ### Relay driver subcircuit (per channel)
 
@@ -487,7 +440,7 @@ GPIO ──100Ω── gate │ NMOS (2N7002)        coil ── +5V
 4.5 V coils run off the +5V rail (≈4.5 V after the SS14 Schottky; keeps the 3V3 LDO
 unloaded). The 10 kΩ gate pull-down holds each relay **off** while the GPIO floats during
 boot — so the door opener can't pulse and the chime can't be silenced by a booting/dead
-board. (K1's gate drive additionally runs through the K3 interlock contact, above.)
+board.
 
 ### Power tree
 
@@ -544,7 +497,7 @@ Placement around J1 must leave the escape fan room (re-verify the hand-routed es
 fan after any reshuffle).
 
 **Why this plane assignment (not GND/3V3 swapped, a 5V plane, or a split In1).**
-B.Cu is load-bearing (USB pair, P1/P5 weave, IN_P4, GATE1_PRE), so a dedicated 5V
+B.Cu is load-bearing (USB pair, P1/P5 weave, IN_P4), so a dedicated 5V
 plane would cost a routing layer and break the J1 escape fan; +5V's loads (LDO in,
 three relay coils + flybacks) are tens of mA at ms timescales, so a 0.5 mm trace is
 electrically over-spec'd and a plane buys nothing. GND stays on In2 (not In1)
@@ -576,7 +529,7 @@ outer layer. B.Cu float is empty (the GND thieve reaches everything); F.Cu float
 few dozen sub-2 mm² slivers, each 0.21 mm over the solid +3V3 plane so lateral pickup
 is plane-shunted (~10:1) — audio/hum coupling negligible. Every larger pocket is
 grounded by a hand-placed GND stitching via in KiCad (relay/bus region, opto
-block, OC3 jumper, bus corner, NW of U3, SE of J1, the opto-output column, and the
+block, OC2 jumper, bus corner, NW of U3, SE of J1, the opto-output column, and the
 three gaps of the OUT/MIC column under T1, where the grounded strips also guard the
 OUT pair from the MIC pair). `route.py` enforces a hard sliver limit post-fill: **the build FAILS on any
 float island ≥ 2 mm² or ≥ 10 mm long** (the length test catches thin slivers that
@@ -630,11 +583,11 @@ WiFi-TX peaks ~350 mA — plus three relay coils) and every net at WF26-bus pote
 `P1/P2/P3/P4/P5/IN_P4` (line 4 carries the TV20/S's Türruf signal through K3's NC
 contact; the "gong" is an electronically generated tone played through the WF26's 16 Ω
 speaker — there is no chime solenoid — so the worst-case bus current is bounded by the
-speaker drive, well under 1 A), `OT_BRIDGE`, and the opto sense legs up to the LED
+speaker drive, well under 1 A), `TALK_BRIDGE` (K1↔R16↔P3, also bus potential), and the opto sense legs up to the LED
 (`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor sides (`OCx_OUT`, `OC_EMIT`),
-the transformer secondary (`SEC_*`/`OUT_*`/`MIC_*`), and K3's interlock pole
-(`GATE1`/`GATE1_PRE`) are not bus potential and stay at 0.2 mm. KiCad's DRC does not
-enforce these widths.
+the transformer secondary (`SEC_*`/`OUT_*`/`MIC_*`), and the relay gate-drive nets
+(`GATE1`/`GATE1_DRV`/`GATE2`/`GATE2_DRV`/`GATE3`/`GATE3_DRV`) are not bus potential and
+stay at 0.2 mm. KiCad's DRC does not enforce these widths.
 
 **Routing notes (rationale; the trace geometry itself lives in the board).** A few
 design choices behind the layout, worth keeping even though the coordinates are now in
@@ -735,11 +688,10 @@ Consequences:
 
 **"Can we send?" — session sense.** A session begins with a bell and runs ~25 s. The WF26 relay
 (coil across **P1↔P4**) is pulled in by the **Türruf DC**, so "session active" ≈ "the house bell
-fired" — the **OC2** event plus the talk-window timer, *not* a separate coil tap. (⚠ The board's
-OC1, wired across P5↔P2, does **not** sense the coil — see "Bell / session sense front-end";
-treat session state as firmware-derived.) Audio state = session-active **AND** K1:
+fired" — the **OC1** event plus the talk-window timer, *not* a separate coil tap. (Session
+state is firmware-derived — see "Bell / session sense front-end".) Audio state = session-active **AND** K1:
 
-| Session (firmware: OC2 + timer) | K1 | State |
+| Session (firmware: OC1 + timer) | K1 | State |
 |---|---|---|
 | inactive | – | no session — neither RX nor TX |
 | active | released | listen → **capture (RX)** |
@@ -789,15 +741,19 @@ into 16 Ω.
   Verify levels on the bench; values are 0603 swaps if the attenuation needs trimming.
 - Coupling-cap values, MIC1P/N input **biasing**, and whether to tie unused analog to
   AGND — all datasheet-typical, unverified on hardware.
-- **⚠ TX-out reach — autonomous talk delivers no audio (V4.1 fix needed).** Injected audio sits
-  on P1/P5 and couples via the WF26's **C1 (P5↔P4)** to **line 4 (P4)**. Genuine talk then carries
-  it to line 3 as **P5→C1→P4→R1→P3** — but the **R1→P3 link is the handset's S2**, so this only
-  delivers audio when the **resident holds the Sprechen button** (manual talk). The board's
-  virtual-PTT (K1) asserts only the *handshake* (IN_P4↔P3) while **K3 breaks line 4**, isolating
-  the handset's P4 — so the injected audio never reaches line 3 (nor line 2: the coil also drops).
-  **RX is unaffected; autonomous TX is broken.** Fix = don't break line 4 during talk (drop the
-  K3↔K1 interlock so K1 acts as P4↔P3 at the handset). See `TODO.md`.
-- **R_lim3** (OC1 limiter) = 5.1 k — moot; OC1 is mis-targeted (see Bell-sense).
+- **⚠ TX-out reach — autonomous talk: hardware + firmware now allow it; end-to-end path unverified.**
+  Injected audio sits on P1/P5 and couples via the WF26's **C1 (P5↔P4)** to **line 4 (P4)**. The
+  board's virtual-PTT (K1) asserts the talk strap (IN_P4↔P3 via R16); with the relays independent
+  (no interlock) **and the firmware now keeping K3 de-energised during PTT/session** (`doorbell_sound_state`
+  returns true whenever PTT or a session is active → K3 off), **line 4 stays continuous during
+  talk**. So the path the genuine handset uses — **P5→C1→P4→R1→P3**, plus line 4 itself staying
+  whole back to the TV20/S — is no longer broken by us. **What's still unverified is whether the
+  injected audio actually reaches the door station, and by which route** (does it ride line 4 to
+  the central unit, or only the R16 talk strap to line 3?). That is the open **outgoing-path
+  investigation** (see `TODO.md`). RX is unaffected. Related: breaking line 4 also isolates the
+  WF26 coil + C1, so **suppressing the gong (K3 on) and capturing handset audio (RX) are mutually
+  exclusive** on the current P1/P5 tap — the **"tap P1↔IN_P4 for incoming audio"** investigation
+  (see `TODO.md`) is how RX could be decoupled from the suppress relay.
 
 ---
 
@@ -815,11 +771,14 @@ converged with this document on all system-level conclusions.
 
 **Cross-checked against the WF26** (netlist extracted from `wf26/wf26.kicad_sch` with
 `kicad-cli`): J2 pin map; K3's series break matches the chime-suppress behaviour; K1's PTT
-contact map and NC-open; the K3 pole-B interlock; T1 across LS1. **Corrections from the
-re-checked handset model (flagged for V4.1):** the genuine door release (S1) is a **direct
-P2↔P3 short** — K2's R_ot has no counterpart in the handset (the 2.2 kΩ R1 is on the *talk*
-switch); and the relay coil is across **P1↔P4** (common↔Türruf, ring-driven), so **OC1 (P5↔P2)
-does not tap it**. See Relays / Bell-sense.
+contact map and NC-open; T1 across LS1. The board matches the handset on the door/talk split —
+K2 is a **direct P2↔P3 short** (genuine S1), the 2.2 kΩ (R16) is on the K1 talk strap (genuine R1),
+and the relays are independent (no interlock, like the handset). **Still open:** the relay coil is
+across **P1↔P4** (common↔Türruf, ring-driven), and idle line 4 sits at common (measured: P1↔IN_P4
+= 0 V), so **session state is firmware-derived** (OC1 Türruf event + a talk-window timer).
+The firmware now keeps K3 de-energised during PTT/session, so line 4 stays continuous during talk;
+**the end-to-end TX audio path (and tapping P1↔IN_P4 for RX) are open investigations** (see
+`TODO.md`). See Relays / Bell-sense.
 
 **Datasheet-verified:** G6K-2F-Y pole pinout; SGM2212 SOT-223 pinout + ~1 V dropout
 headroom; relay coil margin (DC4.5 must-operate 3.6 V vs ~4.5 V rail); 1N4148W pin 1 =
