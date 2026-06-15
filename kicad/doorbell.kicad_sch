@@ -9055,394 +9055,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "cas220tb1:CAS-220TB1"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "SW"
-				(at 0 16.51 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "CAS-220TB1"
-				(at 0 -16.51 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
-				(at 0 -19.05 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
-				(at 0 -21.59 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Manufacturer" "NIDEC(尼得科)"
-				(at 0 -24.13 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "MPN" "CAS-220TB1"
-				(at 0 -26.67 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "LCSC Part" "C2921541"
-				(at 0 -29.21 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "Slide Switches"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "CAS-220TB1_0_1"
-				(rectangle
-					(start -7.87 6.35)
-					(end 10.16 -6.35)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(polyline
-					(pts
-						(xy -3.81 1.27) (xy -3.81 1.27) (xy -1.78 1.27) (xy -6.35 1.27) (xy -6.35 6.35)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -3.81 -1.27) (xy -3.81 -1.27) (xy -1.78 -1.27) (xy -6.35 -1.27) (xy -6.35 -6.35)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -1.27 1.27)
-					(radius 0.51)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -1.27 -1.27)
-					(radius 0.51)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 3.3) (xy 1.27 6.35)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 1.27 2.79)
-					(radius 0.51)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 1.27 -2.79)
-					(radius 0.51)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 -3.3) (xy 1.27 -6.35)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 3.3 1.52) (xy 1.78 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 3.3 -1.52) (xy 1.78 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 3.81 1.27)
-					(radius 0.51)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 3.81 -1.27)
-					(radius 0.51)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 6.35 1.27) (xy 6.35 1.27) (xy 4.32 1.27) (xy 8.89 1.27) (xy 8.89 6.35)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 6.35 -1.27) (xy 6.35 -1.27) (xy 4.32 -1.27) (xy 8.89 -1.27) (xy 8.89 -6.35)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin unspecified line
-					(at -6.35 -11.43 90)
-					(length 5.08)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 1.27 -11.43 90)
-					(length 5.08)
-					(name "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 8.89 -11.43 90)
-					(length 5.08)
-					(name "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at -6.35 11.43 270)
-					(length 5.08)
-					(name "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 1.27 11.43 270)
-					(length 5.08)
-					(name "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin unspecified line
-					(at 8.89 11.43 270)
-					(length 5.08)
-					(name "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "power:+3V3"
 			(power global)
 			(pin_numbers
@@ -10237,22 +9849,16 @@
 		(uuid "2af579d2-6ba9-4d3a-a67b-9d50e5572ea7")
 	)
 	(junction
-		(at 101.6 106.68)
+		(at 101.6 161.29)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "66730206-f3db-4792-80ae-24c3509f5d4d")
+		(uuid "3a31ce26-a6cc-474b-a986-b9ea77af9d3a")
 	)
 	(junction
 		(at 74.93 35.56)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6961541d-46eb-4cdd-8f3b-aed7afd5daa3")
-	)
-	(junction
-		(at 101.6 157.48)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6bc7b71b-7916-42d8-ad35-165553baba1c")
 	)
 	(junction
 		(at 222.25 236.22)
@@ -10267,7 +9873,7 @@
 		(uuid "9524d704-3d2b-48f1-b554-0aa125732fc1")
 	)
 	(junction
-		(at 101.6 154.94)
+		(at 101.6 146.05)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "971918c1-b3e1-4010-ac5e-117c967abc1b")
@@ -10283,6 +9889,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "9a472c09-4ebf-4027-9a00-34bbc0c05bef")
+	)
+	(junction
+		(at 101.6 113.03)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a985e514-9168-46a0-b735-669919893123")
 	)
 	(junction
 		(at 312.42 85.09)
@@ -10478,16 +10090,6 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 142.24) (xy 67.31 154.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "086d2bf3-90f9-4a66-843a-1802ca81be1f")
-	)
-	(wire
-		(pts
 			(xy 207.01 233.68) (xy 208.28 233.68)
 		)
 		(stroke
@@ -10515,16 +10117,6 @@
 			(type default)
 		)
 		(uuid "08d46ad7-484d-4bff-8f5a-f617fa33d1ff")
-	)
-	(wire
-		(pts
-			(xy 74.93 119.38) (xy 74.93 116.84)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "093e741b-fa6d-4052-9bbc-f4d2eaadeb9d")
 	)
 	(wire
 		(pts
@@ -10668,6 +10260,16 @@
 	)
 	(wire
 		(pts
+			(xy 101.6 113.03) (xy 101.6 127)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "17ed410c-235f-4eaa-8d2e-2989f565c691")
+	)
+	(wire
+		(pts
 			(xy 173.99 48.26) (xy 182.88 48.26)
 		)
 		(stroke
@@ -10678,17 +10280,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 193.04) (xy 67.31 201.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "19b99797-c8ea-4df8-922f-b3295ee47199")
-	)
-	(wire
-		(pts
-			(xy 67.31 154.94) (xy 73.66 154.94)
+			(xy 85.09 146.05) (xy 91.44 146.05)
 		)
 		(stroke
 			(width 0)
@@ -10738,6 +10330,16 @@
 	)
 	(wire
 		(pts
+			(xy 101.6 161.29) (xy 114.3 161.29)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "207be863-b42f-44e7-a1d1-8e5443acf5f1")
+	)
+	(wire
+		(pts
 			(xy 129.54 184.15) (xy 152.4 184.15)
 		)
 		(stroke
@@ -10778,23 +10380,13 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 201.93) (xy 114.3 201.93)
+			(xy 99.06 201.93) (xy 114.3 201.93)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "28758cf0-7f0e-46a0-85bf-e77575675bd1")
-	)
-	(wire
-		(pts
-			(xy 59.69 193.04) (xy 59.69 195.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "29f93455-7357-403a-8bee-7ccedd1ce16c")
 	)
 	(wire
 		(pts
@@ -10888,16 +10480,6 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 170.18) (xy 59.69 167.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3203e4e6-c173-4db0-980c-e0dcc0fde927")
-	)
-	(wire
-		(pts
 			(xy 22.86 135.89) (xy 20.32 135.89)
 		)
 		(stroke
@@ -10948,16 +10530,6 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 119.38) (xy 59.69 116.84)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3f222dd5-d321-4e95-9d2f-feaacfb46f17")
-	)
-	(wire
-		(pts
 			(xy 173.99 71.12) (xy 179.07 71.12)
 		)
 		(stroke
@@ -10968,7 +10540,7 @@
 	)
 	(wire
 		(pts
-			(xy 114.3 154.94) (xy 114.3 133.35)
+			(xy 114.3 146.05) (xy 114.3 133.35)
 		)
 		(stroke
 			(width 0)
@@ -11058,7 +10630,7 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 154.94) (xy 101.6 134.62)
+			(xy 101.6 146.05) (xy 101.6 134.62)
 		)
 		(stroke
 			(width 0)
@@ -11085,6 +10657,16 @@
 			(type default)
 		)
 		(uuid "4ca8c505-571f-492e-ba69-37f9e9d1662f")
+	)
+	(wire
+		(pts
+			(xy 114.3 113.03) (xy 114.3 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4e266f34-a19e-4074-9987-d4b4b3622533")
 	)
 	(wire
 		(pts
@@ -11218,6 +10800,16 @@
 	)
 	(wire
 		(pts
+			(xy 85.09 113.03) (xy 101.6 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6888ed53-5948-47f2-884f-a69b6299c95c")
+	)
+	(wire
+		(pts
 			(xy 173.99 68.58) (xy 179.07 68.58)
 		)
 		(stroke
@@ -11225,16 +10817,6 @@
 			(type default)
 		)
 		(uuid "6b080a3d-9e3e-48b0-9fb0-1ed29b54273a")
-	)
-	(wire
-		(pts
-			(xy 114.3 106.68) (xy 114.3 128.27)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6b1eb87f-f324-4c85-a0c4-35c36dfbcb47")
 	)
 	(wire
 		(pts
@@ -11268,16 +10850,6 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 106.68) (xy 101.6 127)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "726374d5-f243-42e1-a7b6-1aae018be821")
-	)
-	(wire
-		(pts
 			(xy 321.31 171.45) (xy 321.31 166.37)
 		)
 		(stroke
@@ -11295,16 +10867,6 @@
 			(type default)
 		)
 		(uuid "731dfab7-03f1-47c5-a25d-dfe473a3e578")
-	)
-	(wire
-		(pts
-			(xy 59.69 142.24) (xy 59.69 144.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "756713cd-49fb-41a9-a709-00041f94ba4c")
 	)
 	(wire
 		(pts
@@ -11338,7 +10900,7 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 154.94) (xy 114.3 154.94)
+			(xy 99.06 146.05) (xy 114.3 146.05)
 		)
 		(stroke
 			(width 0)
@@ -11418,13 +10980,13 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 106.68) (xy 114.3 106.68)
+			(xy 85.09 161.29) (xy 101.6 161.29)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "84130cfb-9123-4ed6-a27e-4fe7846bd619")
+		(uuid "8497fd12-ef84-497b-9497-9a9837a1897f")
 	)
 	(wire
 		(pts
@@ -11498,17 +11060,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 157.48) (xy 114.3 157.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "92e11fc2-23ad-468f-8ff1-43f833ba8627")
-	)
-	(wire
-		(pts
-			(xy 101.6 157.48) (xy 101.6 177.8)
+			(xy 101.6 161.29) (xy 101.6 177.8)
 		)
 		(stroke
 			(width 0)
@@ -11578,16 +11130,6 @@
 	)
 	(wire
 		(pts
-			(xy 74.93 170.18) (xy 74.93 167.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "aa9abe69-7c6a-40a5-a877-2cccc6bcf174")
-	)
-	(wire
-		(pts
 			(xy 63.5 35.56) (xy 67.31 35.56)
 		)
 		(stroke
@@ -11595,16 +11137,6 @@
 			(type default)
 		)
 		(uuid "b19a1ea2-b256-401a-ab26-57cdf6c21baa")
-	)
-	(wire
-		(pts
-			(xy 67.31 119.38) (xy 67.31 106.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b35c1eed-6ba0-47ee-987f-9d5ccebd4fba")
 	)
 	(wire
 		(pts
@@ -11625,16 +11157,6 @@
 			(type default)
 		)
 		(uuid "b49e861f-7dc7-4c10-857a-e632cc7e47c9")
-	)
-	(wire
-		(pts
-			(xy 74.93 142.24) (xy 74.93 144.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b4f835ab-61d3-4d39-bb58-426d29a123d3")
 	)
 	(wire
 		(pts
@@ -11758,7 +11280,7 @@
 	)
 	(wire
 		(pts
-			(xy 114.3 157.48) (xy 114.3 179.07)
+			(xy 114.3 161.29) (xy 114.3 179.07)
 		)
 		(stroke
 			(width 0)
@@ -11858,7 +11380,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 201.93) (xy 73.66 201.93)
+			(xy 85.09 201.93) (xy 91.44 201.93)
 		)
 		(stroke
 			(width 0)
@@ -11918,13 +11440,13 @@
 	)
 	(wire
 		(pts
-			(xy 74.93 193.04) (xy 74.93 195.58)
+			(xy 101.6 113.03) (xy 114.3 113.03)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "df12c556-48f1-4f35-8e3c-d8324cc535e0")
+		(uuid "db9fcd3b-35ef-4193-9e25-0b6c2647bd6e")
 	)
 	(wire
 		(pts
@@ -11965,16 +11487,6 @@
 			(type default)
 		)
 		(uuid "e616106f-b352-434d-b415-283c192db7c3")
-	)
-	(wire
-		(pts
-			(xy 67.31 170.18) (xy 67.31 157.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e6aa05a8-28d8-4424-b142-6f82052d1f64")
 	)
 	(wire
 		(pts
@@ -12116,12 +11628,13 @@
 		)
 		(uuid "fb894a5e-e599-4714-b036-f466ab3eb36d")
 	)
-	(label "OC1_JP"
-		(at 71.12 106.68 0)
+	(label "IN_P4"
+		(at 85.09 113.03 0)
 		(effects
 			(font
 				(size 1 1)
 			)
+			(justify left bottom)
 		)
 		(uuid "002c57d3-3fa1-4555-a4ae-48119c5b5356")
 	)
@@ -12153,25 +11666,6 @@
 			(justify left bottom)
 		)
 		(uuid "08ca9e2f-1e9f-4cb2-8307-da3a017b9735")
-	)
-	(label "OC1_RET"
-		(at 67.31 142.24 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "08cddce8-95b6-44a8-a820-b7809d63ad20")
-	)
-	(label "IN_P4"
-		(at 59.69 144.78 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "09f26443-ec6a-43f1-b260-211881b11fac")
 	)
 	(label "GATE3_DRV"
 		(at 283.21 154.94 90)
@@ -12248,12 +11742,13 @@
 		)
 		(uuid "1fd621a1-452f-4a95-a528-ba5dda117abc")
 	)
-	(label "OC2_JP"
-		(at 71.12 157.48 0)
+	(label "P5"
+		(at 85.09 161.29 0)
 		(effects
 			(font
-				(size 1 1)
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
 		(uuid "2308df58-15b4-4fdb-aa14-1ebcd619655f")
 	)
@@ -12404,8 +11899,8 @@
 		)
 		(uuid "4367be3c-a9fc-453e-9964-a1435a2edbe7")
 	)
-	(label "OC2_RET"
-		(at 67.31 193.04 0)
+	(label "P1"
+		(at 85.09 201.93 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12580,15 +12075,6 @@
 		)
 		(uuid "70659cce-b6eb-4bcf-9aa8-ca74b40056e4")
 	)
-	(label "P1"
-		(at 59.69 167.64 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "76cc66d3-4761-4dfb-9aa8-34198fd2792d")
-	)
 	(label "OUT_B"
 		(at 222.25 224.79 0)
 		(effects
@@ -12625,15 +12111,6 @@
 			)
 		)
 		(uuid "7e20bee1-feb2-48b4-85b4-c17a585521eb")
-	)
-	(label "P5"
-		(at 74.93 167.64 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "8126957b-61f2-42c0-92cf-48ae869d6fff")
 	)
 	(label "USB_DM"
 		(at 68.58 48.26 0)
@@ -12680,24 +12157,6 @@
 			)
 		)
 		(uuid "89665ac7-8ffe-4d35-8d68-b8495748d42a")
-	)
-	(label "P1"
-		(at 74.93 195.58 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "8a23801f-510e-4189-ac40-d1dd8f2bd089")
-	)
-	(label "P5"
-		(at 59.69 195.58 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "8c8591f8-005f-473b-9c17-d7032d90766b")
 	)
 	(label "EN"
 		(at 113.03 27.94 0)
@@ -12793,15 +12252,6 @@
 		)
 		(uuid "a63086dc-eefd-4134-8b1f-e6f23f8a2105")
 	)
-	(label "P1"
-		(at 74.93 144.78 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "aafd9e01-b45e-4aa0-a8da-e80be65ba131")
-	)
 	(label "ES_VMID"
 		(at 247.65 190.5 0)
 		(effects
@@ -12866,13 +12316,14 @@
 		(uuid "bb930ac1-73ec-4d03-99a9-ca742502c5a2")
 	)
 	(label "P1"
-		(at 59.69 116.84 90)
+		(at 85.09 146.05 0)
 		(effects
 			(font
-				(size 1 1)
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(uuid "c910ef8a-49c3-4e45-aee9-ae3793d3199e")
+		(uuid "c77b4b0e-9358-4cc8-a571-e16cd5047883")
 	)
 	(label "SEC_B"
 		(at 222.25 233.68 0)
@@ -13051,15 +12502,6 @@
 			)
 		)
 		(uuid "fabbb3ed-db30-4959-8bc7-368d883b9b5f")
-	)
-	(label "IN_P4"
-		(at 74.93 116.84 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "fcb0c401-9235-4ee3-bfed-e880b08b0ba0")
 	)
 	(label "SEC_A"
 		(at 212.09 233.68 0)
@@ -17471,121 +16913,6 @@
 		)
 	)
 	(symbol
-		(lib_id "cas220tb1:CAS-220TB1")
-		(at 66.04 181.61 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "551c2a7c-7cd9-422f-9055-cc31abd18201")
-		(property "Reference" "SW5"
-			(at 55.54 180.34 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "CAS-220TB1"
-			(at 55.54 182.88 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
-			(at 66.04 181.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
-			(at 66.04 181.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "OC2 polarity selector (DPDT slide flips LED feed + return together)"
-			(at 66.04 181.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C2921541"
-			(at 66.04 181.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "CAS-220TB1"
-			(at 66.04 181.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "1c842e30-5c6b-4f93-80aa-fd8fa92b0782")
-		)
-		(pin "3"
-			(uuid "8a32f464-c4c8-4761-a416-d0cf033b559e")
-		)
-		(pin "1"
-			(uuid "49202bae-981b-45fd-818a-ee6928a2de4a")
-		)
-		(pin "4"
-			(uuid "a62b6463-99ec-4410-8ac3-6a8d37b6dcf2")
-		)
-		(pin "6"
-			(uuid "4239fed5-ae94-48de-818a-9e62563c6629")
-		)
-		(pin "5"
-			(uuid "434778d5-50d2-49cd-94fb-3a729b1556f4")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "SW5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,100nF")
 		(at 176.53 154.94 0)
 		(unit 1)
@@ -20012,121 +19339,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "cas220tb1:CAS-220TB1")
-		(at 66.04 130.81 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "850ebb42-178b-4133-9a13-a8fde73fd64a")
-		(property "Reference" "SW4"
-			(at 55.54 129.54 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "CAS-220TB1"
-			(at 55.54 132.08 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "cas220tb1:SW-SMD_NIDEC_CAS-220XBX"
-			(at 66.04 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C2921541.pdf"
-			(at 66.04 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "OC1 polarity selector (DPDT slide flips LED feed + return together)"
-			(at 66.04 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C2921541"
-			(at 66.04 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "CAS-220TB1"
-			(at 66.04 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "b705e835-0d73-4b51-93ae-4622879076cb")
-		)
-		(pin "3"
-			(uuid "0b4ad4bf-4c70-44d6-941f-b1e8ebd9a199")
-		)
-		(pin "1"
-			(uuid "fc3bdcc3-447b-4caa-844c-38406b1f50e6")
-		)
-		(pin "4"
-			(uuid "ebb2ac06-92ea-4f6f-aafe-7f3c205c4df7")
-		)
-		(pin "6"
-			(uuid "297b3b80-2001-4fe5-9e22-95cb91a895d6")
-		)
-		(pin "5"
-			(uuid "f780047a-1492-4c0b-bfe3-0f006a7961d3")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "SW4")
 					(unit 1)
 				)
 			)
@@ -23359,7 +22571,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
-		(at 77.47 201.93 270)
+		(at 95.25 201.93 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -23369,7 +22581,7 @@
 		(dnp no)
 		(uuid "d58f8929-2fe6-4d2d-85a3-b6ef11f2d85c")
 		(property "Reference" "R2"
-			(at 77.47 196.85 90)
+			(at 95.25 196.85 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23379,7 +22591,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 77.47 199.39 90)
+			(at 95.25 199.39 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23389,7 +22601,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 77.47 201.93 0)
+			(at 95.25 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23400,7 +22612,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
-			(at 77.47 201.93 0)
+			(at 95.25 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23411,7 +22623,7 @@
 			)
 		)
 		(property "Description" "OC2 LED current limiter (per-channel, unshared to avoid cross-talk)"
-			(at 77.47 201.93 0)
+			(at 95.25 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23422,7 +22634,7 @@
 			)
 		)
 		(property "LCSC" "C23186"
-			(at 77.47 201.93 0)
+			(at 95.25 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23433,7 +22645,7 @@
 			)
 		)
 		(property "MPN" "0603WAF5101T5E"
-			(at 77.47 201.93 0)
+			(at 95.25 201.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23888,7 +23100,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
-		(at 77.47 154.94 270)
+		(at 95.25 146.05 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -23898,7 +23110,7 @@
 		(dnp no)
 		(uuid "e11a182c-a29e-49b5-9f86-5f2ecb2be20f")
 		(property "Reference" "R1"
-			(at 77.47 149.86 90)
+			(at 95.25 140.716 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23908,7 +23120,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 77.47 152.4 90)
+			(at 95.25 143.256 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23918,7 +23130,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 77.47 154.94 0)
+			(at 95.25 146.05 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23929,7 +23141,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
-			(at 77.47 154.94 0)
+			(at 95.25 146.05 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23940,7 +23152,7 @@
 			)
 		)
 		(property "Description" "OC1 LED current limiter (per-channel, unshared to avoid cross-talk)"
-			(at 77.47 154.94 0)
+			(at 95.25 146.05 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23951,7 +23163,7 @@
 			)
 		)
 		(property "LCSC" "C23186"
-			(at 77.47 154.94 0)
+			(at 95.25 146.05 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23962,7 +23174,7 @@
 			)
 		)
 		(property "MPN" "0603WAF5101T5E"
-			(at 77.47 154.94 0)
+			(at 95.25 146.05 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

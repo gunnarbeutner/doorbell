@@ -58,6 +58,11 @@ tether it to a mains-earthed PC. Pair with a DMM.
 
 ## Done (for reference)
 
+- **V4 opto polarity switches (SW4/SW5) removed** — bus taken to drive active lines positive
+  w.r.t. P1, so polarity is hardwired (LED anode → bus line: IN_P4 for OC1, P5 for OC2; cathode →
+  R_lim → P1). Clamps (D8/D9), limiters (R1/R2), pull-ups (R22/R23) retained. Schematic + PCB
+  updated; ERC 0 errors (pin_to_pin warnings 51→39), DRC clean. Confirm per-channel polarity on
+  the bench by ringing each bell. Docs (DESIGN.md, ORDERING.md) updated to drop the switches.
 - **V4 session-sense opto removed** — the third bell-sense channel (its opto + limiter + reverse
   clamp + polarity switch) deleted from `kicad/doorbell.kicad_sch` + `.kicad_pcb`; **U1 GPIO23 (pad
   21) freed**. ERC 0 errors, DRC clean (1 benign isolated-copper warning).

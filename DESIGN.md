@@ -59,7 +59,7 @@ into the WF26 — see "Why line 4 needs two pins" below.
 
 | J2 pin | TV20/S line | Signal | Role in our circuit |
 |-----|-------------|--------|---------------------|
-| P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Opto LED return: each LED → its own 5.1 kΩ limiter → P1 (via polarity switch). T1 winding A leg |
+| P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Opto LED return: each LED → its own 5.1 kΩ limiter → P1. T1 winding A leg |
 | P2 | Line 2 | ÖT door-opener pair with line 3; listen-PTT leg | Relay K2 **COM**; K1 **NO** (listen leg) |
 | P3 | Line 3 | ÖT door-opener pair with line 2; talk-PTT leg (P4↔P3) | Relay K2 **NO** → P3 (direct short); K1 talk strap via **R16 (2.2 kΩ)** → P3 |
 | P4 | Line 4 (WF26 side, J2.4) | Türruf path to the handset | Relay K3 **COM** → WF26 terminal 4. K3 opens this to suppress the chime |
@@ -295,8 +295,8 @@ integrating everything onto one PCB.
 **Design philosophy: carry the proven V3 analog path over.** The bell-sense front-end and
 the relay contact arrangement (K2 COM=P2/NO=P3, K3 COM=P4/NC=IN-P4) are reproduced, with
 deliberate improvements: per-opto LED limiters (a shared limiter would let a ringing channel
-reverse-bias the idle opto's LED past its 6 V VR), anti-parallel reverse-clamp diodes and
-polarity switches on each opto, the direct ÖT bridge (K2), and the audio/PTT additions.
+reverse-bias the idle opto's LED past its 6 V VR), anti-parallel reverse-clamp diodes on each
+opto (polarity hardwired anode-to-bus-line), the direct ÖT bridge (K2), and the audio/PTT additions.
 Line 4 carries the Türruf as a ~12 V DC level with the 3-Klang tone riding on it: the opto
 (on IN_P4↔P1, **ahead of C1**) sees the DC-dominated level — so it is debounced in firmware
 (`delayed_on`/`delayed_off`), not rectified — while C1 downstream blocks that DC and passes
@@ -311,7 +311,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
 | Relays | **SMD signal relay, 4.5 V coil, gold/bifurcated contacts** (Omron G6K-2F-Y-TR DC4.5, LCSC C397193) | Dry, ≤12 VDC, mA-level switching; gold contacts beat silver at these low "wetting" currents. 4.5 V coil (must-operate 3.6 V) clears the post-Schottky ~4.5 V rail by ~0.7–0.9 V, with ~1.9 V headroom below the 6.75 V (150%) coil max. PhotoMOS SSRs (AQY212/TLP222A class, AC/DC type) were considered for click noise but rejected: K3 needs the fail-safe NC contact, clicks are rare and event-correlated, and no second board spin is planned. If K2's click ever bothers in the field, its land refits to a dead-bugged SOP-4 PhotoMOS (LED across coil pads 1/8 via ~680 Ω, output across contact pads 3/4) |
 | Relay driver | **Discrete: 2N7002 + 1N4148W flyback + 10 k gate pull-down** | Pull-down ⇒ relays default OFF at boot |
-| Opto polarity | **DPDT slide switch per opto** (NIDEC CAS-220TB1, C2921541) + **anti-parallel 1N4148W clamp** across each LED | Bus signal polarity is unconfirmed per channel; the switch selects it without rework, the clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on AC content |
+| Opto polarity | **Fixed: LED anode → bus line, cathode → R_lim → P1** + **anti-parallel 1N4148W clamp** across each LED | Bus is taken to drive active lines **positive w.r.t. common (P1)**, so polarity is hardwired (no switch) — bench-confirm per channel by ringing each bell. The clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on the AC tone content |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT) | See "WF26 connector"; 6-way because line 4 needs in + out for the series chime-break |
 | USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers (D+/D− on B.Cu over GND) |
 | Layers | **4-layer** (F.Cu / +3V3 / GND / B.Cu) | Solid planes; GND on In2 (under B.Cu) so the USB D+/D− pair references GND |
@@ -351,16 +351,13 @@ bus line A ──┬─[SW pole 1]─► opto LED anode ── LED ── cathod
 opto collector ──► GPIO (internal pull-up)   opto emitters ──┬── R_em (1k, shared) ──► GND
 ```
 
-- **Polarity switches (SW4–SW5, CAS-220TB1):** DPDT slide, commons on the centre pins 2/5
-  (verified against the NIDEC CAS datasheet: throws 1/3 and 4/6, both poles ganged; contact
-  rating non-switching DC 50 V / 100 mA — fine for the ~2 mA, ≤12 V opto loop). Pin 2 feeds
-  the LED anode, pin 5 the R_lim return; throws 1+6 on one bus line, 3+4 on the other.
-  Either position gives a complete loop of opposite polarity; a mirrored mounting is
-  harmless. **Wrong position = silent false-negative, not damage:** the LED is held
-  reverse-biased, D8–D9 divert the ~2 mA limiter current and clamp the LED to ~0.7 V
-  (< 6 V VR), so nothing is harmed but the channel never detects. Bring-up check: ring the real bell
-  and confirm detection, or look for the ~10.7 V drop across R_lim (≈2 mA) when active —
-  near-0 V across R_lim with ~0.7 V across the LED means flip the switch.
+- **Fixed polarity (no switch):** the bus is taken to drive active lines **positive** w.r.t.
+  common, so each LED is hardwired **anode → bus line** (IN_P4 for OC1, P5 for OC2),
+  **cathode → R_lim → P1** — it conducts on the active (positive) half. **Bring-up check (per
+  channel):** ring the real bell and confirm detection, or look for the ~10.7 V drop across R_lim
+  (≈2 mA) when active. If a channel never detects (near-0 V across R_lim, ~0.7 V across the LED),
+  that line's polarity is the other way — swap the LED's two bus connections. The wrong guess is a
+  silent non-detect, not damage: the clamp (D8/D9) holds the reverse-biased LED to ~0.7 V.
 - **Reverse clamps (D8–D9, 1N4148W):** anti-parallel across each opto LED — clamp anode on
   the LED-cathode net, clamp cathode on the LED-anode net — so the clamp conducts only on
   the reverse half-wave and limits the LED's reverse voltage to ~0.7 V (< its 6 V VR).
@@ -553,9 +550,8 @@ every zone and verifies connectivity. Result: **0 unconnected, 0 DRC**.
 tightly re-packed, so on-board positions differ from any tidy grid). Board ≈ **52 × 58 mm**, all parts on
 the **top side**. **U1 bottom-left, rotated 180°, antenna flush on the bottom edge** over a
 copper keepout; **J1 (USB-C) on the bottom edge** right of the antenna, mouth overhanging;
-**J2 (WF26 terminal) flush on the top edge**, right side; the **opto sense block** (optos,
-clamps, limiters) and the three **polarity switches** fill the upper-left (switch bodies
-sit ~1 mm inside the left edge); the **relay row** (K3, K2, K1 + drivers) runs across the
+**J2 (WF26 terminal) flush on the top edge**, right side; the **opto sense block** (the two
+optos, clamps, limiters, pull-ups) fills the upper-left; the **relay row** (K3, K2, K1 + drivers) runs across the
 upper middle; the **audio cluster** (U3 + support passives, T1 below it) sits mid-board
 between U1 and the LDO/USB area; LDO + buttons + power LED fill the right/centre gaps.
 
@@ -783,8 +779,7 @@ The firmware now keeps K3 de-energised during PTT/session, so line 4 stays conti
 **Datasheet-verified:** G6K-2F-Y pole pinout; SGM2212 SOT-223 pinout + ~1 V dropout
 headroom; relay coil margin (DC4.5 must-operate 3.6 V vs ~4.5 V rail); 1N4148W pin 1 =
 cathode (CDFER lib); LTV-217 pinout; USB front-end (D+/D− not swapped; TPD2S017 pinout/V_CC bias,
-CC 5.1 kΩ Rd); 2N7002 gate drive at 3.3 V; bell-sense GPIO LOW levels; CAS-220 switch
-contact arrangement (COM = pins 2/5) and rating; ES8311 full pinout; SM-LP-5001 isolation
+CC 5.1 kΩ Rd); 2N7002 gate drive at 3.3 V; bell-sense GPIO LOW levels; ES8311 full pinout; SM-LP-5001 isolation
 rating; every U1 pad↔GPIO assignment against the Espressif C6-WROOM-1 symbol.
 
 **Known minor items (accepted):**

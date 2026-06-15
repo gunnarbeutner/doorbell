@@ -29,10 +29,10 @@ confirm JLCPCB's panel/depanel clears them (see the gates below).
   - **Assembly side:** Top only (the board has no bottom-side parts)
   - **PCBA Type:** **Economic** if the quote allows it — **verify part eligibility at order
     time**: the BOM was originally curated to be Economic-eligible, but U1 (C6-WROOM-1,
-    C5366877), U3 (ES8311, C962342), T1 (SM-LP-5001, C7503474) and SW3–SW5 (CAS-220TB1,
-    C2921541) postdate that pass. If any line is Standard-only, the $25/side setup applies —
+    C5366877), U3 (ES8311, C962342) and T1 (SM-LP-5001, C7503474) postdate that
+    pass. If any line is Standard-only, the $25/side setup applies —
     decide then whether to proceed or substitute.
-  - **Stock check:** also confirm LCSC stock on the less-common lines — the four above plus
+  - **Stock check:** also confirm LCSC stock on the less-common lines — the three above plus
     K1–K3 (G6K-2F-Y DC4.5, C397193), J1 (USB4105-GF-A-060, C3025063), J2 (DB125-3.5-6P, C5290323).
   - **Through-hole parts:** J2 (and J1's shell stakes) are assembled by JLCPCB; confirm THT
     assembly is included when JLCPCB reviews/quotes the order.
@@ -55,7 +55,6 @@ mousebite lands on**:
   (the WROOM-1 antenna is flush on this edge over a copper keepout; tabs/drill nubs there
   sit right at the antenna)
 - **top edge** — J2 (6-way screw terminal, flush on the edge)
-- **left edge** — the three slide switches (SW3–SW5) sit only ~1 mm inside this edge
 
 A tab/cut on any of those → **reject and comment**. Small mousebite nubs elsewhere on the
 edges are fine as long as they're clear of parts.
@@ -72,16 +71,15 @@ worst-consequence first:
 | **U2** SGM2212 LDO (SOT-223) | orientation | no 3V3, or damage |
 | **U3** ES8311 codec (QFN-20, 0.4 mm pitch) | pin-1 dot | codec dead / damage |
 | **D4** SS14 (VBUS Schottky) | band direction | blocks VBUS → board dead |
-| **D7, D8, D9** 1N4148W (opto clamps) | band — must be **anti-parallel** to the opto LED (band toward the SW side / LED anode net) | all bell/session sense dead — a silent failure until bench test; scrutinise these three hardest |
+| **D8, D9** 1N4148W (opto clamps) | band — must be **anti-parallel** to the opto LED (band toward the LED-anode / bus-line net) | both bell-sense channels dead — a silent failure until bench test; scrutinise these hardest |
 | **D1, D2, D3** 1N4148W (relay flybacks) | band direction | shorts the relay drive |
 | **D5** TPD2S017 (USB ESD) | pin-1 orientation — channels are in series with D± | USB dead / wrong clamp |
 | **D10** SMF5.0A (VBUS TVS) | band direction | shorts or leaves VBUS unclamped |
 | **Q1, Q2, Q3** 2N7002 | SOT-23 G/S/D | relay drive dead |
-| **OK1, OK2, OK3** LTV-217 optos | pin 1 | sense channels dead |
+| **OC1, OC2** LTV-217 optos | pin 1 | sense channels dead |
 | **K1, K2, K3** G6K-2F-Y relays | orientation | contacts swapped → opener/chime logic wrong |
 | **T1** SM-LP-5001 | pin 1 / winding A vs B | bus and codec windings swapped → codec sits on the bus side, isolation defeated |
 | **D6** power LED | anode/cathode | just won't light (harmless) |
-| **SW3, SW4, SW5** CAS-220TB1 | present + seated | a 180° rotation is harmless (polarity selector — COM stays on the centre pins) |
 
 ## Cost expectations
 
@@ -100,5 +98,5 @@ re-prepares it.
 
 Economic PCBA assembles the whole board — SMT, the THT connectors, no setup fee, no forced
 ≥70×70 rail panel — while JLCPCB handles fab and panelization of the small board. Watch the
-J1/antenna (bottom), J2 (top) and switch (left) edges at the Confirm gates, and triple-check
-D7–D9 polarity at the placement gate.
+J1/antenna (bottom) and J2 (top) edges at the Confirm gates, and triple-check
+D8/D9 polarity at the placement gate.
