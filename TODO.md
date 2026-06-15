@@ -13,20 +13,30 @@ is on the K1 talk strap, the K3↔K1 interlock is gone (K1/K2/K3 independent), a
 what's left is firmware + bench validation (below). ERC 0 errors; DRC clean (1 benign isolated-
 copper thieving-zone warning).
 
+## V4 main board — mechanical / enclosure fit (`kicad/doorbell.kicad_pcb`)
+
+Board widened to 64 mm to match the WF26 PCB; zones re-poured. Remaining enclosure-fit work:
+
+- [ ] **Add tooling holes.** Pre-place 1.152 mm tooling holes (JLCPCB's SMT-fixture size, through a
+      ~1.55 mm pad on both outer layers) at controlled positions, so JLCPCB's CAM doesn't drill its
+      own where they'd foul the antenna edge or a part keepout. On the V3 proto JLCPCB added holes
+      near the antenna and west of T1 — see DESIGN.md "Known minor items (accepted)".
+
 ## Bench measurements (settle the remaining open questions)
 
 Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/power-bank handheld;
 ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-coil reads, and don't
 tether it to a mains-earthed PC. Pair with a DMM.
 
-- [ ] **Line-4 hold-time:** does **P4 → P1** hold ~12 V through the *talk window*, not just the
-      ring? Listen needs the relay to stay pulled in. Measure idle / ringing / mid-talk-window.
+- [ ] **Line-4 hold level (mostly settled):** line 4 *must* hold through the session (else the WF26
+      relay drops and the handset goes dead), and V3 senses it fine — so it holds. Just confirm the
+      hold level keeps **OC1 above its detection threshold edge-to-edge** (relay hold V < pull-in V),
+      so OC1 is a clean session gate. Measure mid-talk-window P4→P1.
 - [ ] **Door-opener firing threshold** — the linchpin test. Bridge P2↔P3 with (a) a **dead
       short** and (b) **2.2 kΩ**; does each fire the TV20/S opener? Expected (per the genuine
       handset): short fires, 2.2 kΩ does *not*. This confirms the choices already in the design —
       **R_ot→0** (K2 door needs a short, done) and **2.2 kΩ-on-K1** (R16; talk's incidental bridge
       must *not* fire, done).
-- [ ] **ET button gating:** which physical terminal gates line 5 (Etagenruf) on this unit.
 - [ ] **C1 polarity** (+ assumed toward P5).
 - [ ] **(Nice-to-have) confirm the audio model** end-to-end: Etagenruf direct on line 5; gong
       DC→coil / AC→C1→speaker (expect **no** cone offset); talk mic→C1→P4→R1→line 3; listen
@@ -34,27 +44,72 @@ tether it to a mains-earthed PC. Pair with a DMM.
 
 ## Firmware (`firmware/doorbell-v4.yaml`)
 
-- [ ] **Session-active rework:** derive "session active" from the **Türruf (OC1) event + ~25 s
-      talk-window timer**, then re-add it as a second arm of the K3 gate and the cross-talk masks
-      (both are PTT-only now that the hardware session-sense is gone). Idle line 4 = 0 V confirmed
-      there's no session voltage to sense, so a timer off the OC1 ring event is the way.
+- [ ] **Session-active = OC1 high.** Line 4 holds through the session, so **OC1 (the Türruf sense)
+      stays asserted edge-to-edge — gate directly on OC1, no talk-window timer** (just debounce).
+      Re-add this session arm to the K3 gate (`doorbell_sound_state`) and the cross-talk masks (both
+      went PTT-only when the old session-opto was dropped; OC1 now supplies the session level).
 
 ## Audio path — investigate (settle TX/RX routing before trusting the half-duplex path)
 
-- [ ] **Outgoing (TX) audio path — confirm how/where injected audio reaches the door station.**
-      The board injects on P1/P5 → C1 (P5↔P4) → line 4; K1 also asserts the talk strap IN_P4↔P3 via
-      R16. With K3 now held off during PTT (line 4 continuous), bench-trace whether the door station
-      actually hears it, and by which route: does it ride **line 4 to the central unit**, or only the
-      **R16 strap to line 3** (the genuine S2/R1 path)? Inject a tone with PTT engaged and probe
-      lines 3 and 4 (vs P1). Settles whether the R16 talk strap is even needed for TX, or whether
-      keeping line 4 whole suffices. *(DESIGN.md: "TX-out reach")*
-- [ ] **Incoming (RX) audio — investigate tapping P1↔IN_P4 instead of P1/P5.** Today RX captures on
-      P1/P5 via T1, relying on the WF26's C1 to couple line-4 audio onto the speaker pair — so
-      breaking line 4 (K3 suppress) also kills RX, making **gong-suppress and RX mutually exclusive**.
-      A tap on **P1↔IN_P4** (the TV20/S-incoming side, *ahead* of K3) would see the incoming audio
-      directly and **independently of K3**, letting the board capture while the handset gong is
-      silenced. Bench-check the signal level/impedance on IN_P4↔P1 during a call vs the P1/P5 tap; if
-      better, plan a re-tap (T1 / codec front-end) on the next board spin. *(DESIGN.md: "TX-out reach")*
+Direction: re-tap the codec off the speaker pair (P1/P5) and onto the **speech pair — RX P1↔P2,
+TX P1↔P3 (ref line 1)** — speech is on 1/2/3, line 4 is only the gong — so the smart RX/TX become
+independent of line 4 / K3 and keep working with the gong muted. **Gated on OC1** (session = Türruf
+held; OC1 stays high, no timer), direction by PTT; **K1 retained for the talk handshake**. (The
+station handset's own audio still rides line 4 and goes quiet when muted — fine, nobody uses the
+handset then.) Half-duplex, so one isolation transformer switched between line 2 (RX) and line 3
+(TX) by a relay pole, or two; re-route the existing coupling caps + series Rs.
+
+- [ ] **Outgoing (TX) — drive line 3 directly + confirm the talk handshake.** Bench: in a talk
+      window, does driving **line 3** (vs P1) get audio to the door station, and **how is the TV20/S
+      told to switch to talk** (the 2.2 kΩ line-3 bridge, or something else)? Settles whether the
+      R16/K1 strap is needed for TX or whether driving line 3 + the handshake suffices.
+      *(DESIGN.md: "TX-out reach")*
+- [ ] **Incoming (RX) — tap line 2, not the speaker pair.** The listen voice is on **line 2** (ref
+      line 1), independent of line 4 / K3. Re-tap the codec from P1/P5 to line 2 so RX survives gong-
+      suppress (the P1/P5 tap dies when K3 breaks line 4). Bench-check level/impedance on line 2↔P1
+      during a call. *(DESIGN.md: "TX-out reach")*
+- [ ] **Re-check the DESIGN.md "TV20/S audio behaviour" section** — confirm the talk/listen/
+      Etagenruf/Türruf routing it describes is still correct against the current model + bench
+      findings (some of it predates the recent corrections). *(DESIGN.md: "TV20/S audio behaviour")*
+
+## Bell / session-sense simplifications (optional)
+
+- [ ] **Drop the opto reverse clamps.** V3 runs both channels with no reverse diode and detects
+      fine: **D8 (OC1 / line 4, DC) is droppable** outright; **D9 (OC2 / line 5, AC tone) is
+      optional** — the tone does reverse-bias the LED, so D9 is the only one with a real (if
+      V3-survivable) job. *(DESIGN.md: "Bell / session sense front-end")*
+- [ ] **(Future, replacement variant) fold session-sense into the Türruf relay, drop OC1.** Make
+      the dumb-intercom relay a **12 V DPDT, coil on IN_P4↔P1**, with a spare pole = 3V3→GPIO +
+      pull-down for a galvanically-isolated session/ring signal — replaces OC1 (+ its limiter, D8).
+      **Not adopted** — OC1 works; keep it for now. Bench caveat: parallel-mode coil draws ~15 mA
+      alongside the external WF26's. *(DESIGN.md: "Dual-mode variant — Add: the passive WF26 core")*
+
+## Relays → SSR (investigate)
+
+- [ ] **Determine which relays (K1 talk, K2 door-short, K3 chime-suppress; possibly the dumb-core
+      WF26_K1) could be replaced with SSRs.** Per relay, check:
+      - **Signal is bidirectional** — audio on lines 2/3 (K1) is AC, and the bus/door pulse (K2) and
+        line-4 gong DC+tone (K3) can swing either way, so only a **bidirectional MOSFET-output
+        PhotoMOS** (e.g. AQY21x / TLP24x) qualifies — **not** an AC-only triac/SCR SSR (those latch
+        on DC and can't switch line 4 or the door short).
+      - **Pole count** — confirm how many poles each relay actually uses (K2 looks like a single
+        P2↔P3 short; K3 a single series break in line 4; K1 the talk strap). A 1-pole use maps to one
+        PhotoMOS; any DPDT function that switches two things at once needs two devices or a topology
+        change.
+      - **Voltage / current / Ron** — the door-opener current through K2 and the 12 V bus must stay
+        within the device rating, and on-resistance must not degrade the audio level or the door pulse.
+      - **Isolation** — must preserve the bus↔logic galvanic barrier the relays currently provide.
+      Trade-off: SSRs are silent, contactless (no wear), need no coil/flyback, and are smaller — but
+      are single-pole, have higher Ron and some leakage, and cost more per pole. (WF26_K1 is passively
+      ring-driven and fail-safe when unpowered; only swap it if an SSR keeps that property.)
+- **Unpowered default state is the deciding axis** (reinforced by "S1/S2 + the unit must work with the
+  ESP dead"): an SSR is normally-**open**, so it only suits a relay whose de-energised state is open.
+  **K1/K2** are open-when-idle and their unpowered function is carried by the parallel manual switches
+  (S2 talk, S1 door) → SSR-friendly. **K3** must *pass* line 4 when unpowered (relay **NC**) or the
+  gong/station goes dead with no power → a plain SSR breaks fail-safe; K3 stays a relay.
+  *(DESIGN.md's relay-table row already reached this — K3 needs the NC contact, K2's land can refit to
+  a dead-bugged SOP-4 PhotoMOS. Its "no second board spin is planned" premise no longer holds, so the
+  question is genuinely reopened for the WF26-replacement board.)*
 
 ## Done (for reference)
 

@@ -1,6 +1,6 @@
 # Ordering Klingel V4 from JLCPCB (one assembled board)
 
-Goal: get **one assembled board** via JLCPCB **Economic PCBA**. The board is ~52 × 58 mm,
+Goal: get **one assembled board** via JLCPCB **Economic PCBA**. The board is ~64 × 60 mm,
 **4-layer**, all parts on the **top side**; J2 (6-way screw terminal) is through-hole and
 J1 (USB-C) has THT shell stakes — both **assembled by JLCPCB** (THT assembly — nothing is hand-soldered). Economic
 PCBA batch-panels small boards for us, so we don't supply a panel — but the bottom edge

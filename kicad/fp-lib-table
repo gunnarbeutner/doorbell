@@ -4,5 +4,6 @@
 	(lib (name "ES8311")(type "KiCad")(uri "${KIPRJMOD}/lib_audio/ES8311.pretty")(options "")(descr "ES8311 mono audio codec (easyeda2kicad import)"))
 	(lib (name "TPD2S017")(type "KiCad")(uri "${KIPRJMOD}/lib_usb/TPD2S017.pretty")(options "")(descr "TI TPD2S017 USB ESD clamp (easyeda2kicad import)"))
 	(lib (name "cas220tb1")(type "KiCad")(uri "${KIPRJMOD}/lib_switches/cas220tb1.pretty")(options "")(descr "NIDEC CAS-220 polarity-detect switch (easyeda2kicad import)"))
+	(lib (name "sppj223200")(type "KiCad")(uri "${KIPRJMOD}/lib_switches/sppj223200.pretty")(options "")(descr "ALPS SPPJ223200 momentary DPDT pushbutton (easyeda2kicad import)"))
 	(lib (name "SGM2212")(type "KiCad")(uri "${KIPRJMOD}/lib_power/SGM2212.pretty")(options "")(descr "SGM2212-3.3 LDO SOT-223 (board-authoritative copy; diverged from PCM_JLCPCB)"))
 )
