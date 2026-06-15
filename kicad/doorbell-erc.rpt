@@ -1,4 +1,4 @@
-ERC report (2026-06-15T15:42:59, Encoding UTF8)
+ERC report (2026-06-15T18:33:09, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
@@ -26,9 +26,6 @@ Report includes: Errors, Warnings
     ; warning
     @(63.50 mm, 90.17 mm): Symbol D5 Pin 4 [CH2_IN, Unspecified, Line]
     @(63.50 mm, 55.88 mm): Symbol J1 Pin B6 [D+, Bidirectional, Line]
-[lib_symbol_issues]: The current configuration does not include the symbol library 'wf26'
-    ; warning
-    @(128.27 mm, 229.87 mm): Symbol WF26_K1 [HJR-4102-N-12V]
 [pin_to_pin]: Pins of type Unspecified and Passive are connected
     ; warning
     @(186.69 mm, 233.68 mm): Symbol T1 Pin 4 [4, Unspecified, Line]
@@ -36,7 +33,7 @@ Report includes: Errors, Warnings
 [pin_to_pin]: Pins of type Unspecified and Passive are connected
     ; warning
     @(186.69 mm, 248.92 mm): Symbol T1 Pin 6 [6, Unspecified, Line]
-    @(128.27 mm, 217.17 mm): Symbol WF26_K1 Pin 8 [coil, Passive, Line]
+    @(118.11 mm, 237.49 mm): Symbol WF26_K1 Pin 8 [Passive, Line]
 [pin_to_pin]: Pins of type Unspecified and Passive are connected
     ; warning
     @(191.77 mm, 180.34 mm): Symbol U3 Pin 1 [CCLK, Unspecified, Line]
@@ -174,7 +171,7 @@ Report includes: Errors, Warnings
     ; warning
     @(355.60 mm, 218.44 mm): Symbol TP3 [TestPoint]
 
- ** ERC messages: 44  Errors 0  Warnings 44
+ ** ERC messages: 43  Errors 0  Warnings 43
 
  ** Ignored checks:
     - Global label only appears once in the schematic

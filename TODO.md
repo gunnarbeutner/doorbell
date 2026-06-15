@@ -37,7 +37,8 @@ tether it to a mains-earthed PC. Pair with a DMM.
       handset): short fires, 2.2 kΩ does *not*. This confirms the choices already in the design —
       **R_ot→0** (K2 door needs a short, done) and **2.2 kΩ-on-K1** (R16; talk's incidental bridge
       must *not* fire, done).
-- [ ] **C1 polarity** (+ assumed toward P5).
+- [ ] **C1 polarity** — set **+ toward P4** (the Türruf +12 V DC side; + toward P5 would reverse-bias
+      it through the held session). Schematic now reflects this; bench-confirm against the genuine unit.
 - [ ] **(Nice-to-have) confirm the audio model** end-to-end: Etagenruf direct on line 5; gong
       DC→coil / AC→C1→speaker (expect **no** cone offset); talk mic→C1→P4→R1→line 3; listen
       line 2→relay→P4→C1→speaker.

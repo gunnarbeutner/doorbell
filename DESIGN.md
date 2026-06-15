@@ -183,14 +183,14 @@ door-opener bridges **P2↔P3** (= the ÖT pair, lines 2/3) and the speaker sits
 | P1 *(line 1, common)* | J1.1, LS1.1, WF26_K1.8 (coil) |
 | P2 *(line 2)* | J1.2, S1.2, S1.5, S1.6 |
 | P3 *(line 3)* | J1.3, S1.3, S1.4, S2.3, S2.4 |
-| P4 *(line 4, Türruf)* | J1.4, C1.2(−), R1.1, WF26_K1.5 (coil), WF26_K1.6 (NO) |
-| P5 *(line 5, Etagenruf)* | J1.5, C1.1(+), LS1.2 |
+| P4 *(line 4, Türruf)* | J1.4, C1.1(+), R1.1, WF26_K1.5 (coil), WF26_K1.6 (NO) |
+| P5 *(line 5, Etagenruf)* | J1.5, C1.2(−), LS1.2 |
 | K1_COM | WF26_K1.1, WF26_K1.12, S1.1 |
 | R1_BRIDGE | R1.2, S2.2, S2.5 |
 | n/c | S2.1, S2.6, WF26_K1.7 (NC) |
 
-Topology: LS1 across **P1↔P5**; C1 across **P5↔P4**; the relay coil across **P1↔P4**; R1 from
-**P4** to R1_BRIDGE (the talk-switch common).
+Topology: LS1 across **P1↔P5**; C1 across **P5↔P4** (**+ toward P4**, the Türruf +12 V DC side);
+the relay coil across **P1↔P4**; R1 from **P4** to R1_BRIDGE (the talk-switch common).
 
 Key facts:
 
