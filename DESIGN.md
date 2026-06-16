@@ -35,8 +35,9 @@ The board taps into the 5-wire bus at the WF26 terminals to:
 1. **Sense** when bells are rung (lines 4 and 5 carry ~12VDC bell signals)
 2. **Trigger the door opener** by simulating the ÖT button press (bridge P2↔P3)
 3. **Suppress the chime** by switching line 4 (the Türruf signal)
-4. **Half-duplex audio** (V4): capture/inject on the bus **speech pair** (RX line 2 / TX line 3),
-   with a virtual-PTT relay emulating the handset's talk switch (analog front-end provisional)
+4. **Half-duplex audio** (V4): capture/inject on the bus **speech pair** (RX line 2 / TX line 3) via
+   **one** isolation transformer steered between the two lines by **K1's second pole** (the PTT relay
+   does the routing); talk audio is driven onto line 3 directly (analog component values bench-gated)
 
 The board never touches the 8–12VAC door opener current — that is switched entirely
 inside the TV20/S. All relay contacts carry low-voltage signalling only (≤12VDC,
@@ -59,12 +60,12 @@ into the WF26 — see "Why line 4 needs two pins" below.
 
 | J2 pin | TV20/S line | Signal | Role in our circuit |
 |-----|-------------|--------|---------------------|
-| P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Opto LED return: each LED → its own 5.1 kΩ limiter → P1. T1 winding A leg |
-| P2 | Line 2 | ÖT door-opener pair with line 3; listen-PTT leg | Relay K2 **COM**; K1 **NO** (listen leg) |
-| P3 | Line 3 | ÖT door-opener pair with line 2; talk-PTT leg (P4↔P3) | Relay K2 **NO** → P3 (direct short); K1 talk strap via **R16 (2.2 kΩ)** → P3 |
+| P1 | Line 1 | Common reference (all bell/speech ref to line 1) | Opto LED return: each LED → its own 5.1 kΩ limiter → P1. **T1 bus-winding cold leg (pad 6)** = common return |
+| P2 | Line 2 | ÖT door-opener pair with line 3; listen leg | Relay K2 **COM**; **K1 pole-B NC** — steers T1 here at rest = **listen / RX** |
+| P3 | Line 3 | ÖT door-opener pair with line 2; talk leg | Relay K2 **NO** → P3 (door short); **K1 pole-B NO** drives T1's audio here when energised = **talk / TX**; **K1 pole-A** talk strap via **R16 (2.2 kΩ)** → P3 (the handshake) |
 | P4 | Line 4 (WF26 side, J2.4) | Türruf path to the handset | Relay K3 **COM** → WF26 terminal 4. K3 opens this to suppress the chime |
-| IN-P4 | Line 4 (TV20/S side, **incoming**, J2.6) | Türruf — ~12 VDC house-door gong, **in**; also the PTT handshake line | Relay K3 **NC** → OC1 sense **and** K1 **COM**. K3 NC retains the TV20/S signal when K3 is energised |
-| P5 | Line 5 | Etagenruf — floor/apartment call (tone) | OC2 sense; T1 winding A leg |
+| IN-P4 | Line 4 (TV20/S side, **incoming**, J2.6) | Türruf — ~12 VDC house-door gong, **in**; also the PTT handshake line | Relay K3 **NC** → OC1 sense **and** K1 **pole-A NO**. K3 NC retains the TV20/S signal when K3 is energised |
+| P5 | Line 5 | Etagenruf — floor/apartment call (tone) | OC2 sense |
 
 **Relay K2** (P2 on COM, NO → P3) bridges **P2↔P3 directly** when energised → TV20/S activates
 the door opener (a dead short, no series resistor). **Relay K3** (P4 on COM, IN-P4 on NC) breaks
@@ -302,17 +303,17 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | Relay driver | **Discrete: 2N7002 + 1N4148W flyback + 10 k gate pull-down** | Pull-down ⇒ relays default OFF at boot |
 | Opto polarity | **Fixed: LED anode → bus line, cathode → R_lim → P1** + **anti-parallel 1N4148W clamp** across each LED | Bus is taken to drive active lines **positive w.r.t. common (P1)**, so polarity is hardwired (no switch) — bench-confirm per channel by ringing each bell. The clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on the AC tone content |
 | WF26 connector | **6-way screw terminal, 3.5 mm** (THT) | See "WF26 connector"; 6-way because line 4 needs in + out for the series chime-break |
-| USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers (D+/D− on B.Cu over GND) |
-| Layers | **4-layer** (F.Cu / +3V3 / GND / B.Cu) | Solid planes; GND on In2 (under B.Cu) so the USB D+/D− pair references GND |
+| USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers |
+| Layers | **4-layer** | the USB Type-C single-row escape needs the extra layers + a solid plane reference; see "PCB — layout constraints & rationale" |
 | Power | **USB-C 5 V** → SS14 reverse-protection Schottky → **SGM2212-3.3** low-dropout LDO (C3294699) | The ~0.45 V Schottky drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
-| Audio | **Half-duplex path on-board**: ES8311 mono codec + SM-LP-5001 isolation transformer + K1 virtual-PTT relay; RX/TX tap the **speech pair (P1↔P2 / P1↔P3)**, gated by **OC1** (session = Türruf held, see "Audio path"); analog front-end provisional | The bus is half-duplex by design (single LS1 transducer) ⇒ no echo cancellation needed ⇒ within the C6's reach |
+| Audio | **Half-duplex path on-board**: ES8311 mono codec + one SM-LP-5001 isolation transformer, its bus winding **steered by K1's second pole** between line 2 (RX, at rest) and line 3 (TX, energised); RX/TX tap the **speech pair (P1↔P2 / P1↔P3)**, gated by **OC1** (session = Türruf held, see "Audio path"); analog component values bench-gated | The bus is half-duplex by design (single LS1 transducer) ⇒ no echo cancellation needed ⇒ within the C6's reach |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
 ### ESP32-C6 GPIO map (matches `doorbell_design.py` NETS and `firmware/doorbell-v4.yaml`)
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
-| IO20 | 18 | K1 drive — virtual PTT (talk: IN_P4↔P3 via R16 2.2 kΩ) | out | series R (R6) gate-side; 10 k pull-down ⇒ off at boot |
+| IO20 | 18 | K1 drive — PTT **and** audio steer (pole A: IN_P4↔P3 via R16 2.2 kΩ = talk handshake; pole B: routes T1 → line 3 talk / line 2 listen) | out | series R (R6) gate-side; 10 k pull-down ⇒ off at boot |
 | IO21 | 19 | K2 gate — front door buzzer / ÖT (bridge P2↔P3 direct) | out | 10 k gate pull-down ⇒ off at boot |
 | IO22 | 20 | K3 gate — chime suppress (break IN_P4→P4) | out | 10 k gate pull-down ⇒ off at boot |
 | IO3  | 26 | OC1 collector — house bell (Türruf, IN_P4) | in | internal pull-up (firmware) |
@@ -392,30 +393,37 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
 ### Relays
 
 ```
-K2 (door opener / ÖT):    COM=P3 (direct), NO=P2, NC open — energise to bridge P2↔P3 (direct short)
-K3 (chime suppress):      COM=P4, NC=IN_P4               — at rest passes the Türruf; energise to break it
-K1 (virtual PTT):         COM→R16(2.2k)→P3, NO=IN_P4, NC open — energise to tie IN_P4↔P3 through R16 = talk
-(K1 and K2 are pin-3/4 swapped vs the part's COM/NO labels — both poles are symmetric bridges, done for routing.)
+K2 (door opener / ÖT):    pole A: COM=P3 (direct), NO=P2, NC open — energise to bridge P2↔P3 (direct short)
+K3 (chime suppress):      pole A: COM=P4, NC=IN_P4               — at rest passes the Türruf; energise to break it
+K1 (PTT + audio steer):   pole A: COM→R16(2.2k)→P3, NO=IN_P4, NC open — energise to bridge IN_P4↔P3 through R16 = talk handshake
+                          pole B: COM=T1_BUS (T1 pad 4), NC=P2, NO=P3 — steers the transformer: at rest→line 2 (RX), energised→line 3 (TX)
+(K2/K3 pole A is pin-3/4 swapped vs the part's COM/NO labels — the bridge is symmetric, done for routing.)
 ```
 
 - **G6K-2F-Y pinout:** coil 1/8; pole A COM=3, NC=2, NO=4; pole B COM=6, NC=7, NO=5
   (datasheet-verified).
-- **Talk strap (K1).** Talk is **P4↔P3**, so K1 closes **IN_P4↔P3 through R16 (2.2 kΩ)** when
-  energised. K1's pins 3/4 are swapped vs the part's COM/NO labels (COM = pin 3 → R16 → P3; NO =
-  pin 4 → IN_P4): both poles are symmetric, so the function is identical and it routes cleanly
-  (K2 is swapped the same way). K1, K2 and K3 are driven independently (no interlock). The board RX/TX
-  taps the bus **speech pair** (RX P1↔P2, TX P1↔P3; see "Audio path"). The firmware now keeps **K3
-  de-energised whenever PTT or a session is active**, so line 4 stays continuous during talk —
-  whether the injected audio then actually reaches the door station is the open **outgoing-path**
-  question (see "TX-out reach").
-- **K1's NC is deliberately open** (not wired): a contact onto P3 here would permanently
-  strap P4↔P3 (= talk) and fight the WF26's own S2.
-- **K1 armature feedback: not fitted, by decision.** Wiring K1's spare pole B to a GPIO
-  would only catch a welded/stuck contact — not a realistic failure mode for bifurcated
-  gold contacts switching µA–mA dry loads — and a stuck-closed K1 only holds the talk strap
-  (IN_P4↔P3 via R16, 2.2 kΩ), which the handset's own S2 asserts on every call anyway, too
-  soft to fire the opener. K1 pole B stays spare. (If telemetry is ever wanted: K1.6 COM →
-  spare GPIO w/ internal pull-up, K1.5 NO → GND; LOW = engaged.)
+- **K1 does two jobs at once — both poles work during talk.**
+  - **Pole A — talk handshake.** Energised, it bridges **IN_P4↔P3 through R16 (2.2 kΩ)** — the same
+    2.2 kΩ line-4↔line-3 strap the handset's S2 asserts, which is how the TV20/S is told "talk".
+    Pins 3/4 are swapped vs the part's COM/NO labels (COM = pin 3 → R16 → P3; NO = pin 4 → IN_P4);
+    the bridge is symmetric so it routes cleanly (K2 is swapped the same way).
+  - **Pole B — audio steering.** Because K1 is energised exactly during talk, its second pole routes
+    the transformer for free, in lock-step with direction: **COM = T1_BUS (T1 pad 4), NC = P2, NO =
+    P3.** At rest (listen) T1 sits across **P1↔P2** = RX; energised (talk) it sits across **P1↔P3** =
+    TX. No extra relay, GPIO or firmware — the steering *is* the PTT state.
+- **Why TX drives line 3, not line 4.** A WF26 is always on the bus — the on-board core (links in) or
+  a real handset in parallel (links out) — and it hangs **C1 (22 µF) in series with the 16 Ω speaker
+  across line 4**, i.e. a **~20–30 Ω near-short to common across the voice band**. Injecting on line 4
+  would dump T1's 600 Ω drive into that; line 3 is light (the TV20/S amp input ∥ R16's 2.2 kΩ), so
+  pole B drives **line 3 directly** while pole A's R16 strap supplies the handshake. This also lets
+  the board talk louder than the handset's own mic-through-2.2 kΩ path.
+- K1, K2 and K3 are driven independently (no interlock). The firmware keeps **K3 de-energised
+  whenever PTT or a session is active**, so line 4 stays continuous during talk. Whether the TV20/S
+  then forwards the line-3 audio to the door station once it sees the R16 bridge is the open **TX-out
+  reach** question (see "Audio path"). **Both K1 poles are now in use, so there is no spare pole for
+  armature/stuck-contact telemetry** — acceptable: a welded K1 only holds the talk strap and the
+  line-2/3 steering, both of which the handset asserts on every call anyway, too soft to fire the
+  opener.
 
 ### Relay driver subcircuit (per channel)
 
@@ -445,20 +453,13 @@ VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all protection — a clamping D10
 
 ### Galvanic isolation (preserve in layout)
 
-The **bus side** (P1–P5, IN_P4, P4, T1 winding A) is galvanically separate from the **logic
+The **bus side** (P1–P5, IN_P4, P4, T1's bus winding pads 4/6) is galvanically separate from the **logic
 side** (GND / +3V3 / +5V). The only crossings are *through* the optocouplers (input), the
 relay coil↔contact air gaps (output), and T1's winding-to-winding isolation (audio;
 SM-LP-5001 dielectric strength 2000 VRMS). **P1 is the bus common, not board GND.**
 (Voltages are low — 12 VAC bus — so this is about hum/ground-loops more than shock.)
 
-> **4-layer caveat:** the GND/+3V3 planes span the whole board, so bus-side traces run over
-> logic-plane copper. Isolation is intact (the planes don't bridge the domains; the bus
-> domain's only on-board path to logic is capacitive), and the coupling is small: the
-> longest bus runs (P1/P5, ~120 mm of 0.5 mm trace over 0.21 mm prepreg) come to ≈10 pF
-> ≈ 300 MΩ at 50 Hz — on-board hum injection is negligible; ground-loop exposure lives in
-> the external wiring, not the stack. The J2 pad row's merged antipads already form a
-> ~21 mm plane slot under the terminal block (both planes), thinning copper under the bus
-> entry. Revisit with deliberate plane cut-outs only if hum shows up in practice.
+Bus-side nets run over the logic planes, but the two domains never bridge (the bus's only on-board path to logic is capacitive, and small), so ground-loop exposure lives in the external wiring, not the board stack.
 
 ### BOM
 
@@ -470,172 +471,34 @@ stock/eligibility checks at order time.
 
 > J1/J2 are through-hole but **assembled by JLCPCB** (THT assembly), not hand-soldered.
 
-### PCB — stackup, floorplan & routing
+### PCB — layout constraints & rationale
 
-**4-layer stack:** `F.Cu` (signals + parts) / `In1.Cu` = solid **+3V3** plane / `In2.Cu` =
-solid **GND** plane / `B.Cu` (signals). GND on In2 (under B.Cu) so the USB D+/D− pair
-routed on B.Cu references GND. +5V is a short surface trace. The board is a 4-layer stack; fab gerbers include
-the inner layers.
+Physical layout — traces, vias, copper zones, component positions, the 4-layer stack — lives in the
+authoritative `kicad/doorbell.kicad_pcb`; this section keeps only the decisions and rules behind it.
+The board is **4-layer**, ~**64 × 60 mm**, all parts on the top side, and **100 % hand-routed in
+KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails if any net is unrouted.
 
-**Why 4-layer.** J1 (USB4105) is a single-row SMD Type-C: D+/D−/CC/VBUS escape from one
-fine-pitch interleaved pad row, which leans on the 4-layer stack — the D+/D− pair routes
-together on B.Cu over the GND plane, and the remaining escapes fan out on F.Cu/B.Cu.
-Placement around J1 must leave the escape fan room (re-verify the hand-routed escape
-fan after any reshuffle).
-
-**Why this plane assignment (not GND/3V3 swapped, a 5V plane, or a split In1).**
-B.Cu is load-bearing (USB pair, P1/P5 weave, IN_P4), so a dedicated 5V
-plane would cost a routing layer and break the J1 escape fan; +5V's loads (LDO in,
-three relay coils + flybacks) are tens of mA at ms timescales, so a 0.5 mm trace is
-electrically over-spec'd and a plane buys nothing. GND stays on In2 (not In1)
-because USB on B.Cu is the only net that needs a direct plane reference; F.Cu
-signals referencing the well-decoupled +3V3 plane is fine. A 3V3/5V split of In1
-(5V island under the relay/LDO cluster) was considered and rejected: the boundary
-would run near the audio nest (return-path cut where it matters most) and the spine
-works as-is. Fallback if a re-floorplan ever breaks the +5V spine's threading
-corridors: 5V island on In1 with the seam kept clear of the MIC/SEC/OUT region —
-and combine it with the bus-side plane relief noted above.
-
-**Power routing.** The power nets are hand-routed: **+5V** is a single 0.5 mm F.Cu
-spine (D4 → C_in → LDO in, then up to the three relay coils + flybacks). GND/+3V3
-reach the In2/In1 planes through 0.2 mm stubs + vias at every SMD pad; U2's tab and
-J1's shield stakes are PTH (barrel-connected). **Neither exposed pad carries vias**
-(solder-wicking avoidance): U1's and U3's EPADs are laced and bonded to the planes
-through an adjacent pad's via, and no-via rule areas over both pad fields keep them
-hole-free.
-
-**Plane integrity & thieving (measured from the fill).** Both inner planes are solid
-apart from the antenna keepout (all-layer, x≤37.1/y≥63.5) and 81 via/PTH piercings;
-merging overlapping antipads (0.5 mm clearance, 0.25 mm min web) leaves ~9 slots per
-plane. Notable: the J2 pad row (~21 mm slot at y=15, both planes — crossed only by bus
-nets, which don't return through the planes); the USB pair's two via transitions (~3 mm
-each — the one near U1 is crossed on F.Cu by I2C_SCL/I2S_BCLK/I2S_MCLK, a ~1.5 mm In1
-return interruption, accepted at those edge rates); the rest are benign 2-via chains.
-Copper thieving (`route.py`): a priority-1 GND zone plus a priority-0 floating zone per
-outer layer. B.Cu float is empty (the GND thieve reaches everything); F.Cu float is a
-few dozen sub-2 mm² slivers, each 0.21 mm over the solid +3V3 plane so lateral pickup
-is plane-shunted (~10:1) — audio/hum coupling negligible. Every larger pocket is
-grounded by a hand-placed GND stitching via in KiCad (relay/bus region, opto
-block, OC2 jumper, bus corner, NW of U3, SE of J1, the opto-output column, and the
-three gaps of the OUT/MIC column under T1, where the grounded strips also guard the
-OUT pair from the MIC pair). `route.py` enforces a hard sliver limit post-fill: **the build FAILS on any
-float island ≥ 2 mm² or ≥ 10 mm long** (the length test catches thin slivers that
-dodge the area test). Sub-limit slivers are electrically inert and pass without
-ceremony — there is no waiver mechanism.
-Vias are never auto-placed: the remedy for an unwanted island is a hand-placed GND
-stitching via in KiCad (the pocket then joins the GND thieve on the next fill) or
-shrinking the pocket. `route.py` only refills the existing zones (idempotent) and
-checks — it never creates copper.
-
-**The board is 100% hand-routed** in KiCad — every net is hand-placed geometry in
-`kicad/doorbell.kicad_pcb`.
-`route.py` refills the inner planes and checks the ratsnest, FAILING the build
-if any connection is unrouted — missing copper is routed in KiCad.
-
-**Routing + plane recipe.** All copper is hand-placed in KiCad; the inner planes
-(+3V3 on In1, GND on In2) are copper-fill zones in the board. `route.py` refills
-every zone and verifies connectivity. Result: **0 unconnected, 0 DRC**.
-
-**Floorplan** (positions live in the authoritative `doorbell.kicad_pcb`; the audio block is
-tightly re-packed, so on-board positions differ from any tidy grid). Board ≈ **64 × 60 mm**, all parts on
-the **top side**. **U1 bottom-left, rotated 180°, antenna flush on the bottom edge** over a
-copper keepout; **J1 (USB-C) on the bottom edge** right of the antenna, mouth overhanging;
-**J2 (WF26 terminal) flush on the top edge**, right side; the **opto sense block** (the two
-optos, clamps, limiters, pull-ups) fills the upper-left; the **relay row** (K3, K2, K1 + drivers) runs across the
-upper middle; the **audio cluster** (U3 + support passives, T1 below it) sits mid-board
-between U1 and the LDO/USB area; LDO + buttons + power LED fill the right/centre gaps.
-
-**Edge handling** (`EDGE_FLUSH` / `EDGE_OVERHANG` in `doorbell_design.py`): J1 and U1 are
-pinned flush to the bottom edge (J1 sits on its footprint's recommended PCB-edge line,
-shell mouth protruding ~1.3 mm so a cable seats fully), J2 flush to
-the top edge; the remaining edges get a 1 mm margin off the tight bounding box.
-`check_pcb.py` verifies the overhangs and that every other footprint stays inside the
-outline.
-
-**Antenna keepout:** an all-copper rule area (no tracks/vias/plane pour)
-±15 mm either side of the WROOM-1 antenna, from just below U1's south pad row to the
-bottom edge — clears the GND/+3V3 planes around the antenna. Fiducial placement avoids it.
-
-**Fine-pitch clearance:** the ES8311's 0.40 mm pitch can't be routed under a 0.2 mm
-net-class clearance (a 0.6 mm via can't sit beside a fine-pitch pin), so routing clearance
-is set to JLCPCB's published **0.127 mm** capability — globally, since the tighter spacing
-spreads board-wide. A global rule in `kicad/doorbell.kicad_dru` keeps KiCad's DRC
-consistent; hole-to-copper is 0.2 mm to match. Trade-off: the
-board routes at the fab limit rather than keeping a clearance design margin.
-
-**Track widths:** signal nets route at the 0.2 mm default; the current-carrying nets
-are widened to **0.5 mm** in KiCad: `+5V` (LDO input — ESP32
-WiFi-TX peaks ~350 mA — plus three relay coils) and every net at WF26-bus potential —
-`P1/P2/P3/P4/P5/IN_P4` (line 4 carries the TV20/S's Türruf signal through K3's NC
-contact; the "gong" is an electronically generated tone played through the WF26's 16 Ω
-speaker — there is no chime solenoid — so the worst-case bus current is bounded by the
-speaker drive, well under 1 A), `TALK_BRIDGE` (K1↔R16↔P3, also bus potential), and the opto sense legs up to the LED
-(`OCx_JP`, `OCx_CATH`, `OCx_RET`). The opto transistor sides (`OCx_OUT`, `OC_EMIT`),
-the transformer secondary (`SEC_*`/`OUT_*`/`MIC_*`), and the relay gate-drive nets
-(`GATE1`/`GATE1_DRV`/`GATE2`/`GATE2_DRV`/`GATE3`/`GATE3_DRV`) are not bus potential and
-stay at 0.2 mm. KiCad's DRC does not enforce these widths.
-
-**Routing notes (rationale; the trace geometry itself lives in the board).** A few
-design choices behind the layout, worth keeping even though the coordinates are now in
-`kicad/doorbell.kicad_pcb`:
-- **Pin assignment exploits the C6 GPIO matrix** so the escape fans route crossing-free:
-  the GPIO/relay-driver lanes leave U1 in west→east target order, and an I²C/I²S pin swap
-  makes U3's control lanes land in **SDA, SCL, MCLK, BCLK** order with no crossings.
-- **The floating audio front-end** (T1 secondary → R24–R27 series resistors → coupling
-  caps) keeps each direction's legs **paired tightly (~0.329 mm)** to minimise the audio
-  pair's pickup loop; the W→E resistor order is chosen so the whole nest routes without
-  crossings. T1's bus winding owns the east pads (winding swap/polarity are inaudible).
-- **The WF26 bus group** (P1–P5, IN_P4) and the opto block are fully hand-routed at bus
-  width (see **Track widths**).
-To free the NE corridor, the ESP-side USB pair takes a south
-detour on B.Cu: straight stubs on the pad rows into vias in line with U1 pads 14/13
-(DM's on its vertical at x=23.85; DP's 0.58 mm east so its drop clears DM's via,
-converging to the 0.329 pair pitch just below), south beside GPIO8's B.Cu wall, then
-45° SE into the eastbound pair at y=58.85/59.179 under T1 to the TPD2S017-side vias.
-
-Build result: 0 errors, 0 unconnected, DRC clean (only the intentional
-thieving-zone isolated-copper warning). R12 (GPIO8 strap
-pull-up) lives SE of U1 beside C3, GPIO8 pad south onto a B.Cu via — GPIO8 crosses
-under the I2S fan corridor from a via next to U1 pad 10 — and +3V3 pad north, tapping
-the power rail that now runs in-line from U1 pad 2 through C6's and C3's +3V3 pads
-into R12 (U1 pad 1 likewise feeds C6/C3's GND pads). The audio block anchors off U1's
-east edge (constant chosen to preserve its position from the R12-anchored era).
-The ESP-side USB pair (U1 pads 14/13) is fully hand-routed: east into a B.Cu via pair
-at x=24.5, across B.Cu (over the In2 GND plane) as a tight pair — 0.327 mm
-perpendicular on the 45° diagonals, 0.329 mm on straights — surfacing in a second via
-pair west of the TPD2S017 and fanning into D5 pins 6/1. Via pairs sit 0.8 mm apart; the
-partner trace stays on a wider offset past each via (0.166 mm trace-to-via copper gap)
-before converging. The connector side is hand-routed too (F.Cu): D+/D− each
-tie their A/B pad pair together and rise into the TPD2S017 inputs — DP joins A6↔B6
-with a shallow U just south of the pad row and climbs a vertical at x=45.5 into D5
-pin 4; DM tees at (44.152, 61.598), joining B7/A7 and running one 45° into D5 pin 3 —
-and the CC lines wrap around J1's south side as two nested staircases (CC2 inside,
-CC1 outside) up into their pulldowns. With these, every USB net (VBUS, VBUS_F, D±
-both sides, CC1/CC2) is hand-routed.
-
-**DRC** limits live in `kicad/doorbell.kicad_dru`, grounded in JLCPCB's published
-capabilities (e.g. 0.127 mm spacing, 0.3 mm board-edge copper).
-
-**Fiducials:** three `Fiducial_1mm_Mask2mm` marks (1 mm copper / 2 mm mask)
-in an **asymmetric triangle** so the pick-and-place camera resolves orientation
-unambiguously. The search grows inward from three corners (top-left, bottom-left,
-bottom-right; top-right deliberately empty) on a 0.5 mm grid and takes the first spot
-≥2 mm inside the board edge that clears every component **courtyard** by ≥1.4 mm and every
-pad by ≥1.5 mm. JLCPCB adds its own panel/rail fiducials regardless — these are
-belt-and-suspenders local references. Gotchas handled in code, so DRC stays 0/0:
-
-- The search clears each footprint's *courtyard*, not just its pads — pad-only clearance
-  can tuck a mark under a connector shell (invisible to the camera). The fiducial's own
-  courtyard is kept so DRC courtyard-overlap catches regressions.
-- The footprint is bare copper, not a placed part → `FP_EXCLUDE_FROM_POS_FILES` +
-  `FP_EXCLUDE_FROM_BOM`, so it never enters the CPL (`jlcpcb_cpl.py` skips that attribute)
-  or the BOM; its netless pad is exempted from `check_pcb.py`'s "every pad in a net" check.
-- The stock fiducial pad's 0.6 mm local clearance override is dropped (inherit the
-  board default) so DRC doesn't flag the gap on the netless pad.
-- A minimal **F.Cu-only** keepout (r = 1.1 mm = mask radius + margin) around each mark
-  stops tracks from running under the mask window (two nets in one exposed
-  aperture = solder-mask bridge). Front-side only, so B.Cu/inner planes stay free; the
-  fiducial's own pad is allowed inside.
+- **Why 4-layer.** J1 (USB4105) is a single-row SMD Type-C: D+/D−/CC/VBUS all escape from one
+  fine-pitch interleaved pad row, which needs the extra layers — a plane reference for the USB pair
+  and room to fan the rest out. A 2-layer board can't escape it cleanly.
+- **Isolation is a layout constraint** (see "Galvanic isolation"): bus-side nets keep to their own
+  copper and cross to logic only through the optos, relay contacts and T1 — no plane bridges the
+  domains, and **P1 is the bus common, not board GND**.
+- **No vias in exposed pads** (solder-wicking avoidance): U1's and U3's EPADs carry no vias; they
+  bond to the planes through adjacent copper. General V4 rule: vias must not overlap SMD pads.
+- **Fine-pitch clearance.** The ES8311's 0.40 mm pitch won't take the default net-class clearance, so
+  routing clearance is set globally to JLCPCB's published 0.127 mm capability (hole-to-copper 0.2 mm),
+  pinned in `kicad/doorbell.kicad_dru`. Trade-off: the board routes at the fab limit, not with margin.
+- **Bus-width policy.** Nets at WF26-bus potential (P1–P5, IN_P4, TALK_BRIDGE) and +5V are routed
+  wider than signal nets — the bus carries the Türruf and the door/relay currents, +5V feeds the
+  relay coils plus the ESP32's WiFi-TX peak. KiCad's DRC does not enforce this; it's a routing rule.
+- **Pin assignment exploits the C6 GPIO matrix** (plus an I²C/I²S swap) so U1's and U3's escape fans
+  route without crossings — see the GPIO map.
+- **Copper thieving:** both outer layers carry fill zones; the build refills and checks them, and any
+  oversized floating island is grounded with a hand-placed GND stitching via in KiCad (vias are never
+  auto-generated).
+- **Fiducials:** three `Fiducial_1mm_Mask2mm` marks in an asymmetric triangle so the pick-and-place
+  camera resolves orientation; excluded from the BOM and CPL.
 
 ### Build / test notes
 
@@ -650,20 +513,21 @@ belt-and-suspenders local references. Gotchas handled in code, so DRC stays 0/0:
 
 ---
 
-## Audio path (half-duplex; analog front-end provisional)
+## Audio path (half-duplex; analog values + TX-out reach bench-gated)
 
 **The bus is half-duplex by design — this simplifies everything digital.** Speech is on the
 **1/2/3 group** (the STR *Sprechverkehr*): **listen on line 2, talk on line 3, ref line 1 (common)**.
 The board taps that pair directly:
 
 - **RX (listen):** capture **P1↔P2** — door-station → us.
-- **TX (talk):** drive **P1↔P3** — us → door-station. K1 still asserts the talk handshake to the
-  TV20/S. ⚠ The exact handshake and the end-to-end TX reach are bench-gated — see "TX-out reach."
+- **TX (talk):** drive **P1↔P3** — us → door-station. ⚠ Whether the TV20/S then forwards line-3
+  audio to the door once it sees the talk bridge is bench-gated — see "TX-out reach."
 
 Tapping 1/2/3 (not the WF26 *speaker* pair P1/P5) keeps the smart audio **independent of line 4 /
 K3 / the relay**, so it works with the gong muted and is identical in replacement or parallel mode.
-**The committed netlist still taps P1/P5 via T1 — a provisional first cut; re-tap to 2/3** (one
-isolation transformer switched between line 2/line 3, or two — see "TX-out reach").
+**One** isolation transformer (T1) carries both directions; its bus winding is **steered by K1's
+second pole** — line 2 at rest (RX), line 3 when K1 is energised for talk (TX). No second
+transformer and no analog switch: the PTT relay already moves with direction.
 
 Consequences:
 - **No acoustic echo cancellation.** Both directions are never streamed at once, so AEC is moot —
@@ -692,23 +556,23 @@ needed (just debounce). Audio is gated on the session, direction by K1:
   DGND=5, SCLK=6, ASDOUT=7, LRCK=8, DSDIN=9, AGND=10, AVDD=11, OUTP/N=12/13,
   DACVREF/ADCVREF/VMID=14/15/16, MIC1N/P=17/18, CDATA=19, CE=20 (pull-down → addr 0x18),
   EP=GND.
-- **T1 = Bourns SM-LP-5001** (600:600 1:1 line/audio transformer; LCSC C7503474), winding A
-  (pads 1,3) currently across **P1/P5** (the WF26 speaker pair). **Provisional** — this rides the
-  handset's C1/relay path, which ties it to line 4 (dies under gong-suppress). **To be re-tapped to
-  the speech pair** (RX P1↔P2, TX P1↔P3), see "TX-out reach." Winding B (pads 4,6) is the secondary;
-  centre taps 2,5 = NC.
-- **Analog:** ES8311 differential OUTP/OUTN and MIC1P/MIC1N, AC-coupled (C_op/C_on/
-  C_mp/C_mn, 1 µF) to T1 winding B. Out and mic share the secondary; **firmware mutes the
-  idle direction** (standard ES8311 half-duplex), so no analog switch is needed and K1
-  stays PTT-only.
+- **T1 = Bourns SM-LP-5001** (600:600 1:1 line/audio transformer; LCSC C7503474). **Codec-side
+  winding = pads 1,3** (SEC_A/SEC_B → the R/C front-end → ES8311); **bus-side winding = pads 4,6**:
+  pad 6 = **P1** (common, cold leg), pad 4 = **T1_BUS**, the hot leg → **K1 pole-B COM**, steered to
+  **line 2 (RX, at rest)** or **line 3 (TX, talk)**. Centre taps 2,5 = NC.
+- **Analog:** ES8311 differential OUTP/OUTN and MIC1P/MIC1N, AC-coupled (C14/C15, C16/C17) through
+  series resistors (R24/R25 on the DAC legs, R26/R27 on the MIC legs) to T1's **codec-side winding**.
+  Out and mic **share that one winding** (a 2-wire hybrid); **firmware mutes the idle direction**
+  (standard ES8311 half-duplex). Sidetone — the ADC hearing the DAC during talk — is harmless here:
+  talk audio is discarded while transmitting and the DAC is muted while listening, so the shared
+  winding never needs a balance/hybrid network or AEC.
 - **Support net:** PVDD/DVDD/AVDD → +3V3 with decoupling; DACVREF/ADCVREF/VMID reservoir
   caps; CE/DGND/AGND/EP → GND. Symbols/footprints/3D imported with `easyeda2kicad` into
   `kicad/lib_audio/`.
 - **EP grounding (no vias):** the QFN-20 centre EP carries no thermal vias — paste
   printed over open via holes wicks solder away from the joint, and the codec's milliwatt
   dissipation needs no dedicated path to the inner plane. The EP (and pin 10/AGND, which
-  ties into it) grounds through the F.Cu GND pour; DRC confirms full connectivity. U3's
-  imported package silk is stripped (it crossed pads → silk_over_copper).
+  ties into it) bonds to GND through adjacent copper.
 
 **Is leaving LS1 connected electrically safe? — Yes.** LS1 is a passive 16 Ω transducer
 the TV20/S is already designed to drive; a high-Z RX tap doesn't load it (handset keeps
@@ -728,18 +592,14 @@ into 16 Ω.
   Verify levels on the bench; values are 0603 swaps if the attenuation needs trimming.
 - Coupling-cap values, MIC1P/N input **biasing**, and whether to tie unused analog to
   AGND — all datasheet-typical, unverified on hardware.
-- **⚠ TX-out reach / audio tap — re-tap the codec to the speech pair (lines 2/3).**
-  Today the codec rides the **speaker pair (P1/P5)** via T1, leaning on the WF26's C1/relay path:
-  it injects P5→C1→P4 and captures whatever reaches the speaker. That ties the smart audio to
-  **line 4** — so **muting the gong (K3 breaks line 4) also kills the codec's RX/TX**, and the
-  talk-out route is unconfirmed. But the **voice isn't on line 4**: per the STR *Sprechverkehr*
-  (lines 1/2/3), **listen is line 2, talk is line 3** (line 4 is only the gong). So the fix is to
-  **re-tap the codec onto the speech pair — RX ← line 2, TX → line 3 (ref line 1)** — which is
-  independent of line 4 / K3 / the relay, so the smart RX/TX keep working with the gong muted and
-  sidestep the "does talk ride line 4 or line 3" question (drive line 3 directly). The station
-  handset's own audio still rides line 4 and goes quiet when muted — acceptable; nobody uses the
-  handset while it's muted. **Bench-gated:** confirm which line carries the voice each way and **how
-  the TV20/S is told to switch to talk** (the talk handshake). See `TODO.md`.
+- **⚠ TX-out reach (bench-gated).** The codec is on the speech pair (RX ← line 2, TX → line 3,
+  ref line 1), steered by K1 pole B — independent of line 4 / K3 / the gong-suppress, so RX/TX keep
+  working with the gong muted, in replacement or parallel mode alike. What's **not** yet confirmed on
+  hardware: that the TV20/S actually **forwards the line-3 audio out to the door station** once it
+  sees the R16 2.2 kΩ line-4↔line-3 bridge (the talk handshake K1 pole A asserts). The handset's own
+  audio still rides its internal line-4 path and goes quiet under gong-suppress — acceptable; nobody
+  uses the handset while it's muted. **Confirm on the bench:** that the R16 bridge is the (only) thing
+  the TV20/S needs to switch to talk, and that the line-3 drive level reaches the door cleanly.
 
 ---
 
@@ -802,8 +662,8 @@ is the doubled-load case the links exist to prevent.
 - **K1/K2** default open (gate pull-downs) → they parallel the S2/S1 bridges; powered they add app
   talk/door, unpowered they vanish.
 - **OC1/OC2** sense and the **codec audio tap** are high-Z / transformer parallel taps that work
-  the same in both modes (the codec is planned to tap the speech pair, lines 2/3 — see "TX-out
-  reach" — which is independent of the gong-suppress, so the smart RX/TX path is mode-agnostic).
+  the same in both modes (the codec taps the speech pair, lines 2/3, via the K1-steered transformer —
+  independent of the gong-suppress, so the smart RX/TX path is mode-agnostic).
 - The **6-way connector** serves both: `IN_P4 → K3 → P4`, with P4 feeding the on-board core
   (replacement) or jumpering out to the external WF26 terminal 4 (parallel).
 
@@ -859,9 +719,10 @@ and the relays are independent (no interlock, like the handset). **Still open:**
 across **P1↔P4** (common↔Türruf, ring-driven), and idle line 4 sits at common (measured: P1↔IN_P4
 = 0 V) but **holds through the session** (the relay must stay in, and V3 senses it fine), so
 **session state = OC1 high**, gated directly (no timer).
-**The end-to-end audio routing is an open investigation** — re-tap the codec to the speech pair
-(RX ← line 2, TX → line 3) so it's independent of the gong-suppress; confirm the talk handshake on
-the bench (see `TODO.md`, "TX-out reach"). See Relays / Bell-sense.
+**The end-to-end TX-out reach is the remaining open investigation** — the codec now taps the speech
+pair (RX ← line 2, TX → line 3, K1-steered, gong-suppress-independent); what's bench-gated is whether
+the TV20/S forwards the line-3 audio to the door once it sees the R16 talk bridge (see `TODO.md`,
+"TX-out reach"). See Relays / Bell-sense.
 
 **Datasheet-verified:** G6K-2F-Y pole pinout; SGM2212 SOT-223 pinout + ~1 V dropout
 headroom; relay coil margin (DC4.5 must-operate 3.6 V vs ~4.5 V rail); 1N4148W pin 1 =

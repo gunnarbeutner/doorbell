@@ -1,11 +1,23 @@
-ERC report (2026-06-15T18:33:09, Encoding UTF8)
+ERC report (2026-06-15T23:51:07, Encoding UTF8)
 Report includes: Errors, Warnings
 
 ***** Sheet /
+[pin_not_connected]: Pin not connected
+    ; error
+    @(173.99 mm, 53.34 mm): Symbol U1 Pin 19 [GPIO14, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(173.99 mm, 55.88 mm): Symbol U1 Pin 20 [GPIO15, Bidirectional, Line]
+[label_dangling]: Label not connected
+    ; error
+    @(179.07 mm, 53.34 mm): Label 'I2S_DIN'
+[label_dangling]: Label not connected
+    ; error
+    @(179.07 mm, 55.88 mm): Label 'I2S_BCLK'
 [pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
     ; warning
     @(30.48 mm, 85.09 mm): Symbol D5 Pin 1 [CH1_OUT, Unspecified, Line]
-    @(173.99 mm, 38.10 mm): Symbol U1 Pin 13 [GPIO12/USB_D-, Bidirectional, Line]
+    @(173.99 mm, 38.10 mm): Symbol U1 Pin 17 [GPIO12/USB_D-, Bidirectional, Line]
 [pin_to_pin]: Pins of type Unspecified and Power input are connected
     ; warning
     @(30.48 mm, 87.63 mm): Symbol D5 Pin 2 [GND, Unspecified, Line]
@@ -17,7 +29,7 @@ Report includes: Errors, Warnings
 [pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
     ; warning
     @(63.50 mm, 85.09 mm): Symbol D5 Pin 6 [CH2_OUT, Unspecified, Line]
-    @(173.99 mm, 35.56 mm): Symbol U1 Pin 14 [GPIO13/USB_D+, Bidirectional, Line]
+    @(173.99 mm, 35.56 mm): Symbol U1 Pin 18 [GPIO13/USB_D+, Bidirectional, Line]
 [pin_to_pin]: Pins of type Unspecified and Passive are connected
     ; warning
     @(63.50 mm, 87.63 mm): Symbol D5 Pin 5 [VCC, Unspecified, Line]
@@ -26,6 +38,12 @@ Report includes: Errors, Warnings
     ; warning
     @(63.50 mm, 90.17 mm): Symbol D5 Pin 4 [CH2_IN, Unspecified, Line]
     @(63.50 mm, 55.88 mm): Symbol J1 Pin B6 [D+, Bidirectional, Line]
+[no_connect_dangling]: Unconnected "no connection" flag
+    ; warning
+    @(173.99 mm, 73.66 mm): No Connect
+[unconnected_wire_endpoint]: Unconnected wire endpoint
+    ; warning
+    @(173.99 mm, 58.42 mm): Horizontal Wire, length 5.08 mm
 [pin_to_pin]: Pins of type Unspecified and Passive are connected
     ; warning
     @(186.69 mm, 233.68 mm): Symbol T1 Pin 4 [4, Unspecified, Line]
@@ -33,7 +51,7 @@ Report includes: Errors, Warnings
 [pin_to_pin]: Pins of type Unspecified and Passive are connected
     ; warning
     @(186.69 mm, 248.92 mm): Symbol T1 Pin 6 [6, Unspecified, Line]
-    @(118.11 mm, 237.49 mm): Symbol WF26_K1 Pin 8 [Passive, Line]
+    @(119.38 mm, 233.68 mm): Symbol WF26_K1 Pin 8 [Passive, Line]
 [pin_to_pin]: Pins of type Unspecified and Passive are connected
     ; warning
     @(191.77 mm, 180.34 mm): Symbol U3 Pin 1 [CCLK, Unspecified, Line]
@@ -41,7 +59,7 @@ Report includes: Errors, Warnings
 [pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
     ; warning
     @(191.77 mm, 182.88 mm): Symbol U3 Pin 2 [MCLK, Unspecified, Line]
-    @(118.11 mm, 53.34 mm): Symbol U1 Pin 6 [MTCK/GPIO6/ADC1_CH6, Bidirectional, Line]
+    @(118.11 mm, 53.34 mm): Symbol U1 Pin 15 [MTCK/GPIO6/ADC1_CH6, Bidirectional, Line]
 [pin_to_pin]: Pins of type Unspecified and Unspecified are connected
     ; warning
     @(191.77 mm, 185.42 mm): Symbol U3 Pin 3 [PVDD, Unspecified, Line]
@@ -56,20 +74,12 @@ Report includes: Errors, Warnings
     @(191.77 mm, 203.20 mm): Symbol U3 Pin 10 [AGND, Unspecified, Line]
 [pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
     ; warning
-    @(191.77 mm, 193.04 mm): Symbol U3 Pin 6 [SCLK/DMIC_SCL, Unspecified, Line]
-    @(173.99 mm, 55.88 mm): Symbol U1 Pin 12 [GPIO11, Bidirectional, Line]
-[pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
-    ; warning
-    @(191.77 mm, 195.58 mm): Symbol U3 Pin 7 [ASDOUT, Unspecified, Line]
-    @(173.99 mm, 53.34 mm): Symbol U1 Pin 11 [GPIO10, Bidirectional, Line]
-[pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
-    ; warning
     @(191.77 mm, 198.12 mm): Symbol U3 Pin 8 [LRCK, Unspecified, Line]
-    @(118.11 mm, 33.02 mm): Symbol U1 Pin 8 [GPIO0/ADC1_CH0/XTAL_32K_P, Bidirectional, Line]
+    @(118.11 mm, 33.02 mm): Symbol U1 Pin 12 [GPIO0/ADC1_CH0/XTAL_32K_P, Bidirectional, Line]
 [pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
     ; warning
     @(191.77 mm, 200.66 mm): Symbol U3 Pin 9 [DSDIN, Unspecified, Line]
-    @(118.11 mm, 55.88 mm): Symbol U1 Pin 7 [MTDO/GPIO7, Bidirectional, Line]
+    @(118.11 mm, 55.88 mm): Symbol U1 Pin 16 [MTDO/GPIO7, Bidirectional, Line]
 [pin_to_pin]: Pins of type Unspecified and Power input are connected
     ; warning
     @(191.77 mm, 203.20 mm): Symbol U3 Pin 10 [AGND, Unspecified, Line]
@@ -171,7 +181,7 @@ Report includes: Errors, Warnings
     ; warning
     @(355.60 mm, 218.44 mm): Symbol TP3 [TestPoint]
 
- ** ERC messages: 43  Errors 0  Warnings 43
+ ** ERC messages: 47  Errors 4  Warnings 43
 
  ** Ignored checks:
     - Global label only appears once in the schematic

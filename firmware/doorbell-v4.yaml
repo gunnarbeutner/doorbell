@@ -1,4 +1,6 @@
-# Klingel V4 — ESPHome config for the ESP32-C6-WROOM-1 board.
+# Klingel V4 — ESPHome config for the ESP32-C6 board (U1 = ESP32-C6-MINI-1U-H4; was WROOM-1-N8).
+# NOTE: pad numbers in the comments below are WROOM-era; GPIO numbers are current. The MINI-1/U does
+# not expose GPIO10/GPIO11, so I2S_DIN moved to GPIO23 and I2S_BCLK to GPIO14 (all other GPIOs unchanged).
 #
 # Ported from the V3 doorbell-v3.yaml (ESP32 WROOM-32 dev board). All automation logic is
 # preserved verbatim; only the things that change with the new MCU/board were touched:
@@ -14,13 +16,13 @@
 #   5. Audio added (ES8311 mono codec, U3; half-duplex PTT via K1):
 #        I2C_SDA  (ES8311 control)               : GPIO18            (pad 16)
 #        I2C_SCL  (ES8311 control)               : GPIO19            (pad 17)
-#        I2S_DIN  (capture, ASDOUT)              : GPIO10            (pad 11)
+#        I2S_DIN  (capture, ASDOUT)              : GPIO23            (MINI-1U pin 29; was GPIO10/WROOM)
 #        I2S_WS   (LRCK)                         : GPIO0             (pad  8)
 #        I2S_MCLK (master clock)                 : GPIO6             (pad  6)
-#        I2S_BCLK (bit clock, SCLK)              : GPIO11            (pad 12)
+#        I2S_BCLK (bit clock, SCLK)              : GPIO14            (MINI-1U pin 19; was GPIO11/WROOM)
 #        K1       (PTT relay, talk=energised)    : GPIO20            (pad 18)
 #        I2S_DOUT (DAC / playback, DSDIN)        : GPIO7             (pad  7)
-#        (GPIO23 / pad 21 was the session-sense opto — removed; pin now free)
+#        (GPIO23 is now I2S_DIN — see above; it was freed when the session-sense opto was removed)
 #   6. Sense disambiguation reworked for the V4 sense points (departs from V3 logic):
 #        - OC2 taps the speaker pair (P5↔P1) and pulses at audio rate on ANY loud
 #          speaker audio (floor tone, door gong, speech). Its filter chain stretches
@@ -79,7 +81,7 @@ i2c:
 i2s_audio:
   id: i2s_bus
   i2s_lrclk_pin: GPIO0    # I2S_WS / LRCK   [C6 pad 8]
-  i2s_bclk_pin: GPIO11    # I2S_BCLK / SCLK [C6 pad 12]
+  i2s_bclk_pin: GPIO14    # I2S_BCLK / SCLK  [MINI-1U pin 19 — moved off GPIO11, not exposed on MINI-1/U]
   i2s_mclk_pin: GPIO6     # I2S_MCLK        [C6 pad 6]
 
 audio_dac:
@@ -103,7 +105,14 @@ microphone:
     id: intercom_mic
     i2s_audio_id: i2s_bus
     adc_type: external     # ES8311 does the conversion; ESP only receives I2S
-    i2s_din_pin: GPIO10    # I2S_DIN / ASDOUT (codec→ESP, capture)  [C6 pad 11]
+    i2s_din_pin: GPIO23    # I2S_DIN / ASDOUT (codec→ESP, capture)  [MINI-1U pin 29 — moved off GPIO10, not exposed on MINI-1/U]
+
+# Two-way intercom via Home Assistant Assist. PTT-triggered (no on-device wake word),
+# replies played back through the intercom speaker. Added to size-estimate the build.
+voice_assistant:
+  id: doorbell_voice
+  microphone: intercom_mic
+  speaker: intercom_speaker
 
 # Optional on the C3 (BLE works, but uses resources on the single core). Remove this and
 # esp32_ble_tracker if you don't use the Bluetooth proxy.

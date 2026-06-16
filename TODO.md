@@ -22,6 +22,22 @@ Board widened to 64 mm to match the WF26 PCB; zones re-poured. Remaining enclosu
       own where they'd foul the antenna edge or a part keepout. On the V3 proto JLCPCB added holes
       near the antenna and west of T1 — see DESIGN.md "Known minor items (accepted)".
 
+## U1 → ESP32-C6-MINI-1U-H4 (module swap, in progress)
+
+Swapping U1 from ESP32-C6-WROOM-1-N8 (PCB antenna) to **ESP32-C6-MINI-1U-H4** (external u.FL antenna,
+LCSC C20627095) — frees the antenna-edge constraint and shrinks U1. Symbol `PCM_Espressif:ESP32-C6-MINI-1/U`
++ footprint `PCM_Espressif:ESP32-C6-MINI-1U` (both already in the installed Espressif PCM lib). The MINI-1/U
+does **not** expose GPIO10/GPIO11, so I2S_DIN moved to **GPIO23** and I2S_BCLK to **GPIO14**; all other GPIOs
+unchanged. Firmware pins done; the schematic re-symbol+rewire and the PCB footprint + antenna-keepout removal
+are still to do.
+
+- [ ] **Update or remove every old-pinout (WROOM-1) reference** — the schematic + firmware are the
+      authoritative pin map, so the docs shouldn't restate it. Sweep and fix-or-delete: DESIGN.md (the U1
+      floorplan + GPIO/pad table, the PCB-antenna / antenna-keepout notes, the antenna-fiducial bit under
+      "Known minor items"), ORDERING.md (U1 = C6-WROOM-1 C5366877 → MINI-1U-H4 C20627095, the U1
+      placement-check row, the antenna-edge depanel gates), and the firmware header (WROOM pad numbers).
+      Where a reference merely duplicates what the schematic/firmware already say, delete it rather than re-sync it.
+
 ## Bench measurements (settle the remaining open questions)
 
 Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/power-bank handheld;
@@ -50,25 +66,24 @@ tether it to a mains-earthed PC. Pair with a DMM.
       Re-add this session arm to the K3 gate (`doorbell_sound_state`) and the cross-talk masks (both
       went PTT-only when the old session-opto was dropped; OC1 now supplies the session level).
 
-## Audio path — investigate (settle TX/RX routing before trusting the half-duplex path)
+## Audio path — bench-verify (the routing is wired; confirm it on hardware)
 
-Direction: re-tap the codec off the speaker pair (P1/P5) and onto the **speech pair — RX P1↔P2,
-TX P1↔P3 (ref line 1)** — speech is on 1/2/3, line 4 is only the gong — so the smart RX/TX become
-independent of line 4 / K3 and keep working with the gong muted. **Gated on OC1** (session = Türruf
-held; OC1 stays high, no timer), direction by PTT; **K1 retained for the talk handshake**. (The
-station handset's own audio still rides line 4 and goes quiet when muted — fine, nobody uses the
-handset then.) Half-duplex, so one isolation transformer switched between line 2 (RX) and line 3
-(TX) by a relay pole, or two; re-route the existing coupling caps + series Rs.
+The codec is **re-tapped to the speech pair** in the schematic: one isolation transformer (T1), its
+bus winding **steered by K1 pole B** — line 2 at rest (RX), line 3 when K1 is energised (TX), ref
+line 1. Pole A still asserts the R16 2.2 kΩ line-4↔line-3 talk handshake. Independent of line 4 / K3,
+so RX/TX survive gong-suppress. **Gated on OC1** (session = Türruf held; OC1 stays high, no timer),
+direction by PTT. Coupling caps + series Rs unchanged; DAC and ADC share the one codec-side winding
+(firmware mutes the idle direction). What remains is hardware confirmation:
 
-- [ ] **Outgoing (TX) — drive line 3 directly + confirm the talk handshake.** Bench: in a talk
-      window, does driving **line 3** (vs P1) get audio to the door station, and **how is the TV20/S
-      told to switch to talk** (the 2.2 kΩ line-3 bridge, or something else)? Settles whether the
-      R16/K1 strap is needed for TX or whether driving line 3 + the handshake suffices.
+- [ ] **Outgoing (TX) — confirm line-3 drive reaches the door + the handshake.** Bench: in a talk
+      window, does T1 driving **line 3** get audio out to the door station, and is the **R16 2.2 kΩ
+      line-4↔line-3 bridge** (K1 pole A) the only thing the TV20/S needs to switch to talk — or
+      something more? A WF26's C1 + 16 Ω speaker always loads line 4, which is why TX drives line 3,
+      not line 4 — check the line-3 drive level with that load present. *(DESIGN.md: "TX-out reach")*
+- [ ] **Incoming (RX) — confirm the line-2 tap level/impedance.** RX is on **line 2** (ref line 1),
+      independent of line 4 / K3. Bench-check the received level and source impedance on line 2↔P1
+      during a call, and that the R26/R27 divider lands the codec input in range.
       *(DESIGN.md: "TX-out reach")*
-- [ ] **Incoming (RX) — tap line 2, not the speaker pair.** The listen voice is on **line 2** (ref
-      line 1), independent of line 4 / K3. Re-tap the codec from P1/P5 to line 2 so RX survives gong-
-      suppress (the P1/P5 tap dies when K3 breaks line 4). Bench-check level/impedance on line 2↔P1
-      during a call. *(DESIGN.md: "TX-out reach")*
 - [ ] **Re-check the DESIGN.md "TV20/S audio behaviour" section** — confirm the talk/listen/
       Etagenruf/Türruf routing it describes is still correct against the current model + bench
       findings (some of it predates the recent corrections). *(DESIGN.md: "TV20/S audio behaviour")*
@@ -114,6 +129,13 @@ handset then.) Half-duplex, so one isolation transformer switched between line 2
 
 ## Done (for reference)
 
+- **V4 codec re-tapped to the speech pair (K1-steered)** — T1's bus winding moved off P5 onto a new
+  net `/T1_BUS` = T1.4 ↔ K1.6 (pole-B COM); K1 pole B steers it: NC (K1.7) = P2 (line 2, RX at rest),
+  NO (K1.5) = P3 (line 3, TX when energised). Pole A's R16 strap (IN_P4↔P3) still provides the talk
+  handshake. TX injects on **line 3**, not line 4, because a WF26's C1 + 16 Ω speaker always shunts
+  line 4 (~20–30 Ω). One transformer, no new relay/GPIO; codec-side wiring (SEC_A/B, R24–R27, C14–C17,
+  ES8311) unchanged; DAC+ADC share the one winding (sidetone harmless for half-duplex PTT). Mounting
+  symbols H1/H2 added in parallel. ERC clean. DESIGN.md updated. (Bench: "TX-out reach".)
 - **V4 opto polarity switches (SW4/SW5) removed** — bus taken to drive active lines positive
   w.r.t. P1, so polarity is hardwired (LED anode → bus line: IN_P4 for OC1, P5 for OC2; cathode →
   R_lim → P1). Clamps (D8/D9), limiters (R1/R2), pull-ups (R22/R23) retained. Schematic + PCB
