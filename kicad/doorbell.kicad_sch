@@ -7361,303 +7361,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "PCM_JLCPCB-Resistors:0603,100Ω"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "R"
-				(at 1.778 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "100Ω"
-				(at 0 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 0.8 0.8)
-					)
-				)
-			)
-			(property "Footprint" "PCM_JLCPCB:R_0603"
-				(at -1.778 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "100mW Thick Film Resistors 75V ±1% ±200ppm/°C 100Ω 0603 Chip Resistor - Surface Mount ROHS"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "LCSC" "C22775"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Stock" "8202320"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Price" "0.004USD"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Process" "SMT"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Minimum Qty" "20"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Attrition Qty" "10"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Class" "Basic Component"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Category" "Resistors,Chip Resistor - Surface Mount"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Part" "0603WAF1000T5E"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Resistance" "100Ω"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Power(Watts)" "100mW"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Type" "Thick Film Resistors"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Overload Voltage (Max)" "75V"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Operating Temperature Range" "-55°C~+155°C"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Tolerance" "±1%"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Temperature Coefficient" "±200ppm/°C"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "R_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "0603,100Ω_0_1"
-				(rectangle
-					(start -1.016 2.54)
-					(end 1.016 -2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "0603,100Ω_1_1"
-				(pin passive line
-					(at 0 3.81 270)
-					(length 1.27)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -3.81 90)
-					(length 1.27)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "PCM_JLCPCB-Resistors:0603,10kΩ"
 			(pin_numbers
 				(hide yes)
@@ -9133,493 +8836,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "PCM_JLCPCB-Transistors:NMOS,2N7002"
-			(pin_names
-				(offset 0)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "Q"
-				(at 4.8514 0.834 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "2N7002"
-				(at 4.8514 -1.2122 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 0.8 0.8)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "PCM_JLCPCB:Q_SOT-23"
-				(at -1.778 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250uA 1 N-Channel SOT-23 MOSFETs ROHS"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "LCSC" "C8545"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Stock" "1078050"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Price" "0.019USD"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Process" "SMT"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Minimum Qty" "10"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Attrition Qty" "5"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Class" "Basic Component"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Category" "Transistors,MOSFETs"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Manufacturer" "Changjiang Electronics Tech (CJ)"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Part" "2N7002"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Continuous Drain Current (Id)" "115mA"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Input Capacitance (Ciss@Vds)" "50pF"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Operating Temperature" "-55°C~+150°C"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Type" "1 N-channel"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Drain Source Voltage (Vdss)" "60V"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Power Dissipation (Pd)" "225mW"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Gate Threshold Voltage (Vgs(th)@Id)" "2.5V@250uA"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Reverse Transfer Capacitance (Crss@Vds)" "5pF"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Drain Source On Resistance (RDS(on)@Vgs,Id)" "5Ω@10V"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Q_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "NMOS,2N7002_0_1"
-				(polyline
-					(pts
-						(xy 0.254 1.905) (xy 0.254 -1.905)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.254 0) (xy -2.54 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 2.286) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 0.508) (xy 0.762 -0.508)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 -1.27) (xy 0.762 -2.286)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 -1.778) (xy 3.302 -1.778) (xy 3.302 1.778) (xy 0.762 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.016 0) (xy 2.032 0.381) (xy 2.032 -0.381) (xy 1.016 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 1.651 0)
-					(radius 2.794)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 2.54) (xy 2.54 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 2.54 -1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.794 0.508) (xy 2.921 0.381) (xy 3.683 0.381) (xy 3.81 0.254)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 3.302 0.381) (xy 2.921 -0.254) (xy 3.683 -0.254) (xy 3.302 0.381)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "NMOS,2N7002_1_1"
-				(pin input line
-					(at -5.08 0 0)
-					(length 2.54)
-					(name "G"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 -5.08 90)
-					(length 2.54)
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 5.08 270)
-					(length 2.54)
-					(name "D"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -11363,7 +10579,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "sppj223200:SPPJ223200"
+		(symbol "sppj322300:SPPJ322300"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -11379,7 +10595,7 @@
 					)
 				)
 			)
-			(property "Value" "SPPJ223200"
+			(property "Value" "SPPJ322300"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11389,7 +10605,7 @@
 					)
 				)
 			)
-			(property "Footprint" "sppj223200:SW-TH_SPPJ223200"
+			(property "Footprint" "sppj322300:SW-TH_SPPJ322300"
 				(at 0 -15.24 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11400,7 +10616,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "https://www.lcsc.com/datasheet/C470390.pdf"
+			(property "Datasheet" "https://www.lcsc.com/datasheet/C398940.pdf"
 				(at 0 -17.78 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11433,7 +10649,7 @@
 					)
 				)
 			)
-			(property "MPN" "SPPJ223200"
+			(property "MPN" "SPPJ322300"
 				(at 0 -22.86 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11444,7 +10660,7 @@
 					)
 				)
 			)
-			(property "LCSC Part" "C470390"
+			(property "LCSC Part" "C398940"
 				(at 0 -25.4 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11466,7 +10682,7 @@
 					)
 				)
 			)
-			(symbol "SPPJ223200_0_1"
+			(symbol "SPPJ322300_0_1"
 				(polyline
 					(pts
 						(xy -1.27 5.08) (xy -1.27 2.03) (xy -1.52 2.79)
@@ -12323,7 +11539,7 @@
 	)
 	(text "VIRTUAL PTT\nbridges IN_P4<->P3 (talk)"
 		(exclude_from_sim no)
-		(at 361 54.61 0)
+		(at 347.218 44.45 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12335,7 +11551,7 @@
 	)
 	(text "CHIME SUPPRESS\nbreaks line 4 (IN_P4->P4);\npole B interlocks K1 gate"
 		(exclude_from_sim no)
-		(at 361 176.53 0)
+		(at 347.218 158.496 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12371,7 +11587,7 @@
 	)
 	(text "DOOR OPENER\nbridges P2<->P3 via R16,\nemulating the WF26 OeT button"
 		(exclude_from_sim no)
-		(at 361 115.57 0)
+		(at 347.218 100.838 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12418,22 +11634,10 @@
 		(uuid "dadbc9a1-3d8e-4458-9cf5-b19683b37682")
 	)
 	(junction
-		(at 312.42 24.13)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "0b1e0a7c-e3fc-4b16-8573-7fa0aa9c04b5")
-	)
-	(junction
 		(at 185.42 113.03)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "1ebb4edc-9b31-4de0-aad4-64d9ac6bd662")
-	)
-	(junction
-		(at 283.21 176.53)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "2835c845-7626-44df-a2d6-a60039508494")
 	)
 	(junction
 		(at 212.09 248.92)
@@ -12478,28 +11682,10 @@
 		(uuid "971918c1-b3e1-4010-ac5e-117c967abc1b")
 	)
 	(junction
-		(at 312.42 146.05)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "99f23f7a-c78d-40c9-bb6b-c18ab962245c")
-	)
-	(junction
-		(at 303.53 110.49)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "9a472c09-4ebf-4027-9a00-34bbc0c05bef")
-	)
-	(junction
 		(at 101.6 113.03)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a985e514-9168-46a0-b735-669919893123")
-	)
-	(junction
-		(at 312.42 85.09)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a99908f3-e942-4d28-873b-49ec4a1f3f3d")
 	)
 	(junction
 		(at 50.8 271.78)
@@ -12508,28 +11694,10 @@
 		(uuid "d08101e5-2dfd-4d1b-83d7-bd8dc74481b3")
 	)
 	(junction
-		(at 283.21 54.61)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e589d1f3-a86d-46b1-bbb9-240dbe2b2d36")
-	)
-	(junction
-		(at 283.21 115.57)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e6542ffe-6306-4684-ae99-31e3cd62e2fd")
-	)
-	(junction
 		(at 152.4 184.15)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f0cb1f32-01d2-4ffb-911b-b3704f31c9c5")
-	)
-	(junction
-		(at 303.53 49.53)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f2204ad8-67b2-4c19-be56-a73f6782fc24")
 	)
 	(junction
 		(at 87.63 247.65)
@@ -12537,27 +11705,17 @@
 		(color 0 0 0 0)
 		(uuid "f22badb0-07c1-40c1-b4aa-67f17f6957d1")
 	)
-	(junction
-		(at 303.53 171.45)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "fc894c70-9c92-4f4d-b5a5-5ae1fb746a20")
-	)
 	(no_connect
 		(at 207.01 241.3)
 		(uuid "02b241e1-fdb9-4c26-accc-83bb1f86d896")
 	)
 	(no_connect
+		(at 308.61 146.05)
+		(uuid "0a7dd255-47b0-4566-8509-668226de344b")
+	)
+	(no_connect
 		(at 173.99 27.94)
 		(uuid "0f911a52-4a30-446f-b1e0-6f202d0d1991")
-	)
-	(no_connect
-		(at 341.63 105.41)
-		(uuid "15e6e887-13bb-4137-9a90-f779594e3418")
-	)
-	(no_connect
-		(at 328.93 90.17)
-		(uuid "270f8dd8-3a92-402c-8106-270d4ac3634c")
 	)
 	(no_connect
 		(at 173.99 58.42)
@@ -12572,8 +11730,16 @@
 		(uuid "30424d48-239a-472c-ac97-ec39880e88df")
 	)
 	(no_connect
+		(at 316.23 87.63)
+		(uuid "3591894d-cac5-4328-b649-275f6f9d9c67")
+	)
+	(no_connect
 		(at 114.3 262.89)
 		(uuid "3be6ec9a-5071-411d-ba83-606374d5fa71")
+	)
+	(no_connect
+		(at 313.69 87.63)
+		(uuid "432d0e10-15f2-464d-95eb-3f81f8f906e9")
 	)
 	(no_connect
 		(at 118.11 50.8)
@@ -12586,6 +11752,10 @@
 	(no_connect
 		(at 186.69 241.3)
 		(uuid "5128bf1b-7cc2-481a-b890-3fe5e680fa55")
+	)
+	(no_connect
+		(at 306.07 31.75)
+		(uuid "5602354f-dedc-4bfb-ad36-0567974f11dd")
 	)
 	(no_connect
 		(at 127 218.44)
@@ -12604,36 +11774,36 @@
 		(uuid "5a9e1f00-0000-4000-8000-0000000000a7")
 	)
 	(no_connect
-		(at 344.17 151.13)
-		(uuid "72358a69-d776-467d-ab0c-e48a9ef47433")
+		(at 318.77 168.91)
+		(uuid "5ee9453f-97b4-4063-894a-b888461ba61c")
+	)
+	(no_connect
+		(at 313.69 146.05)
+		(uuid "77926167-5caf-449a-b412-71956e61a906")
 	)
 	(no_connect
 		(at 118.11 35.56)
 		(uuid "909d619b-3f3b-40ab-a327-c98d99283235")
 	)
 	(no_connect
-		(at 328.93 29.21)
-		(uuid "bbf42030-f423-4ebb-a1c5-3cf606aafaaa")
+		(at 306.07 87.63)
+		(uuid "99751bd1-8edd-4b89-9caf-a61407b2faf3")
+	)
+	(no_connect
+		(at 316.23 146.05)
+		(uuid "a110ffc1-f011-4efb-975a-74c8084c7e6c")
+	)
+	(no_connect
+		(at 318.77 110.49)
+		(uuid "c32a8c36-dc83-4292-8f8d-ee54a2aaaf8c")
 	)
 	(no_connect
 		(at 63.5 63.5)
 		(uuid "cbac0324-1f5c-4c05-a430-307feff08434")
 	)
 	(no_connect
-		(at 334.01 151.13)
-		(uuid "d7a210a8-d384-4d6a-9c47-95b17332d241")
-	)
-	(no_connect
-		(at 341.63 166.37)
-		(uuid "da2b566f-6927-4af1-90ba-204a496f8aeb")
-	)
-	(no_connect
 		(at 173.99 55.88)
 		(uuid "dd27092b-c719-4f5a-ab4e-99bae254d2fe")
-	)
-	(no_connect
-		(at 339.09 151.13)
-		(uuid "e79e6124-05a8-4309-8400-7ba7168c7c5a")
 	)
 	(no_connect
 		(at 99.06 262.89)
@@ -12642,34 +11812,6 @@
 	(no_connect
 		(at 173.99 30.48)
 		(uuid "f4e651ad-7f3c-4d19-9eb3-1e5e5a9dd401")
-	)
-	(no_connect
-		(at 344.17 90.17)
-		(uuid "fd1e139a-2669-4953-bd04-b4436e310745")
-	)
-	(no_connect
-		(at 339.09 90.17)
-		(uuid "ff09aec6-94e2-4267-b1af-eb9acd7eba26")
-	)
-	(wire
-		(pts
-			(xy 303.53 146.05) (xy 321.31 146.05)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0004a496-9dd3-42d4-a1e5-71b1e9a0c4c2")
-	)
-	(wire
-		(pts
-			(xy 312.42 85.09) (xy 312.42 82.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "00a4c3aa-c2f8-4af4-a35b-099c7dd3e60e")
 	)
 	(wire
 		(pts
@@ -12683,33 +11825,13 @@
 	)
 	(wire
 		(pts
-			(xy 303.53 40.64) (xy 303.53 49.53)
+			(xy 306.07 146.05) (xy 306.07 139.7)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "023d326f-b8ee-4799-b8d0-65a0eafdc29f")
-	)
-	(wire
-		(pts
-			(xy 283.21 160.02) (xy 283.21 154.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "05f56588-8044-4fe5-b6c9-d0b3f5aae893")
-	)
-	(wire
-		(pts
-			(xy 331.47 166.37) (xy 331.47 168.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0845ee0f-1721-4c81-9a22-eccfc13f91a1")
+		(uuid "07689a3d-22a5-46c8-bff0-38eeb7fb9134")
 	)
 	(wire
 		(pts
@@ -12823,26 +11945,6 @@
 	)
 	(wire
 		(pts
-			(xy 303.53 24.13) (xy 321.31 24.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "10a74b73-89e6-4d2b-bf28-9e32c6a3dc19")
-	)
-	(wire
-		(pts
-			(xy 303.53 33.02) (xy 303.53 24.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "11d86d8c-5e8b-4ede-ab68-66cb6f6c4f42")
-	)
-	(wire
-		(pts
 			(xy 68.58 48.26) (xy 68.58 50.8)
 		)
 		(stroke
@@ -12870,16 +11972,6 @@
 			(type default)
 		)
 		(uuid "14199d84-436a-4606-b7e2-1a78962552ed")
-	)
-	(wire
-		(pts
-			(xy 303.53 162.56) (xy 303.53 171.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "163d61e2-db61-4242-9f09-e9c4e1aa0fc1")
 	)
 	(wire
 		(pts
@@ -12940,16 +12032,6 @@
 			(type default)
 		)
 		(uuid "1c307b7d-57d4-42d9-8c59-aa8a7e6c67f6")
-	)
-	(wire
-		(pts
-			(xy 283.21 99.06) (xy 283.21 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1c532790-c08c-409e-a9a7-4796a81ca0b1")
 	)
 	(wire
 		(pts
@@ -13060,16 +12142,6 @@
 			(type default)
 		)
 		(uuid "2b84199f-8428-4060-99bd-badec99abaf2")
-	)
-	(wire
-		(pts
-			(xy 312.42 24.13) (xy 312.42 21.59)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2bbc7c57-d4ec-4c8d-b325-fac29f49163a")
 	)
 	(wire
 		(pts
@@ -13213,6 +12285,16 @@
 	)
 	(wire
 		(pts
+			(xy 308.61 87.63) (xy 308.61 81.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3ff89590-35fa-4c27-b2f3-83639c581958")
+	)
+	(wire
+		(pts
 			(xy 114.3 146.05) (xy 114.3 133.35)
 		)
 		(stroke
@@ -13273,23 +12355,13 @@
 	)
 	(wire
 		(pts
-			(xy 290.83 171.45) (xy 321.31 171.45)
+			(xy 335.28 43.18) (xy 331.47 43.18)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "4660cda1-27e6-4ce9-a6ce-3874935ca763")
-	)
-	(wire
-		(pts
-			(xy 303.53 154.94) (xy 303.53 146.05)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "47e2a7e1-8c8e-4b75-bf70-1b4e45ba0efc")
+		(uuid "48c0b31e-ca16-4715-b3b2-8fe12cc567d6")
 	)
 	(wire
 		(pts
@@ -13323,26 +12395,6 @@
 	)
 	(wire
 		(pts
-			(xy 283.21 38.1) (xy 283.21 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4b9234f7-b4ee-4afb-a623-80aa15e6c2a3")
-	)
-	(wire
-		(pts
-			(xy 303.53 93.98) (xy 303.53 85.09)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4ca8c505-571f-492e-ba69-37f9e9d1662f")
-	)
-	(wire
-		(pts
 			(xy 114.3 113.03) (xy 114.3 128.27)
 		)
 		(stroke
@@ -13350,6 +12402,16 @@
 			(type default)
 		)
 		(uuid "4e266f34-a19e-4074-9987-d4b4b3622533")
+	)
+	(wire
+		(pts
+			(xy 318.77 158.75) (xy 323.85 158.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4edbcfb2-7e10-4582-9238-fcae1e30725a")
 	)
 	(wire
 		(pts
@@ -13373,6 +12435,16 @@
 	)
 	(wire
 		(pts
+			(xy 285.75 41.91) (xy 292.1 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "56f20d4f-9423-474c-b4d3-09f550eea41e")
+	)
+	(wire
+		(pts
 			(xy 247.65 180.34) (xy 252.73 180.34)
 		)
 		(stroke
@@ -13380,6 +12452,16 @@
 			(type default)
 		)
 		(uuid "56f858f1-1089-4876-a4f3-ac719b9d96ed")
+	)
+	(wire
+		(pts
+			(xy 318.77 100.33) (xy 323.85 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "57c50802-4ed7-47b2-9be9-7b450da0beec")
 	)
 	(wire
 		(pts
@@ -13513,16 +12595,6 @@
 	)
 	(wire
 		(pts
-			(xy 312.42 146.05) (xy 312.42 143.51)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6b2c83ec-bdce-4bcd-a316-6266df922299")
-	)
-	(wire
-		(pts
 			(xy 250.19 208.28) (xy 212.09 208.28)
 		)
 		(stroke
@@ -13533,16 +12605,6 @@
 	)
 	(wire
 		(pts
-			(xy 331.47 58.42) (xy 331.47 55.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6d72c5e5-ff3c-42ee-9e1e-bd1b4d6bcdf5")
-	)
-	(wire
-		(pts
 			(xy 68.58 269.24) (xy 73.66 269.24)
 		)
 		(stroke
@@ -13550,16 +12612,6 @@
 			(type default)
 		)
 		(uuid "70a3980f-a248-4d80-a1e6-16fb80a9ccba")
-	)
-	(wire
-		(pts
-			(xy 321.31 171.45) (xy 321.31 166.37)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7310dc20-e33b-4197-ad65-834c1663448f")
 	)
 	(wire
 		(pts
@@ -13583,16 +12635,6 @@
 	)
 	(wire
 		(pts
-			(xy 334.01 29.21) (xy 334.01 26.67)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "764bcc8b-5e1f-41af-b344-5b9aa0606846")
-	)
-	(wire
-		(pts
 			(xy 231.14 29.21) (xy 226.06 29.21)
 		)
 		(stroke
@@ -13610,16 +12652,6 @@
 			(type default)
 		)
 		(uuid "77d8a555-7185-43d0-8b17-8bbe60c16e54")
-	)
-	(wire
-		(pts
-			(xy 303.53 85.09) (xy 321.31 85.09)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "78370d07-4ecb-4968-8056-2f6af1e70567")
 	)
 	(wire
 		(pts
@@ -13733,6 +12765,16 @@
 	)
 	(wire
 		(pts
+			(xy 316.23 25.4) (xy 316.23 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "85311d8a-5915-4c62-94e2-3dc0a153fb28")
+	)
+	(wire
+		(pts
 			(xy 262.89 182.88) (xy 262.89 158.75)
 		)
 		(stroke
@@ -13743,13 +12785,13 @@
 	)
 	(wire
 		(pts
-			(xy 290.83 49.53) (xy 321.31 49.53)
+			(xy 285.75 97.79) (xy 292.1 97.79)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "863032a5-31a3-4393-b77d-8588bf4c6464")
+		(uuid "857b4585-8566-44fa-936f-1e9fb1f72842")
 	)
 	(wire
 		(pts
@@ -13853,16 +12895,6 @@
 	)
 	(wire
 		(pts
-			(xy 321.31 146.05) (xy 321.31 151.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "96c0825d-1a9c-46c5-b641-17c1f9b7ceb2")
-	)
-	(wire
-		(pts
 			(xy 93.98 257.81) (xy 99.06 257.81)
 		)
 		(stroke
@@ -13870,6 +12902,16 @@
 			(type default)
 		)
 		(uuid "9ac993bf-94fc-481a-b93d-79803f598925")
+	)
+	(wire
+		(pts
+			(xy 318.77 43.18) (xy 323.85 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9b50e838-be1e-47ea-9447-ba438a1510c7")
 	)
 	(wire
 		(pts
@@ -13903,13 +12945,13 @@
 	)
 	(wire
 		(pts
-			(xy 339.09 26.67) (xy 339.09 29.21)
+			(xy 285.75 156.21) (xy 292.1 156.21)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "9cb399bc-5c9d-40ce-a5d8-e2a473e7dc39")
+		(uuid "9e4c7ac0-1f19-4297-8cc0-859bee8dc6c6")
 	)
 	(wire
 		(pts
@@ -13983,16 +13025,6 @@
 	)
 	(wire
 		(pts
-			(xy 321.31 85.09) (xy 321.31 90.17)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b39102cb-7a27-4d5d-9013-6679ae60cb9c")
-	)
-	(wire
-		(pts
 			(xy 247.65 187.96) (xy 257.81 187.96)
 		)
 		(stroke
@@ -14013,13 +13045,13 @@
 	)
 	(wire
 		(pts
-			(xy 283.21 45.72) (xy 283.21 68.58)
+			(xy 313.69 25.4) (xy 313.69 31.75)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "b5b2d7e2-5b0a-4234-ad94-b8998f801919")
+		(uuid "b5c48561-0f8d-4747-a7a6-e0ea5ea74f58")
 	)
 	(wire
 		(pts
@@ -14080,16 +13112,6 @@
 			(type default)
 		)
 		(uuid "be4498bf-0f00-4b68-81b0-cc8090442cda")
-	)
-	(wire
-		(pts
-			(xy 283.21 106.68) (xy 283.21 124.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c025fbfe-bf20-4cd8-9600-fe0b6d0d1fa3")
 	)
 	(wire
 		(pts
@@ -14190,26 +13212,6 @@
 			(type default)
 		)
 		(uuid "cb280da4-2e2d-446b-9f2b-d69afded44c5")
-	)
-	(wire
-		(pts
-			(xy 321.31 24.13) (xy 321.31 29.21)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cc3b8bc7-1abd-4ad2-a515-190add447e8c")
-	)
-	(wire
-		(pts
-			(xy 321.31 49.53) (xy 321.31 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cc89de1c-f87c-4238-95a5-6ac9c0ebe9f3")
 	)
 	(wire
 		(pts
@@ -14353,16 +13355,6 @@
 	)
 	(wire
 		(pts
-			(xy 341.63 44.45) (xy 341.63 48.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dcc7da41-1e9e-4d67-ad47-388b17bca726")
-	)
-	(wire
-		(pts
 			(xy 114.3 257.81) (xy 119.38 257.81)
 		)
 		(stroke
@@ -14370,6 +13362,16 @@
 			(type default)
 		)
 		(uuid "ddb674bf-fa2f-4921-bf98-833527b3d3af")
+	)
+	(wire
+		(pts
+			(xy 318.77 53.34) (xy 323.85 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "df691f58-af6d-43a2-b048-f2430774d4da")
 	)
 	(wire
 		(pts
@@ -14433,16 +13435,6 @@
 	)
 	(wire
 		(pts
-			(xy 283.21 167.64) (xy 283.21 185.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e9b9fb46-92e9-4155-8461-5af4f68c3205")
-	)
-	(wire
-		(pts
 			(xy 52.07 222.25) (xy 55.88 222.25)
 		)
 		(stroke
@@ -14483,16 +13475,6 @@
 	)
 	(wire
 		(pts
-			(xy 328.93 151.13) (xy 328.93 148.59)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ee0d1b47-1a1d-4bf7-8b9e-2c369875ebfc")
-	)
-	(wire
-		(pts
 			(xy 50.8 247.65) (xy 80.01 247.65)
 		)
 		(stroke
@@ -14500,16 +13482,6 @@
 			(type default)
 		)
 		(uuid "ef2cc86c-8646-4029-84fa-5d7b5c94318b")
-	)
-	(wire
-		(pts
-			(xy 344.17 26.67) (xy 344.17 29.21)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f2293f04-0348-4f1e-944a-36759cffaba3")
 	)
 	(wire
 		(pts
@@ -14523,23 +13495,13 @@
 	)
 	(wire
 		(pts
-			(xy 331.47 48.26) (xy 331.47 44.45)
+			(xy 308.61 31.75) (xy 308.61 25.4)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "f4781d94-e855-416c-a929-c29c7d256741")
-	)
-	(wire
-		(pts
-			(xy 321.31 110.49) (xy 321.31 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f49a64b8-5b6c-4932-b31c-18c130df4296")
+		(uuid "f32a83f0-ccf6-4c88-b8d4-18ae2eb45979")
 	)
 	(wire
 		(pts
@@ -14560,26 +13522,6 @@
 			(type default)
 		)
 		(uuid "f5ab6fd2-1631-4d05-9cfa-d87f858a44c3")
-	)
-	(wire
-		(pts
-			(xy 290.83 110.49) (xy 321.31 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f7f351c2-f0df-480c-9662-fd0e91d31c41")
-	)
-	(wire
-		(pts
-			(xy 303.53 101.6) (xy 303.53 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f9319b5d-0cc7-4e45-b215-c95912a552c1")
 	)
 	(wire
 		(pts
@@ -14620,16 +13562,6 @@
 		)
 		(uuid "0110e47b-1005-48ed-82a8-26685901d986")
 	)
-	(label "K2_DRAIN"
-		(at 321.31 105.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0121f70e-a6bc-4de3-a7ce-b6db0ad9facd")
-	)
 	(label "P1"
 		(at 119.38 236.22 0)
 		(effects
@@ -14639,6 +13571,16 @@
 			(justify left bottom)
 		)
 		(uuid "01b3deb0-08d0-4ba3-9bca-848b99d9daa7")
+	)
+	(label "P4"
+		(at 323.85 158.75 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify left)
+		)
+		(uuid "03625517-43b7-40c9-b08d-5600599f636a")
 	)
 	(label "P3"
 		(at 93.98 257.81 0)
@@ -14680,14 +13622,25 @@
 		)
 		(uuid "0ef2e3ab-7307-47cd-8a8e-ccfbd3f3dcf0")
 	)
-	(label "GATE3_DRV"
-		(at 283.21 154.94 90)
+	(label "P2"
+		(at 313.69 25.4 90)
 		(effects
 			(font
 				(size 1 1)
 			)
+			(justify left)
 		)
-		(uuid "10a97f10-c566-43cc-8cd4-0be2dea0d0ca")
+		(uuid "0f30a381-544c-4ef8-acca-5357cd4feb5e")
+	)
+	(label "GATE2_DRV"
+		(at 285.75 97.79 180)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify right bottom)
+		)
+		(uuid "10ee6270-2116-4142-b0de-b04484b68d69")
 	)
 	(label "ES_MICN"
 		(at 232.41 217.17 0)
@@ -14708,6 +13661,16 @@
 		)
 		(uuid "164806d5-521a-4d49-ab80-788c6d5347c0")
 	)
+	(label "GATE1_DRV"
+		(at 285.75 41.91 180)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify right bottom)
+		)
+		(uuid "16b6b5a5-6779-480a-b6f2-9ac46a49f12a")
+	)
 	(label "I2S_BCLK"
 		(at 179.07 53.34 0)
 		(effects
@@ -14727,16 +13690,6 @@
 		)
 		(uuid "184bd2fd-1d35-44af-a99e-37c207988dc9")
 	)
-	(label "P2"
-		(at 334.01 90.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1953fa21-fbc8-4a15-b3fe-75fbb61269b3")
-	)
 	(label "GATE3_DRV"
 		(at 179.07 68.58 0)
 		(effects
@@ -14755,15 +13708,6 @@
 			(justify left bottom)
 		)
 		(uuid "1f2d3f15-7721-440c-8cf8-9cb944c98288")
-	)
-	(label "GATE2_DRV"
-		(at 283.21 93.98 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "1fd621a1-452f-4a95-a528-ba5dda117abc")
 	)
 	(label "P5"
 		(at 85.09 161.29 0)
@@ -15071,35 +14015,6 @@
 		)
 		(uuid "557e94d3-9749-4512-a76c-bd7b31fc5c87")
 	)
-	(label "P2"
-		(at 339.09 26.67 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "58dcc8c4-be4a-49fd-906e-9765e5835fd3")
-	)
-	(label "P3"
-		(at 331.47 58.42 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "59423534-d54e-4a6e-b3f7-0133ee534477")
-	)
-	(label "TALK_BRIDGE"
-		(at 331.47 48.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify bottom)
-		)
-		(uuid "5d8617ca-df69-4f86-84e4-49e709940b44")
-	)
 	(label "GND"
 		(at 52.07 232.41 0)
 		(effects
@@ -15109,14 +14024,15 @@
 		)
 		(uuid "5e99d636-3f73-4394-9e75-c8e747579ea2")
 	)
-	(label "IN_P4"
-		(at 334.01 26.67 90)
+	(label "GATE3_DRV"
+		(at 285.75 156.21 180)
 		(effects
 			(font
 				(size 1 1)
 			)
+			(justify right bottom)
 		)
-		(uuid "61392b55-d7b2-4520-b4c8-3a018b059c67")
+		(uuid "5ece4de2-594f-4ac5-b1a1-01ff8f21af55")
 	)
 	(label "I2C_SCL"
 		(at 179.07 60.96 0)
@@ -15146,16 +14062,6 @@
 		)
 		(uuid "68ad0f2d-983d-4f22-aa8b-1ac91cc876a5")
 	)
-	(label "K1_DRAIN"
-		(at 321.31 44.45 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6a7cbfc1-0618-441f-a648-0c9eeea1e995")
-	)
 	(label "WF26_R1_BRIDGE"
 		(at 87.63 257.81 180)
 		(effects
@@ -15165,16 +14071,6 @@
 			(justify right bottom)
 		)
 		(uuid "6b5d0ad3-1666-44cc-b0a1-e0d2fde13f17")
-	)
-	(label "T1_BUS"
-		(at 341.63 48.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6c765649-1bc9-4fdc-aedb-d54f69716ac3")
 	)
 	(label "WF26_P4"
 		(at 50.8 250.19 180)
@@ -15268,16 +14164,6 @@
 		)
 		(uuid "8618603b-fbd8-45ff-9698-86796533bd89")
 	)
-	(label "GATE3"
-		(at 283.21 176.53 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "86951783-8a0f-45e3-bdae-185bdfcd0637")
-	)
 	(label "P4"
 		(at 22.86 247.65 0)
 		(effects
@@ -15355,16 +14241,6 @@
 		)
 		(uuid "959fcd91-d5d4-4b70-8543-77805f21672c")
 	)
-	(label "GATE2"
-		(at 283.21 115.57 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "95e97d36-1078-4efd-bfd5-ae619a8de571")
-	)
 	(label "T1_BUS"
 		(at 184.15 233.68 0)
 		(effects
@@ -15393,6 +14269,16 @@
 		)
 		(uuid "9bd32639-8dbf-4352-8fa6-2a186c3eb329")
 	)
+	(label "TALK_BRIDGE"
+		(at 321.31 43.18 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "a0c4fc6c-fa42-49f0-83d0-6c8a2195d279")
+	)
 	(label "WF26_P5"
 		(at 50.8 271.78 0)
 		(effects
@@ -15404,13 +14290,14 @@
 		(uuid "a27ad9c0-09d5-43b9-9fd2-1983352b536c")
 	)
 	(label "P3"
-		(at 331.47 105.41 90)
+		(at 335.28 43.18 0)
 		(effects
 			(font
 				(size 1 1)
 			)
+			(justify left)
 		)
-		(uuid "a35a239e-f77f-4f7b-88fc-7c3620820054")
+		(uuid "a3769d90-3f38-4192-a8ef-c4ed9696110b")
 	)
 	(label "P2"
 		(at 52.07 227.33 0)
@@ -15421,6 +14308,16 @@
 		)
 		(uuid "a3a49f08-1797-471a-85ab-9d3a87a1b095")
 	)
+	(label "P2"
+		(at 308.61 81.28 90)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify left)
+		)
+		(uuid "a43d2faa-9175-4794-995c-dded4cdeecf2")
+	)
 	(label "USB_DP_ESP"
 		(at 68.58 85.09 0)
 		(effects
@@ -15429,6 +14326,16 @@
 			)
 		)
 		(uuid "a63086dc-eefd-4134-8b1f-e6f23f8a2105")
+	)
+	(label "P3"
+		(at 323.85 100.33 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify left)
+		)
+		(uuid "a7560f15-bb22-4b41-8990-5c866f735ae7")
 	)
 	(label "P3"
 		(at 52.07 224.79 0)
@@ -15466,6 +14373,16 @@
 			(justify right bottom)
 		)
 		(uuid "b073343d-e895-406f-82e6-9dcc165243d6")
+	)
+	(label "IN_P4"
+		(at 306.07 139.7 90)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify left)
+		)
+		(uuid "b18c22ef-35c0-4794-85a4-4df4e47ff092")
 	)
 	(label "USB_DM"
 		(at 25.4 90.17 0)
@@ -15530,6 +14447,16 @@
 			)
 		)
 		(uuid "bde12bc1-ad03-4d7e-b875-45715109a0da")
+	)
+	(label "P3"
+		(at 316.23 25.4 90)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify left)
+		)
+		(uuid "c1532384-660a-4b23-961a-0b5e048aff32")
 	)
 	(label "P1"
 		(at 85.09 146.05 0)
@@ -15626,15 +14553,6 @@
 		)
 		(uuid "e074b554-25cd-40ac-8907-120a41dfbbfe")
 	)
-	(label "IN_P4"
-		(at 328.93 148.59 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "e2f2aa65-8d90-4a4f-9e1f-4f13ef99cf72")
-	)
 	(label "LED_A"
 		(at 240.03 68.58 0)
 		(effects
@@ -15663,53 +14581,25 @@
 		)
 		(uuid "e7c41bbf-d745-4b68-92e1-f6c4c2615f64")
 	)
-	(label "K3_DRAIN"
-		(at 321.31 166.37 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e951e547-09c9-4b08-b01b-704d87b47792")
-	)
-	(label "GATE1"
-		(at 283.21 54.61 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "eafa7ad2-8687-4d61-93ce-aca2a6c4b271")
-	)
-	(label "P3"
-		(at 344.17 26.67 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "eb1dc074-ffb8-4aff-9872-0723c20d9c08")
-	)
-	(label "GATE1_DRV"
-		(at 283.21 33.02 90)
+	(label "IN_P4"
+		(at 308.61 25.4 90)
 		(effects
 			(font
 				(size 1 1)
 			)
+			(justify left)
 		)
-		(uuid "f3480959-aa4f-4155-b6c6-7e9abf9886f2")
+		(uuid "e92a881a-dd5e-42eb-85de-b91de88114b5")
 	)
-	(label "P4"
-		(at 331.47 168.91 90)
+	(label "T1_BUS"
+		(at 323.85 53.34 0)
 		(effects
 			(font
-				(size 1 1)
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(uuid "f81b4725-36d5-4ad1-b005-c2bad8be203d")
+		(uuid "f4eb4ca8-1d7f-45c8-85fb-f05a97ebfdac")
 	)
 	(label "IN_P4"
 		(at 20.32 138.43 0)
@@ -15931,80 +14821,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "R25")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 312.42 82.55 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "03e8eba3-1954-4bc6-96b2-86577eafac3e")
-		(property "Reference" "#PWR02"
-			(at 312.42 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 312.42 78.05 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 312.42 82.55 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 312.42 82.55 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 312.42 82.55 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ffcc8ce4-f755-4d18-bebd-163303b0dbf9")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -16391,112 +15207,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Transistors:NMOS,2N7002")
-		(at 288.29 115.57 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "0fd9a1d3-6b7e-4698-980e-ec866e1af331")
-		(property "Reference" "Q2"
-			(at 293.37 114.3 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 293.37 116.84 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:Q_SOT-23"
-			(at 288.29 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf"
-			(at 288.29 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K2 coil driver, low-side NMOS"
-			(at 288.29 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C8545"
-			(at 288.29 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "2N7002"
-			(at 288.29 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "3"
-			(uuid "9411724d-e90e-48ff-a03b-6cbb779bce4d")
-		)
-		(pin "1"
-			(uuid "4ccb1742-87fd-4c56-ae89-3a5cef453f5e")
-		)
-		(pin "2"
-			(uuid "fd6aa1c9-65a6-406e-bd78-bb51e6dc0889")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "Q2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,10uF")
 		(at 191.77 30.48 0)
 		(unit 1)
@@ -16777,112 +15487,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Transistors:NMOS,2N7002")
-		(at 288.29 54.61 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "16392b46-b690-498d-a37d-4494fab432f8")
-		(property "Reference" "Q1"
-			(at 293.37 53.34 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 293.37 55.88 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:Q_SOT-23"
-			(at 288.29 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf"
-			(at 288.29 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K1 coil driver, low-side NMOS"
-			(at 288.29 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C8545"
-			(at 288.29 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "2N7002"
-			(at 288.29 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "3"
-			(uuid "bfb64cf0-f32a-4756-99ff-c266486bb479")
-		)
-		(pin "1"
-			(uuid "cf540bf0-58b0-4044-9550-44aeac4f9dd5")
-		)
-		(pin "2"
-			(uuid "6f180987-12c6-43ba-92d5-4c7d5f77773a")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "Q1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,1kΩ")
 		(at 251.46 68.58 270)
 		(unit 1)
@@ -16978,109 +15582,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "R15")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,100Ω")
-		(at 283.21 41.91 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "1cc7b71b-83a9-4971-a468-6d1232c8a9c0")
-		(property "Reference" "R6"
-			(at 284.99 40.64 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100"
-			(at 284.99 43.18 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 283.21 41.91 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
-			(at 283.21 41.91 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K1 gate series resistor"
-			(at 283.21 41.91 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C22775"
-			(at 283.21 41.91 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1000T5E"
-			(at 283.21 41.91 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "cbd30bd1-a6f1-4af0-ac70-feb49596043c")
-		)
-		(pin "2"
-			(uuid "a3623736-2d61-4d3e-af64-232a91b09bfc")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R6")
 					(unit 1)
 				)
 			)
@@ -17294,80 +15795,6 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 283.21 193.04 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "1dc968ba-914b-4e27-bc90-ff3e86497ad8")
-		(property "Reference" "#PWR32"
-			(at 283.21 193.04 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 283.21 197.54 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 283.21 193.04 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 283.21 193.04 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 283.21 193.04 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "cc30f018-cc44-4172-9797-4b36150c0503")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR32")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
 		(at 214.63 158.75 0)
 		(unit 1)
 		(body_style 1)
@@ -17538,109 +15965,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "C5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
-		(at 303.53 36.83 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "293b6704-2c94-4cb6-bc49-0d94f5f6e7bb")
-		(property "Reference" "D1"
-			(at 305.31 35.56 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "1N4148W"
-			(at 305.31 38.1 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:D_SOD-123"
-			(at 303.53 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
-			(at 303.53 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K1 coil flyback diode"
-			(at 303.53 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C81598"
-			(at 303.53 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "1N4148W"
-			(at 303.53 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "6679bc8e-8a24-48ba-ace7-80012860be7b")
-		)
-		(pin "1"
-			(uuid "bdeaf982-e038-4999-80b3-5331a5b93733")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "D1")
 					(unit 1)
 				)
 			)
@@ -18142,6 +16466,109 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR18")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ")
+		(at 327.66 43.18 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "34d7cd14-1909-4160-a2bc-c7ba9688f1cc")
+		(property "Reference" "R28"
+			(at 328.93 44.96 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2.2k"
+			(at 326.39 44.96 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:R_0603"
+			(at 327.66 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf"
+			(at 327.66 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "ÖT bridge series R; matches the WF26's genuine 2.2k button resistor"
+			(at 327.66 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C4190"
+			(at 327.66 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "0603WAF2201T5E"
+			(at 327.66 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "cf71338a-10d2-4187-b308-91388fe96e48")
+		)
+		(pin "2"
+			(uuid "33d303b2-a683-4d97-b5d4-121dcf46a469")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "R28")
 					(unit 1)
 				)
 			)
@@ -18705,116 +17132,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Relay:G6K-2")
-		(at 331.47 97.79 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "3c5b10b8-af2b-4327-9f8d-41a6d601a0bb")
-		(property "Reference" "K2"
-			(at 347.97 96.52 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "G6K-2F-Y 4.5V"
-			(at 347.97 99.06 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y"
-			(at 331.47 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf"
-			(at 331.47 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Door-opener relay: bridges P2<->P3 via R16, emulating the WF26 ÖT button"
-			(at 331.47 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C397193"
-			(at 331.47 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "def1c352-4976-4614-8085-f071e3df9da5")
-		)
-		(pin "2"
-			(uuid "d373a935-7a93-4ae2-8e86-83aa1c89aa11")
-		)
-		(pin "3"
-			(uuid "b4e563e8-5acd-42cd-830a-3b9192575387")
-		)
-		(pin "4"
-			(uuid "66f9dbf7-2db6-4ed8-92c4-bbfaa385f82e")
-		)
-		(pin "5"
-			(uuid "eb549c47-2b7f-485a-abb7-754ddfb92ee8")
-		)
-		(pin "6"
-			(uuid "8292e2a8-e3f9-497c-9f61-3e14530cb283")
-		)
-		(pin "7"
-			(uuid "eef676ed-7c12-463f-bc8e-8ef982c3b134")
-		)
-		(pin "8"
-			(uuid "ab6009f0-0e42-405e-b97f-33677441b79e")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "K2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 226.06 36.83 0)
 		(unit 1)
@@ -19078,80 +17395,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 312.42 21.59 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "3f98060b-17f7-4603-b97f-ffaeebeb2230")
-		(property "Reference" "#PWR01"
-			(at 312.42 21.59 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 312.42 17.09 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 312.42 21.59 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 312.42 21.59 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 312.42 21.59 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "50bb936a-5f2e-4073-8ece-9a17a83972ce")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR01")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
 		(at 177.8 113.03 90)
 		(unit 1)
@@ -19356,7 +17599,7 @@
 		)
 	)
 	(symbol
-		(lib_id "sppj223200:SPPJ223200")
+		(lib_id "sppj322300:SPPJ322300")
 		(at 106.68 259.08 270)
 		(unit 1)
 		(body_style 1)
@@ -19387,7 +17630,7 @@
 				)
 			)
 		)
-		(property "Footprint" "sppj223200:SW-TH_SPPJ223200"
+		(property "Footprint" "sppj322300:SW-TH_SPPJ322300"
 			(at 91.44 259.08 0)
 			(hide yes)
 			(show_name no)
@@ -19398,7 +17641,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C470390.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C398940.pdf"
 			(at 88.9 259.08 0)
 			(hide yes)
 			(show_name no)
@@ -19431,7 +17674,7 @@
 				)
 			)
 		)
-		(property "MPN" "SPPJ223200"
+		(property "MPN" "SPPJ322300"
 			(at 83.82 259.08 0)
 			(hide yes)
 			(show_name no)
@@ -19442,7 +17685,7 @@
 				)
 			)
 		)
-		(property "LCSC Part" "C470390"
+		(property "LCSC Part" "C398940"
 			(at 81.28 259.08 0)
 			(hide yes)
 			(show_name no)
@@ -20225,109 +18468,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "U1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
-		(at 303.53 158.75 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "540148be-63c2-4dc5-8281-2b4ad1360f9e")
-		(property "Reference" "D3"
-			(at 305.31 157.48 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "1N4148W"
-			(at 305.31 160.02 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:D_SOD-123"
-			(at 303.53 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
-			(at 303.53 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K3 coil flyback diode"
-			(at 303.53 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C81598"
-			(at 303.53 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "1N4148W"
-			(at 303.53 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "eaa4991c-7190-4311-a6f6-65e48c3b6668")
-		)
-		(pin "1"
-			(uuid "3c5147de-52e7-4709-90aa-743183f4dd6c")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "D3")
 					(unit 1)
 				)
 			)
@@ -21364,112 +19504,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Transistors:NMOS,2N7002")
-		(at 288.29 176.53 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "66dea724-e5f7-403d-b317-2e411c1ab143")
-		(property "Reference" "Q3"
-			(at 293.37 175.26 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 293.37 177.8 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:Q_SOT-23"
-			(at 288.29 176.53 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf"
-			(at 288.29 176.53 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K3 coil driver, low-side NMOS"
-			(at 288.29 176.53 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C8545"
-			(at 288.29 176.53 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "2N7002"
-			(at 288.29 176.53 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "3"
-			(uuid "b79eb825-4eeb-48df-8f34-9e7ecf70a5d9")
-		)
-		(pin "1"
-			(uuid "72433fde-40a9-4f52-acef-eb83476f42ce")
-		)
-		(pin "2"
-			(uuid "52797cdf-98d5-40a2-9aad-98d25b1ca31e")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "Q3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
 		(at 143.51 175.26 180)
 		(unit 1)
@@ -21567,109 +19601,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "R23")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
-		(at 283.21 189.23 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "6d9c82a7-172e-4603-83cc-2005e43fc664")
-		(property "Reference" "R8"
-			(at 284.99 187.96 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10k"
-			(at 284.99 190.5 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 283.21 189.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
-			(at 283.21 189.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K3 gate pull-down: relay stays off while the GPIO floats at boot"
-			(at 283.21 189.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C25804"
-			(at 283.21 189.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1002T5E"
-			(at 283.21 189.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "806a3e51-7a7e-4c3a-b70e-91234fe109ae")
-		)
-		(pin "2"
-			(uuid "7b081690-39d8-4e32-863a-ef4f39a1139f")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R8")
 					(unit 1)
 				)
 			)
@@ -22422,109 +20353,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,100Ω")
-		(at 283.21 102.87 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "7c6138ea-e012-486a-905b-28c940ac36f2")
-		(property "Reference" "R4"
-			(at 284.99 101.6 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100"
-			(at 284.99 104.14 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 283.21 102.87 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
-			(at 283.21 102.87 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K2 gate series resistor"
-			(at 283.21 102.87 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C22775"
-			(at 283.21 102.87 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1000T5E"
-			(at 283.21 102.87 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "da06a081-999c-4e2a-a6aa-1a0ea3facf73")
-		)
-		(pin "2"
-			(uuid "3539a59a-7fc6-4d35-a9ad-e407788b8db2")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:LED,0603,Red")
 		(at 236.22 68.58 270)
 		(unit 1)
@@ -22729,80 +20557,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 290.83 120.65 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "7f447610-03cf-4dea-812b-7521b3a9169c")
-		(property "Reference" "#PWR28"
-			(at 290.83 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 290.83 125.15 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 290.83 120.65 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 290.83 120.65 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 290.83 120.65 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "2283a901-269d-495f-be4d-2d0e33ae62b7")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR28")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "ES8311:ES8311")
 		(at 219.71 190.5 0)
 		(unit 1)
@@ -22955,80 +20709,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "U3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 290.83 181.61 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "8230e39c-9ea8-495a-8d7a-b2bb20ba24ef")
-		(property "Reference" "#PWR29"
-			(at 290.83 181.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 290.83 186.11 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 290.83 181.61 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 290.83 181.61 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 290.83 181.61 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "8c975717-d0ac-4a8a-abc3-419e2fa29b87")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR29")
 					(unit 1)
 				)
 			)
@@ -23712,116 +21392,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Relay:G6K-2")
-		(at 331.47 36.83 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "9fab850e-3ff9-4a72-89b0-2f5856f04ffd")
-		(property "Reference" "K1"
-			(at 347.97 35.56 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "G6K-2F-Y 4.5V"
-			(at 347.97 38.1 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y"
-			(at 331.47 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf"
-			(at 331.47 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Virtual-PTT relay: bridges IN_P4<->P2 (talk); gate drive runs through K3's interlock contact"
-			(at 331.47 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C397193"
-			(at 331.47 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f22844ea-8176-427c-9f4f-25dde0be44f6")
-		)
-		(pin "2"
-			(uuid "cb68d976-4b6c-4d29-8e2f-93550353e513")
-		)
-		(pin "3"
-			(uuid "af46391b-515c-4fb9-859e-35ff9ad440ff")
-		)
-		(pin "4"
-			(uuid "c0239d4a-862d-4f56-bd73-2ad7a4d43a81")
-		)
-		(pin "5"
-			(uuid "0c88190b-6bb5-4b6e-a982-211b99a617c8")
-		)
-		(pin "6"
-			(uuid "d3e9b9fa-5b76-4b02-80e9-74d2c2d42bc4")
-		)
-		(pin "7"
-			(uuid "2c95a7fd-0056-4ef7-8d1a-43e3dcd3adac")
-		)
-		(pin "8"
-			(uuid "fa80d6ea-b94a-4f95-b185-b4ad9c94fecb")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "K1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector:TestPoint")
 		(at 330.2 218.44 0)
 		(unit 1)
@@ -24178,80 +21748,6 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 283.21 76.2 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "a3669667-d046-4c34-b1ee-08d09be2ebd1")
-		(property "Reference" "#PWR33"
-			(at 283.21 76.2 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 283.21 80.7 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 283.21 76.2 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 283.21 76.2 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 283.21 76.2 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "52531038-001c-42cc-8e1b-a2091687453b")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR33")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
 		(at 66.04 25.4 0)
 		(unit 1)
 		(body_style 1)
@@ -24319,80 +21815,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR41")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 312.42 143.51 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "a65a8e86-f5de-4815-90fa-f2df7408f2d2")
-		(property "Reference" "#PWR03"
-			(at 312.42 143.51 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 312.42 139.01 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 312.42 143.51 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 312.42 143.51 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 312.42 143.51 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "2be935e6-cd92-4a76-af65-5d01e9fc6317")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -24922,109 +22344,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ")
-		(at 331.47 52.07 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "b067f8ff-06ba-429e-a28c-6bfa4d0550ea")
-		(property "Reference" "R16"
-			(at 329.69 53.34 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2.2k"
-			(at 329.69 50.8 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 331.47 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf"
-			(at 331.47 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "ÖT bridge series R; matches the WF26's genuine 2.2k button resistor"
-			(at 331.47 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C4190"
-			(at 331.47 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF2201T5E"
-			(at 331.47 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "7c5cd7bb-1dec-4674-90c9-2d0d24e42f7b")
-		)
-		(pin "2"
-			(uuid "bea12ad5-1e22-4d6b-94d3-c7a47d40898b")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R16")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Mechanical:MountingHole")
 		(at 168.91 265.43 0)
 		(unit 1)
@@ -25058,7 +22377,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole_3.2mm_M3"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 168.91 265.43 0)
 			(hide yes)
 			(show_name no)
@@ -25095,80 +22414,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "H1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 290.83 59.69 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "b5bae8d8-147a-4dcf-80b9-84fd01de1f4c")
-		(property "Reference" "#PWR30"
-			(at 290.83 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 290.83 64.19 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 290.83 59.69 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 290.83 59.69 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 290.83 59.69 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "3a6eedf5-73c1-44ff-ad44-5c473d3e7e8a")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR30")
 					(unit 1)
 				)
 			)
@@ -25243,212 +22488,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR36")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,100Ω")
-		(at 283.21 163.83 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "b7767f52-3091-4ec5-b28b-edd17e46b0df")
-		(property "Reference" "R5"
-			(at 284.99 162.56 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100"
-			(at 284.99 165.1 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 283.21 163.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf"
-			(at 283.21 163.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K3 gate series resistor"
-			(at 283.21 163.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C22775"
-			(at 283.21 163.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1000T5E"
-			(at 283.21 163.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "7de0e964-a6ae-472f-aff5-b4f4a2619ea4")
-		)
-		(pin "2"
-			(uuid "d5bb14cc-c4bb-42c6-bebd-4ddc0b199143")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
-		(at 303.53 97.79 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "b782e548-dc19-4a67-897b-cc03023a4b37")
-		(property "Reference" "D2"
-			(at 305.31 96.52 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "1N4148W"
-			(at 305.31 99.06 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:D_SOD-123"
-			(at 303.53 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811061725_ST-Semtech-1N4148W_C81598.pdf"
-			(at 303.53 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K2 coil flyback diode"
-			(at 303.53 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C81598"
-			(at 303.53 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "1N4148W"
-			(at 303.53 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "0363cada-dfbd-406e-bbd2-a7d2ef72f1e6")
-		)
-		(pin "1"
-			(uuid "63c1f4a0-a258-49a0-9077-b33f142c809c")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "D2")
 					(unit 1)
 				)
 			)
@@ -25552,116 +22591,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "C4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Relay:G6K-2")
-		(at 331.47 158.75 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "bb4ec0d3-65b1-4007-b16b-518564449393")
-		(property "Reference" "K3"
-			(at 347.97 157.48 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "G6K-2F-Y 4.5V"
-			(at 347.97 160.02 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y"
-			(at 331.47 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "http://omronfs.omron.com/en_US/ecb/products/pdf/en-g6k.pdf"
-			(at 331.47 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Chime-suppress relay: breaks line 4 (IN_P4->P4); pole B interlocks K1's gate"
-			(at 331.47 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C397193"
-			(at 331.47 158.75 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "80d5b669-c6fc-4d9d-8b1e-f6910dedd0a8")
-		)
-		(pin "2"
-			(uuid "595b8f20-49a6-4dee-a91d-4f459f1ac3d0")
-		)
-		(pin "3"
-			(uuid "b6c4049c-78eb-4719-a17f-c2d6b68470f8")
-		)
-		(pin "4"
-			(uuid "4313ceea-164a-47e7-8249-1127c31c21e7")
-		)
-		(pin "5"
-			(uuid "0fb6e2e3-406b-450b-9019-ed257f8b4159")
-		)
-		(pin "6"
-			(uuid "0b10d931-f9e5-45ad-aab9-1a744025acfe")
-		)
-		(pin "7"
-			(uuid "6b8b7391-dbde-4749-a39f-da9a460effff")
-		)
-		(pin "8"
-			(uuid "0e9d933e-d244-490a-bb7e-bfbf62af5f02")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "K3")
 					(unit 1)
 				)
 			)
@@ -26056,7 +22985,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole_3.2mm_M3"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 193.04 265.43 0)
 			(hide yes)
 			(show_name no)
@@ -26099,7 +23028,7 @@
 		)
 	)
 	(symbol
-		(lib_id "sppj223200:SPPJ223200")
+		(lib_id "sppj322300:SPPJ322300")
 		(at 63.5 226.06 270)
 		(unit 1)
 		(body_style 1)
@@ -26130,7 +23059,7 @@
 				)
 			)
 		)
-		(property "Footprint" "sppj223200:SW-TH_SPPJ223200"
+		(property "Footprint" "sppj322300:SW-TH_SPPJ322300"
 			(at 48.26 226.06 0)
 			(hide yes)
 			(show_name no)
@@ -26141,7 +23070,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C470390.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C398940.pdf"
 			(at 45.72 226.06 0)
 			(hide yes)
 			(show_name no)
@@ -26174,7 +23103,7 @@
 				)
 			)
 		)
-		(property "MPN" "SPPJ223200"
+		(property "MPN" "SPPJ322300"
 			(at 40.64 226.06 0)
 			(hide yes)
 			(show_name no)
@@ -26185,7 +23114,7 @@
 				)
 			)
 		)
-		(property "LCSC Part" "C470390"
+		(property "LCSC Part" "C398940"
 			(at 38.1 226.06 0)
 			(hide yes)
 			(show_name no)
@@ -26422,80 +23351,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 283.21 132.08 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "cb54831c-0478-4694-80ba-171e0af1d925")
-		(property "Reference" "#PWR31"
-			(at 283.21 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 283.21 136.58 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 283.21 132.08 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 283.21 132.08 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 283.21 132.08 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f137c3f1-d458-4c26-85c8-df64b45af168")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR31")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+3V3")
 		(at 251.46 29.21 0)
 		(unit 1)
@@ -26638,109 +23493,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR43")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
-		(at 283.21 72.39 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "d4840c3a-2ce6-4b0a-ac82-fcae5437522d")
-		(property "Reference" "R9"
-			(at 284.99 71.12 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10k"
-			(at 284.99 73.66 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 283.21 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
-			(at 283.21 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K1 gate pull-down: relay stays off while the GPIO floats at boot"
-			(at 283.21 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C25804"
-			(at 283.21 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1002T5E"
-			(at 283.21 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "4b425cf3-611d-4008-97ce-118ab6d2e749")
-		)
-		(pin "2"
-			(uuid "36ea1c2e-98ac-4942-a5ac-913de09118c2")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R9")
 					(unit 1)
 				)
 			)
@@ -27730,109 +24482,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
-		(at 283.21 128.27 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "ec43a01f-5c1b-4437-986e-5cb32649b14e")
-		(property "Reference" "R7"
-			(at 284.99 127 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10k"
-			(at 284.99 129.54 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 283.21 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf"
-			(at 283.21 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "K2 gate pull-down: relay stays off while the GPIO floats at boot"
-			(at 283.21 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C25804"
-			(at 283.21 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1002T5E"
-			(at 283.21 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "719e8032-4eda-4c0f-8d8c-27138eac3d50")
-		)
-		(pin "2"
-			(uuid "d6bf7952-4d5b-4677-b2b0-6aef21a555c3")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+3V3")
 		(at 255.27 68.58 270)
 		(unit 1)
@@ -28332,6 +24981,351 @@
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR38")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(sheet
+		(at 292.1 31.75)
+		(size 26.67 27.94)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "b48a58c9-fdb0-4801-a401-f45affedd220")
+		(property "Sheetname" "ptt"
+			(at 292.1 31.0384 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "relay_driver.kicad_sch"
+			(at 292.1 61.214 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "NC_B" input
+			(at 313.69 31.75 90)
+			(uuid "6e234bf9-e1ee-4ecb-b150-8044c5cf38b5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NO_B" input
+			(at 316.23 31.75 90)
+			(uuid "1b0894e5-2135-4350-b6a0-18d671d6ebb5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "GATE_DRV" input
+			(at 292.1 41.91 180)
+			(uuid "8132b4ec-32e9-4e28-8561-ec17e4813d5b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "COM_B" input
+			(at 318.77 53.34 0)
+			(uuid "7070bfc1-bed5-4844-9e19-92d3fdfe5b8f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "COM_A" input
+			(at 318.77 43.18 0)
+			(uuid "101bbe88-4518-43ed-a155-22b9c817ed60")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NO_A" input
+			(at 308.61 31.75 90)
+			(uuid "19b96fec-9e6d-4f67-82d8-02d7e76e6b48")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NC_A" input
+			(at 306.07 31.75 90)
+			(uuid "b166b6a8-0005-4851-ac6e-8e72e9bf59cb")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 292.1 146.05)
+		(size 26.67 27.94)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "d367c2c4-7e0c-4ab4-8c91-d1022c13448a")
+		(property "Sheetname" "chime_suppress"
+			(at 287.274 145.034 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "relay_driver.kicad_sch"
+			(at 292.1 175.514 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "NC_B" input
+			(at 313.69 146.05 90)
+			(uuid "77066063-d189-45e3-aa48-4d4bc55cfb84")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NO_B" input
+			(at 316.23 146.05 90)
+			(uuid "1193d510-3088-49b2-8887-78e59d22526f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "GATE_DRV" input
+			(at 292.1 156.21 180)
+			(uuid "13d88f6c-5b2c-462b-8c0c-fab220785aa2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "COM_B" input
+			(at 318.77 168.91 0)
+			(uuid "9f3b66b8-7f0c-4614-9f73-5a7a7a776197")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "COM_A" input
+			(at 318.77 158.75 0)
+			(uuid "787eb33b-a41f-48e5-993a-75247a1d1d66")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NO_A" input
+			(at 308.61 146.05 90)
+			(uuid "11c24fbb-2c42-4918-8d02-22e2d8a04c4c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NC_A" input
+			(at 306.07 146.05 90)
+			(uuid "2e7da700-693e-4380-ad77-17e01363970e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 292.1 87.63)
+		(size 26.67 27.94)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "ead64420-86d1-4285-9725-1c7d3f4794ae")
+		(property "Sheetname" "door_opener"
+			(at 292.1 86.9184 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "relay_driver.kicad_sch"
+			(at 292.1 117.094 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "NC_B" input
+			(at 313.69 87.63 90)
+			(uuid "300b3fe9-634e-48d8-a3ef-26c669f26d54")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NO_B" input
+			(at 316.23 87.63 90)
+			(uuid "af872efb-1652-4d84-9ff4-6ff43f87868c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "GATE_DRV" input
+			(at 292.1 97.79 180)
+			(uuid "6d67ae4e-a137-4d50-91d9-30bbbdc19ec5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "COM_B" input
+			(at 318.77 110.49 0)
+			(uuid "cf15d91a-86ba-4375-96d7-73c514e642e9")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "COM_A" input
+			(at 318.77 100.33 0)
+			(uuid "c1ac9bf0-2c6a-48bc-8acd-2713b37389ab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NO_A" input
+			(at 308.61 87.63 90)
+			(uuid "1d06af34-fc90-47a4-a3ad-3503a9307de2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "NC_A" input
+			(at 306.07 87.63 90)
+			(uuid "59afe7c3-555c-41fb-8725-57e8d2080bad")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(page "3")
 				)
 			)
 		)

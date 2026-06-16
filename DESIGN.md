@@ -671,13 +671,18 @@ is the doubled-load case the links exist to prevent.
 The replacement variant drops into the **existing WF26 enclosure**, so outline, mounting and
 placement are set by the housing, not by the part count — it's a mechanically-driven re-floorplan,
 not a tweak of the current board:
-- **Outline + mounting holes** match the WF26's own PCB: **64 mm (W) × 59 mm (H)**, mounting holes
-  on the enclosure's existing bosses. (The board is already **64 mm wide**; it's still **~60 mm
-  tall** (vs the 59 mm target) and has **no mounting holes** — so the remaining mechanical work is
-  trimming the height to 59 mm once parts are re-floorplanned and adding the holes.)
+- **Outline + mounting holes** match the WF26's own PCB: **64 mm (W) × 59 mm (H)**. The board is at
+  that size, with **H1/H2 (NPTH 3.2 mm)** on the enclosure's existing bosses — **25 mm up from the
+  bottom edge, at the left/right edges** (confirm the exact boss positions against the real WF26
+  with calipers).
 - **Placement is pinned to the enclosure's openings**, not optimised for routing: the transducer
   behind the **speaker grille**, S1/S2 under the existing **button apertures**, and J2 (the 5-wire
-  bus) at the housing's **wire entry**.
+  bus) at the housing's **wire entry**. The switch **plunger tips** must land where the enclosure
+  buttons press them — given **relative to the board edges**, so they survive an outline move:
+  - **S1 (top button, door release):** **17 mm from the top edge, 20 mm from the right edge**.
+  - **S2 (bottom button, talk):** **5 mm from the bottom edge, 20 mm from the left edge**.
+  Marked as crosshairs on **Dwgs.User** in the PCB; the edge-relative figures here are the source of
+  truth — re-derive the absolute marker coordinates from the current Edge.Cuts if the outline shifts.
 - **Power entry:** the WF26 has no USB/power opening, so the 5 V feed needs a route in (cable gland,
   an existing aperture, or an added hole) — the bus can't supply it.
 - **Antenna:** the WROOM-1 PCB antenna needs an RF-transparent region — confirm the housing is
