@@ -48,6 +48,21 @@ tether it to a mains-earthed PC. Pair with a DMM.
       relay drops and the handset goes dead), and V3 senses it fine — so it holds. Just confirm the
       hold level keeps **OC1 above its detection threshold edge-to-edge** (relay hold V < pull-in V),
       so OC1 is a clean session gate. Measure mid-talk-window P4→P1.
+- [x] **WF26_K1 latch / session model — RESOLVED** (`osci/ring-20260617-195221.md`). Line 4 is the
+      session: **station-driven and held** (~9.2 V, gong on the front), but only while the station
+      senses the handset answering (the coil load) — floating P4 → brief ~0.4–1 s kick, no session.
+      The **door-open terminates it**: the station senses the ÖT short on P2↔P3, fires the opener, and
+      **drops line 4** (line 4 → 0 while P2 only sags to ~7 V, above the coil release — so it's the
+      station's drive removed, *not* a P2 seal-in). DESIGN.md ("Bell signals" / "WF26 internal
+      circuit") updated to match.
+- [ ] **Suppress mid-session — teardown / RX-TX-during-suppress test (still open, now sharper).**
+      With a call up, **energise K3** (break IN_P4↔P4) and watch whether the call survives (probe
+      IN_P4 + P2 + P3). Since the session is **station-driven and presence-gated on the handset load**,
+      breaking IN_P4↔P4 mid-call removes the load the station is holding on — so it may **drop the
+      call**, i.e. **RX/TX would NOT survive gong-suppress**. DESIGN.md's "RX/TX survive gong-suppress"
+      currently *assumes* they do — confirm or kill it. If suppress drops the call, the replacement
+      board must keep its own load on IN_P4 (the dual-mode Türruf coil) to hold the session while
+      muting the gong.
 - [ ] **Door-opener firing threshold** — the linchpin test. Bridge P2↔P3 with (a) a **dead
       short** and (b) **2.2 kΩ**; does each fire the TV20/S opener? Expected (per the genuine
       handset): short fires, 2.2 kΩ does *not*. This confirms the choices already in the design —

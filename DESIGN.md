@@ -71,6 +71,19 @@ into the WF26 — see "Why line 4 needs two pins" below.
 the door opener (a dead short, no series resistor). **Relay K3** (P4 on COM, IN-P4 on NC) breaks
 the Türruf line when energised to suppress the chime.
 
+**Door-open must wait out the gong (firmware timing).** K2 bridges P2↔P3 as a *parallel*
+short, which — unlike the handset's own button — does **not** break the listen path. During a
+ring WF26_K1 is energised (K1_COM↔P4) with the handset's S1 released (P2 parked on K1_COM), so
+**P2↔P4**: line 2 carries the live Türruf. Closing K2 then completes
+**P4 → WF26_K1 → P2 → K2 → P3**, injecting the ring (12 V DC + gong AC) onto line 3 — the
+up-audio / talk line back to the TV20/S. The handset never does this because its door button
+**S1 is a DPDT *transfer*** that lifts P2 off K1_COM the instant it bridges P2↔P3; K2 is a plain
+parallel short with no such break. So the firmware **delays the door-open ~1.75 s after the house
+ring** (`house_doorbell` → `delay: 1.75s` → `front_door_buzzer`), long enough for the gong (the
+AC burst at the ring onset) to finish — K2 then bridges only the residual DC pedestal, not the
+tone. WF26_K1 stays pulled in for the full ~60 s call window, so the delay waits out the *gong*,
+not the whole window.
+
 **Why line 4 needs two pins.** K2 (door opener) *adds* a contact across P2+P3 — a parallel
 closure, fine from a parallel bus tap. K3 (chime suppress) must *break* the Türruf so it
 stops reaching the WF26 gong — a **series** operation, so line 4 is split at the board:
@@ -118,9 +131,28 @@ From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehl
   NTR201 12 VAC that supplies the bus and bell-sense voltages, and one the board never taps.
   The bus we tap (lines 1–5 at the WF26) and the bell-sense voltage (~12 VDC) stay on the
   NTR201 domain, so the opener's 8 V supply does **not** affect the opto sense-current sizing.
-- **Bell signals:** Türruf (house door) ≈ **12 VDC across terminals 4 & 1**; Etagenruf
-  (floor call) measured across **5 & 1**. Line **1 is the common** reference.
-- **Tones:** Türruf = **3-Klang-Gong** (3-chime); Etagenruf = **Dauerton** (continuous).
+- **Bell signals:** Türruf (house door) ≈ **12 VDC nominal across terminals 4 & 1** (measured
+  ~10 V at the bus); Etagenruf (floor call) measured across **5 & 1**. Line **1 is the common**
+  reference. A door press **latches a fixed ~60 s window** on line 4 — *press duration is
+  irrelevant* (a short tap and a long hold both give the full ~60 s) — line 4 stays "hot" for
+  the whole window and only then drops to 0. This is the same ~60 s as the call/speech window
+  below; the line-4 DC holds the WF26 relay (listen) in for the duration. **The station drives
+  line 4, but only *holds* it while it senses the handset answering** (the WF26 coil drawing
+  ~37 mA on line 4): with P4 left floating it sends only a brief (~0.4–1 s) initiation kick, sees
+  no answer, and drops — no session. **A door-open ends the window early:** the station senses the
+  ÖT short on P2↔P3, fires the opener, and drops line 4 — at the door-open line 4 collapses to 0
+  while P2 only sags to ~7 V (above the coil's release), so it's the station's line-4 drive being
+  removed, not a P2 hold. So the ~60 s is the *uninterrupted* window; a door-open cuts it short.
+- **Tones:** Türruf = **3-Klang-Gong** (3-chime) — the gong is an **AC tone superimposed on the
+  line-4 DC pedestal at the *start*** of the window; once the chime finishes, line 4 holds
+  **steady DC** for the remainder. Etagenruf = **Dauerton** (continuous).
+- **Bus is a shared party line; line 4 is per-apartment.** Line 4 (Türruf) is **address-selective**
+  — it only goes hot for *this* apartment's own door button; another apartment's ring leaves our
+  line 4 cold, so **OC1 (on IN_P4) senses only our own ring**. Line 2, by contrast, is **shared
+  across apartments**: a neighbour's call audio — gong included — appears on our line 2, put there
+  by the *ringing* station's K1 listen-bridge (P2↔P4). So anything tapping line 2 hears every
+  apartment's call. (Observed: a neighbour's ring showed the gong on our P2 with our line 4 cold;
+  the gong's source is line 4, reaching the shared line 2 only through a latched K1.)
 - **ÖT door-opener trigger (authoritative):** the troubleshooting test says
   *"Zum Test, Klemmen 2 u. 3 brücken"* — **bridge terminals 2 & 3** → opener voltage
   appears at 8/9. This is exactly what relay **K2** does (COM=P2, NO→P3, a direct short).
@@ -201,9 +233,15 @@ Key facts:
 - **Talk = P4↔P3 through R1 (2.2 kΩ).** S2 (Sprechen) *pressed* ties R1_BRIDGE↔P3, putting R1
   across **P4↔P3**; *released* it parks on the unused NC (open). The talk handshake the TV20/S
   sees is a **2.2 kΩ bridge of line 4 to line 3**.
+- **Why the talk bridge is resistive, not a short.** During a held session WF26_K1 ties **P2↔P4**
+  (the listen path), so the talk bridge **P4↔P3** is electrically **P2↔P3** — the *door-opener*
+  pattern. The 2.2 kΩ keeps it below the opener's fire threshold (a dead short fires; 2.2 kΩ does
+  not), so talking can't pop the door; it also limits the load on the line-4 session hold.
 - **The relay coil is across P1↔P4 = common ↔ Türruf, so the house ring energises it directly.**
   The ~12 V Türruf DC on line 4 drives ~12 V/320 Ω ≈ 37 mA through the coil to common and pulls
-  WF26_K1 in — the ring *is* the coil drive; no external "session" supply needed. **WF26_K1:**
+  WF26_K1 in — the ring *is* the coil drive (line 4 is held hot by the station for the whole
+  session, see "Bell signals"); there is **no separate P2 "seal-in" supply** — at a door-open line 4
+  drops to 0 while P2 stays ~7 V yet K1 still releases, so line 4 (not P2) holds the coil. **WF26_K1:**
   6-pin DIL SPDT (1 Form C), HJR-4102-N-12V, coil 5/8 (~320 Ω), common
   1+12 = K1_COM, **NO pin 6 = P4**, NC pin 7 = open. Energised → K1_COM↔P4.
 - **Single transducer:** LS1 (16 Ω) is the **only** transducer (no separate mic), across
