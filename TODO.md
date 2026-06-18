@@ -22,6 +22,14 @@ copper thieving-zone warning).
       number band so they don't collide with the board's own C/K/R/S parts, and give the P4/P5 bus
       pads a proper class (e.g. J or TP, not `P`). Update any DESIGN.md references; keep ERC/DRC clean.
 
+## D5 refdes — `D` prefix on a powered IC (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
+
+- [ ] **Reconsider D5's `D` reference designator.** D5 is a **TPD2S017** — a powered (VCC), 6-pin
+      USB ESD-protection IC (CH1/CH2 in/out + VCC + GND), not a 2-terminal diode. By convention a
+      powered multi-pin IC is **`U`**, not `D`; the `D` prefix makes refdes-keyed tooling (BOM class,
+      the sim's component classifier) treat it as a plain diode. Re-annotate to `U` in its own number
+      band if agreed; keep ERC/DRC clean and update any DESIGN.md / ORDERING.md references.
+
 ## V4 main board — mechanical / enclosure fit (`kicad/doorbell.kicad_pcb`)
 
 Board widened to 64 mm to match the WF26 PCB; zones re-poured. JLCPCB tooling holes and the M3
