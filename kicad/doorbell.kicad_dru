@@ -41,7 +41,8 @@
 	(constraint hole_clearance (min 0.28mm)))
 
 # Board-edge copper clearance: relax from the board's conservative 0.5 mm to JLCPCB's published
-# 0.3 mm capability. U1's antenna overhangs the left edge, so its edge-row pins/traces (e.g.
-# BOOT) necessarily run close to that edge -- 0.3 mm is still well within what JLCPCB fabs.
+# 0.3 mm capability. U1 (ESP32-C6-MINI-1U) uses a u.FL external antenna -- no PCB antenna -- but it
+# sits near the left edge, so its edge-row pins/traces (e.g. BOOT) can run close to that edge; 0.3 mm
+# is still well within what JLCPCB fabs.
 (rule "board-edge copper clearance (JLCPCB 0.3mm)"
 	(constraint edge_clearance (min 0.3mm)))

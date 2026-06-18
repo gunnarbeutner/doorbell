@@ -1,44 +1,38 @@
-# Klingel V4 — ESPHome config for the ESP32-C6 board (U1 = ESP32-C6-MINI-1U-H4; was WROOM-1-N8).
-# NOTE: pad numbers in the comments below are WROOM-era; GPIO numbers are current. The MINI-1/U does
-# not expose GPIO10/GPIO11, so I2S_DIN moved to GPIO23 and I2S_BCLK to GPIO14 (all other GPIOs unchanged).
+# Klingel V4 — ESPHome config for the ESP32-C6 doorbell board (U1 = ESP32-C6-MINI-1/U, U3 = ES8311 codec).
 #
-# Ported from the V3 doorbell-v3.yaml (ESP32 WROOM-32 dev board). All automation logic is
-# preserved verbatim; only the things that change with the new MCU/board were touched:
+# GPIO map:
+#   House Doorbell     (OC1 / Türruf sense)        : GPIO3
+#   Apartment Doorbell (OC2 / Etagenruf sense)     : GPIO2
+#   front_door_buzzer  (K2 / ÖT door opener)       : GPIO21
+#   suppress_sound     (K3 / chime suppress)       : GPIO22
+#   K1                 (PTT relay, talk=energised) : GPIO20
+#   I2C_SDA  (ES8311 control)                      : GPIO18
+#   I2C_SCL  (ES8311 control)                      : GPIO15
+#   I2S_MCLK (master clock)                        : GPIO14
+#   I2S_BCLK (bit clock, SCLK)                     : GPIO7
+#   I2S_DIN  (capture, ASDOUT)                     : GPIO6
+#   I2S_WS   (LRCK)                                : GPIO1
+#   I2S_DOUT (DAC / playback, DSDIN)               : GPIO0
+#   logger                                         : native USB-Serial-JTAG (GPIO12/GPIO13 = USB D-/D+)
+# The I2S/I2C pins are ordered so U1's codec-facing edge fans to the ES8311 in pin order, no crossings.
 #
-#   1. board/framework  : esp32dev  ->  esp32-c6-devkitc-1  (generic ESP32-C6 board def; fits the WROOM-1)
-#   2. logger           : routed to the native USB-Serial-JTAG (GPIO12/GPIO13 = USB D-/D+ on C6)
-#   3. GPIO pins remapped to the V4 hardware (C6-WROOM-1 pad assignments differ from C3):
-#        House Doorbell    (OC1 / Türruf  sense) : GPIO3  -> GPIO3   (right col pad 26)
-#        Apartment Doorbell(OC2 / Etagenruf sense): GPIO1  -> GPIO2   (right col pad 27)
-#        front_door_buzzer (K2 / ÖT door opener) : GPIO20 -> GPIO21  (right col pad 19)
-#        suppress_sound    (K3 / chime suppress) : GPIO10 -> GPIO22  (right col pad 20)
-#   4. *** relay outputs are ACTIVE-HIGH (unchanged from C3 version) ***
-#   5. Audio added (ES8311 mono codec, U3; half-duplex PTT via K1):
-#        I2C_SDA  (ES8311 control)               : GPIO18            (pad 16)
-#        I2C_SCL  (ES8311 control)               : GPIO19            (pad 17)
-#        I2S_DIN  (capture, ASDOUT)              : GPIO23            (MINI-1U pin 29; was GPIO10/WROOM)
-#        I2S_WS   (LRCK)                         : GPIO0             (pad  8)
-#        I2S_MCLK (master clock)                 : GPIO6             (pad  6)
-#        I2S_BCLK (bit clock, SCLK)              : GPIO14            (MINI-1U pin 19; was GPIO11/WROOM)
-#        K1       (PTT relay, talk=energised)    : GPIO20            (pad 18)
-#        I2S_DOUT (DAC / playback, DSDIN)        : GPIO7             (pad  7)
-#        (GPIO23 is now I2S_DIN — see above; it was freed when the session-sense opto was removed)
-#   6. Sense disambiguation reworked for the V4 sense points (departs from V3 logic):
-#        - OC2 taps the speaker pair (P5↔P1) and pulses at audio rate on ANY loud
-#          speaker audio (floor tone, door gong, speech). Its filter chain stretches
-#          the half-cycle pulses into a level (delayed_off before delayed_on) and is
-#          masked by house_doorbell / PTT — see the sensor for details.
-#        - OC1 is masked during board PTT: K1's IN_P4↔P3 bridge (via R16) can disturb
-#          the line-4 sense and fake a house ring. (The session-sense opto was removed.)
+# Relay outputs are ACTIVE-HIGH (see the output section): GPIO HIGH -> 2N7002 on -> coil energised.
 #
-# The api encryption key, OTA password and static IP are kept identical to V3 so the existing
-# Home Assistant integration keeps working without re-pairing.
+# Sense disambiguation for the V4 sense points:
+#   - OC2 taps the speaker pair (P5↔P1) and pulses at audio rate on ANY loud speaker audio
+#     (floor tone, door gong, speech). Its filter chain stretches the half-cycle pulses into a
+#     level (delayed_off before delayed_on) and is masked by house_doorbell / PTT — see the sensor.
+#   - OC1 is masked during board PTT: K1's IN_P4↔P3 bridge (via R16) can disturb the line-4 sense
+#     and fake a house ring.
+#
+# The api encryption key, OTA password and static IP are fixed so the Home Assistant integration
+# pairs without changes.
 
 esphome:
   name: doorbell
 
 esp32:
-  board: esp32-c6-devkitc-1     # generic ESP32-C6 board def — matches U1 (ESP32-C6-WROOM-1)
+  board: esp32-c6-devkitc-1     # generic ESP32-C6 board def (U1 = ESP32-C6-MINI-1/U)
   framework:
     type: esp-idf
 
@@ -74,15 +68,15 @@ wifi:
     dns1: 192.168.3.53
 
 i2c:
-  sda: GPIO18              # I2C_SDA — ES8311 (U3) control bus  [C6 pad 16]
-  scl: GPIO19              # I2C_SCL — ES8311 (U3) control bus  [C6 pad 17]
+  sda: GPIO18              # I2C_SDA — ES8311 (U3) control bus
+  scl: GPIO15              # I2C_SCL — ES8311 (U3) control bus (GPIO15 strap: the SCL pull-up holds it high at reset = USB-Serial-JTAG, the wanted state)
   scan: false
 
 i2s_audio:
   id: i2s_bus
-  i2s_lrclk_pin: GPIO0    # I2S_WS / LRCK   [C6 pad 8]
-  i2s_bclk_pin: GPIO14    # I2S_BCLK / SCLK  [MINI-1U pin 19 — moved off GPIO11, not exposed on MINI-1/U]
-  i2s_mclk_pin: GPIO6     # I2S_MCLK        [C6 pad 6]
+  i2s_lrclk_pin: GPIO1    # I2S_WS / LRCK
+  i2s_bclk_pin: GPIO7     # I2S_BCLK / SCLK
+  i2s_mclk_pin: GPIO14    # I2S_MCLK
 
 audio_dac:
   - platform: es8311
@@ -98,24 +92,24 @@ speaker:
     i2s_audio_id: i2s_bus
     dac_type: external
     audio_dac: es8311_codec
-    i2s_dout_pin: GPIO7    # I2S_DOUT / DSDIN (ESP→codec, playback)  [C6 pad 7]
+    i2s_dout_pin: GPIO0    # I2S_DOUT / DSDIN (ESP→codec, playback)
 
 microphone:
   - platform: i2s_audio
     id: intercom_mic
     i2s_audio_id: i2s_bus
     adc_type: external     # ES8311 does the conversion; ESP only receives I2S
-    i2s_din_pin: GPIO23    # I2S_DIN / ASDOUT (codec→ESP, capture)  [MINI-1U pin 29 — moved off GPIO10, not exposed on MINI-1/U]
+    i2s_din_pin: GPIO6     # I2S_DIN / ASDOUT (codec→ESP, capture)
 
 # Two-way intercom via Home Assistant Assist. PTT-triggered (no on-device wake word),
-# replies played back through the intercom speaker. Added to size-estimate the build.
+# replies played back through the intercom speaker.
 voice_assistant:
   id: doorbell_voice
   microphone: intercom_mic
   speaker: intercom_speaker
 
-# Optional on the C3 (BLE works, but uses resources on the single core). Remove this and
-# esp32_ble_tracker if you don't use the Bluetooth proxy.
+# Optional: BLE works but uses resources. Remove this and esp32_ble_tracker if you don't
+# use the Bluetooth proxy.
 bluetooth_proxy:
   active: false
 
@@ -129,7 +123,7 @@ binary_sensor:
     icon: mdi:doorbell
     id: apartment_doorbell
     pin:
-      number: GPIO2            # OC2 collector — Etagenruf (P5) sense   [V3: 32; C3: GPIO1; C6 pad 27]
+      number: GPIO2            # OC2 collector — Etagenruf (P5) sense
       inverted: true           # opto pulls the pin LOW when the bell rings
       mode:
         input: true            # R23 (10k to +3V3) holds it HIGH at idle
@@ -160,7 +154,7 @@ binary_sensor:
     icon: mdi:doorbell
     id: house_doorbell
     pin:
-      number: GPIO3            # OC1 collector — Türruf (P4 / IN-P4) sense   [V3: 33; C3: GPIO3; C6 pad 26]
+      number: GPIO3            # OC1 collector — Türruf (P4 / IN-P4) sense
       inverted: true
       mode:
         input: true            # R22 (10k to +3V3) holds it HIGH at idle
@@ -168,8 +162,8 @@ binary_sensor:
       # Mask while board PTT perturbs line 4: K1 bridges IN_P4↔P3 through R16 (2.2k), which
       # can disturb OC1's line-4 sense and fake a ring, so OC1 stays masked for the PTT window.
       # A phantom ring is worse than a missed one here — on_press can pulse the door buzzer
-      # (auto-open). (The resident's own talk could disturb it too, but the session-sense opto
-      # was removed, so only board PTT is masked. Exact coupling: confirm on the bench.)
+      # (auto-open). (Only board PTT is masked; the resident's own talk could disturb it too —
+      # exact coupling: confirm on the bench.)
       - lambda: |-
           if (id(intercom_ptt).state) return false;
           return x;
@@ -219,17 +213,17 @@ binary_sensor:
       //   exclusive (both want line 4 during the ring). Decoupling them — so the board can capture
       //   incoming audio while the handset gong is silenced — is the open "tap P1↔IN_P4 for RX"
       //   investigation (see DESIGN.md "TX-out reach" / TODO). NOTE: there is no session-active
-      //   input any more (the dedicated session-sense opto was removed); a session arm should be
-      //   re-added here once "session active" is derived from the OC1 (Türruf) event + a timer.
+      //   input; a session arm should be added here once "session active" is derived from the
+      //   OC1 (Türruf) event + a timer.
       if (id(intercom_ptt).state) return true;
       return !id(internet_connection).state || (id(apartment_occupancy).state && !id(someone_at_house_door).state && id(doorbell_sound).state);
     on_press:
       then:
         # State went true ("keep line 4 intact"): drop K3 so the line is continuous (talk/listen
-        # audio + the gong). No inter-relay timing constraint — the interlock is gone, and K1 now
-        # bridges IN_P4↔P3 (via R16), so re-closing K3's NC while K1 is up only re-makes line 4↔line 3
-        # (talk), never a P2↔P3 short. (PTT is no longer forced off here — that would fight the PTT
-        # gate above; session-end PTT cleanup belongs to the session-active rework.)
+        # audio + the gong). No inter-relay timing constraint: K1 bridges IN_P4↔P3 (via R16), so
+        # re-closing K3's NC while K1 is up only re-makes line 4↔line 3 (talk), never a P2↔P3 short.
+        # (PTT is not forced off here — that would fight the PTT gate above; session-end PTT cleanup
+        # belongs to the session-active work.)
         - output.turn_off: suppress_doorbell_sound_bin   # K3 off -> line 4 continuous
     on_release:
       then:
@@ -255,22 +249,20 @@ switch:
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
 
-# *** IMPORTANT — the V4 relay drivers are ACTIVE-HIGH, so these outputs are NOT inverted. ***
-# V3 used a SONGLE relay module that energised on a LOW input, so V3 had `inverted: true`.
-# V4 drives each coil with a discrete low-side N-MOSFET (2N7002): GPIO HIGH -> FET on -> coil
-# energised. So `turn_on` must drive the pin HIGH => no `inverted:` here. Leaving `inverted: true`
-# in by mistake would energise BOTH relays at boot (door opener pulsing + chime force-suppressed)
-# — exactly what the gate pull-downs are there to prevent. The logical meaning is unchanged from
-# V3 (turn_on = relay energised); only the physical polarity flipped.
+# *** IMPORTANT — the relay drivers are ACTIVE-HIGH, so these outputs are NOT inverted. ***
+# Each coil is driven by a discrete low-side N-MOSFET (2N7002): GPIO HIGH -> FET on -> coil
+# energised, so `turn_on` drives the pin HIGH => no `inverted:` here. Adding `inverted: true`
+# by mistake would energise BOTH relays at boot (door opener pulsing + chime force-suppressed)
+# — exactly what the gate pull-downs are there to prevent.
 output:
   - platform: gpio
-    pin: GPIO20              # K1 — PTT relay (energised = talk: IN_P4↔P3 via R16)  [C6 pad 18]
+    pin: GPIO20              # K1 — PTT relay (energised = talk: IN_P4↔P3 via R16)
     id: ptt_relay_bin
   - platform: gpio
-    pin: GPIO22              # K3 — chime suppress (break line 4)        [V3: 25; C3: GPIO10; C6 pad 20]
+    pin: GPIO22              # K3 — chime suppress (break line 4)
     id: suppress_doorbell_sound_bin
   - platform: gpio
-    pin: GPIO21              # K2 — front-door buzzer / ÖT (bridge P2↔P3 direct) [C6 pad 19]
+    pin: GPIO21              # K2 — front-door buzzer / ÖT (bridge P2↔P3 direct)
     id: front_door_buzzer_bin
 
 button:

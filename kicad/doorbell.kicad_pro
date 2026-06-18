@@ -564,6 +564,14 @@
       {
         "netclass": "WF26 Bus",
         "pattern": "/T1_BUS"
+      },
+      {
+        "netclass": "WF26 Bus",
+        "pattern": "/IN_P4"
+      },
+      {
+        "netclass": "WF26 Bus",
+        "pattern": "+5V"
       }
     ]
   },

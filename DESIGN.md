@@ -347,7 +347,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | Audio | **Half-duplex path on-board**: ES8311 mono codec + one SM-LP-5001 isolation transformer, its bus winding **steered by K1's second pole** between line 2 (RX, at rest) and line 3 (TX, energised); RX/TX tap the **speech pair (P1↔P2 / P1↔P3)**, gated by **OC1** (session = Türruf held, see "Audio path"); analog component values bench-gated | The bus is half-duplex by design (single LS1 transducer) ⇒ no echo cancellation needed ⇒ within the C6's reach |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
-### ESP32-C6 GPIO map (matches `doorbell_design.py` NETS and `firmware/doorbell-v4.yaml`)
+### ESP32-C6 GPIO map (matches `firmware/doorbell-v4.yaml` and the schematic)
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
@@ -356,16 +356,15 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | IO22 | 20 | K3 gate — chime suppress (break IN_P4→P4) | out | 10 k gate pull-down ⇒ off at boot |
 | IO3  | 26 | OC1 collector — house bell (Türruf, IN_P4) | in | internal pull-up (firmware) |
 | IO2  | 27 | OC2 collector — apartment bell (Etagenruf, P5) | in | internal pull-up (firmware) |
-| IO23 | 21 | **spare** — unused GPIO, pad free | — | available for reuse |
+| IO19 / IO23 | 25 / 29 | **spare** — unused GPIO, pad free | — | available for reuse |
 | IO12 / IO13 | 13 / 14 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
-| IO18 / IO19 | 16 / 17 | I²C SDA / SCL (10 k pull-ups R18/R19) | — | ES8311 control, addr 0x18 |
-| IO11 / IO10 / IO0 | 12 / 11 / 8 | I²S BCLK / DIN(ASDOUT) / WS | — | ES8311; pad order matches U3's south-row pins for a crossing-free fan |
-| IO6 / IO7 | 6 / 7 | I²S MCLK / DOUT(DSDIN) → U3 | out | ES8311 |
+| IO18 / IO15 | 24 / 20 | I²C SDA / SCL (10 k pull-ups R18/R19) | — | ES8311 control, addr 0x18; IO15 is a JTAG-source strap — the SCL pull-up holds it high at reset (= USB-Serial-JTAG, the wanted state) |
+| IO14 / IO7 / IO1 | 19 / 16 / 13 | I²S MCLK / BCLK / WS(LRCK) | out | ES8311 |
+| IO6 / IO0 | 15 / 12 | I²S DIN(ASDOUT) / DOUT(DSDIN) | in / out | ES8311; GPIOs ordered so U1's codec-facing edge fans to U3 in pin order, no crossings |
 | IO9 | 15 | BOOT strap | — | 10 kΩ pull-up + button to GND |
 | EN | 3 | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec) + button |
 | IO8 | 10 | strap | — | 3.3 kΩ pull-up (R12, per C6 datasheet / DevKitC-1 R6) |
-| IO1 / IO4 / IO5 | 9 / 4 / 5 | spare | — | No-Connect |
-| IO15 | 23 | strap | — | left floating (acceptable per datasheet) |
+| IO4 / IO5 | 9 / 10 | spare | — | No-Connect |
 | IO16 / IO17 | 25 / 24 | U0TXD / U0RXD | — | No-Connect |
 
 ### Bell / session sense front-end

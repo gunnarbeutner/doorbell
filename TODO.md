@@ -13,30 +13,35 @@ is on the K1 talk strap, the K3↔K1 interlock is gone (K1/K2/K3 independent), a
 what's left is firmware + bench validation (below). ERC 0 errors; DRC clean (1 benign isolated-
 copper thieving-zone warning).
 
+## WF26 replica refdes cleanup (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
+
+- [ ] **Rename the `WF26_*` reference designators to standard KiCad refdes.** The embedded dumb-core
+      WF26 handset replica uses prefixed, non-standard designators — `WF26_C1, WF26_K1, WF26_P4,
+      WF26_P5, WF26_R1, WF26_S1, WF26_S2` — instead of the plain `<class><number>` form KiCad's
+      annotator and the BOM/CPL exports expect. Re-annotate to unique standard refdes in their own
+      number band so they don't collide with the board's own C/K/R/S parts, and give the P4/P5 bus
+      pads a proper class (e.g. J or TP, not `P`). Update any DESIGN.md references; keep ERC/DRC clean.
+
 ## V4 main board — mechanical / enclosure fit (`kicad/doorbell.kicad_pcb`)
 
-Board widened to 64 mm to match the WF26 PCB; zones re-poured. Remaining enclosure-fit work:
+Board widened to 64 mm to match the WF26 PCB; zones re-poured. JLCPCB tooling holes and the M3
+mounting holes (H1/H2) are placed, each with a keepout. **No open enclosure-fit items remain.**
 
-- [ ] **Add tooling holes.** Pre-place 1.152 mm tooling holes (JLCPCB's SMT-fixture size, through a
-      ~1.55 mm pad on both outer layers) at controlled positions, so JLCPCB's CAM doesn't drill its
-      own where they'd foul the antenna edge or a part keepout. On the V3 proto JLCPCB added holes
-      near the antenna and west of T1 — see DESIGN.md "Known minor items (accepted)".
+## Docs sweep — drop stale WROOM-1 / PCB-antenna references (DESIGN.md, ORDERING.md)
 
-## U1 → ESP32-C6-MINI-1U-H4 (module swap, in progress)
+U1 is the ESP32-C6-MINI-1/U (u.FL external antenna) in the schematic, PCB, and firmware (parity
+clean) — the module swap itself is complete. The docs still describe the old WROOM-1 (PCB-antenna)
+module.
 
-Swapping U1 from ESP32-C6-WROOM-1-N8 (PCB antenna) to **ESP32-C6-MINI-1U-H4** (external u.FL antenna,
-LCSC C20627095) — frees the antenna-edge constraint and shrinks U1. Symbol `PCM_Espressif:ESP32-C6-MINI-1/U`
-+ footprint `PCM_Espressif:ESP32-C6-MINI-1U` (both already in the installed Espressif PCM lib). The MINI-1/U
-does **not** expose GPIO10/GPIO11, so I2S_DIN moved to **GPIO23** and I2S_BCLK to **GPIO14**; all other GPIOs
-unchanged. Firmware pins done; the schematic re-symbol+rewire and the PCB footprint + antenna-keepout removal
-are still to do.
-
-- [ ] **Update or remove every old-pinout (WROOM-1) reference** — the schematic + firmware are the
-      authoritative pin map, so the docs shouldn't restate it. Sweep and fix-or-delete: DESIGN.md (the U1
-      floorplan + GPIO/pad table, the PCB-antenna / antenna-keepout notes, the antenna-fiducial bit under
-      "Known minor items"), ORDERING.md (U1 = C6-WROOM-1 C5366877 → MINI-1U-H4 C20627095, the U1
-      placement-check row, the antenna-edge depanel gates), and the firmware header (WROOM pad numbers).
-      Where a reference merely duplicates what the schematic/firmware already say, delete it rather than re-sync it.
+- [ ] **Update or delete every WROOM-1 / PCB-antenna reference left in the docs** — the schematic +
+      firmware are the authoritative pin map, so the docs shouldn't restate it. A u.FL module has no
+      PCB antenna, so the antenna-keepout / RF-transparent / antenna-edge notes are moot, not just stale.
+      - **DESIGN.md** — the MCU row (`ESP32-C6-WROOM-1-N8` / C5366877 → MINI-1U-H4 / C20627095), the
+        remaining WROOM-era pad numbers in the GPIO/pad table, and the PCB-antenna notes (RF-transparent
+        region, copper keepout, antenna-edge fiducial under "Known minor items").
+      - **ORDERING.md** — U1 part/LCSC (C6-WROOM-1 C5366877 → MINI-1U-H4 C20627095), the U1
+        placement-check row, and the antenna-edge depanel/keepout gates.
+      Where a reference merely duplicates the schematic/firmware, delete it rather than re-sync.
 
 ## Bench measurements (settle the remaining open questions)
 
