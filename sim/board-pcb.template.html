@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>board-pcb — PCB viz + neutral sim</title>
+<title>board-pcb — PCB viz + sim</title>
 <style>
   :root{--bg:#0e1116;--panel:#161b22;--ink:#c9d1d9;--dim:#7d8590;--line:#30363d;--acc:#58a6ff;}
   *{box-sizing:border-box;}
@@ -47,18 +47,15 @@
     <div class="row"><label>dur <input type="number" id="dur" value="40">ms</label>
       <label>dt <input type="number" id="dt" value="20">µs</label>
       <button class="primary" id="run">▶ Run</button></div>
-    <div class="row"><label>gnd <select id="gnd"></select></label>
-      <label>diode Is <input type="text" id="dIs" value="1e-14" style="width:54px"></label>
-      <label>xfmr L <input type="number" id="xfL" value="50" style="width:44px">mH</label>
-      <label>k <input type="number" id="xfK" value="0.95" step="0.01" style="width:44px"></label>
-      <label>Rdc <input type="number" id="xfR" value="115" style="width:44px">Ω</label></div>
+    <div class="row"><label>gnd <select id="gnd"></select></label></div>
 
     <h2>Time cursor</h2>
     <div class="row"><input type="range" id="tcur" min="0" max="0" value="0" style="flex:1"><span id="tcurv" class="hint">—</span></div>
 
     <h2>Layers <span class="hint">(stacked in middle)</span></h2>
     <div class="row" id="layers"></div>
-    <div class="row"><label>colour <select id="cmode"><option value="volt">by voltage @cursor</option><option value="net">by net</option></select></label></div>
+    <div class="row"><label>colour <select id="cmode"><option value="volt">by voltage @cursor</option><option value="net">by net</option></select></label>
+      <label>scale 0–<input type="number" id="vmax" value="12" style="width:44px">V</label></div>
 
     <h2>Sources <button id="addSrc">+</button></h2>
     <div class="hint">net · wave · v1 amp/level · v2 offset/base · freq Hz · t1 ms</div>
@@ -109,10 +106,20 @@ function parseVal(s){
   let mm=m[2]!=null?MULT[m[2]]:1; return parseFloat(m[1])*(mm==null?1:mm);
 }
 function netV(n){const m=(''+n).match(/[+]?(\d+)V(\d*)/i);return m?parseFloat(m[2]?m[1]+'.'+m[2]:m[1]):null;}  // "+3V3"->3.3, "+5V"->5
+/* per-part device models — parameters derived from the part type/value, not from global knobs */
+function diodeModel(lib){lib=lib||'';
+  if(/schottky/i.test(lib))return {Is:1e-6,n:1.05};    // SS14 etc. — low forward drop (~0.3-0.4 V)
+  if(/LED/i.test(lib))return {Is:1e-15,n:2.6};         // visible LED — high forward drop (~1.8-2 V)
+  if(/TVS/i.test(lib))return {Is:1e-12,n:1};           // SMF5.0A — forward only (reverse clamp not modeled)
+  return {Is:1e-14,n:1};}                              // 1N4148 silicon switching — ~0.6-0.7 V
+function mosModel(lib){return /2N7002/i.test(lib||'')?{vth:2.1,ron:5}:{vth:2,ron:1};}   // 2N7002: Vgs(th)~2.1 V, Rds(on)~5 Ω @ 4.5 V
+function optoModel(lib){return {Is:1e-13,n:1.9,ctr:1.0};}                                // PC817 / LTV-217: IR LED (~1.1 V), CTR ~100%
+function xfmrModel(lib){return /SM-LP-5001/i.test(lib||'')?{L:0.32,k:0.97,Rdc:115}:{L:0.05,k:0.95,Rdc:0};}  // 600Ω line xfmr: Rdc 115Ω (datasheet); L set so wL~600Ω @ 300 Hz
+function coilModel(val){const m=(''+val).match(/DC\s*(\d+\.?\d*)|(\d+\.?\d*)\s*V/i),Vr=m?parseFloat(m[1]||m[2]):5;
+  return {R:Vr*Vr/0.14,pullin:0.75*Vr,Vr};}            // G6K-2F coil ~140 mW -> R from rated V; must-operate ~75% of rated
 /* ---------- neutral auto-models ---------- */
 function autoElements(){
   const els=[],unmodeled=[],modeled=new Set();
-  const XFL=(+(($('#xfL')||{}).value)||50)/1000, XFK=+(($('#xfK')||{}).value)||0.95, XFR=+(($('#xfR')||{}).value)||0;
   for(const c of NETLIST.components){
     const pins=Object.values(c.pins),P=c.pins,fn=c.pinfn||{};
     const mark=()=>modeled.add(c.ref);
@@ -120,16 +127,28 @@ function autoElements(){
     const byFn=re=>{for(const p in fn)if(re.test(fn[p]))return P[p];return null;};
     switch(c.kind){
       case 'resistor':case 'speaker':t2('R');break;
-      case 'capacitor':t2('C');break;
+      case 'capacitor':t2('C',/polariz|electrolyt|tantal/i.test(c.lib||'')?{polar:true,plus:P['1'],minus:P['2']}:{});break;   // C_Polarized: pin 1 = +
       case 'inductor':t2('L');break;
-      case 'diode':if(P['1']!=null&&P['2']!=null){els.push({type:'D',a:P['2'],b:P['1'],value:null,ref:c.ref});mark();}else unmodeled.push(c.ref);break;
+      case 'diode':
+        if(Object.keys(c.pins).length===2&&P['1']!=null&&P['2']!=null){const md=diodeModel(c.lib);els.push({type:'D',a:P['2'],b:P['1'],value:null,Is:md.Is,n:md.n,ref:c.ref});mark();}
+        else unmodeled.push(c.ref);break;
+      case 'protection':{   // ESD/TVS array (e.g. TPD2S017): each channel passes IN<->OUT; steering diodes clamp the line to VCC/GND
+        const cch={};for(const p in fn){const m=fn[p].match(/CH(\d+)_(IN|OUT)/i);if(m)(cch[m[1]]=cch[m[1]]||{})[m[2].toUpperCase()]=P[p];}
+        const vcc=byFn(/^VCC|^VDD/i),gp=byFn(/^GND|^VSS/i),chs=Object.keys(cch).filter(k=>cch[k].IN&&cch[k].OUT);
+        if(chs.length){for(const k of chs){const io=cch[k];
+          els.push({type:'R',a:io.IN,b:io.OUT,value:1e-3,ref:c.ref+'~ch'+k});                            // signal pass-through
+          if(vcc)els.push({type:'D',a:io.IN,b:vcc,value:null,Is:1e-12,n:1,ref:c.ref+'~ch'+k+'h'});        // clamp high: line -> VCC
+          if(gp)els.push({type:'D',a:gp,b:io.IN,value:null,Is:1e-12,n:1,ref:c.ref+'~ch'+k+'l'});}         // clamp low: GND -> line
+          if(vcc&&gp)els.push({type:'D',a:gp,b:vcc,value:null,Is:1e-12,n:1,vbr:6,ref:c.ref+'~rail'});     // VCC<->GND rail clamp (~6 V) shunts the surge to GND
+          mark();}
+        else unmodeled.push(c.ref);break;}
       case 'fuse':t2('R',{value:1e-3});break;
       case 'optocoupler':   // standard 4-pin: 1=anode 2=cathode (LED), 3=emitter 4=collector
-        if(P['1']!=null&&P['2']!=null&&P['3']!=null&&P['4']!=null){els.push({type:'OPTO',a:P['1'],b:P['2'],c:P['4'],e:P['3'],ctr:0.5,ref:c.ref});mark();}
+        if(P['1']!=null&&P['2']!=null&&P['3']!=null&&P['4']!=null){const md=optoModel(c.lib);els.push({type:'OPTO',a:P['1'],b:P['2'],c:P['4'],e:P['3'],Is:md.Is,n:md.n,ctr:md.ctr,ref:c.ref});mark();}
         else unmodeled.push(c.ref);break;
       case 'mosfet':case 'bjt':{   // gate-controlled switch via G/D/S pin functions (NMOS-style)
         const g=byFn(/^G/),d=byFn(/^D/),s=byFn(/^S/);
-        if(g!=null&&d!=null&&s!=null){els.push({type:'MOS',g,d,s,vth:2,ron:1,ref:c.ref});mark();}
+        if(g!=null&&d!=null&&s!=null){const md=mosModel(c.lib);els.push({type:'MOS',g,d,s,vth:md.vth,ron:md.ron,ref:c.ref});mark();}
         else unmodeled.push(c.ref);break;}
       case 'ic':{   // regulator if it has VIN/VOUT/GND pin functions (else a real IC -> unmodeled)
         const vin=byFn(/^VIN/),vout=byFn(/^VOUT/),gp=byFn(/^GND/);
@@ -137,8 +156,8 @@ function autoElements(){
         else unmodeled.push(c.ref);break;}
       case 'transformer':{   // two coupled inductors; windings = first/second half of the connected pins
         const cp=Object.keys(P).filter(k=>P[k]&&!/^unconnected/.test(P[k])).sort((x,y)=>(+x)-(+y));
-        if(cp.length>=4){const h=Math.ceil(cp.length/2),Mm=XFK*XFL;
-          const ea={type:'L',a:P[cp[0]],b:P[cp[h-1]],value:XFL,dcr:XFR,ref:c.ref+'~p'},eb={type:'L',a:P[cp[h]],b:P[cp[cp.length-1]],value:XFL,dcr:XFR,ref:c.ref+'~s'};
+        if(cp.length>=4){const md=xfmrModel(c.lib),h=Math.ceil(cp.length/2),Mm=md.k*md.L;
+          const ea={type:'L',a:P[cp[0]],b:P[cp[h-1]],value:md.L,dcr:md.Rdc,ref:c.ref+'~p'},eb={type:'L',a:P[cp[h]],b:P[cp[cp.length-1]],value:md.L,dcr:md.Rdc,ref:c.ref+'~s'};
           ea.coupL=eb;eb.coupL=ea;ea.M=Mm;eb.M=Mm;els.push(ea,eb);mark();}
         else unmodeled.push(c.ref);break;}
       default:unmodeled.push(c.ref);
@@ -157,7 +176,7 @@ function solve(A,b){const n=b.length;
   return x;}
 /* ---------- MNA transient (voltage + best-effort net current) ---------- */
 function pnjlim(vnew,vold,vt,vcrit){if(vnew>vcrit&&Math.abs(vnew-vold)>2*vt){if(vold>0){const a=1+(vnew-vold)/vt;vnew=a>0?vold+vt*Math.log(a):vcrit;}else vnew=vt*Math.log(vnew/vt);}return vnew;}
-function simulate(els,sources,gnd,T,dt,dm){
+function simulate(els,sources,gnd,T,dt){
   const vsrc=sources.map((s,i)=>({type:'V',a:s.net,b:gnd,vf:s.vf,name:'S'+i}));
   const all=els.concat(vsrc);
   const enets=e=>e.type==='MOS'?[e.g,e.d,e.s]:e.type==='OPTO'?[e.a,e.b,e.c,e.e]:e.type==='LDO'?[e.vin,e.vout,e.gnd]:[e.a,e.b];
@@ -165,7 +184,7 @@ function simulate(els,sources,gnd,T,dt,dm){
   const nodes=[...nset],ni={};nodes.forEach((n,i)=>ni[n]=i);const N=nodes.length;
   const idx=x=>x===gnd?-1:ni[x];
   const branches=all.filter(e=>e.type==='L'||e.type==='V'||e.type==='LDO');branches.forEach((e,i)=>e.bi=N+i);
-  const M=N+branches.length,Vt=0.025852,Gmin=1e-12;const vcrit=(dm.n*Vt)*Math.log((dm.n*Vt)/(Math.SQRT2*dm.Is));
+  const M=N+branches.length,Vt=0.025852,Gmin=1e-12;
   const hasD=all.some(e=>e.type==='D'||e.type==='OPTO'||e.type==='MOS'||e.type==='LDO'||e.type==='RC');
   for(const e of all){if(e.type==='C')e.vp=0;if(e.type==='L')e.ip=0;if(e.type==='D'||e.type==='OPTO')e.vl=0;if(e.type==='OPTO')e.vl2=0;}
   let vn=new Array(N).fill(0);
@@ -181,18 +200,21 @@ function simulate(els,sources,gnd,T,dt,dm){
       const iS=(a,c,I)=>{if(a>=0)b[a]-=I;if(c>=0)b[c]+=I;};
       for(const e of all){const a=idx(e.a),c=idx(e.b);
         if(e.type==='R'){gS(a,c,1/(e.value||1e12));}
-        else if(e.type==='SW'){gS(a,c,e.closed?1e3:1e-12);}
+        else if(e.type==='SW'){gS(a,c,e.closed?1e3:1e-15);}   // open << Gmin so it can't leak source V onto a floating node
         else if(e.type==='C'){const g=(e.value||0)/dt;gS(a,c,g);iS(a,c,-g*e.vp);}
         else if(e.type==='L'){const g=(e.value||1e-9)/dt;if(a>=0){A[a][e.bi]+=1;A[e.bi][a]+=1;}if(c>=0){A[c][e.bi]-=1;A[e.bi][c]-=1;}A[e.bi][e.bi]-=(g+(e.dcr||0));b[e.bi]+=-g*e.ip;   // dcr = series winding resistance
           if(e.coupL){const gm=e.M/dt;A[e.bi][e.coupL.bi]-=gm;b[e.bi]+=-gm*e.coupL.ip;}}   // mutual coupling (transformer)
         else if(e.type==='V'){if(a>=0){A[a][e.bi]+=1;A[e.bi][a]+=1;}if(c>=0){A[c][e.bi]-=1;A[e.bi][c]-=1;}b[e.bi]+=e.vf(t);}
-        else if(e.type==='LDO'){const tgt=Math.min(e.vreg,Vof(e.vin)-e.drop),o=idx(e.vout),gp=idx(e.gnd);if(o>=0){A[o][e.bi]+=1;A[e.bi][o]+=1;}if(gp>=0){A[gp][e.bi]-=1;A[e.bi][gp]-=1;}b[e.bi]+=tgt;}   // regulated output (ideal; no input-current draw)
-        else if(e.type==='D'){const vd=pnjlim(Vof(e.a)-Vof(e.b),e.vl,dm.n*Vt,vcrit);e.vl=vd;const ex=Math.exp(Math.min(vd/(dm.n*Vt),40)),Id=dm.Is*(ex-1),gd=dm.Is/(dm.n*Vt)*ex+Gmin;gS(a,c,gd);iS(a,c,Id-gd*vd);}
+        else if(e.type==='LDO'){const tgt=Math.min(e.vreg,Math.max(0,Vof(e.vin)-e.drop)),o=idx(e.vout),gp=idx(e.gnd);if(o>=0){A[o][e.bi]+=1;A[e.bi][o]+=1;}if(gp>=0){A[gp][e.bi]-=1;A[e.bi][gp]-=1;}b[e.bi]+=tgt;}   // regulated output, floored at 0 (no input -> 0, not -drop); ideal, no input-current draw
+        else if(e.type==='D'){const Is=e.Is,nVt=e.n*Vt,vc=nVt*Math.log(nVt/(Math.SQRT2*Is));const vd=pnjlim(Vof(e.a)-Vof(e.b),e.vl,nVt,vc);e.vl=vd;
+          const ex=Math.exp(Math.min(vd/nVt,40));let I=Is*(ex-1),g=Is/nVt*ex+Gmin;
+          if(e.vbr){const exz=Math.exp(Math.min((-vd-e.vbr)/nVt,40));I-=Is*(exz-1);g+=Is/nVt*exz;}   // reverse breakdown (Zener / TVS clamp) at vbr
+          gS(a,c,g);iS(a,c,I-g*vd);}   // per-part diode model
         else if(e.type==='MOS'){gS(idx(e.d),idx(e.s),(Vof(e.g)-Vof(e.s))>e.vth?1/e.ron:1e-10);}
-        else if(e.type==='RC'){const en=(e.coilA&&e.coilB)?Math.abs(Vof(e.coilA)-Vof(e.coilB))>=e.pullin:false;gS(a,c,(e.when==='always'||((e.when==='on')===en))?1e3:1e-12);}
-        else if(e.type==='OPTO'){const vd=pnjlim(Vof(e.a)-Vof(e.b),e.vl,dm.n*Vt,vcrit);e.vl=vd;const ex=Math.exp(Math.min(vd/(dm.n*Vt),40)),Id=dm.Is*(ex-1),gd=dm.Is/(dm.n*Vt)*ex+Gmin;gS(a,c,gd);iS(a,c,Id-gd*vd);
+        else if(e.type==='RC'){const en=(e.coilA&&e.coilB)?Math.abs(Vof(e.coilA)-Vof(e.coilB))>=e.pullin:false;gS(a,c,(e.when==='always'||((e.when==='on')===en))?1e3:1e-15);}   // open << Gmin
+        else if(e.type==='OPTO'){const Is=e.Is,nVt=e.n*Vt,vc=nVt*Math.log(nVt/(Math.SQRT2*Is));const vd=pnjlim(Vof(e.a)-Vof(e.b),e.vl,nVt,vc);e.vl=vd;const ex=Math.exp(Math.min(vd/nVt,40)),Id=Is*(ex-1),gd=Is/nVt*ex+Gmin;gS(a,c,gd);iS(a,c,Id-gd*vd);
           iS(idx(e.c),idx(e.e),e.ctr*Math.max(0,Id));   // collector sinks CTR*Iled
-          const vs=pnjlim(Vof(e.e)-Vof(e.c),e.vl2,dm.n*Vt,vcrit);e.vl2=vs;const exs=Math.exp(Math.min(vs/(dm.n*Vt),40)),Is2=dm.Is*(exs-1),gs2=dm.Is/(dm.n*Vt)*exs+Gmin;gS(idx(e.e),idx(e.c),gs2);iS(idx(e.e),idx(e.c),Is2-gs2*vs);}   // saturation clamp: Vce can't go negative
+          const vs=pnjlim(Vof(e.e)-Vof(e.c),e.vl2,nVt,vc);e.vl2=vs;const exs=Math.exp(Math.min(vs/nVt,40)),Is2=Is*(exs-1),gs2=Is/nVt*exs+Gmin;gS(idx(e.e),idx(e.c),gs2);iS(idx(e.e),idx(e.c),Is2-gs2*vs);}   // saturation clamp: Vce can't go negative
       }
       const x=solve(A,b);let conv=true;   // SPICE-style |Δv| < reltol·|v| + vntol (a pure
       for(let i=0;i<N;i++){const xi=x[i]||0;if(Math.abs(xi-vn[i])>1e-3*Math.abs(xi)+1e-6)conv=false;vn[i]=xi;}  // absolute tol limit-cycles on low-current diode nodes)
@@ -206,17 +228,18 @@ function simulate(els,sources,gnd,T,dt,dm){
   }
   // floating = nets with no DC-conductive path to ground or a source (caps & current-sources don't anchor)
   const adj={},addE=(x,y)=>{(adj[x]=adj[x]||[]).push(y);(adj[y]=adj[y]||[]).push(x);};
-  for(const e of all){
-    if(e.type==='R'||e.type==='L'||e.type==='D')addE(e.a,e.b);
+  for(const e of all){   // conductive edges at the solved operating point (a reverse diode / off FET doesn't anchor)
+    if(e.type==='R'||e.type==='L')addE(e.a,e.b);                          // R, and L (a DC short), always conduct
+    else if(e.type==='D'){if(Vof(e.a)-Vof(e.b)>0.4)addE(e.a,e.b);}        // diode only when forward-conducting
     else if(e.type==='SW'&&e.closed)addE(e.a,e.b);
     else if(e.type==='RC'){const en=(e.coilA&&e.coilB)?Math.abs(Vof(e.coilA)-Vof(e.coilB))>=e.pullin:false;
-      if(e.when==='always'||((e.when==='on')===en))addE(e.a,e.b);}   // relay contact: conductive when closed
-    else if(e.type==='MOS')addE(e.d,e.s);
-    else if(e.type==='OPTO'){addE(e.a,e.b);addE(e.c,e.e);}
+      if(e.when==='always'||((e.when==='on')===en))addE(e.a,e.b);}        // relay contact: conductive when closed
+    else if(e.type==='MOS'){if(Vof(e.g)-Vof(e.s)>e.vth)addE(e.d,e.s);}    // FET only when on
+    else if(e.type==='OPTO'){if(Vof(e.a)-Vof(e.b)>0.4){addE(e.a,e.b);addE(e.c,e.e);}}   // opto on -> LED & phototransistor conduct
+    else if(e.type==='LDO')addE(e.vin,e.vout);                            // output anchored only when its input is powered
   }
   const anch=new Set([gnd]),stk=[gnd];
   for(const s of sources){anch.add(s.net);stk.push(s.net);}
-  for(const e of all)if(e.type==='LDO'){anch.add(e.vout);stk.push(e.vout);}   // regulated output is driven
   while(stk.length){const n=stk.pop();for(const m of (adj[n]||[]))if(!anch.has(m)){anch.add(m);stk.push(m);}}
   out.floating={}; for(const n of nodes)out.floating[n]=!anch.has(n); out.floating[gnd]=false;
   return out;
@@ -248,9 +271,11 @@ netOpts($('#gnd'),GNDdef);
 
 // sources / elements rows
 function srcRow(s){const d=document.createElement('div');d.className='row';
-  d.innerHTML=`<select class="n"></select><select class="t"><option>dc</option><option>sine</option><option>square</option><option>step</option><option>pulse</option></select>
+  d.innerHTML=`<button class="tog"></button><select class="n"></select><select class="t"><option>dc</option><option>sine</option><option>square</option><option>step</option><option>pulse</option></select>
    <input class="v1" type="number" value="${s.v1}"><input class="v2" type="number" value="${s.v2}"><input class="f" type="number" value="${s.freq}"><input class="t1" type="number" value="${s.t1}"><span class="x">✕</span>`;
   netOpts(d.querySelector('.n'),s.net);d.querySelector('.t').value=s.type;
+  const tog=d.querySelector('.tog'),paint=()=>{tog.textContent=s.off?'○':'●';tog.title=s.off?'off — net floats':'on';tog.className='tog'+(s.off?'':' on');d.style.opacity=s.off?0.45:1;};
+  paint();tog.onclick=()=>{s.off=!s.off;paint();run();};   // off = source disconnected (net floats), not driven to 0
   const sy=()=>{s.net=d.querySelector('.n').value;s.type=d.querySelector('.t').value;s.v1=d.querySelector('.v1').value;s.v2=d.querySelector('.v2').value;s.freq=d.querySelector('.f').value;s.t1=d.querySelector('.t1').value;run();};
   d.querySelectorAll('select,input').forEach(e=>e.onchange=sy);
   d.querySelector('.x').onclick=()=>{sources=sources.filter(z=>z!==s);d.remove();run();};
@@ -284,11 +309,11 @@ function relaySwitchEls(){const out=[];
   for(const c of NETLIST.components){if(!switchLike(c))continue;const po=pinoutFor(c);if(!po)continue;
     const N=p=>c.pins[p];
     if(c.kind==='relay'){
-      const ca=po.coil&&N(po.coil[0]),cb=po.coil&&N(po.coil[1]);
-      if(ca&&cb)out.push({type:'R',a:ca,b:cb,value:250,ref:c.ref});                  // coil = R load
+      const ca=po.coil&&N(po.coil[0]),cb=po.coil&&N(po.coil[1]),cm=coilModel(c.value);
+      if(ca&&cb)out.push({type:'R',a:ca,b:cb,value:cm.R,ref:c.ref});                  // coil = R load (from rated coil V)
       for(const ct of (po.contacts||[])){
-        if(N(ct.com)&&N(ct.no))out.push({type:'RC',a:N(ct.com),b:N(ct.no),coilA:ca,coilB:cb,pullin:2.5,when:'on',ref:c.ref});
-        if(N(ct.com)&&N(ct.nc))out.push({type:'RC',a:N(ct.com),b:N(ct.nc),coilA:ca,coilB:cb,pullin:2.5,when:'off',ref:c.ref});}
+        if(N(ct.com)&&N(ct.no))out.push({type:'RC',a:N(ct.com),b:N(ct.no),coilA:ca,coilB:cb,pullin:cm.pullin,when:'on',ref:c.ref});
+        if(N(ct.com)&&N(ct.nc))out.push({type:'RC',a:N(ct.com),b:N(ct.nc),coilA:ca,coilB:cb,pullin:cm.pullin,when:'off',ref:c.ref});}
     }else{const pr=!!switchState[c.ref];
       if(po.spst&&N(po.spst[0])&&N(po.spst[1]))out.push({type:'SW',a:N(po.spst[0]),b:N(po.spst[1]),closed:pr,ref:c.ref});
       for(const ct of (po.contacts||[])){
@@ -297,7 +322,7 @@ function relaySwitchEls(){const out=[];
   return out;}
 function relayEnergized(ref,k){const c=NETLIST.components.find(x=>x.ref===ref),po=c&&pinoutFor(c);
   if(!po||!po.coil||!RES)return null;const va=RES.v[c.pins[po.coil[0]]],vb=RES.v[c.pins[po.coil[1]]];if(!va||!vb)return null;
-  return Math.abs(va[k]-vb[k])>=2.5;}
+  return Math.abs(va[k]-vb[k])>=coilModel(c.value).pullin;}
 function updateRelayStates(){document.querySelectorAll('#relays .rstate').forEach(el=>{const en=relayEnergized(el.dataset.ref,tIndex);
   el.textContent=en==null?'— drive coil':(en?'● energized':'○ idle');el.style.color=en?'#3fb950':'#7d8590';});}
 function buildRelays(){const box=$('#relays');box.innerHTML='';
@@ -333,7 +358,7 @@ function buildStack(){const st=$('#stack');st.innerHTML='';
 function segsOn(L){return PCB.segments.filter(s=>s.layer===L);}
 function viasOn(L){return PCB.vias.filter(v=>v.layers.includes(L)||!v.layers.length);}
 function padsOn(L){return PCB.pads.filter(p=>p.layers.includes(L)||p.layers.includes('*'));}
-function vRange(){if(!RES)return[0,0];let lo=1e9,hi=-1e9;for(const n in RES.v){const a=RES.v[n];if(a&&a[tIndex]!=null){lo=Math.min(lo,a[tIndex]);hi=Math.max(hi,a[tIndex]);}}return[lo,hi];}
+function vRange(){return[0,(+($('#vmax')||{}).value)||12];}   // fixed display scale 0..Vmax (default 12 V), not data-dependent
 function colorFor(net){
   if($('#cmode').value==='volt'&&RES&&RES.v[net]){const[lo,hi]=vRange();return voltColor(RES.v[net][tIndex],lo,hi);}
   return netColor(net);}
@@ -353,7 +378,7 @@ function drawLayer(cv,L){const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv
     g.beginPath();g.moveTo(TF.W(s.x1),TF.H(s.y1));g.lineTo(TF.W(s.x2),TF.H(s.y2));g.stroke();}
   g.setLineDash([]);g.lineCap='round';
   // pads
-  for(const p of padsOn(L)){const dc=devClass(p.ref);g.fillStyle=(hoveredNet&&p.net===hoveredNet)?'#fff':(dc==='bad'?'#f85149':colorFor(p.net));g.globalAlpha=0.9;
+  for(const p of padsOn(L)){const dc=devClass(p.ref),flt=RES&&RES.floating&&RES.floating[p.net];g.fillStyle=(hoveredNet&&p.net===hoveredNet)?'#fff':(dc==='bad'?'#f85149':flt?'#475569':colorFor(p.net));g.globalAlpha=0.9;
     const w=Math.max(2,p.w*TF.sc),h=Math.max(2,p.h*TF.sc),x=TF.W(p.x),y=TF.H(p.y);
     if(p.shape==='circle'){g.beginPath();g.arc(x,y,Math.max(1.5,w/2),0,7);g.fill();}
     else{g.save();g.translate(x,y);g.rotate((p.rot||0)*Math.PI/180);g.fillRect(-w/2,-h/2,w,h);g.restore();}}
@@ -383,7 +408,8 @@ function onHover(ev,cv,L){const r=cv.getBoundingClientRect();const px=ev.clientX
 function buildScopes(){const box=$('#scopes');box.innerHTML='';
   if(!selectedNets.size){box.innerHTML='<div class="hint">no nets selected — click a trace</div>';return;}
   [...selectedNets].forEach(net=>{const d=document.createElement('div');d.className='scopebox';
-    d.innerHTML=`<div class="sh"><span style="color:${netColor(net)}">${net}</span><span class="x">✕</span></div>`;
+    const flt=RES&&RES.floating&&RES.floating[net];
+    d.innerHTML=`<div class="sh"><span style="color:${flt?'#7d8590':netColor(net)}">${net}${flt?' <span class="hint">(floating — value indeterminate)</span>':''}</span><span class="x">✕</span></div>`;
     const cv=document.createElement('canvas');cv.width=360;cv.height=120;d.appendChild(cv);box.appendChild(d);
     d.querySelector('.x').onclick=()=>{selectedNets.delete(net);buildScopes();drawAll();};
     drawScope(cv,net);});}
@@ -393,31 +419,35 @@ function drawScope(cv,net){const g=cv.getContext('2d'),W=cv.width,H=cv.height;g.
   const T=RES.t[RES.t.length-1]||1,X=t=>40+t/T*(W-50),Y=v=>8+(1-(v-lo)/(hi-lo))*(H-24);
   g.strokeStyle='#161b22';for(let i=0;i<=4;i++){const y=8+i*(H-24)/4;g.beginPath();g.moveTo(40,y);g.lineTo(W-10,y);g.stroke();
     g.fillStyle='#7d8590';g.font='9px monospace';g.fillText((hi-(hi-lo)*i/4).toFixed(2),2,y+3);}
-  g.strokeStyle=netColor(net);g.lineWidth=1.3;g.beginPath();for(let k=0;k<a.length;k++){const x=X(RES.t[k]),y=Y(a[k]);k?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+  g.strokeStyle=(RES.floating&&RES.floating[net])?'#475569':netColor(net);g.lineWidth=1.3;g.beginPath();for(let k=0;k<a.length;k++){const x=X(RES.t[k]),y=Y(a[k]);k?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
   // time cursor
   const cx=X(RES.t[tIndex]);g.strokeStyle='#f0883e';g.lineWidth=1;g.beginPath();g.moveTo(cx,8);g.lineTo(cx,H-16);g.stroke();
   g.fillStyle='#f0883e';g.fillText(a[tIndex].toFixed(3)+'V @'+(RES.t[tIndex]*1e3).toFixed(2)+'ms',44,H-4);}
 
 /* ---------- run ---------- */
 function run(){const gnd=$('#gnd').value,T=(+$('#dur').value)/1000,dt=(+$('#dt').value)/1e6;
-  const dm={Is:+$('#dIs').value||1e-14,n:1};const{els,unmodeled}=autoElements();
+  const{els,unmodeled}=autoElements();
   for(const e of elements){if(e.kind==='short')els.push({type:'R',a:e.a,b:e.b,value:1e-3});
     else if(e.kind==='switch')els.push({type:'SW',a:e.a,b:e.b,closed:!!e.closed});
     else els.push({type:e.kind,a:e.a,b:e.b,value:parseVal(e.value)});}
   for(const e of relaySwitchEls())els.push(e);
   recomputeModeled();
-  const srcs=sources.map(s=>({net:s.net,vf:makeWave(s)}));
-  if(!srcs.length){$('#status').textContent='add a source first.';return;}
+  const byNet={};   // sources on the same net superpose (sum) into one drive; disabled ones are left out
+  for(const s of sources){if(s.off)continue;(byNet[s.net]=byNet[s.net]||[]).push(makeWave(s));}
+  const srcs=Object.keys(byNet).map(net=>{const ws=byNet[net];return {net,vf:t=>ws.reduce((a,w)=>a+w(t),0)};});
   const t0=performance.now();
-  try{RES=simulate(els,srcs,gnd,T,dt,dm);}catch(err){$('#status').textContent='sim error: '+err.message;console.error(err);return;}
+  try{RES=simulate(els,srcs,gnd,T,dt);}catch(err){$('#status').textContent='sim error: '+err.message;console.error(err);return;}
   const tc=$('#tcur');tc.max=RES.t.length-1;tc.value=tIndex=RES.t.length-1;updTcur();
   buildScopes();drawAll();updateRelayStates();
-  $('#status').textContent=`${els.length} elements · ${RES.t.length} steps · ${(performance.now()-t0).toFixed(0)} ms · hover a trace · relays follow their coils`;}
+  const revb=[];   // polarized (electrolytic) caps biased backwards at any point in the run
+  for(const e of els)if(e.polar&&RES.v[e.plus]&&RES.v[e.minus]){let mn=1e9;const vp=RES.v[e.plus],vm=RES.v[e.minus];for(let i=0;i<vp.length;i++)mn=Math.min(mn,vp[i]-vm[i]);if(mn<-0.3)revb.push(`${e.ref} ${mn.toFixed(1)}V`);}
+  const warn=revb.length?`⚠ reverse-biased: ${revb.join(', ')} · `:'';
+  $('#status').textContent=`${warn}${els.length} elements · ${RES.t.length} steps · ${(performance.now()-t0).toFixed(0)} ms · hover a trace · relays follow their coils`;}
 function updTcur(){if(RES){$('#tcurv').textContent=(RES.t[tIndex]*1e3).toFixed(2)+' ms';}}
 $('#run').onclick=run;
 $('#tcur').oninput=e=>{tIndex=+e.target.value;updTcur();drawAll();updateRelayStates();document.querySelectorAll('#scopes canvas').forEach((cv,i)=>drawScope(cv,[...selectedNets][i]));};
 $('#cmode').onchange=drawAll;
-['#xfL','#xfK','#xfR'].forEach(id=>{const e=$(id);if(e)e.onchange=run;});   // transformer params re-run the sim
+$('#vmax').oninput=drawAll;   // re-color on scale change (no re-sim needed)
 window.addEventListener('resize',()=>buildStack());
 
 // init: default-power the board from VBUS = 5 V, then run so the board shows voltages

@@ -35,7 +35,39 @@ def value_from_libname(lib):
     m = re.search(r'([0-9][0-9.]*\s*[pnuµmkKMGR]?)\s*(?:Ω|ohm|F|H)', name, re.I)
     return m.group(1).replace("µ", "u").replace(" ", "") if m else ""
 
-def kind_of(ref):
+def kind_from_lib(lib):
+    """Classify by the device TYPE — the symbol's lib_id (library category + part name) — so a part's
+    model never depends on its reference designator. Returns None when the lib is unrecognized, so
+    kind_from_ref() (the refdes-prefix convention) is the fallback."""
+    if not lib:
+        return None
+    cat, _, name = lib.partition(":")
+    cat, name = cat.lower(), name.lower()
+    if "tpd2s" in name or "esd" in name:        return "protection"   # ESD/TVS protection array
+    if "solderjumper" in name:                  return "connector"    # solder bridge (switch-like, see isBridge)
+    if "testpoint" in name:                     return "testpoint"
+    if "tactile" in name or "button" in name or "sppj" in cat:  return "switch"
+    if "relay" in cat or "g6k" in name:         return "relay"
+    if "optocoupler" in cat or name.startswith("ltv") or "pc817" in name: return "optocoupler"
+    if "sm_lp" in cat or "sm-lp-5001" in name or "transformer" in name:   return "transformer"
+    if "speaker" in name:                       return "speaker"
+    if "fuse" in name:                          return "fuse"
+    if "diode" in cat:                          return "diode"
+    if "transistor" in cat:                     return "mosfet"       # NMOS/PMOS/BJT -> G/D/S model
+    if "resistor" in cat:                       return "resistor"
+    if "capacitor" in cat:                      return "capacitor"
+    if "inductor" in cat or "ferrite" in cat:   return "inductor"
+    if "power" in cat:                          return "ic"           # LDO/regulator (VIN/VOUT/GND model)
+    if "esp32" in name or "es8311" in name:     return "ic"
+    if "usb_c" in name or name.startswith("conn_") or "connector" in cat: return "connector"
+    if cat == "device":                         # generic KiCad symbols name == class letter
+        if name == "r" or name.startswith("r_"): return "resistor"
+        if name == "c" or name.startswith("c_"): return "capacitor"
+        if name == "l" or name.startswith("l_"): return "inductor"
+        if name == "d" or name.startswith("d_"): return "diode"
+    return None
+
+def kind_from_ref(ref):
     base = ref.replace("WF26_", "")          # strip namespacing prefix, keep the class letter
     m = re.match(r"^([A-Za-z]+)", base)
     pre = m.group(1) if m else "?"
@@ -193,13 +225,16 @@ def main():
         net = m.group(1)
         nets.add(net)
         for ref, pin, fn in re.findall(r'\(ref "([^"]+)"\)\s+\(pin "([^"]+)"\)(?:\s+\(pinfunction "([^"]*)"\))?', m.group(2)):
-            c = comps.setdefault(ref, {"kind": kind_of(ref), "value": values.get(ref, ""), "pins": {}, "pinfn": {}})
+            c = comps.setdefault(ref, {"kind": kind_from_ref(ref), "value": values.get(ref, ""), "pins": {}, "pinfn": {}})
             c["pins"][pin] = net
             if fn: c["pinfn"][pin] = fn
 
     libmap = lib_ids()
-    for r, c in comps.items():   # last resort: recover a blank value from the part name
-        if not c["value"]:
+    for r, c in comps.items():
+        k = kind_from_lib(libmap.get(r, ""))   # device type (lib_id) wins; refdes prefix is the fallback
+        if k:
+            c["kind"] = k
+        if not c["value"]:                     # last resort: recover a blank value from the part name
             v = value_from_libname(libmap.get(r, ""))
             if v:
                 c["value"] = v
