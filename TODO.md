@@ -57,6 +57,18 @@ Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/p
 ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-coil reads, and don't
 tether it to a mains-earthed PC. Pair with a DMM.
 
+- [ ] **Record a real test call (full speech session) — do this before trusting the sim's talk /
+      RX-TX model.** The existing captures cover the ring + door-open (`osci/ring-20260617-195221.md`)
+      but not a **call with audio**. Drive the genuine sequence: **pulse line 4 (P4) to initiate**,
+      with **P2 held at +12 V for the whole call (at least)**, then talk/listen. Capture via
+      `osci/capture.py` (DHO804 isolated, grounds on **P1**, 3 ch — IN_P4/P4, P2, P3) and write the
+      usual `*.md` timeline. Use it to ground-truth (a) the real line levels during a call (P2 held at
+      12 V, the line-4 session level, P3 in talk) and (b) the **mic-bleed-during-TX** question the sim
+      raised: the handset (LS1→C1→P4→IN_P4) couples onto transmit line 3 through K1 pole-A's 2.2 kΩ
+      handshake whenever **K3 is idle** — sim shows ~1.5 Vpp on P3 *and* in the codec's own ADC (louder
+      than the codec's own ~0.9 Vpp TX), and it vanishes with K3 energised. Confirm whether a real call
+      holds K3 and what the actual bleed is **before** encoding "codec TX needs K3 energised for handset
+      isolation" as a sim regression test or in DESIGN.md.
 - [ ] **Line-4 hold level (mostly settled):** line 4 *must* hold through the session (else the WF26
       relay drops and the handset goes dead), and V3 senses it fine — so it holds. Just confirm the
       hold level keeps **OC1 above its detection threshold edge-to-edge** (relay hold V < pull-in V),
@@ -112,6 +124,17 @@ direction by PTT. Coupling caps + series Rs unchanged; DAC and ADC share the one
       independent of line 4 / K3. Bench-check the received level and source impedance on line 2↔P1
       during a call, and that the R26/R27 divider lands the codec input in range.
       *(DESIGN.md: "TX-out reach")*
+- [ ] **Validate the handset mic (LS1) never bleeds into the RX/TX path by accident.** LS1-as-mic
+      must reach the line *only* when intended (deliberate handset talk via S2) — never leak into the
+      codec's transmit (line 3) or receive (the codec ADC) on its own. The sim found one accidental
+      path: with K1 in **talk** and **K3 idle**, the mic rides `LS1→C1→WF26_P4→J3→P4→K3(NC)→IN_P4` and
+      onto P3 through **K1 pole-A's 2.2 kΩ handshake** (~1.5 Vpp on P3 *and* in the codec's own ADC,
+      louder than the codec's ~0.9 Vpp TX); energising K3 kills it (the only hop to P3 is gated by K1
+      pole-A, so with K1 idle there's no bleed at all). Sweep mic injection at LS1 across
+      {K1 idle/talk × K3 idle/energised × S2 released/pressed} with **P2 held at 12 V**, and assert P3
+      and `ES_MICP/MICN` stay clean except in deliberate S2 talk; then confirm the firmware rule
+      (**hold K3 for the whole call** — see the Firmware item) actually suppresses it on hardware.
+      Encode as a sim regression test once the real-call capture (above) backs the conditions.
 - [ ] **Re-check the DESIGN.md "TV20/S audio behaviour" section** — confirm the talk/listen/
       Etagenruf/Türruf routing it describes is still correct against the current model + bench
       findings (some of it predates the recent corrections). *(DESIGN.md: "TV20/S audio behaviour")*

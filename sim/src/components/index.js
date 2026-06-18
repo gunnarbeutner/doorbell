@@ -73,10 +73,11 @@ export function buildElements(netlist, { switchState = {}, extra = [] } = {}) {
 }
 
 // high-level scenario for tests: drive `sources` ({net: volts | vf(t)}), set `switches`
-// ({ref: pressed?}); returns the final node voltages + floating flags.
-export function runDC(netlist, { sources = {}, switches = {}, gnd, T = 0.04, dt = 20e-6 } = {}) {
+// ({ref: pressed?}), inject any hand-built `extra` elements (e.g. a surge through a series resistor);
+// returns the final node voltages + floating flags.
+export function runDC(netlist, { sources = {}, switches = {}, extra = [], gnd, T = 0.04, dt = 20e-6 } = {}) {
   const switchState = { ...defaultSwitchState(netlist), ...switches };
-  const els = buildElements(netlist, { switchState });
+  const els = buildElements(netlist, { switchState, extra });
 
   const srcs = Object.entries(sources).map(([net, v]) => ({
     net,

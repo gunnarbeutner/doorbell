@@ -465,12 +465,16 @@ function drawScope(cv, net) {
     g.fillText('run sim', 8, H / 2);
     return;
   }
-  const a = RES.v[net];
+  const a = RES.v[net],
+    flt = RES.floating && RES.floating[net];
   let lo = Math.min(...a),
     hi = Math.max(...a);
-  if (hi - lo < 1e-9) {
-    hi += 0.5;
-    lo -= 0.5;
+  // A floating net carries only Gmin-level numerical noise; autoscaling into it draws a phantom
+  // waveform on a degenerate axis (0.00 to -0.00). Show it flat in a fixed window instead.
+  if (flt || hi - lo < 1e-9) {
+    const mid = (hi + lo) / 2;
+    lo = mid - 0.5;
+    hi = mid + 0.5;
   }
   const m = (hi - lo) * 0.1;
   lo -= m;
@@ -478,6 +482,12 @@ function drawScope(cv, net) {
   const T = RES.t[RES.t.length - 1] || 1,
     X = (t) => 40 + (t / T) * (W - 50),
     Y = (v) => 8 + (1 - (v - lo) / (hi - lo)) * (H - 24);
+  // tick precision tracks the span, and we strip "-0" so the axis never reads "-0.00"
+  const dec = hi - lo >= 10 ? 1 : hi - lo >= 1 ? 2 : hi - lo >= 0.1 ? 3 : 4,
+    fmtV = (v) => {
+      const s = v.toFixed(dec);
+      return /^-0\.?0*$/.test(s) ? s.slice(1) : s;
+    };
   g.strokeStyle = '#161b22';
   for (let i = 0; i <= 4; i++) {
     const y = 8 + (i * (H - 24)) / 4;
@@ -487,7 +497,7 @@ function drawScope(cv, net) {
     g.stroke();
     g.fillStyle = '#7d8590';
     g.font = '9px monospace';
-    g.fillText((hi - ((hi - lo) * i) / 4).toFixed(2), 2, y + 3);
+    g.fillText(fmtV(hi - ((hi - lo) * i) / 4), 2, y + 3);
   }
   g.strokeStyle = RES.floating && RES.floating[net] ? '#475569' : netColor(net);
   g.lineWidth = 1.3;
@@ -507,7 +517,8 @@ function drawScope(cv, net) {
   g.lineTo(cx, H - 16);
   g.stroke();
   g.fillStyle = '#f0883e';
-  g.fillText(a[tIndex].toFixed(3) + 'V @' + (RES.t[tIndex] * 1e3).toFixed(2) + 'ms', 44, H - 4);
+  const cur = a[tIndex].toFixed(3).replace(/^-0\.?0*$/, '0.000');
+  g.fillText(cur + 'V @' + (RES.t[tIndex] * 1e3).toFixed(2) + 'ms', 44, H - 4);
 }
 
 /* ---------- run ---------- */

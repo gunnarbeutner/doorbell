@@ -200,14 +200,21 @@ function simulate(els, sources, gnd, T, dt) {
           gS(a, c, gd);
           iS(a, c, Id - gd * vd);
           iS(idx(e.c), idx(e.e), e.ctr * Math.max(0, Id)); // collector sinks CTR*Iled
-          const vs = pnjlim(Vof(e.e) - Vof(e.c), e.vl2, nVt, vc);
+
+          // Anti-saturation clamp: a stiff diode from emitter to collector. Once the collector is
+          // dragged down to the emitter it conducts hard, pinning Vce ~ 0 (a real phototransistor
+          // bottoms out near Vce(sat), not below its emitter). Its own Is (1e-6) keeps the forward
+          // drop ~0.2 V at the clamp current while leaking < 1 µA when reverse-biased (off state).
+          const sIs = 1e-6,
+            svc = Vt * Math.log(Vt / (Math.SQRT2 * sIs));
+          const vs = pnjlim(Vof(e.e) - Vof(e.c), e.vl2, Vt, svc);
           e.vl2 = vs;
-          const exs = Math.exp(Math.min(vs / nVt, 40)),
-            Is2 = Is * (exs - 1),
-            gs2 = (Is / nVt) * exs + Gmin;
+          const exs = Math.exp(Math.min(vs / Vt, 40)),
+            Is2 = sIs * (exs - 1),
+            gs2 = (sIs / Vt) * exs + Gmin;
           gS(idx(e.e), idx(e.c), gs2);
           iS(idx(e.e), idx(e.c), Is2 - gs2 * vs);
-        } // saturation clamp: Vce can't go negative
+        }
       }
       const x = solve(A, b);
       let conv = true; // SPICE-style |Δv| < reltol·|v| + vntol (a pure
