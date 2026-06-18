@@ -85,6 +85,7 @@ function createStepper(els, sources, gnd, dt, seed) {
     if (e.type === 'L') e.ip = 0;
     if (e.type === 'D' || e.type === 'OPTO') e.vl = 0;
     if (e.type === 'OPTO') e.vl2 = 0;
+    if (e.type === 'RC') e.coilOn = false; // relay contact latch state (hysteretic)
   }
   const vn = new Array(N).fill(0);
   const Vof = (x) => (x === gnd ? 0 : vn[ni[x]] || 0);
@@ -95,6 +96,7 @@ function createStepper(els, sources, gnd, dt, seed) {
     for (const e of all) {
       if (e.type === 'C' && seed.caps && e.ref in seed.caps) e.vp = seed.caps[e.ref];
       if (e.type === 'L' && seed.ind && e.ref in seed.ind) e.ip = seed.ind[e.ref];
+      if (e.type === 'RC' && seed.relays && e.ref in seed.relays) e.coilOn = seed.relays[e.ref]; // keep latch
     }
   }
 
@@ -193,8 +195,9 @@ function createStepper(els, sources, gnd, dt, seed) {
         else if (e.type === 'MOS') {
           gS(idx(e.d), idx(e.s), Vof(e.g) - Vof(e.s) > e.vth ? 1 / e.ron : 1e-10);
         } else if (e.type === 'RC') {
-          const en = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) >= e.pullin : false;
-          gS(a, c, e.when === 'always' || (e.when === 'on') === en ? 1e3 : 1e-15);
+          // contact follows the latched coil state (set once per step with hysteresis), not the
+          // instantaneous coil voltage -> models the relay's mechanical lag and avoids chatter
+          gS(a, c, e.when === 'always' || (e.when === 'on') === e.coilOn ? 1e3 : 1e-15);
         } // open << Gmin
         else if (e.type === 'OPTO') {
           const Is = e.Is,
@@ -239,6 +242,10 @@ function createStepper(els, sources, gnd, dt, seed) {
     for (const e of all) {
       if (e.type === 'C') e.vp = Vof(e.a) - Vof(e.b);
       if (e.type === 'L') e.ip = e.icur;
+      if (e.type === 'RC') {
+        const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
+        e.coilOn = e.coilOn ? vc >= e.release : vc >= e.pickup; // pick up at >=pickup, drop out at <release
+      }
     }
   }
 
@@ -258,9 +265,8 @@ function createStepper(els, sources, gnd, dt, seed) {
       } // diode only when forward-conducting
       else if (e.type === 'SW' && e.closed) addE(e.a, e.b);
       else if (e.type === 'RC') {
-        const en = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) >= e.pullin : false;
-        if (e.when === 'always' || (e.when === 'on') === en) addE(e.a, e.b);
-      } // relay contact: conductive when closed
+        if (e.when === 'always' || (e.when === 'on') === e.coilOn) addE(e.a, e.b);
+      } // relay contact: conductive when latched closed
       else if (e.type === 'MOS') {
         if (Vof(e.g) - Vof(e.s) > e.vth) addE(e.d, e.s);
       } // FET only when on
@@ -294,11 +300,12 @@ function createStepper(els, sources, gnd, dt, seed) {
 
   // snapshot the persistent state so a rebuilt stepper can continue from here (live config change)
   function extractState() {
-    const st = { vn: {}, caps: {}, ind: {} };
+    const st = { vn: {}, caps: {}, ind: {}, relays: {} };
     for (const n of nodes) st.vn[n] = vn[ni[n]];
     for (const e of all) {
       if (e.type === 'C' && e.ref != null) st.caps[e.ref] = e.vp;
       if (e.type === 'L' && e.ref != null) st.ind[e.ref] = e.ip;
+      if (e.type === 'RC' && e.ref != null) st.relays[e.ref] = e.coilOn;
     }
     return st;
   }

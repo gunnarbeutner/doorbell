@@ -168,6 +168,11 @@ function relayEnergized(ref, k) {
 
   if (!c || c.role !== 'relay' || !RES) return null;
 
+  // prefer the actual latched contact state (hysteretic) from the live elements; fall back to a
+  // coil-voltage check if this relay has no modeled contacts
+  const rc = els.find((e) => e.ref === ref && e.type === 'RC');
+  if (rc) return !!rc.coilOn;
+
   return c.energized(voltageAt(k));
 }
 

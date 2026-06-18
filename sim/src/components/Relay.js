@@ -38,11 +38,16 @@ export default class Relay extends Component {
     return { coil: [], contacts: [] };
   }
 
-  // coil R and pull-in from the rated coil voltage in the value string (G6K ~140 mW; pull-in ~75 %)
+  // Coil parameters from the part. Rated voltage from the value/name; coil power from the part where
+  // known (HJR-4102 power code N=0.45 / D=0.36 / L=0.2 W, datasheet), else ~0.14 W (G6K class). Pickup
+  // ~75 % and release ~10 % of rated match both datasheets and give the latch its hysteresis.
   coil() {
-    const m = ('' + this.value).match(/DC\s*(\d+\.?\d*)|(\d+\.?\d*)\s*V/i);
+    const s = '' + this.lib + ' ' + this.value;
+    const m = s.match(/DC\s*(\d+\.?\d*)|(\d+\.?\d*)\s*V/i);
     const Vr = m ? parseFloat(m[1] || m[2]) : 5;
-    return { R: (Vr * Vr) / 0.14, pullin: 0.75 * Vr };
+    const pc = s.match(/HJR-?4102-?([NDL])/i);
+    const P = pc ? { N: 0.45, D: 0.36, L: 0.2 }[pc[1].toUpperCase()] : 0.14;
+    return { R: (Vr * Vr) / P, pickup: 0.75 * Vr, release: 0.1 * Vr };
   }
 
   elements() {
@@ -61,10 +66,10 @@ export default class Relay extends Component {
 
     for (const ct of po.contacts || []) {
       if (N(ct.com) && N(ct.no)) {
-        els.push({ type: 'RC', a: N(ct.com), b: N(ct.no), coilA, coilB, pullin: cm.pullin, when: 'on', ref: this.ref });
+        els.push({ type: 'RC', a: N(ct.com), b: N(ct.no), coilA, coilB, pickup: cm.pickup, release: cm.release, when: 'on', ref: this.ref });
       }
       if (N(ct.com) && N(ct.nc)) {
-        els.push({ type: 'RC', a: N(ct.com), b: N(ct.nc), coilA, coilB, pullin: cm.pullin, when: 'off', ref: this.ref });
+        els.push({ type: 'RC', a: N(ct.com), b: N(ct.nc), coilA, coilB, pickup: cm.pickup, release: cm.release, when: 'off', ref: this.ref });
       }
     }
 
@@ -81,6 +86,6 @@ export default class Relay extends Component {
 
     if (va == null || vb == null) return null;
 
-    return Math.abs(va - vb) >= this.coil().pullin;
+    return Math.abs(va - vb) >= this.coil().pickup;
   }
 }
