@@ -8,24 +8,18 @@ standard type-based model**. No knowledge of what any net or part *means* is enc
 
 ```sh
 cd sim
-python3 build.py          # imports the schematic, regenerates board-sim.html
-open board-sim.html       # any browser; self-contained, no server
+python3 build.py          # imports the schematic, regenerates board-pcb.html
+open board-pcb.html       # any browser; self-contained, no server
 ```
 
 Re-run `build.py` after editing the schematic to re-import.
 
-In the page: add **Sources** (drive any net with DC/sine/square/step/pulse), check **Probes**
-(any net), set duration/dt, **Run** → the scope plots the probed node voltages. Each source has an
-on/off toggle (off = the net floats, not driven to 0). **Multiple sources on the same net superpose**
-(sum) — e.g. a DC bias + a sine give bias + signal.
-
-Two generated tools share the same importer + engine:
-- **`board-sim.html`** — controls + a single scope. Pick sources/probes, Run.
-- **`board-pcb.html`** — 3-column PCB view: `[controls + layer toggles + time cursor] | [selected copper
-  layers, stacked] | [scopes]`. **Hover** a trace → tooltip with its net's voltage (and best-effort
-  current); **click** a trace → adds that net's scope on the right; the time-cursor slider scrubs the
-  instant shown on the board and on the scope cursors. Inner planes (In1/In2) show vias/pads only —
-  zone fills aren't extracted yet.
+**`board-pcb.html`** is a 3-column PCB view: `[controls + layer toggles + time cursor] | [selected copper
+layers, stacked] | [scopes]`. Add **Sources** (drive any net with DC/sine/square/step/pulse — each has an
+on/off toggle, off = the net floats; multiple sources on one net superpose), set duration/dt, **Run**.
+**Hover** a trace → tooltip with its net's voltage; **click** a trace → adds that net's scope on the right;
+the time-cursor slider scrubs the instant shown on the board and the scope cursors. Colour is by voltage
+(fixed 0–Vmax scale) or by net. Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
 
 ## How components are modeled (by type)
 
@@ -66,8 +60,8 @@ from the rated coil voltage in the value string (`DC12`, `4.5V`).
 ## Engine
 
 Modified Nodal Analysis, Backward-Euler transient, Newton iteration (SPICE-style relative+absolute
-convergence) for the per-part diode/opto models. `build.py` is the importer; `board-sim.template.html` is
-the generic simulator (with a `__NETLIST_JSON__` placeholder); `board-sim.html` is the generated,
+convergence) for the per-part diode/opto models. `build.py` is the importer; `board-pcb.template.html` is
+the simulator + viewer (with a `__NETLIST_JSON__` placeholder); `board-pcb.html` is the generated,
 self-contained result; `netlist.json` is the imported netlist.
 
 ## Scope / limits

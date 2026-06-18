@@ -8,7 +8,7 @@ Two jobs only:
 NOTHING here encodes board-specific knowledge: component "kind" is derived purely
 from the reference-designator prefix, and the value string is passed through
 verbatim for the simulator to interpret per type. Re-run after editing the
-schematic; it regenerates board-sim.html from board-sim.template.html.
+schematic; it regenerates board-pcb.html from board-pcb.template.html.
 """
 import json, re, subprocess, sys, tempfile, os
 
