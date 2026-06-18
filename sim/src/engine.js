@@ -50,7 +50,11 @@ function pnjlim(vnew, vold, vt, vcrit) {
   }
   return vnew;
 }
-function simulate(els, sources, gnd, T, dt) {
+// Build a stateful stepper: the matrix setup plus a per-step Newton solve, with the reactive state
+// (node voltages, cap charges, inductor currents) persisting across step() calls. An optional `seed`
+// carries that state over from a prior configuration, so a live change continues mid-run instead of
+// restarting from t = 0. `simulate()` below is just the batch driver over this.
+function createStepper(els, sources, gnd, dt, seed) {
   const vsrc = sources.map((s, i) => ({ type: 'V', a: s.net, b: gnd, vf: s.vf, name: 'S' + i }));
   const all = els.concat(vsrc);
   const enets = (e) =>
@@ -82,17 +86,21 @@ function simulate(els, sources, gnd, T, dt) {
     if (e.type === 'D' || e.type === 'OPTO') e.vl = 0;
     if (e.type === 'OPTO') e.vl2 = 0;
   }
-  let vn = new Array(N).fill(0);
+  const vn = new Array(N).fill(0);
   const Vof = (x) => (x === gnd ? 0 : vn[ni[x]] || 0);
-  const steps = Math.max(1, Math.round(T / dt));
-  const out = { t: [], v: {} };
-  for (const n of nodes) {
-    out.v[n] = [];
+
+  // carry physical state over from a previous stepper (matched by net name / element ref)
+  if (seed) {
+    if (seed.vn) for (const n in seed.vn) if (n in ni) vn[ni[n]] = seed.vn[n];
+    for (const e of all) {
+      if (e.type === 'C' && seed.caps && e.ref in seed.caps) e.vp = seed.caps[e.ref];
+      if (e.type === 'L' && seed.ind && e.ref in seed.ind) e.ip = seed.ind[e.ref];
+    }
   }
-  out.v[gnd] = [];
-  for (let k = 0; k <= steps; k++) {
-    const t = k * dt,
-      mx = hasD ? 100 : 1;
+
+  // advance one Backward-Euler timestep to time t, Newton-iterating the nonlinear devices
+  function step(t) {
+    const mx = hasD ? 100 : 1;
     for (let it = 0; it < mx; it++) {
       const A = Array.from({ length: M }, () => new Array(M).fill(0)),
         b = new Array(M).fill(0);
@@ -228,60 +236,91 @@ function simulate(els, sources, gnd, T, dt) {
       });
       if (!hasD || conv) break;
     }
-    out.t.push(t);
-    for (const n of nodes) out.v[n].push(vn[ni[n]]);
-    out.v[gnd].push(0);
     for (const e of all) {
       if (e.type === 'C') e.vp = Vof(e.a) - Vof(e.b);
       if (e.type === 'L') e.ip = e.icur;
     }
   }
+
   // floating = nets with no DC-conductive path to ground or a source (caps & current-sources don't anchor)
-  const adj = {},
-    addE = (x, y) => {
-      (adj[x] = adj[x] || []).push(y);
-      (adj[y] = adj[y] || []).push(x);
-    };
-  for (const e of all) {
-    // conductive edges at the solved operating point (a reverse diode / off FET doesn't anchor)
-    if (e.type === 'R' || e.type === 'L')
-      addE(e.a, e.b); // R, and L (a DC short), always conduct
-    else if (e.type === 'D') {
-      if (Vof(e.a) - Vof(e.b) > 0.4) addE(e.a, e.b);
-    } // diode only when forward-conducting
-    else if (e.type === 'SW' && e.closed) addE(e.a, e.b);
-    else if (e.type === 'RC') {
-      const en = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) >= e.pullin : false;
-      if (e.when === 'always' || (e.when === 'on') === en) addE(e.a, e.b);
-    } // relay contact: conductive when closed
-    else if (e.type === 'MOS') {
-      if (Vof(e.g) - Vof(e.s) > e.vth) addE(e.d, e.s);
-    } // FET only when on
-    else if (e.type === 'OPTO') {
-      if (Vof(e.a) - Vof(e.b) > 0.4) {
-        addE(e.a, e.b);
-        addE(e.c, e.e);
-      }
-    } // opto on -> LED & phototransistor conduct
-    else if (e.type === 'LDO') addE(e.vin, e.vout); // output anchored only when its input is powered
+  function floatingMap() {
+    const adj = {},
+      addE = (x, y) => {
+        (adj[x] = adj[x] || []).push(y);
+        (adj[y] = adj[y] || []).push(x);
+      };
+    for (const e of all) {
+      // conductive edges at the solved operating point (a reverse diode / off FET doesn't anchor)
+      if (e.type === 'R' || e.type === 'L')
+        addE(e.a, e.b); // R, and L (a DC short), always conduct
+      else if (e.type === 'D') {
+        if (Vof(e.a) - Vof(e.b) > 0.4) addE(e.a, e.b);
+      } // diode only when forward-conducting
+      else if (e.type === 'SW' && e.closed) addE(e.a, e.b);
+      else if (e.type === 'RC') {
+        const en = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) >= e.pullin : false;
+        if (e.when === 'always' || (e.when === 'on') === en) addE(e.a, e.b);
+      } // relay contact: conductive when closed
+      else if (e.type === 'MOS') {
+        if (Vof(e.g) - Vof(e.s) > e.vth) addE(e.d, e.s);
+      } // FET only when on
+      else if (e.type === 'OPTO') {
+        if (Vof(e.a) - Vof(e.b) > 0.4) {
+          addE(e.a, e.b);
+          addE(e.c, e.e);
+        }
+      } // opto on -> LED & phototransistor conduct
+      else if (e.type === 'LDO') addE(e.vin, e.vout); // output anchored only when its input is powered
+    }
+    const anch = new Set([gnd]),
+      stk = [gnd];
+    for (const s of sources) {
+      anch.add(s.net);
+      stk.push(s.net);
+    }
+    while (stk.length) {
+      const n = stk.pop();
+      for (const m of adj[n] || [])
+        if (!anch.has(m)) {
+          anch.add(m);
+          stk.push(m);
+        }
+    }
+    const floating = {};
+    for (const n of nodes) floating[n] = !anch.has(n);
+    floating[gnd] = false;
+    return floating;
   }
-  const anch = new Set([gnd]),
-    stk = [gnd];
-  for (const s of sources) {
-    anch.add(s.net);
-    stk.push(s.net);
+
+  // snapshot the persistent state so a rebuilt stepper can continue from here (live config change)
+  function extractState() {
+    const st = { vn: {}, caps: {}, ind: {} };
+    for (const n of nodes) st.vn[n] = vn[ni[n]];
+    for (const e of all) {
+      if (e.type === 'C' && e.ref != null) st.caps[e.ref] = e.vp;
+      if (e.type === 'L' && e.ref != null) st.ind[e.ref] = e.ip;
+    }
+    return st;
   }
-  while (stk.length) {
-    const n = stk.pop();
-    for (const m of adj[n] || [])
-      if (!anch.has(m)) {
-        anch.add(m);
-        stk.push(m);
-      }
+
+  return { step, floatingMap, extractState, vn, ni, nodes, gnd };
+}
+
+// Batch transient: step from t = 0 to T and collect the full waveforms (used by the tests + batch run).
+function simulate(els, sources, gnd, T, dt) {
+  const sim = createStepper(els, sources, gnd, dt);
+  const steps = Math.max(1, Math.round(T / dt));
+  const out = { t: [], v: {} };
+  for (const n of sim.nodes) out.v[n] = [];
+  out.v[sim.gnd] = [];
+  for (let k = 0; k <= steps; k++) {
+    const t = k * dt;
+    sim.step(t);
+    out.t.push(t);
+    for (const n of sim.nodes) out.v[n].push(sim.vn[sim.ni[n]]);
+    out.v[sim.gnd].push(0);
   }
-  out.floating = {};
-  for (const n of nodes) out.floating[n] = !anch.has(n);
-  out.floating[gnd] = false;
+  out.floating = sim.floatingMap();
   return out;
 }
 function makeWave(s) {
@@ -308,4 +347,4 @@ function gndOf(netlist) {
   return netlist.nets.includes('GND') ? 'GND' : netlist.nets[0];
 }
 
-export { MULT, parseVal, netV, solve, pnjlim, simulate, makeWave, gndOf };
+export { MULT, parseVal, netV, solve, pnjlim, simulate, createStepper, makeWave, gndOf };

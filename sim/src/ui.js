@@ -1,6 +1,6 @@
 // ui.js — the browser front-end. Imports the sim engine + component registry and fetches the
 // netlist live from the dev server (which reads the KiCad files); nothing is baked in.
-import { simulate, makeWave, parseVal } from './engine.js';
+import { createStepper, makeWave, parseVal } from './engine.js';
 import { allComponents, buildElements, defaultSwitchState } from './components/index.js';
 
 async function boot() {
@@ -93,7 +93,7 @@ function srcRow(s) {
   tog.onclick = () => {
     s.off = !s.off;
     paint();
-    run();
+    applyChange();
   }; // off = source disconnected (net floats), not driven to 0
   const sy = () => {
     s.net = d.querySelector('.n').value;
@@ -102,13 +102,13 @@ function srcRow(s) {
     s.v2 = d.querySelector('.v2').value;
     s.freq = d.querySelector('.f').value;
     s.t1 = d.querySelector('.t1').value;
-    run();
+    applyChange();
   };
   d.querySelectorAll('select,input').forEach((e) => (e.onchange = sy));
   d.querySelector('.x').onclick = () => {
     sources = sources.filter((z) => z !== s);
     d.remove();
-    run();
+    applyChange();
   };
   $('#sources').appendChild(d);
 }
@@ -134,12 +134,14 @@ function elRow(e) {
     e.value = d.querySelector('.v').value;
     e.closed = d.querySelector('.cl').checked;
     upd();
+    applyChange();
   };
   d.querySelectorAll('select,input').forEach((x) => (x.onchange = sy));
   upd();
   d.querySelector('.x').onclick = () => {
     elements = elements.filter((z) => z !== e);
     d.remove();
+    applyChange();
   };
   $('#elements').appendChild(d);
 }
@@ -205,7 +207,7 @@ function buildRelays() {
     toggle.onclick = () => {
       switchState[c.ref] = !switchState[c.ref];
       buildRelays();
-      run();
+      applyChange();
     };
     row.appendChild(toggle);
 
@@ -479,8 +481,11 @@ function drawScope(cv, net) {
   const m = (hi - lo) * 0.1;
   lo -= m;
   hi += m;
-  const T = RES.t[RES.t.length - 1] || 1,
-    X = (t) => 40 + (t / T) * (W - 50),
+  // map over the buffered window [t0, tEnd] so a rolling live capture fills the scope (t0 = 0 in batch)
+  const t0 = RES.t[0] || 0,
+    tEnd = RES.t[RES.t.length - 1] ?? 1,
+    tspan = tEnd - t0 || 1,
+    X = (t) => 40 + ((t - t0) / tspan) * (W - 50),
     Y = (v) => 8 + (1 - (v - lo) / (hi - lo)) * (H - 24);
   // tick precision tracks the span, and we strip "-0" so the axis never reads "-0.00"
   const dec = hi - lo >= 10 ? 1 : hi - lo >= 1 ? 2 : hi - lo >= 0.1 ? 3 : 4,
@@ -521,45 +526,87 @@ function drawScope(cv, net) {
   g.fillText(cur + 'V @' + (RES.t[tIndex] * 1e3).toFixed(2) + 'ms', 44, H - 4);
 }
 
-/* ---------- run ---------- */
-function run() {
-  const gnd = $('#gnd').value,
-    T = +$('#dur').value / 1000,
-    dt = +$('#dt').value / 1e6;
-  // hand-added "Extra elements" become raw sim elements passed alongside the modeled parts
-  const extra = [];
+/* ---------- live simulation ---------- */
+// The sim runs continuously: each animation frame advances sim-time (targeting real time, but capped
+// so the UI stays responsive — it slips into slow-motion rather than freezing) and appends to a
+// rolling buffer that the board + scopes draw. Start/Pause/Reset drive it. Editing a source / switch /
+// element rebuilds the stepper *seeded from the current state*, so the change takes effect mid-run
+// (or, while paused, several edits stage up and take effect together on resume).
+let stepper = null,
+  running = false,
+  simT = 0,
+  els = [],
+  rafId = 0,
+  lastWall = 0,
+  lastDraw = 0,
+  ratio = 1;
+const MAXSTEPS = 150; // per-frame compute cap (~25 ms at this circuit's tick cost)
+
+const dtSec = () => +$('#dt').value / 1e6;
+const winLen = () => Math.max(2, Math.round((+$('#dur').value / 1000) / dtSec())); // rolling window, samples
+
+function buildSrcs() {
+  const byNet = {}; // sources on one net superpose (sum); disabled ones are left out (net floats)
+  for (const s of sources) {
+    if (s.off) continue;
+    (byNet[s.net] = byNet[s.net] || []).push(makeWave(s));
+  }
+  return Object.keys(byNet).map((net) => {
+    const ws = byNet[net];
+    return { net, vf: (t) => ws.reduce((a, w) => a + w(t), 0) };
+  });
+}
+
+function buildEls() {
+  const extra = []; // hand-added "Extra elements" become raw sim elements alongside the modeled parts
   for (const e of elements) {
     if (e.kind === 'short') extra.push({ type: 'R', a: e.a, b: e.b, value: 1e-3 });
     else if (e.kind === 'switch') extra.push({ type: 'SW', a: e.a, b: e.b, closed: !!e.closed });
     else extra.push({ type: e.kind, a: e.a, b: e.b, value: parseVal(e.value) });
   }
+  return buildElements(NETLIST, { switchState, extra });
+}
 
-  const els = buildElements(NETLIST, { switchState, extra });
-  const byNet = {}; // sources on the same net superpose (sum) into one drive; disabled ones are left out
-  for (const s of sources) {
-    if (s.off) continue;
-    (byNet[s.net] = byNet[s.net] || []).push(makeWave(s));
-  }
-  const srcs = Object.keys(byNet).map((net) => {
-    const ws = byNet[net];
-    return { net, vf: (t) => ws.reduce((a, w) => a + w(t), 0) };
-  });
-  const t0 = performance.now();
+// (re)build the stepper for the current config; `seed` carries the physical state across the change
+function rebuildStepper(seed) {
+  els = buildEls();
   try {
-    RES = simulate(els, srcs, gnd, T, dt);
+    stepper = createStepper(els, buildSrcs(), $('#gnd').value, dtSec(), seed);
   } catch (err) {
     $('#status').textContent = 'sim error: ' + err.message;
     console.error(err);
     return;
   }
+  if (!RES) RES = { t: [], v: {}, floating: {} };
+  for (const n of stepper.nodes)
+    if (!RES.v[n]) RES.v[n] = new Array(RES.t.length).fill(stepper.vn[stepper.ni[n]]); // backfill new nets
+  if (!RES.v[stepper.gnd]) RES.v[stepper.gnd] = new Array(RES.t.length).fill(0);
+  RES.floating = stepper.floatingMap();
+}
+
+function pushSample() {
+  RES.t.push(simT);
+  for (const n of stepper.nodes) (RES.v[n] = RES.v[n] || []).push(stepper.vn[stepper.ni[n]]);
+  (RES.v[stepper.gnd] = RES.v[stepper.gnd] || []).push(0);
+  const drop = RES.t.length - winLen();
+  if (drop > 0) {
+    RES.t.splice(0, drop);
+    for (const n in RES.v) RES.v[n].splice(0, drop);
+  }
+}
+
+function redraw() {
   const tc = $('#tcur');
-  tc.max = RES.t.length - 1;
-  tc.value = tIndex = RES.t.length - 1;
+  tc.max = Math.max(0, RES.t.length - 1);
+  if (running) tc.value = tIndex;
   updTcur();
-  buildScopes();
   drawAll();
   updateRelayStates();
-  const revb = []; // polarized (electrolytic) caps biased backwards at any point in the run
+  document.querySelectorAll('#scopes canvas').forEach((cv, i) => drawScope(cv, [...selectedNets][i]));
+}
+
+function status(stepsThisFrame) {
+  const revb = []; // polarized (electrolytic) caps biased backwards anywhere in the window
   for (const e of els)
     if (e.polar && RES.v[e.plus] && RES.v[e.minus]) {
       let mn = 1e9;
@@ -569,16 +616,92 @@ function run() {
       if (mn < -0.3) revb.push(`${e.ref} ${mn.toFixed(1)}V`);
     }
   const warn = revb.length ? `⚠ reverse-biased: ${revb.join(', ')} · ` : '';
+  const pace = running
+    ? `· ${stepsThisFrame}/frame · ${ratio >= 0.99 ? 'real time' : '~' + ratio.toFixed(2) + '× (slow-mo)'} `
+    : '';
   $('#status').textContent =
-    `${warn}${els.length} elements · ${RES.t.length} steps · ${(performance.now() - t0).toFixed(0)} ms · hover a trace · relays follow their coils`;
+    `${warn}${running ? '▶ running' : '⏸ paused'} · t = ${(simT * 1e3).toFixed(1)} ms ${pace}· ${els.length} elements`;
 }
-function updTcur() {
-  if (RES) {
-    $('#tcurv').textContent = (RES.t[tIndex] * 1e3).toFixed(2) + ' ms';
+
+function frame(ts) {
+  if (!running) return;
+  const dt = dtSec();
+  const realEl = lastWall ? (ts - lastWall) / 1000 : dt;
+  lastWall = ts;
+  const want = Math.max(1, Math.round(realEl / dt)); // steps needed to stay at wall-clock speed
+  const n = Math.min(want, MAXSTEPS); // cap → slow-mo instead of a frozen UI when it can't keep up
+  for (let i = 0; i < n; i++) {
+    simT += dt;
+    stepper.step(simT);
+    pushSample();
+  }
+  tIndex = RES.t.length - 1;
+  ratio = (n * dt) / Math.max(realEl, 1e-6);
+  RES.floating = stepper.floatingMap();
+  if (ts - lastDraw > 32) {
+    redraw(); // throttle the redraw to ~30 Hz; keep stepping on every animation frame
+    status(n);
+    lastDraw = ts;
+  }
+  rafId = requestAnimationFrame(frame);
+}
+
+function setPlay() {
+  const b = $('#play');
+  b.textContent = running ? '⏸ Pause' : '▶ Start';
+  b.classList.toggle('primary', !running);
+}
+
+function start() {
+  if (running) return;
+  running = true;
+  lastWall = 0;
+  lastDraw = 0;
+  setPlay();
+  rafId = requestAnimationFrame(frame);
+}
+
+function pause() {
+  running = false;
+  cancelAnimationFrame(rafId);
+  setPlay();
+  status(0);
+}
+
+function reset() {
+  running = false;
+  cancelAnimationFrame(rafId);
+  simT = 0;
+  RES = { t: [], v: {}, floating: {} };
+  rebuildStepper(null);
+  stepper.step(0); // show the t = 0 operating point
+  pushSample();
+  tIndex = 0;
+  setPlay();
+  buildScopes();
+  redraw();
+  status(0);
+}
+
+// an edit to a source / switch / element while live: continue from the current state (a mid-run event)
+function applyChange() {
+  rebuildStepper(stepper ? stepper.extractState() : null);
+  if (!running) {
+    redraw(); // paused: floating/topology updates now; the waveform continues when you resume
+    status(0);
   }
 }
-$('#run').onclick = run;
+
+function updTcur() {
+  if (RES && RES.t.length) $('#tcurv').textContent = (RES.t[tIndex] * 1e3).toFixed(2) + ' ms';
+}
+
+$('#play').onclick = () => (running ? pause() : start());
+$('#reset').onclick = reset;
+$('#gnd').onchange = applyChange; // reference change rebuilds the stepper (seeded)
+$('#dt').onchange = applyChange; // dt is baked into the stepper, so a change rebuilds it
 $('#tcur').oninput = (e) => {
+  if (running) return; // the live loop owns the cursor while running; scrub only when paused
   tIndex = +e.target.value;
   updTcur();
   drawAll();
@@ -589,7 +712,7 @@ $('#cmode').onchange = drawAll;
 $('#vmax').oninput = drawAll; // re-color on scale change (no re-sim needed)
 window.addEventListener('resize', () => buildStack());
 
-// init: default-power the board from VBUS = 5 V, then run so the board shows voltages
+// init: default-power the board from VBUS = 5 V and show its operating point (paused — press Start)
 buildRelays();
 const vbusNet = nets.find((n) => n.toUpperCase().includes('VBUS')) || GNDdef;
 const p1Net = nets.find((n) => n === '/P1' || n === 'P1');
@@ -599,7 +722,7 @@ const p1Net = nets.find((n) => n === '/P1' || n === 'P1');
   srcRow(s);
 });
 buildStack();
-run();
+reset();
 }
 boot().catch((e) => {
   document.body.innerHTML = '<pre style="color:#f85149;padding:16px">sim failed to load:\n' + (e.stack || e) + '</pre>';

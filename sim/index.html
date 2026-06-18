@@ -44,12 +44,12 @@
       Components are modeled per part type; only unsupported ICs (ESP32, codec) are bare nodes (shown red).</div>
 
     <h2>Simulation</h2>
-    <div class="row"><label>dur <input type="number" id="dur" value="40">ms</label>
+    <div class="row"><label>window <input type="number" id="dur" value="40">ms</label>
       <label>dt <input type="number" id="dt" value="20">µs</label>
-      <button class="primary" id="run">▶ Run</button></div>
+      <button class="primary" id="play">▶ Start</button><button id="reset">⟲ Reset</button></div>
     <div class="row"><label>gnd <select id="gnd"></select></label></div>
 
-    <h2>Time cursor</h2>
+    <h2>Time cursor <span class="hint">(scrub when paused)</span></h2>
     <div class="row"><input type="range" id="tcur" min="0" max="0" value="0" style="flex:1"><span id="tcurv" class="hint">—</span></div>
 
     <h2>Layers <span class="hint">(stacked in middle)</span></h2>
@@ -74,7 +74,7 @@
 
   <div id="mid">
     <div id="stack"></div>
-    <div id="status">ready — set a source and Run.</div>
+    <div id="status">ready — press ▶ Start to run live.</div>
   </div>
 
   <div id="right">
