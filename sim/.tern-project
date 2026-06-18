@@ -1,0 +1,12 @@
+{
+  "ecmaVersion": 2022,
+  "libs": ["browser", "ecmascript"],
+  "loadEagerly": ["src/**/*.js", "test/**/*.js", "server.js"],
+  "dontLoad": ["node_modules/**"],
+  "plugins": {
+    "modules": {},
+    "es_modules": {},
+    "node": {},
+    "doc_comment": {}
+  }
+}

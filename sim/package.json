@@ -1,0 +1,11 @@
+{
+  "name": "doorbell-sim",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Schematic-importing circuit simulator + PCB viewer for the doorbell V4 board.",
+  "scripts": {
+    "dev": "node server.js",
+    "test": "node --test"
+  }
+}

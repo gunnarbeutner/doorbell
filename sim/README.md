@@ -1,34 +1,52 @@
-# sim — neutral schematic simulator
+# sim — schematic-driven circuit simulator
 
-A generic transient circuit simulator with a browser scope. It does two things and nothing
-board-specific: **imports** `kicad/doorbell.kicad_sch` and **simulates each component by a
-standard type-based model**. No knowledge of what any net or part *means* is encoded.
+A transient circuit simulator with a browser PCB view. It **imports** `kicad/doorbell.kicad_sch`
+and **simulates each component by a type-based model**. Nothing is baked: the netlist is read from
+the KiCad files on demand.
 
 ## Use
 
 ```sh
 cd sim
-python3 build.py          # imports the schematic, regenerates board-pcb.html
-open board-pcb.html       # any browser; self-contained, no server
+npm run dev      # http://localhost:8080 — serves the UI; reads the KiCad files live for the netlist
+npm test         # integration tests against the live schematic (Node's test runner)
 ```
 
-Re-run `build.py` after editing the schematic to re-import.
+`npm run dev` re-imports automatically when a `.kicad_sch` / `.kicad_pcb` changes — just reload.
+Importing needs `kicad-cli` on `PATH` (KiCad's CLI; used for net connectivity).
 
-**`board-pcb.html`** is a 3-column PCB view: `[controls + layer toggles + time cursor] | [selected copper
-layers, stacked] | [scopes]`. Add **Sources** (drive any net with DC/sine/square/step/pulse — each has an
-on/off toggle, off = the net floats; multiple sources on one net superpose), set duration/dt, **Run**.
-**Hover** a trace → tooltip with its net's voltage; **click** a trace → adds that net's scope on the right;
-the time-cursor slider scrubs the instant shown on the board and the scope cursors. Colour is by voltage
-(fixed 0–Vmax scale) or by net. Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
+The page is a 3-column PCB view: `[controls + layer toggles + time cursor] | [selected copper layers,
+stacked] | [scopes]`. Add **Sources** (drive any net with DC/sine/square/step/pulse — each has an on/off
+toggle, off = the net floats; multiple sources on one net superpose), set duration/dt, **Run**. **Hover**
+a trace → its net's voltage; **click** a trace → a scope on the right; the time-cursor slider scrubs the
+instant shown on the board and the scope cursors. Colour is by voltage (fixed 0–Vmax scale) or by net.
+Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
+
+## Layout
+
+- `src/import.js` — KiCad → netlist object (node; shells out to `kicad-cli`, parses the `.kicad_sch` /
+  `.kicad_pcb`). Replaces the old `build.py`.
+- `src/engine.js` — the simulation core (device models + MNA transient solver); shared by the UI and tests.
+- `src/ui.js` + `index.html` — the browser front-end (imports `engine.js`, fetches `/netlist.json`).
+- `server.js` — dev server (`npm run dev`); serves the UI and the live netlist.
+- `test/` — integration tests (`npm test`).
 
 ## How components are modeled (by type)
 
-**Both the classification and the parameters come from the device type, not the reference designator.**
-`build.py` derives each component's *kind* from its symbol `lib_id` (library category / part name —
-e.g. `…-Diodes:…`→diode, `…-Transistors:…`→MOSFET, `TPD2S017`→protection, `SM-LP-5001`→transformer),
-falling back to the refdes-prefix convention only when the lib is unrecognized. So a part is modeled by
-what it *is*, even if its refdes breaks convention (e.g. the `D5` ESD array is treated as protection,
-not a diode).
+Each device type is a **class in `src/components/`** (one file each: `Resistor`, `Diode`, `Mosfet`,
+`Optocoupler`, `Transformer`, `Relay`, `Switch`, `SolderBridge`, `EsdArray`, `Ldo`, … + `Connector`/
+`TestPoint` ports and an `Unmodeled` fallback). A class exposes:
+
+- `static compatible(symbol)` — does this class model the part? It inspects the symbol's `lib_id`
+  (library category / part name) and pin functions — **not** the reference designator. So a part is
+  modeled by what it *is*, even if its refdes breaks convention (e.g. `D5`, an ESD array, is matched by
+  `EsdArray`, not `Diode`).
+- `elements(ctx)` — the simulation elements it contributes (with its own parameters: a diode's Is/n by
+  family, a 2N7002's vth/Rds, a relay's coil R + pull-in, the transformer's L/k/Rdc, …).
+
+The registry (`src/components/index.js`) tries the classes most-specific-first and instantiates the first
+match (or `Unmodeled` → shown red). The importer no longer classifies anything; it just emits raw
+components (ref, lib, value, pins, pinfn).
 
 **Device parameters are per-part** — derived from each component's part type/value (no global knobs):
 diode Vf class by family (silicon `1N4148` ≈ 0.65 V, Schottky `SS14` ≈ 0.3–0.4 V, visible LED ≈ 1.9 V,
@@ -52,7 +70,7 @@ from the rated coil voltage in the value string (`DC12`, `4.5V`).
   closed by default. **Relays are coil-driven** (energized when |V_coil| ≥ ~75 % of the rated coil
   voltage — drive the coil/gate to trigger; read-only state badge). **Switches & solder bridges** toggle
   manually. No configuration UI.
-- **Still bare nodes:** real **ICs** (ESP32, codec) — no neutral model exists; render **red**. Use
+- **Still bare nodes:** real **ICs** (ESP32, codec) — no model exists; render **red**. Use
   **Extra elements** for anything else you want to add by hand.
 - **Floating vs 0 V:** nets with no DC-conductive path to ground or a source are flagged **floating**
   (dashed grey on the board, "(floating)" in the tooltip) — distinct from a real 0 V net.
@@ -60,9 +78,8 @@ from the rated coil voltage in the value string (`DC12`, `4.5V`).
 ## Engine
 
 Modified Nodal Analysis, Backward-Euler transient, Newton iteration (SPICE-style relative+absolute
-convergence) for the per-part diode/opto models. `build.py` is the importer; `board-pcb.template.html` is
-the simulator + viewer (with a `__NETLIST_JSON__` placeholder); `board-pcb.html` is the generated,
-self-contained result; `netlist.json` is the imported netlist.
+convergence) for the per-part diode/opto models, all in `src/engine.js` (no DOM, importable by the
+tests). `src/import.js` produces the netlist; `src/ui.js` is the browser front-end.
 
 ## Scope / limits
 
