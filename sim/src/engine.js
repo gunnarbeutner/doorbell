@@ -344,7 +344,11 @@ function makeWave(s) {
   }
 }
 function gndOf(netlist) {
-  return netlist.nets.includes('GND') ? 'GND' : netlist.nets[0];
+  const n = netlist.nets;
+  const cfg = netlist.config && netlist.config.gnd; // per-board .sim override
+  if (cfg && n.includes(cfg)) return cfg;
+  // else prefer a real GND; else line-1 common (P1) is the bus reference; else just the first net
+  return n.includes('GND') ? 'GND' : n.find((x) => x === '/P1' || x === 'P1') || n[0];
 }
 
 export { MULT, parseVal, netV, solve, pnjlim, simulate, createStepper, makeWave, gndOf };

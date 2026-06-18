@@ -9,12 +9,28 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // sim/src
-const KICAD = join(HERE, '..', '..', 'kicad');
-const SCH = join(KICAD, 'doorbell.kicad_sch');
-const PCB = join(KICAD, 'doorbell.kicad_pcb');
+const ROOT = join(HERE, '..', '..'); // repo root
+
+// Loadable projects: each is a directory of .kicad_sch files (root + hierarchical sub-sheets) + a .kicad_pcb.
+export const PROJECTS = {
+  doorbell: { dir: join(ROOT, 'kicad'), sch: 'doorbell.kicad_sch', pcb: 'doorbell.kicad_pcb' },
+  wf26: { dir: join(ROOT, 'wf26'), sch: 'wf26.kicad_sch', pcb: 'wf26.kicad_pcb' },
+};
 
 // (Classification — which device class models a symbol — lives in src/components/, not here.
 //  The importer just produces raw components: ref, lib, value, pins, pinfn.)
+
+// optional per-board sim config (e.g. layers to hide by default) in a JSON file next to the board:
+// <board>.sim alongside <board>.kicad_sch / .kicad_pcb. Missing or malformed -> empty config.
+function readConfig(dir, sch) {
+  const f = join(dir, sch.replace(/\.kicad_sch$/, '.sim'));
+  if (!existsSync(f)) return {};
+  try {
+    return JSON.parse(readFileSync(f, 'utf8'));
+  } catch {
+    return {};
+  }
+}
 
 // JLCPCB part names often carry the value when the Value field is blank (e.g. "0603,100Ω")
 function valueFromLibname(lib) {
@@ -52,9 +68,9 @@ function netName(block, nummap) {
   return '';
 }
 
-function parsePcb() {
-  if (!existsSync(PCB)) return null;
-  const s = readFileSync(PCB, 'utf8');
+function parsePcb(pcb) {
+  if (!existsSync(pcb)) return null;
+  const s = readFileSync(pcb, 'utf8');
   const nummap = {};
   for (const m of s.matchAll(/\(net (\d+) "([^"]*)"\)/g)) nummap[m[1]] = m[2];
   const layers = [...s.matchAll(/\((\d+) "([^"]+)" (?:signal|mixed|power|user)/g)]
@@ -112,10 +128,10 @@ function parsePcb() {
 }
 
 // walk instance symbols across the root sheet + hierarchical sub-sheets; cb(symBlock, refsSet)
-function walkSymbols(cb) {
-  for (const fn of readdirSync(KICAD)) {
+function walkSymbols(dir, cb) {
+  for (const fn of readdirSync(dir)) {
     if (!fn.endsWith('.kicad_sch')) continue;
-    const s = readFileSync(join(KICAD, fn), 'utf8');
+    const s = readFileSync(join(dir, fn), 'utf8');
     for (const sym of sexprBlocks(s, 'symbol')) {
       if (!/^\(symbol\s*\(lib_id/.test(sym)) continue; // instance symbols only (skip lib cache)
       const refs = new Set([...sym.matchAll(/\(reference "([^"]+)"\)/g)].map((m) => m[1]));
@@ -126,10 +142,15 @@ function walkSymbols(cb) {
   }
 }
 
-export function importNetlist() {
+export function importNetlist(project = 'doorbell') {
+  const P = PROJECTS[project];
+  if (!P) throw new Error(`unknown project "${project}" (have: ${Object.keys(PROJECTS).join(', ')})`);
+  const sch = join(P.dir, P.sch);
+  const pcb = join(P.dir, P.pcb);
+
   // values + lib_ids across all sheets
   const values = {}, libmap = {};
-  walkSymbols((sym, refs) => {
+  walkSymbols(P.dir, (sym, refs) => {
     const lib = sym.match(/^\(symbol\s*\(lib_id "([^"]+)"\)/);
     const val = sym.match(/\(property "Value" "([^"]*)"/);
     for (const r of refs) {
@@ -141,7 +162,7 @@ export function importNetlist() {
   // connectivity from KiCad's own netlister
   const dir = mkdtempSync(join(tmpdir(), 'sim-'));
   const out = join(dir, 'nl.net');
-  const r = spawnSync('kicad-cli', ['sch', 'export', 'netlist', '--format', 'kicadsexpr', '-o', out, SCH]);
+  const r = spawnSync('kicad-cli', ['sch', 'export', 'netlist', '--format', 'kicadsexpr', '-o', out, sch]);
   if (r.status !== 0) { rmSync(dir, { recursive: true, force: true }); throw new Error('kicad-cli failed: ' + (r.stderr || r.error)); }
   const nl = readFileSync(out, 'utf8');
   rmSync(dir, { recursive: true, force: true });
@@ -166,9 +187,10 @@ export function importNetlist() {
   }
 
   return {
-    source: 'doorbell.kicad_sch',
+    source: P.sch,
+    config: readConfig(P.dir, P.sch),
     components: Object.keys(comps).sort().map((r) => ({ ref: r, lib: libmap[r] || '', ...comps[r] })),
     nets: [...nets].sort(),
-    pcb: parsePcb(),
+    pcb: parsePcb(pcb),
   };
 }

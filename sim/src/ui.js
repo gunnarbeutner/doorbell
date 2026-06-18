@@ -1,14 +1,15 @@
 // ui.js — the browser front-end. Imports the sim engine + component registry and fetches the
 // netlist live from the dev server (which reads the KiCad files); nothing is baked in.
-import { createStepper, makeWave, parseVal } from './engine.js';
+import { createStepper, makeWave, parseVal, gndOf } from './engine.js';
 import { allComponents, buildElements, defaultSwitchState } from './components/index.js';
 
 async function boot() {
-const NETLIST = await fetch('/netlist.json').then((r) => r.json());
+const BOARD = new URLSearchParams(location.search).get('board') || 'doorbell';
+const NETLIST = await fetch('/netlist.json?board=' + encodeURIComponent(BOARD)).then((r) => r.json());
 const PCB = NETLIST.pcb;
 const $ = (s) => document.querySelector(s);
 const nets = NETLIST.nets;
-const GNDdef = nets.includes('GND') ? 'GND' : nets[0];
+const GNDdef = gndOf(NETLIST); // GND / configured / P1, per the board's .sim
 
 // classify every part once via the registry; COMP[ref] is its component instance
 const COMP = {};
@@ -45,8 +46,12 @@ let sources = [],
   tIndex = 0;
 let selectedNets = new Set(),
   hoveredNet = null;
-const visLayers = new Set(PCB ? PCB.layers : []);
+const hideLayers = new Set(NETLIST.config?.hideLayers || []); // default-off layers, per the board's .sim
+const visLayers = new Set((PCB ? PCB.layers : []).filter((L) => !hideLayers.has(L)));
 $('#srcname').textContent = NETLIST.source;
+// board toggle: reload with the chosen project (the importer + whole UI re-init off the new netlist)
+$('#board').value = BOARD;
+$('#board').onchange = (e) => (location.search = '?board=' + encodeURIComponent(e.target.value));
 function netOpts(sel, cur) {
   sel.innerHTML = '';
   for (const n of nets) {
@@ -65,7 +70,7 @@ netOpts($('#gnd'), GNDdef);
   (PCB ? PCB.layers : []).forEach((L) => {
     const l = document.createElement('label');
     l.className = 'lt';
-    l.innerHTML = `<input type="checkbox" checked> ${L}`;
+    l.innerHTML = `<input type="checkbox"${visLayers.has(L) ? ' checked' : ''}> ${L}`;
     l.querySelector('input').onchange = (e) => {
       e.target.checked ? visLayers.add(L) : visLayers.delete(L);
       buildStack();
@@ -77,9 +82,10 @@ netOpts($('#gnd'), GNDdef);
 // sources / elements rows
 function srcRow(s) {
   const d = document.createElement('div');
-  d.className = 'row';
-  d.innerHTML = `<button class="tog"></button><select class="n"></select><select class="t"><option>dc</option><option>sine</option><option>square</option><option>step</option><option>pulse</option></select>
-   <input class="v1" type="number" value="${s.v1}"><input class="v2" type="number" value="${s.v2}"><input class="f" type="number" value="${s.freq}"><input class="t1" type="number" value="${s.t1}"><span class="x">✕</span>`;
+  d.className = 'src';
+  // line 1: enable toggle + net + delete (the row-level controls); line 2: the wave parameters
+  d.innerHTML = `<div class="srow"><button class="tog"></button><select class="n"></select><span class="x">✕</span></div>
+   <div class="srow"><select class="t"><option>dc</option><option>sine</option><option>square</option><option>step</option><option>pulse</option></select><input class="v1" type="number" value="${s.v1}"><input class="v2" type="number" value="${s.v2}"><input class="f" type="number" value="${s.freq}"><input class="t1" type="number" value="${s.t1}"></div>`;
   netOpts(d.querySelector('.n'), s.net);
   d.querySelector('.t').value = s.type;
   const tog = d.querySelector('.tog'),
@@ -712,17 +718,16 @@ $('#cmode').onchange = drawAll;
 $('#vmax').oninput = drawAll; // re-color on scale change (no re-sim needed)
 window.addEventListener('resize', () => buildStack());
 
-// init: default-power the board from VBUS = 5 V and show its operating point (paused — press Start)
+// init: seed the default sources from the board's .sim config, then show the operating point (paused)
 buildRelays();
-const vbusNet = nets.find((n) => n.toUpperCase().includes('VBUS')) || GNDdef;
-const p1Net = nets.find((n) => n === '/P1' || n === 'P1');
-[[vbusNet, 5]].concat(p1Net ? [[p1Net, 0]] : []).forEach(([net, v]) => {
-  const s = { net, type: 'dc', v1: v, v2: 0, freq: 1000, t1: 1 };
+for (const c of NETLIST.config?.sources || []) {
+  const s = { net: c.net, type: c.type || 'dc', v1: c.v1 ?? 0, v2: c.v2 ?? 0, freq: c.freq ?? 1000, t1: c.t1 ?? 1 };
   sources.push(s);
   srcRow(s);
-});
+}
 buildStack();
 reset();
+start(); // run live from the start
 }
 boot().catch((e) => {
   document.body.innerHTML = '<pre style="color:#f85149;padding:16px">sim failed to load:\n' + (e.stack || e) + '</pre>';

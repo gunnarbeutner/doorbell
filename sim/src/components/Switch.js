@@ -28,6 +28,15 @@ export default class Switch extends Component {
         ],
       };
     }
+    if (/SW_Slide_DPDT|SW_DPDT/i.test(this.lib)) {
+      // DPDT slide: groups 1-3 and 4-6; COM = 2/5, NC = 1/6, NO = 3/4
+      return {
+        contacts: [
+          { com: 2, nc: 1, no: 3 },
+          { com: 5, nc: 6, no: 4 },
+        ],
+      };
+    }
     if (/Tactile/.test(this.lib) || Object.keys(this.pins).length <= 2) {
       return { spst: [1, 2] };
     }

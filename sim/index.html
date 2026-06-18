@@ -13,8 +13,12 @@
   #mid{flex:1;overflow-y:auto;background:#05070a;position:relative;}
   #right{width:380px;min-width:300px;overflow-y:auto;border-left:1px solid var(--line);padding:8px;}
   h1{font-size:13px;margin:0 0 6px;color:var(--acc);}
-  h2{font-size:11px;margin:12px 0 4px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line);padding-bottom:2px;}
+  h2{font-size:11px;margin:15px 0 5px;color:var(--ink);font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--acc);padding-bottom:3px;}
   .row{display:flex;gap:4px;align-items:center;margin:3px 0;flex-wrap:wrap;}
+  .src{display:flex;flex-direction:column;gap:3px;margin:5px 0;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  .src .srow{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+  .src .n{flex:1;min-width:0;}
+  .src input[type=number]{width:56px;}
   select,input,button{background:#0d1117;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:3px 5px;font:inherit;}
   input[type=number]{width:66px;}input[type=text]{width:110px;}
   button{cursor:pointer;}button:hover{border-color:var(--acc);}
@@ -40,12 +44,13 @@
 <div id="app">
   <div id="left">
     <h1>board-pcb · <span class="hint" id="srcname"></span></h1>
-    <div class="hint">Hover a trace → its net's voltage. Click a trace → adds a scope on the right.
-      Components are modeled per part type; only unsupported ICs (ESP32, codec) are bare nodes (shown red).</div>
+    <div class="hint">Hover a trace for its voltage; click to scope it. Unmodeled ICs show red.</div>
+
+    <div class="row"><label>board <select id="board"><option value="doorbell">doorbell (main board)</option><option value="wf26">wf26 (handset)</option></select></label></div>
 
     <h2>Simulation</h2>
-    <div class="row"><label>window <input type="number" id="dur" value="40">ms</label>
-      <label>dt <input type="number" id="dt" value="20">µs</label>
+    <div class="row"><label>window <input type="number" id="dur" value="200">ms</label>
+      <label>dt <input type="number" id="dt" value="200">µs</label>
       <button class="primary" id="play">▶ Start</button><button id="reset">⟲ Reset</button></div>
     <div class="row"><label>gnd <select id="gnd"></select></label></div>
 
@@ -62,13 +67,11 @@
     <div id="sources"></div>
 
     <h2>Extra elements <button id="addEl">+</button></h2>
-    <div class="hint">kind · netA · netB · value · closed? — model coils (L), contacts (short/switch), etc.</div>
+    <div class="hint">kind · netA · netB · value · closed?</div>
     <div id="elements"></div>
 
     <h2>Relays &amp; switches</h2>
-    <div class="hint">Pin-outs are hard-coded per part type. <b>Relays</b> follow their coil (drive the coil/gate to
-      energize); <b>switches</b> are physical buttons — toggle to press; <b>solder bridges</b> toggle open/closed
-      (closed by default).</div>
+    <div class="hint">Relays follow their coil (read-only); switches &amp; bridges toggle here.</div>
     <div id="relays"></div>
   </div>
 

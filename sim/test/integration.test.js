@@ -232,9 +232,10 @@ const fAudio = 1000;
 const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * fAudio * t); // ±0.5 V differential DAC
 
 test('codec talk: ES8311 audio (OUTP/OUTN) reaches line 3 only when K1 is in talk', () => {
+  // realistic call: P2 held at 12 V, line 4 held hot by the session (so the talk handshake is live)
   const run = (sources) =>
     runDC(netlist, {
-      sources: { '/VBUS': 5, '/P1': 0, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1), ...sources },
+      sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/IN_P4': 12, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1), ...sources },
       T: 16 / fAudio,
       dt: 1 / (fAudio * 128),
     }).RES;
@@ -244,6 +245,22 @@ test('codec talk: ES8311 audio (OUTP/OUTN) reaches line 3 only when K1 is in tal
 
   const listen = run({}); // K1 idle: T1 primary parked on P2, so line 3 stays clear
   assert.ok(swingPP(listen, '/P3', '/P1') < 0.1, `codec audio should not leak onto line 3 at rest, got ${swingPP(listen, '/P3', '/P1').toFixed(2)} Vpp`);
+});
+
+// During codec talk, the K1 pole-A handshake (R28, 2.2 kΩ from line 4) must hold line 3 DC-hot — exactly
+// as the handset's S2 strap does (~12 V) — since that's what signals talk to the station. This FAILS
+// today: K1 pole B hangs the transformer primary (115 Ω winding, no bus-side DC block) onto line 3 and
+// shunts the handshake down to ~0.6 V (the same winding also pulls ~100 mA off the held line in listen).
+// Marked todo until a series DC-blocking cap is added in series with the transformer's bus winding; then
+// line 3 should sit near line 4 (~12 V) with the codec AC riding on top.
+test('codec talk: line 3 sits DC-hot from the talk handshake (needs the bus-winding DC-block cap)', { todo: true }, () => {
+  const { RES } = runDC(netlist, {
+    sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/IN_P4': 12, '/GATE1_DRV': 3.3, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1) },
+    T: 16 / fAudio,
+    dt: 1 / (fAudio * 128),
+  });
+  const dc = meanLevel(RES, '/P3', '/P1');
+  assert.ok(dc > 10, `line 3 should be DC-hot near line 4 (~12 V) during talk, got ${dc.toFixed(2)} V`);
 });
 
 test('codec record: an AC signal on line 3 reaches the ES8311 mic inputs (MICP/MICN) when K1 is in talk', () => {
