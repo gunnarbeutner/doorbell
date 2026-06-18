@@ -61,15 +61,15 @@ export default class Relay extends Component {
     const els = [];
 
     if (coilA && coilB) {
-      els.push({ type: 'R', a: coilA, b: coilB, value: cm.R, ref: this.ref }); // coil = R load
+      els.push({ type: 'R', a: coilA, b: coilB, value: cm.R, ref: this.ref, pa: po.coil[0], pb: po.coil[1] }); // coil = R load
     }
 
     for (const ct of po.contacts || []) {
       if (N(ct.com) && N(ct.no)) {
-        els.push({ type: 'RC', a: N(ct.com), b: N(ct.no), coilA, coilB, pickup: cm.pickup, release: cm.release, when: 'on', ref: this.ref });
+        els.push({ type: 'RC', a: N(ct.com), b: N(ct.no), coilA, coilB, pickup: cm.pickup, release: cm.release, when: 'on', ref: this.ref, pa: ct.com, pb: ct.no });
       }
       if (N(ct.com) && N(ct.nc)) {
-        els.push({ type: 'RC', a: N(ct.com), b: N(ct.nc), coilA, coilB, pickup: cm.pickup, release: cm.release, when: 'off', ref: this.ref });
+        els.push({ type: 'RC', a: N(ct.com), b: N(ct.nc), coilA, coilB, pickup: cm.pickup, release: cm.release, when: 'off', ref: this.ref, pa: ct.com, pb: ct.nc });
       }
     }
 

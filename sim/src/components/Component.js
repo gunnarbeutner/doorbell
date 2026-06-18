@@ -78,5 +78,6 @@ export function twoTerminal(self, type, valueOverride) {
   const p = self.connectedPins();
   if (p.length !== 2) return [];
 
-  return [{ type, a: p[0], b: p[1], value: v, ref: self.ref }];
+  const k = Object.keys(self.pins); // pin numbers, same order as connectedPins() (for per-pad currents)
+  return [{ type, a: p[0], b: p[1], value: v, ref: self.ref, pa: k[0], pb: k[1] }];
 }

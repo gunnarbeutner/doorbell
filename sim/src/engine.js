@@ -240,7 +240,11 @@ function createStepper(els, sources, gnd, dt, seed) {
       if (!hasD || conv) break;
     }
     for (const e of all) {
-      if (e.type === 'C') e.vp = Vof(e.a) - Vof(e.b);
+      if (e.type === 'C') {
+        const vcap = Vof(e.a) - Vof(e.b);
+        e.icur = (e.value / dt) * (vcap - e.vp); // displacement current i = C·dV/dt this step
+        e.vp = vcap;
+      }
       if (e.type === 'L') e.ip = e.icur;
       if (e.type === 'RC') {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
@@ -310,7 +314,44 @@ function createStepper(els, sources, gnd, dt, seed) {
     return st;
   }
 
-  return { step, floatingMap, extractState, vn, ni, nodes, gnd };
+  // current injected into each net's copper at each component pad (sign: + into the net), keyed by
+  // {ref, pin, net}. Feeds the trace-mesh solver; 0 Ohm contacts/switches and net-level sources are
+  // left out (the solver supplies each net's source/connector residual from KCL).
+  function padInjections() {
+    const out = [];
+    // include the ground/return net too — its copper carries the return current and should flow
+    const push = (ref, pin, net, I) => {
+      if (ref && net && Math.abs(I) > 1e-12) out.push({ ref, pin, net, I });
+    };
+    for (const e of all) {
+      if (e.type === 'R') {
+        const I = (Vof(e.a) - Vof(e.b)) / (e.value || 1e12);
+        push(e.ref, e.pa, e.a, -I);
+        push(e.ref, e.pb, e.b, I);
+      } else if (e.type === 'L' || e.type === 'C') {
+        push(e.ref, e.pa, e.a, -(e.icur || 0)); // inductor branch / capacitor displacement current
+        push(e.ref, e.pb, e.b, e.icur || 0);
+      } else if (e.type === 'D') {
+        const I = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
+        push(e.ref, e.pa, e.a, -I);
+        push(e.ref, e.pb, e.b, I);
+      } else if (e.type === 'MOS') {
+        const I = Vof(e.g) - Vof(e.s) > e.vth ? (Vof(e.d) - Vof(e.s)) / e.ron : 0;
+        push(e.ref, undefined, e.d, -I);
+        push(e.ref, undefined, e.s, I);
+      } else if (e.type === 'OPTO') {
+        const Id = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
+        push(e.ref, undefined, e.a, -Id);
+        push(e.ref, undefined, e.b, Id);
+        const Ic = e.ctr * Math.max(0, Id);
+        push(e.ref, undefined, e.c, -Ic);
+        push(e.ref, undefined, e.e, Ic);
+      }
+    }
+    return out;
+  }
+
+  return { step, floatingMap, extractState, padInjections, vn, ni, nodes, gnd };
 }
 
 // Batch transient: step from t = 0 to T and collect the full waveforms (used by the tests + batch run).

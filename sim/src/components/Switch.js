@@ -52,12 +52,12 @@ export default class Switch extends Component {
     const els = [];
 
     if (po.spst && N(po.spst[0]) && N(po.spst[1])) {
-      els.push({ type: 'SW', a: N(po.spst[0]), b: N(po.spst[1]), closed: pressed, ref: this.ref });
+      els.push({ type: 'SW', a: N(po.spst[0]), b: N(po.spst[1]), closed: pressed, ref: this.ref, pa: po.spst[0], pb: po.spst[1] });
     }
 
     for (const ct of po.contacts || []) {
-      if (N(ct.com) && N(ct.no)) els.push({ type: 'SW', a: N(ct.com), b: N(ct.no), closed: pressed, ref: this.ref });
-      if (N(ct.com) && N(ct.nc)) els.push({ type: 'SW', a: N(ct.com), b: N(ct.nc), closed: !pressed, ref: this.ref });
+      if (N(ct.com) && N(ct.no)) els.push({ type: 'SW', a: N(ct.com), b: N(ct.no), closed: pressed, ref: this.ref, pa: ct.com, pb: ct.no });
+      if (N(ct.com) && N(ct.nc)) els.push({ type: 'SW', a: N(ct.com), b: N(ct.nc), closed: !pressed, ref: this.ref, pa: ct.com, pb: ct.nc });
     }
 
     return els;

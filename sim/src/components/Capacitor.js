@@ -15,7 +15,8 @@ export default class Capacitor extends Component {
     const p = this.connectedPins();
     if (p.length !== 2) return [];
 
-    const e = { type: 'C', a: p[0], b: p[1], value: v, ref: this.ref };
+    const k = Object.keys(this.pins); // pin numbers (for per-pad currents)
+    const e = { type: 'C', a: p[0], b: p[1], value: v, ref: this.ref, pa: k[0], pb: k[1] };
 
     // electrolytic / tantalum: flag the polarity so a reverse bias can be reported (KiCad pin 1 = +)
     if (/polariz|electrolyt|tantal/i.test(this.lib)) {

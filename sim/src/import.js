@@ -100,6 +100,7 @@ function parsePcb(pcb) {
       const pat = p.match(/\(at ([-\d.]+) ([-\d.]+)(?: ([-\d.]+))?\)/);
       const sz = p.match(/\(size ([-\d.]+) ([-\d.]+)\)/);
       if (!(pat && sz)) continue;
+      const pinM = p.match(/^\(pad\s+"([^"]*)"/); // pad number (component pin), e.g. (pad "5" smd ...)
       const px = +pat[1], py = +pat[2];
       const ax = fx + px * Math.cos(fa) + py * Math.sin(fa); // KiCad footprint rotation [cos +sin; -sin cos]
       const ay = fy - px * Math.sin(fa) + py * Math.cos(fa);
@@ -107,7 +108,7 @@ function parsePcb(pcb) {
       pads.push({
         x: ax, y: ay, w: +sz[1], h: +sz[2],
         shape: p.slice(0, 60).includes('circle ') ? 'circle' : 'rect',
-        ref: fref, rot: +pat[3] || 0,
+        ref: fref, pin: pinM ? pinM[1] : '', rot: +pat[3] || 0,
         layers: lys.includes('*.Cu') ? ['*'] : lys, net: netName(p, nummap),
       });
     }

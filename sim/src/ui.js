@@ -2,11 +2,14 @@
 // netlist live from the dev server (which reads the KiCad files); nothing is baked in.
 import { createStepper, makeWave, parseVal, gndOf } from './engine.js';
 import { allComponents, buildElements, defaultSwitchState } from './components/index.js';
+import { buildTraceGraph, traceCurrents } from './traceflow.js';
 
 async function boot() {
 const BOARD = new URLSearchParams(location.search).get('board') || 'doorbell';
 const NETLIST = await fetch('/netlist.json?board=' + encodeURIComponent(BOARD)).then((r) => r.json());
 const PCB = NETLIST.pcb;
+if (PCB) PCB.segments.forEach((s, i) => (s.idx = i)); // segment index for per-segment flow lookup
+const traceGraph = PCB ? buildTraceGraph(PCB) : { nets: {} };
 const $ = (s) => document.querySelector(s);
 const nets = NETLIST.nets;
 const GNDdef = gndOf(NETLIST); // GND / configured / P1, per the board's .sim
@@ -43,7 +46,9 @@ function voltColor(v, lo, hi) {
 let sources = [],
   elements = [],
   RES = null,
-  tIndex = 0;
+  tIndex = 0,
+  flowSeg = {}, // per-segment current (signed) for the trace flow animation
+  flowPhase = 0; // advances each drawn frame -> marching dashes
 let selectedNets = new Set(),
   hoveredNet = null;
 const hideLayers = new Set(NETLIST.config?.hideLayers || []); // default-off layers, per the board's .sim
@@ -326,6 +331,7 @@ function drawLayer(cv, L) {
   g.lineCap = 'round';
   g.lineJoin = 'round';
   g.globalAlpha = 1;
+  const flowOn = !!($('#flow') && $('#flow').checked);
   for (const s of segsOn(L)) {
     const hot = hoveredNet && s.net === hoveredNet,
       sel = selectedNets.has(s.net),
@@ -346,8 +352,29 @@ function drawLayer(cv, L) {
     g.moveTo(TF.W(s.x1), TF.H(s.y1));
     g.lineTo(TF.W(s.x2), TF.H(s.y2));
     g.stroke();
+    // current "trickle": white beads marching along the trace in the actual current direction,
+    // faster the more current this segment carries (true per-trace current from the mesh solve, so
+    // dead-end stubs to a cap / open contact read ~0 and don't animate)
+    const Iseg = flowOn && !flt && !hot ? flowSeg[s.idx] || 0 : 0;
+    const I = Math.abs(Iseg);
+    if (I > 1e-5) {
+      const dot = Math.max(2, lw * 0.4), // short dash + round cap -> a round bead ~the trace width
+        gap = Math.max(11, lw * 3), // wide gaps so the beads read as distinct dots
+        spd = Math.max(0.25, Math.min(2, 0.45 * (Math.log10(I) + 6.5))), // px/frame: slow, log-scaled
+        dir = Iseg >= 0 ? 1 : -1; // march along the real current direction (segment x1,y1 -> x2,y2)
+      g.setLineDash([dot, gap]);
+      g.lineDashOffset = -dir * ((flowPhase * spd) % (dot + gap));
+      g.lineCap = 'round';
+      g.lineWidth = lw; // full-width white beads; the gaps still show the trace's voltage colour
+      g.strokeStyle = '#ffffff';
+      g.beginPath();
+      g.moveTo(TF.W(s.x1), TF.H(s.y1));
+      g.lineTo(TF.W(s.x2), TF.H(s.y2));
+      g.stroke();
+    }
   }
   g.setLineDash([]);
+  g.lineDashOffset = 0;
   g.lineCap = 'round';
   // pads
   for (const p of padsOn(L)) {
@@ -610,6 +637,8 @@ function redraw() {
   const tc = $('#tcur');
   tc.max = Math.max(0, RES.t.length - 1);
   if (running) tc.value = tIndex;
+  if (stepper) flowSeg = traceCurrents(traceGraph, stepper.padInjections()); // per-segment flow
+  flowPhase = (flowPhase + 1) % 1e6; // advance the marching dashes one drawn frame
   updTcur();
   drawAll();
   updateRelayStates();
@@ -721,6 +750,7 @@ $('#tcur').oninput = (e) => {
 };
 $('#cmode').onchange = drawAll;
 $('#vmax').oninput = drawAll; // re-color on scale change (no re-sim needed)
+$('#flow').onchange = drawAll; // show/hide the current-flow animation
 window.addEventListener('resize', () => buildStack());
 
 // init: seed the default sources from the board's .sim config, then show the operating point (paused)
