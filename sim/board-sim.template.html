@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>board-sim — neutral schematic simulator</title>
+<style>
+  :root { --bg:#0e1116; --panel:#161b22; --ink:#c9d1d9; --dim:#7d8590; --line:#30363d; --acc:#58a6ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:13px/1.4 ui-monospace,Menlo,Consolas,monospace; background:var(--bg); color:var(--ink); }
+  #app { display:flex; height:100vh; }
+  #side { width:430px; min-width:430px; overflow-y:auto; border-right:1px solid var(--line); padding:10px; }
+  #main { flex:1; display:flex; flex-direction:column; }
+  h1 { font-size:14px; margin:0 0 8px; color:var(--acc); }
+  h2 { font-size:12px; margin:14px 0 4px; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--line); padding-bottom:3px; }
+  .row { display:flex; gap:4px; align-items:center; margin:3px 0; flex-wrap:wrap; }
+  select,input,button { background:#0d1117; color:var(--ink); border:1px solid var(--line); border-radius:4px; padding:3px 5px; font:inherit; }
+  input[type=number] { width:74px; } input[type=text]{ width:120px; }
+  button { cursor:pointer; } button:hover { border-color:var(--acc); }
+  button.primary { background:var(--acc); color:#04101f; border-color:var(--acc); font-weight:bold; }
+  .x { color:#f85149; cursor:pointer; padding:0 4px; }
+  .tag { color:var(--dim); font-size:11px; }
+  #probes { max-height:150px; overflow-y:auto; border:1px solid var(--line); border-radius:4px; padding:4px; }
+  #probes label { display:block; white-space:nowrap; }
+  #browser { max-height:200px; overflow-y:auto; border:1px solid var(--line); border-radius:4px; padding:4px; font-size:11px; }
+  #browser .um { color:#d29922; }
+  canvas { flex:1; width:100%; background:#07090d; }
+  #status { padding:6px 10px; border-top:1px solid var(--line); color:var(--dim); font-size:11px; min-height:18px; }
+  .hint { color:var(--dim); font-size:11px; margin:2px 0 6px; }
+  netsel { display:inline; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="side">
+    <h1>board-sim · <span class="tag" id="srcname"></span></h1>
+    <div class="hint">Generic transient sim. R/C/L/diode/speaker auto-modeled from the netlist;
+      everything else (relays, transformer, transistors, ICs) is bare nodes — wire them up below
+      with neutral elements. Drive any net, probe any net.</div>
+
+    <h2>Simulation</h2>
+    <div class="row">
+      <label>duration <input type="number" id="dur" value="40" step="1"> ms</label>
+      <label>dt <input type="number" id="dt" value="20" step="1"> µs</label>
+      <button class="primary" id="run">▶ Run</button>
+    </div>
+    <div class="row"><label>ground net <select id="gnd"></select></label>
+      <label>diode Is <input type="text" id="dIs" value="1e-14"></label>
+      <label>n <input type="number" id="dN" value="1" step="0.1" style="width:50px"></label></div>
+
+    <h2>Sources <button id="addSrc">+ add</button></h2>
+    <div class="hint">net · waveform · <b>v1</b> amp/level · <b>v2</b> offset/base · <b>freq</b> Hz · <b>t1</b> ms (step/pulse start)</div>
+    <div id="sources"></div>
+
+    <h2>Extra elements <button id="addEl">+ add</button></h2>
+    <div class="hint">Model relay coils/contacts, transformer windings, transistor on-states, IC loads —
+      neutrally, by hand. "short"/"switch" = jumper; switch has an open/closed state.</div>
+    <div class="hint">kind · netA · netB · value (R/C/L) · closed? (switch only)</div>
+    <div id="elements"></div>
+
+    <h2>Probes</h2>
+    <div class="row"><input type="text" id="pfilter" placeholder="filter nets…" style="width:160px"></div>
+    <div id="probes"></div>
+
+    <h2>Imported components</h2>
+    <div id="browser"></div>
+  </div>
+  <div id="main">
+    <canvas id="scope"></canvas>
+    <div id="status">ready.</div>
+  </div>
+</div>
+
+<script>
+const NETLIST = __NETLIST_JSON__;
+const $ = s => document.querySelector(s);
+const COLORS = ["#58a6ff","#3fb950","#f0883e","#db61a2","#e3b341","#56d4dd","#ff7b72","#bc8cff","#7ee787","#ffa657"];
+
+/* ---------- value parsing (neutral, per type) ---------- */
+const MULT = {p:1e-12,n:1e-9,u:1e-6,m:1e-3,k:1e3,K:1e3,M:1e6,G:1e9,R:1,r:1};
+function parseVal(s){
+  if(s==null) return null;
+  s = (''+s).split('/')[0].trim().replace(/µ/g,'u').replace(/Ω/g,'R');
+  if(!s) return null;
+  let rkm = s.match(/^(\d+)([pnumkKMGRr])(\d+)$/);          // EIA RKM: 4R7, 2k2, 1M5
+  if(rkm) return parseFloat(rkm[1]+'.'+rkm[3]) * (MULT[rkm[2]]||1);
+  let m = s.match(/^([\d.]+)\s*([pnumkKMGRr])?/);
+  if(!m) return null;
+  let mm = m[2]!=null ? MULT[m[2]] : 1;
+  return parseFloat(m[1]) * (mm==null?1:mm);
+}
+
+/* ---------- neutral auto-models from the netlist ---------- */
+// kinds that map cleanly to a 2-terminal device by value:
+function autoElements(){
+  const els=[], unmodeled=[];
+  for(const c of NETLIST.components){
+    const pins = Object.values(c.pins);
+    const twoT = (typ,extra={}) => {
+      if(pins.length!==2){ unmodeled.push(c.ref+` (${c.kind}, ${pins.length} pins)`); return; }
+      els.push({type:typ, a:pins[0], b:pins[1], value:parseVal(c.value), ref:c.ref, ...extra});
+    };
+    switch(c.kind){
+      case 'resistor': case 'speaker': twoT('R'); break;
+      case 'capacitor': twoT('C'); break;
+      case 'inductor': twoT('L'); break;
+      case 'diode': if(c.pins['1']!=null&&c.pins['2']!=null) els.push({type:'D',a:c.pins['2'],b:c.pins['1'],value:null,ref:c.ref}); else unmodeled.push(c.ref+' (diode)'); break;  // KiCad Device:D: pin1=cathode, pin2=anode
+      case 'fuse': twoT('R',{value:1e-3}); break;
+      // multi-terminal / active / no-model -> bare nodes (user wires them):
+      default: unmodeled.push(c.ref+` (${c.kind})`);
+    }
+  }
+  // drop elements whose value didn't parse (keep as note)
+  const bad = els.filter(e=>e.value==null && e.type!=='D');
+  return {els: els.filter(e=>!(e.value==null && e.type!=='D')), unmodeled, bad};
+}
+
+/* ---------- linear solve (Gaussian elimination, partial pivot) ---------- */
+function solve(A,b){
+  const n=b.length;
+  for(let i=0;i<n;i++){
+    let p=i; for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
+    if(p!==i){ [A[i],A[p]]=[A[p],A[i]]; [b[i],b[p]]=[b[p],b[i]]; }
+    const piv=A[i][i]||1e-18;
+    for(let r=i+1;r<n;r++){
+      const f=A[r][i]/piv; if(!f) continue;
+      for(let c=i;c<n;c++) A[r][c]-=f*A[i][c];
+      b[r]-=f*b[i];
+    }
+  }
+  const x=new Array(n).fill(0);
+  for(let i=n-1;i>=0;i--){
+    let s=b[i]; for(let c=i+1;c<n;c++) s-=A[i][c]*x[c];
+    x[i]=s/(A[i][i]||1e-18);
+  }
+  return x;
+}
+
+/* ---------- MNA transient ---------- */
+function simulate(els, sources, gnd, T, dt, dmodel){
+  // V-sources from the source list
+  const vsrc = sources.map((s,i)=>({type:'V', a:s.net, b:gnd, vf:s.vf, name:'SRC'+i}));
+  const all = els.concat(vsrc);
+  // node set (exclude ground)
+  const nset=new Set();
+  for(const e of all){ if(e.a!==gnd) nset.add(e.a); if(e.b!==gnd) nset.add(e.b); }
+  const nodes=[...nset]; const ni={}; nodes.forEach((n,i)=>ni[n]=i);
+  const N=nodes.length;
+  const idx=net=>net===gnd?-1:ni[net];
+  // branch-current unknowns: inductors + V-sources
+  const branches = all.filter(e=>e.type==='L'||e.type==='V');
+  branches.forEach((e,i)=>e.bi=N+i);
+  const M=N+branches.length;
+  const Vt=0.025852, Gmin=1e-12, GMINGND=1e-12;
+  const hasDiode = all.some(e=>e.type==='D');
+
+  // history
+  for(const e of all){ if(e.type==='C') e.vp=0; if(e.type==='L') e.ip=0; }
+  let vnode = new Array(N).fill(0);                     // node-voltage guess
+
+  const steps=Math.max(1,Math.round(T/dt));
+  const out={t:[], v:{}};                               // v[net] = array
+  for(const n of nodes) out.v[n]=[];
+  out.v[gnd]=[];
+
+  const Vof = (net)=> net===gnd?0:(vnode[ni[net]]||0);
+
+  for(let k=0;k<=steps;k++){
+    const t=k*dt;
+    const maxIter = hasDiode?60:1;
+    for(let it=0; it<maxIter; it++){
+      const A=Array.from({length:M},()=>new Array(M).fill(0));
+      const b=new Array(M).fill(0);
+      for(let i=0;i<N;i++) A[i][i]+=GMINGND;            // tiny leak to ground -> no singular floats
+      const gStamp=(a,b2,g)=>{ if(a>=0){A[a][a]+=g; if(b2>=0)A[a][b2]-=g;} if(b2>=0){A[b2][b2]+=g; if(a>=0)A[b2][a]-=g;} };
+      const iStamp=(a,b2,I)=>{ if(a>=0)b[a]-=I; if(b2>=0)b[b2]+=I; };  // current I flowing a->b
+      for(const e of all){
+        const a=idx(e.a), c=idx(e.b);
+        if(e.type==='R'||e.type==='SW'){
+          let g = e.type==='SW' ? (e.closed?1e3:1e-12) : 1/(e.value||1e12);
+          gStamp(a,c,g);
+        } else if(e.type==='C'){
+          const g=(e.value||0)/dt; gStamp(a,c,g); iStamp(a,c,-g*e.vp);
+        } else if(e.type==='L'){
+          const bi=e.bi, g=(e.value||1e-9)/dt;
+          if(a>=0){A[a][bi]+=1; A[bi][a]+=1;}
+          if(c>=0){A[c][bi]-=1; A[bi][c]-=1;}
+          A[bi][bi]-=g; b[bi]+= -g*e.ip;
+        } else if(e.type==='V'){
+          const bi=e.bi;
+          if(a>=0){A[a][bi]+=1; A[bi][a]+=1;}
+          if(c>=0){A[c][bi]-=1; A[bi][c]-=1;}
+          b[bi]+= e.vf(t);
+        } else if(e.type==='D'){
+          const vd=Vof(e.a)-Vof(e.b);
+          const ex=Math.exp(Math.min(vd/(dmodel.n*Vt),40));
+          const Id=dmodel.Is*(ex-1), gd=dmodel.Is/(dmodel.n*Vt)*ex+Gmin;
+          gStamp(a,c,gd); iStamp(a,c, Id-gd*vd);
+        }
+      }
+      const x=solve(A,b);
+      // convergence (diodes only)
+      let dmax=0;
+      for(let i=0;i<N;i++){ dmax=Math.max(dmax,Math.abs((x[i]||0)-vnode[i])); vnode[i]=x[i]||0; }
+      // stash branch currents for L history update
+      all.forEach(e=>{ if(e.type==='L') e.icur = x[e.bi]||0; });
+      if(!hasDiode || dmax<1e-7) break;
+    }
+    // record
+    out.t.push(t);
+    for(const n of nodes) out.v[n].push(vnode[ni[n]]);
+    out.v[gnd].push(0);
+    // advance history
+    for(const e of all){
+      if(e.type==='C') e.vp = Vof(e.a)-Vof(e.b);
+      if(e.type==='L') e.ip = e.icur;
+    }
+  }
+  return out;
+}
+
+/* ---------- waveform ---------- */
+function makeWave(s){
+  const A=+s.v1, O=+s.v2, f=+s.freq, t1=(+s.t1)/1000;
+  switch(s.type){
+    case 'dc':     return t=>A;
+    case 'sine':   return t=>O+A*Math.sin(2*Math.PI*f*t);
+    case 'square': return t=>O+A*(Math.sin(2*Math.PI*f*t)>=0?1:-1);
+    case 'step':   return t=>t<t1?O:A;
+    case 'pulse':  return t=>(f>0 && ((t-t1)%(1/f))>=0 && ((t-t1)%(1/f))<(0.5/f) && t>=t1)?A:O;
+    default: return t=>0;
+  }
+}
+
+/* ---------- UI ---------- */
+const nets = NETLIST.nets;
+const GNDdefault = nets.includes('GND')?'GND':nets[0];
+function netOptions(sel,cur){ sel.innerHTML=''; for(const n of nets){ const o=document.createElement('option'); o.value=n;o.textContent=n; if(n===cur)o.selected=true; sel.appendChild(o);} }
+$('#srcname').textContent = NETLIST.source;
+netOptions($('#gnd'), GNDdefault);
+
+let sources=[], elements=[];
+function srcRow(s){
+  const d=document.createElement('div'); d.className='row';
+  d.innerHTML=`<select class="n"></select>
+    <select class="t"><option>dc</option><option>sine</option><option>square</option><option>step</option><option>pulse</option></select>
+    <input class="v1" type="number" value="${s.v1}" title="amp / level (V)">
+    <input class="v2" type="number" value="${s.v2}" title="offset / base (V)">
+    <input class="f" type="number" value="${s.freq}" title="freq (Hz)">
+    <input class="t1" type="number" value="${s.t1}" title="t1 (ms) for step/pulse">
+    <span class="x">✕</span>`;
+  netOptions(d.querySelector('.n'), s.net); d.querySelector('.t').value=s.type;
+  const sync=()=>{ s.net=d.querySelector('.n').value; s.type=d.querySelector('.t').value;
+    s.v1=d.querySelector('.v1').value; s.v2=d.querySelector('.v2').value; s.freq=d.querySelector('.f').value; s.t1=d.querySelector('.t1').value; };
+  d.querySelectorAll('select,input').forEach(e=>e.onchange=sync);
+  d.querySelector('.x').onclick=()=>{ sources=sources.filter(z=>z!==s); d.remove(); };
+  $('#sources').appendChild(d);
+}
+$('#addSrc').onclick=()=>{ const s={net:GNDdefault,type:'dc',v1:5,v2:0,freq:1000,t1:1}; sources.push(s); srcRow(s); };
+
+function elRow(e){
+  const d=document.createElement('div'); d.className='row';
+  d.innerHTML=`<select class="k"><option>R</option><option>C</option><option>L</option><option>D</option><option>short</option><option>switch</option></select>
+    <select class="a"></select><select class="b"></select>
+    <input class="v" type="text" value="${e.value||''}" title="value (R/C/L)" style="width:70px">
+    <label class="sw" style="display:none"><input type="checkbox" class="cl"> closed</label>
+    <span class="x">✕</span>`;
+  netOptions(d.querySelector('.a'),e.a); netOptions(d.querySelector('.b'),e.b); d.querySelector('.k').value=e.kind;
+  const swl=d.querySelector('.sw');
+  const upd=()=>{ swl.style.display = d.querySelector('.k').value==='switch'?'inline':'none'; };
+  const sync=()=>{ e.kind=d.querySelector('.k').value; e.a=d.querySelector('.a').value; e.b=d.querySelector('.b').value;
+    e.value=d.querySelector('.v').value; e.closed=d.querySelector('.cl').checked; upd(); };
+  d.querySelectorAll('select,input').forEach(x=>x.onchange=sync); upd();
+  d.querySelector('.x').onclick=()=>{ elements=elements.filter(z=>z!==e); d.remove(); };
+  $('#elements').appendChild(d);
+}
+$('#addEl').onclick=()=>{ const e={kind:'short',a:nets[0],b:GNDdefault,value:'',closed:true}; elements.push(e); elRow(e); };
+
+// probes
+function renderProbes(filter=''){
+  const box=$('#probes'); box.innerHTML='';
+  for(const n of nets){ if(filter && !n.toLowerCase().includes(filter.toLowerCase())) continue;
+    const id='p_'+n.replace(/\W/g,'_');
+    const l=document.createElement('label');
+    l.innerHTML=`<input type="checkbox" value="${n}" ${probeSet.has(n)?'checked':''}> ${n}`;
+    l.querySelector('input').onchange=ev=>{ ev.target.checked?probeSet.add(n):probeSet.delete(n); };
+    box.appendChild(l);
+  }
+}
+const probeSet=new Set();
+$('#pfilter').oninput=e=>renderProbes(e.target.value);
+renderProbes();
+
+// component browser
+(function(){
+  const b=$('#browser'); const auto=new Set(['resistor','capacitor','inductor','diode','speaker','fuse']);
+  NETLIST.components.forEach(c=>{
+    const d=document.createElement('div'); const um=!auto.has(c.kind);
+    if(um) d.className='um';
+    d.textContent=`${c.ref}  ${c.kind}${c.value?' '+c.value:''}  [${Object.entries(c.pins).map(([p,n])=>p+':'+n).join(' ')}]${um?'  ← bare nodes':''}`;
+    b.appendChild(d);
+  });
+})();
+
+/* ---------- run + scope ---------- */
+function run(){
+  const gnd=$('#gnd').value, T=(+$('#dur').value)/1000, dt=(+$('#dt').value)/1e6;
+  const dmodel={Is:+$('#dIs').value||1e-14, n:+$('#dN').value||1};
+  const {els, unmodeled, bad} = autoElements();
+  // add user elements
+  for(const e of elements){
+    if(e.kind==='short') els.push({type:'R',a:e.a,b:e.b,value:1e-3,ref:'jmp'});
+    else if(e.kind==='switch') els.push({type:'SW',a:e.a,b:e.b,closed:!!e.closed,ref:'sw'});
+    else els.push({type:e.kind,a:e.a,b:e.b,value:parseVal(e.value),ref:'usr'});
+  }
+  const srcs = sources.map(s=>({net:s.net, vf:makeWave(s)}));
+  if(!srcs.length){ status('add at least one source to drive a net.'); return; }
+  const t0=performance.now();
+  let res; try { res=simulate(els, srcs, gnd, T, dt, dmodel); }
+  catch(err){ status('sim error: '+err.message); console.error(err); return; }
+  draw(res, T);
+  status(`${els.length} elements, ${res.t.length} steps in ${(performance.now()-t0).toFixed(0)} ms · `
+    + `${unmodeled.length} bare-node parts${bad.length?' · '+bad.length+' unparsed values':''}`);
+}
+$('#run').onclick=run;
+function status(s){ $('#status').textContent=s; }
+
+const cv=$('#scope'), ctx=cv.getContext('2d');
+function draw(res, T){
+  const W=cv.width=cv.clientWidth, H=cv.height=cv.clientHeight;
+  ctx.fillStyle='#07090d'; ctx.fillRect(0,0,W,H);
+  const probes=[...probeSet]; const pad={l:60,r:14,t:14,b:28};
+  if(!probes.length){ ctx.fillStyle='#7d8590'; ctx.fillText('check some probes, then Run',pad.l,H/2); return; }
+  // y-range over probed nets
+  let lo=Infinity,hi=-Infinity;
+  for(const p of probes){ const a=res.v[p]; if(!a) continue; for(const y of a){ if(y<lo)lo=y; if(y>hi)hi=y; } }
+  if(!isFinite(lo)){lo=-1;hi=1;} if(hi-lo<1e-9){hi+=1;lo-=1;}
+  const m=(hi-lo)*0.08; lo-=m; hi+=m;
+  const X=t=>pad.l+(t/T)*(W-pad.l-pad.r);
+  const Y=v=>pad.t+(1-(v-lo)/(hi-lo))*(H-pad.t-pad.b);
+  // grid
+  ctx.strokeStyle='#161b22'; ctx.fillStyle='#7d8590'; ctx.lineWidth=1; ctx.font='11px monospace';
+  for(let i=0;i<=10;i++){ const x=pad.l+i*(W-pad.l-pad.r)/10; ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,H-pad.b);ctx.stroke();
+    ctx.fillText((T*1000*i/10).toFixed(T*1000>=10?0:1)+'ms', x-12, H-pad.b+14); }
+  for(let i=0;i<=8;i++){ const y=pad.t+i*(H-pad.t-pad.b)/8; ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillText((hi-(hi-lo)*i/8).toFixed(2)+'V', 4, y+3); }
+  // traces + legend
+  probes.forEach((p,pi)=>{
+    const a=res.v[p]; if(!a) return; const col=COLORS[pi%COLORS.length];
+    ctx.strokeStyle=col; ctx.lineWidth=1.4; ctx.beginPath();
+    for(let k=0;k<a.length;k++){ const x=X(res.t[k]), y=Y(a[k]); k?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.stroke();
+    ctx.fillStyle=col; ctx.fillText(p, pad.l+8+pi*0, pad.t+12+pi*14);
+  });
+}
+window.addEventListener('resize',()=>{ if(cv.clientWidth) draw.last&&draw(draw.last); });
+
+// seed one source + a couple of probes so it's not empty
+$('#addSrc').click();
+status('imported '+NETLIST.components.length+' components / '+nets.length+' nets. Configure and Run.');
+</script>
+</body>
+</html>
