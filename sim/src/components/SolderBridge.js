@@ -22,6 +22,6 @@ export default class SolderBridge extends Component {
     const state = (ctx.switchState || {})[this.ref];
     const closed = state === undefined ? true : !!state;
 
-    return [{ type: 'SW', a: this.pins[pk[0]], b: this.pins[pk[1]], closed, ref: this.ref }];
+    return [{ type: 'SW', a: this.pins[pk[0]], b: this.pins[pk[1]], closed, ref: this.ref, pa: pk[0], pb: pk[1] }];
   }
 }

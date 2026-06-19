@@ -89,6 +89,77 @@ function parsePcb(pcb) {
     if (!at) continue;
     vias.push({ x: +at[1], y: +at[2], r: (sz ? +sz[1] : 0.6) / 2, layers: [...b.matchAll(/"([FB]\.Cu|In\d\.Cu)"/g)].map((m) => m[1]), net: netName(b, nummap) });
   }
+  // Silkscreen graphics (F.SilkS / B.SilkS) — component outlines, polarity marks and labels, so the viewer
+  // can paint the silk under the copper. Footprint-local graphics are placed by the footprint's
+  // position+rotation (same transform as pads); board-level gr_* are already in board coordinates.
+  const silk = [];
+  const isSilk = (l) => l === 'F.SilkS' || l === 'B.SilkS';
+  const lyOf = (b) => {
+    const m = b.match(/\(layer "([^"]+)"\)/);
+    return m ? m[1] : '';
+  };
+  const swOf = (b) => {
+    const w = b.match(/\(width ([-\d.]+)\)/);
+    return w ? +w[1] : 0.12;
+  };
+  function collectSilk(scope, pfx, TX, fref) {
+    for (const b of sexprBlocks(scope, pfx + '_line')) {
+      const L = lyOf(b);
+      const a = b.match(/\(start ([-\d.]+) ([-\d.]+)\)/),
+        e = b.match(/\(end ([-\d.]+) ([-\d.]+)\)/);
+      if (!isSilk(L) || !(a && e)) continue;
+      const p = TX(+a[1], +a[2]),
+        q = TX(+e[1], +e[2]);
+      silk.push({ type: 'line', layer: L, w: swOf(b), x1: p[0], y1: p[1], x2: q[0], y2: q[1] });
+    }
+    for (const b of sexprBlocks(scope, pfx + '_rect')) {
+      const L = lyOf(b);
+      const a = b.match(/\(start ([-\d.]+) ([-\d.]+)\)/),
+        e = b.match(/\(end ([-\d.]+) ([-\d.]+)\)/);
+      if (!isSilk(L) || !(a && e)) continue;
+      const c = [[+a[1], +a[2]], [+e[1], +a[2]], [+e[1], +e[2]], [+a[1], +e[2]]].map(([x, y]) => TX(x, y));
+      for (let i = 0; i < 4; i++)
+        silk.push({ type: 'line', layer: L, w: swOf(b), x1: c[i][0], y1: c[i][1], x2: c[(i + 1) % 4][0], y2: c[(i + 1) % 4][1] });
+    }
+    for (const b of sexprBlocks(scope, pfx + '_circle')) {
+      const L = lyOf(b);
+      const c = b.match(/\(center ([-\d.]+) ([-\d.]+)\)/),
+        e = b.match(/\(end ([-\d.]+) ([-\d.]+)\)/);
+      if (!isSilk(L) || !(c && e)) continue;
+      const ctr = TX(+c[1], +c[2]);
+      silk.push({ type: 'circle', layer: L, w: swOf(b), cx: ctr[0], cy: ctr[1], r: Math.hypot(+e[1] - +c[1], +e[2] - +c[2]) });
+    }
+    for (const b of sexprBlocks(scope, pfx + '_arc')) {
+      const L = lyOf(b);
+      const a = b.match(/\(start ([-\d.]+) ([-\d.]+)\)/),
+        m = b.match(/\(mid ([-\d.]+) ([-\d.]+)\)/),
+        e = b.match(/\(end ([-\d.]+) ([-\d.]+)\)/);
+      if (!isSilk(L) || !(a && m && e)) continue;
+      const p = TX(+a[1], +a[2]),
+        q = TX(+m[1], +m[2]),
+        r = TX(+e[1], +e[2]);
+      silk.push({ type: 'arc', layer: L, w: swOf(b), x1: p[0], y1: p[1], xm: q[0], ym: q[1], x2: r[0], y2: r[1] });
+    }
+    for (const b of sexprBlocks(scope, pfx + '_poly')) {
+      const L = lyOf(b);
+      if (!isSilk(L)) continue;
+      const pts = [...b.matchAll(/\(xy ([-\d.]+) ([-\d.]+)\)/g)].map((m) => TX(+m[1], +m[2]));
+      if (pts.length >= 2) silk.push({ type: 'poly', layer: L, w: swOf(b), pts });
+    }
+    for (const b of sexprBlocks(scope, pfx + '_text')) {
+      const L = lyOf(b);
+      if (!isSilk(L) || /\(hide yes\)/.test(b)) continue;
+      const tm = b.match(/^\((?:fp|gr)_text(?: \w+)? "([^"]*)"/),
+        at = b.match(/\(at ([-\d.]+) ([-\d.]+)(?: (-?[\d.]+))?\)/),
+        sz = b.match(/\(size ([-\d.]+) ([-\d.]+)\)/);
+      if (!(tm && at)) continue;
+      const str = tm[1].replace(/\$\{REFERENCE\}/g, fref || '');
+      if (!str || /\$\{/.test(str)) continue; // skip unresolved field placeholders (VALUE, NET, …)
+      const p = TX(+at[1], +at[2]);
+      silk.push({ type: 'text', layer: L, x: p[0], y: p[1], rot: +at[3] || 0, h: sz ? +sz[1] : 1, str });
+    }
+  }
+
   const pads = [];
   for (const fp of sexprBlocks(s, 'footprint')) {
     const fat = fp.match(/\(at ([-\d.]+) ([-\d.]+)(?: ([-\d.]+))?\)/);
@@ -96,6 +167,8 @@ function parsePcb(pcb) {
     const frefM = fp.match(/\(property "Reference" "([^"]+)"/);
     const fref = frefM ? frefM[1] : '?';
     const fx = +fat[1], fy = +fat[2], fa = ((+fat[3] || 0) * Math.PI) / 180;
+    const TX = (lx, ly) => [fx + lx * Math.cos(fa) + ly * Math.sin(fa), fy - lx * Math.sin(fa) + ly * Math.cos(fa)];
+    collectSilk(fp, 'fp', TX, frefM ? frefM[1] : '');
     for (const p of sexprBlocks(fp, 'pad')) {
       const pat = p.match(/\(at ([-\d.]+) ([-\d.]+)(?: ([-\d.]+))?\)/);
       const sz = p.match(/\(size ([-\d.]+) ([-\d.]+)\)/);
@@ -122,6 +195,7 @@ function parsePcb(pcb) {
     if (b.trimStart().startsWith('(gr_rect')) outline.push([x1, y1, x2, y1], [x2, y1, x2, y2], [x2, y2, x1, y2], [x1, y2, x1, y1]);
     else outline.push([x1, y1, x2, y2]);
   }
+  collectSilk(s, 'gr', (x, y) => [x, y], ''); // board-level silk (labels, logos) — already in board coords
   // Copper zones (pours/planes). Capture each zone's net, copper layer(s) and outline polygon — the trace
   // graph needs them because a plane is the real conductor on power/ground nets (e.g. the +3V3 inner plane),
   // not the thin stubs the importer would otherwise see. We take the drawn outline, not the filled_polygon:
@@ -143,7 +217,7 @@ function parsePcb(pcb) {
   const xs = outline.flatMap((o) => [o[0], o[2]]).concat(segments.flatMap((s) => [s.x1, s.x2]));
   const ys = outline.flatMap((o) => [o[1], o[3]]).concat(segments.flatMap((s) => [s.y1, s.y2]));
   const bbox = xs.length ? [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] : [0, 0, 100, 100];
-  return { layers, segments, vias, pads, outline, bbox, zones };
+  return { layers, segments, vias, pads, outline, bbox, zones, silk };
 }
 
 // walk instance symbols across the root sheet + hierarchical sub-sheets; cb(symBlock, refsSet)

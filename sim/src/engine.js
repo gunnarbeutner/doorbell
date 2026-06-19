@@ -360,9 +360,17 @@ function createStepper(els, sources, gnd, dt, seed) {
         const I = (Vof(e.a) - Vof(e.b)) / (e.value || 1e12);
         push(e.ref, e.pa, e.a, -I);
         push(e.ref, e.pb, e.b, I);
+      } else if (e.type === 'SW' || e.type === 'RC') {
+        // a closed switch / made relay contact is a 1 mΩ link (G = 1e3); its current is otherwise invisible
+        // to the trace flow, so a net reached only through a contact (e.g. /P4 via K3 + the J3 bridge) shows
+        // nothing. Conduction state matches the stamp: SW -> e.closed; RC -> latched coil state.
+        const on = e.type === 'SW' ? e.closed : e.when === 'always' || (e.when === 'on') === e.coilOn;
+        const I = on ? (Vof(e.a) - Vof(e.b)) * 1e3 : 0;
+        push(e.ref, e.pa, e.a, -I);
+        push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'L' || e.type === 'C') {
-        push(e.ref, e.pa, e.a, -(e.icur || 0)); // inductor branch / capacitor displacement current
-        push(e.ref, e.pb, e.b, e.icur || 0);
+        push(e.padRef || e.ref, e.pa, e.a, -(e.icur || 0)); // inductor branch / capacitor displacement current
+        push(e.padRef || e.ref, e.pb, e.b, e.icur || 0); // padRef: transformer windings map to the footprint, not "~p"/"~s"
       } else if (e.type === 'D') {
         const I = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
         push(e.ref, e.pa, e.a, -I);
@@ -375,9 +383,13 @@ function createStepper(els, sources, gnd, dt, seed) {
         const Id = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
         push(e.ref, undefined, e.a, -Id);
         push(e.ref, undefined, e.b, Id);
+        // collector–emitter current = the CTR current source minus the anti-saturation clamp diode (e->c,
+        // Is = 1e-6) that pins Vce once the collector bottoms out; omitting the clamp left the collector and
+        // emitter nets up to ~mA out of balance when the phototransistor saturates.
         const Ic = e.ctr * Math.max(0, Id);
-        push(e.ref, undefined, e.c, -Ic);
-        push(e.ref, undefined, e.e, Ic);
+        const Iclamp = 1e-6 * (Math.exp(Math.min((Vof(e.e) - Vof(e.c)) / Vt, 40)) - 1);
+        push(e.ref, undefined, e.c, -Ic + Iclamp);
+        push(e.ref, undefined, e.e, Ic - Iclamp);
       } else if (e.type === 'LDO') {
         push(e.ref, e.pinVin, e.vin, -(e.icur || 0)); // pass-through current drawn out of the input rail
         push(e.ref, e.pinVout, e.vout, e.icur || 0); // and pushed into the regulated output rail

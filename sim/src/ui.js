@@ -312,6 +312,78 @@ function colorFor(net) {
   }
   return netColor(net);
 }
+// the silkscreen side that prints on a given copper layer (only the two outer layers have silk)
+function silkLayerFor(L) {
+  return L === 'F.Cu' ? 'F.SilkS' : L === 'B.Cu' ? 'B.SilkS' : null;
+}
+// circle through 3 points -> { center, radius, start/end angle, anticlockwise } for canvas arc(); the TF
+// is a uniform scale (no flip/rotation), so board-space angles carry over to the canvas unchanged.
+function arc3(x1, y1, xm, ym, x2, y2) {
+  const d = 2 * (x1 * (ym - y2) + xm * (y2 - y1) + x2 * (y1 - ym));
+  if (Math.abs(d) < 1e-9) return null; // collinear
+  const s1 = x1 * x1 + y1 * y1,
+    sm = xm * xm + ym * ym,
+    s2 = x2 * x2 + y2 * y2;
+  const cx = (s1 * (ym - y2) + sm * (y2 - y1) + s2 * (y1 - ym)) / d,
+    cy = (s1 * (x2 - xm) + sm * (x1 - x2) + s2 * (xm - x1)) / d;
+  const a1 = Math.atan2(y1 - cy, x1 - cx),
+    am = Math.atan2(ym - cy, xm - cx),
+    a2 = Math.atan2(y2 - cy, x2 - cx);
+  const norm = (a) => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  // sweep a1->a2 the way that passes through the mid point
+  return { cx, cy, r: Math.hypot(x1 - cx, y1 - cy), a1, a2, acw: norm(am - a1) > norm(a2 - a1) };
+}
+// silkscreen for layer L, painted under the copper. Faithful to the board: lines/rects/circles/arcs are
+// stroked, filled polys (polarity dots/arrows) filled, and text drawn at its stored size/rotation.
+function drawSilk(g, L) {
+  const sl = silkLayerFor(L);
+  if (!sl || !PCB.silk || !($('#silk') && $('#silk').checked)) return;
+  g.save();
+  g.strokeStyle = 'rgba(214,221,230,0.5)';
+  g.fillStyle = 'rgba(214,221,230,0.5)';
+  g.lineCap = 'round';
+  g.lineJoin = 'round';
+  g.setLineDash([]);
+  for (const it of PCB.silk) {
+    if (it.layer !== sl) continue;
+    g.lineWidth = Math.max(0.5, it.w * TF.sc);
+    if (it.type === 'line') {
+      g.beginPath();
+      g.moveTo(TF.W(it.x1), TF.H(it.y1));
+      g.lineTo(TF.W(it.x2), TF.H(it.y2));
+      g.stroke();
+    } else if (it.type === 'circle') {
+      g.beginPath();
+      g.arc(TF.W(it.cx), TF.H(it.cy), it.r * TF.sc, 0, 2 * Math.PI);
+      g.stroke();
+    } else if (it.type === 'arc') {
+      const c = arc3(it.x1, it.y1, it.xm, it.ym, it.x2, it.y2);
+      g.beginPath();
+      if (c) g.arc(TF.W(c.cx), TF.H(c.cy), c.r * TF.sc, c.a1, c.a2, c.acw);
+      else {
+        g.moveTo(TF.W(it.x1), TF.H(it.y1));
+        g.lineTo(TF.W(it.xm), TF.H(it.ym));
+        g.lineTo(TF.W(it.x2), TF.H(it.y2));
+      }
+      g.stroke();
+    } else if (it.type === 'poly') {
+      g.beginPath();
+      it.pts.forEach((p, i) => (i ? g.lineTo(TF.W(p[0]), TF.H(p[1])) : g.moveTo(TF.W(p[0]), TF.H(p[1]))));
+      g.closePath();
+      g.fill();
+    } else if (it.type === 'text' && it.h * TF.sc >= 4) {
+      g.save();
+      g.translate(TF.W(it.x), TF.H(it.y));
+      g.rotate((-it.rot * Math.PI) / 180);
+      g.font = `${it.h * TF.sc}px ui-monospace, Menlo, monospace`;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(it.str, 0, 0);
+      g.restore();
+    }
+  }
+  g.restore();
+}
 function drawLayer(cv, L) {
   const g = cv.getContext('2d');
   g.clearRect(0, 0, cv.width, cv.height);
@@ -326,6 +398,7 @@ function drawLayer(cv, L) {
     g.lineTo(TF.W(o[2]), TF.H(o[3]));
   }
   g.stroke();
+  drawSilk(g, L); // silkscreen under the copper
   // traces (round caps/joins so segment bends fill in, like real copper; fully opaque so
   // overlapping caps at a bend don't read brighter than the trace body)
   g.lineCap = 'round';
@@ -770,6 +843,7 @@ $('#tcur').oninput = (e) => {
 $('#cmode').onchange = drawAll;
 $('#vmax').oninput = drawAll; // re-color on scale change (no re-sim needed)
 $('#flow').onchange = drawAll; // show/hide the current-flow animation
+$('#silk').onchange = drawAll; // show/hide the silkscreen underlay
 window.addEventListener('resize', () => buildStack());
 
 // init: seed the default sources from the board's .sim config, then show the operating point (paused)

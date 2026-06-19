@@ -35,8 +35,10 @@ export default class Transformer extends Component {
     const h = Math.ceil(cp.length / 2);
     const M = m.k * m.L;
 
-    const primary = { type: 'L', a: P[cp[0]], b: P[cp[h - 1]], value: m.L, dcr: m.Rdc, ref: this.ref + '~p' };
-    const secondary = { type: 'L', a: P[cp[h]], b: P[cp[cp.length - 1]], value: m.L, dcr: m.Rdc, ref: this.ref + '~s' };
+    // ref is suffixed per winding so the two L's stay distinct in the state map; padRef + pad pins keep the
+    // flow injection mapped to the real footprint pads (T1.x), not the synthetic "~p"/"~s" name.
+    const primary = { type: 'L', a: P[cp[0]], b: P[cp[h - 1]], value: m.L, dcr: m.Rdc, ref: this.ref + '~p', padRef: this.ref, pa: cp[0], pb: cp[h - 1] };
+    const secondary = { type: 'L', a: P[cp[h]], b: P[cp[cp.length - 1]], value: m.L, dcr: m.Rdc, ref: this.ref + '~s', padRef: this.ref, pa: cp[h], pb: cp[cp.length - 1] };
 
     primary.coupL = secondary;
     secondary.coupL = primary;
