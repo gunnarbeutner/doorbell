@@ -6,6 +6,7 @@ import Relay from './Relay.js';
 import SolderBridge from './SolderBridge.js';
 import Switch from './Switch.js';
 import Transformer from './Transformer.js';
+import Photomos from './Photomos.js';
 import Optocoupler from './Optocoupler.js';
 import Ldo from './Ldo.js';
 import Ic from './Ic.js';
@@ -27,6 +28,7 @@ export const REGISTRY = [
   SolderBridge,
   Switch,
   Transformer,
+  Photomos,
   Optocoupler,
   Ldo,
   Ic,

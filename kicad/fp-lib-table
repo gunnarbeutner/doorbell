@@ -6,5 +6,7 @@
 	(lib (name "cas220tb1")(type "KiCad")(uri "${KIPRJMOD}/lib_switches/cas220tb1.pretty")(options "")(descr "NIDEC CAS-220 polarity-detect switch (easyeda2kicad import)"))
 	(lib (name "sppj223200")(type "KiCad")(uri "${KIPRJMOD}/lib_switches/sppj223200.pretty")(options "")(descr "ALPS SPPJ223200 momentary DPDT pushbutton (easyeda2kicad import)"))
 	(lib (name "sppj322300")(type "KiCad")(uri "${KIPRJMOD}/lib_switches/sppj322300.pretty")(options "")(descr "ALPS SPPJ322300 momentary DPDT pushbutton (easyeda2kicad import)"))
+	(lib (name "gaqy212gs")(type "KiCad")(uri "${KIPRJMOD}/lib_switches/gaqy212gs.pretty")(options "")(descr "SUPSiC GAQY212GS 1-Form-A NO AC PhotoMOS — K1/K2 talk+door (easyeda2kicad import)"))
+	(lib (name "gaqy412eh")(type "KiCad")(uri "${KIPRJMOD}/lib_switches/gaqy412eh.pretty")(options "")(descr "SUPSiC GAQY412EH 1-Form-B NC AC PhotoMOS — K3 chime-mute (easyeda2kicad import)"))
 	(lib (name "SGM2212")(type "KiCad")(uri "${KIPRJMOD}/lib_power/SGM2212.pretty")(options "")(descr "SGM2212-3.3 LDO SOT-223 (board-authoritative copy; diverged from PCM_JLCPCB)"))
 )

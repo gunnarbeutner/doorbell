@@ -1,5 +1,8 @@
 # Doorbell controller (Klingel V4) — design reference
 
+**What the board must do is in [`REQUIREMENTS.md`](REQUIREMENTS.md); this doc is *how* it does it.**
+When the design changes in a way that affects behaviour, update REQUIREMENTS.md too.
+
 **V4 source of truth: the KiCad files** (`kicad/doorbell.kicad_sch` / `kicad/doorbell.kicad_pcb`),
 edited directly in KiCad. `./build.sh all-route` verifies them — the checks KiCad's own DRC/ERC
 can't express (connectivity + the copper-thieving sliver limit in `route.py`, placement in
@@ -193,6 +196,24 @@ triggers (line 4 Türruf, line 5 Etagenruf) are separate conductors.
 
 Implications: the V4 audio path taps the bus **speech pair** — RX on P1↔P2, TX on P1↔P3 — gated by
 the session (see "Audio path").
+
+### TV20/S central unit — from the board photo
+
+`reference/tv20s-board.jpg` (component side) shows the speech path built on dedicated audio power
+amplifiers — an **LM380N** (2.5 W) and a **TAA861A** — plausibly one per direction (half-duplex) —
+alongside several **V23100 / V23154** signal relays and small-signal transistors. The amp types
+are read directly from the parts; the points below are inferred from them, not traced from a netlist:
+
+- **The bus speech audio is AC-coupled at the TV20/S.** The LM380 needs an output coupling cap and
+  its inputs are cap-coupled (as is that class of AF amp), so the amplifiers respond to the **AC on
+  lines 2/3, not the DC bias** on them. The speech path does not care about the speech-line DC level.
+- **The DC on the speech pair is a separate signalling layer**, not part of the audio — session
+  start / talk-detect / hold, handled by the **relays + transistors**. So the talk handshake (the
+  line-3 DC the WF26 asserts through R1) most likely drives a relay/transistor talk-detect that flips
+  the half-duplex direction — but the **exact trigger (DC level vs current vs edge) is unconfirmed**
+  from a photo and needs a bench probe (this is the open TX-out-reach question, see REQUIREMENTS.md).
+- The separate **8 VAC / 1 A bell transformer** for the door opener is visible on its `8V~` terminal
+  (consistent with "Power" above).
 
 ---
 

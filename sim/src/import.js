@@ -260,6 +260,16 @@ export function importNetlist(project = 'doorbell') {
   const nl = readFileSync(out, 'utf8');
   rmSync(dir, { recursive: true, force: true });
 
+  // footprint per ref, from the netlist's (comp (ref ...) ... (footprint ...)) records — so a part can
+  // be classified by its footprint (e.g. the PhotoMOS SSRs) and not only by lib_id / value. Match the
+  // "(comp" records specifically (not the enclosing "(components" / "(comment" blocks, which also start
+  // with that prefix); each record opens with "(comp\n\t...(ref ...)".
+  const fps = {};
+  for (const cm of nl.matchAll(/\(comp\s+\(ref "([^"]+)"\)([\s\S]*?)(?=\n\t*\(comp\s|\n\t*\)\s*\(libparts)/g)) {
+    const fm = cm[2].match(/\(footprint "([^"]+)"\)/);
+    if (fm) fps[cm[1]] = fm[1];
+  }
+
   const comps = {}, nets = new Set();
   for (const m of nl.matchAll(/\(net\s+\(code "\d+"\)\s+\(name "([^"]+)"\)([\s\S]*?)(?=\(net\s+\(code|$)/g)) {
     const net = m[1];
@@ -282,7 +292,7 @@ export function importNetlist(project = 'doorbell') {
   return {
     source: P.sch,
     config: readConfig(P.dir, P.sch),
-    components: Object.keys(comps).sort().map((r) => ({ ref: r, lib: libmap[r] || '', ...comps[r] })),
+    components: Object.keys(comps).sort().map((r) => ({ ref: r, lib: libmap[r] || '', footprint: fps[r] || '', ...comps[r] })),
     nets: [...nets].sort(),
     pcb: parsePcb(pcb),
   };

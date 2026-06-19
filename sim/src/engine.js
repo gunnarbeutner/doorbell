@@ -62,9 +62,11 @@ function createStepper(els, sources, gnd, dt, seed) {
       ? [e.g, e.d, e.s]
       : e.type === 'OPTO'
         ? [e.a, e.b, e.c, e.e]
-        : e.type === 'LDO'
-          ? [e.vin, e.vout, e.gnd]
-          : [e.a, e.b];
+        : e.type === 'SSR'
+          ? [e.a, e.b, e.c, e.d]
+          : e.type === 'LDO'
+            ? [e.vin, e.vout, e.gnd]
+            : [e.a, e.b];
   const nset = new Set();
   for (const e of all) for (const n of enets(e)) if (n !== gnd) nset.add(n);
   const nodes = [...nset],
@@ -81,15 +83,16 @@ function createStepper(els, sources, gnd, dt, seed) {
     SW_GON = 20; // closed switch / made relay contact = 50 mΩ (realistic contact R, not an ideal 0 Ω short):
   // negligible in load-limited paths, but it keeps a near-short between two stiff sources from drawing kA
   const hasD = all.some(
-    (e) => e.type === 'D' || e.type === 'OPTO' || e.type === 'MOS' || e.type === 'LDO' || e.type === 'RC',
+    (e) => e.type === 'D' || e.type === 'OPTO' || e.type === 'MOS' || e.type === 'LDO' || e.type === 'RC' || e.type === 'SSR',
   );
   const hasLDO = all.some((e) => e.type === 'LDO');
   for (const e of all) {
     if (e.type === 'C') e.vp = 0;
     if (e.type === 'L') e.ip = 0;
-    if (e.type === 'D' || e.type === 'OPTO') e.vl = 0;
+    if (e.type === 'D' || e.type === 'OPTO' || e.type === 'SSR') e.vl = 0;
     if (e.type === 'OPTO') e.vl2 = 0;
     if (e.type === 'RC') e.coilOn = false; // relay contact latch state (hysteretic)
+    if (e.type === 'SSR') e.ledOn = false; // PhotoMOS LED energized latch (hysteretic, like the relay)
     if (e.type === 'LDO') e.ldoOn = true; // pass element conducting? (gated on input being source-fed, below)
   }
   const vn = new Array(N).fill(0);
@@ -102,6 +105,7 @@ function createStepper(els, sources, gnd, dt, seed) {
       if (e.type === 'C' && seed.caps && e.ref in seed.caps) e.vp = seed.caps[e.ref];
       if (e.type === 'L' && seed.ind && e.ref in seed.ind) e.ip = seed.ind[e.ref];
       if (e.type === 'RC' && seed.relays && e.ref in seed.relays) e.coilOn = seed.relays[e.ref]; // keep latch
+      if (e.type === 'SSR' && seed.ssrs && e.ref in seed.ssrs) e.ledOn = seed.ssrs[e.ref]; // keep PhotoMOS latch
       if (e.type === 'LDO' && seed.ldos && e.ref in seed.ldos) e.ldoOn = seed.ldos[e.ref];
     }
   }
@@ -245,6 +249,24 @@ function createStepper(els, sources, gnd, dt, seed) {
             gs2 = (sIs / Vt) * exs + Gmin;
           gS(idx(e.e), idx(e.c), gs2);
           iS(idx(e.e), idx(e.c), Is2 - gs2 * vs);
+        } else if (e.type === 'SSR') {
+          // PhotoMOS solid-state relay. Input (LED) side: a diode a->b, exactly like the OPTO LED — its
+          // forward current sets the energized state (latched once per step with hysteresis, below). Output
+          // side (c<->d): a plain BIDIRECTIONAL linear resistance Ron when conducting, ~open otherwise — it
+          // passes both current polarities (no diode/clamp). NO conducts when the LED is energized; NC when
+          // it is de-energized. Open conductance << Gmin so it can't leak a stiff source onto a floating net.
+          const Is = e.Is,
+            nVt = e.n * Vt,
+            vc = nVt * Math.log(nVt / (Math.SQRT2 * Is));
+          const vd = pnjlim(Vof(e.a) - Vof(e.b), e.vl, nVt, vc);
+          e.vl = vd;
+          const ex = Math.exp(Math.min(vd / nVt, 40)),
+            Id = Is * (ex - 1),
+            gd = (Is / nVt) * ex + Gmin;
+          gS(a, c, gd);
+          iS(a, c, Id - gd * vd);
+          const conducts = e.closedWhenOn === e.ledOn;
+          gS(idx(e.c), idx(e.d), conducts ? 1 / e.ron : 1e-15);
         }
       }
       const x = solve(A, b);
@@ -280,6 +302,12 @@ function createStepper(els, sources, gnd, dt, seed) {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
         e.coilOn = e.coilOn ? vc >= e.release : vc >= e.pickup; // pick up at >=pickup, drop out at <release
       }
+      if (e.type === 'SSR') {
+        // latch the LED-energized state from its forward current (operate at >= iop, release at < iop/2),
+        // mirroring the relay's hysteretic mechanical lag so the output doesn't chatter near threshold
+        const Iled = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
+        e.ledOn = e.ledOn ? Iled >= 0.5 * e.iop : Iled >= e.iop;
+      }
     }
   }
 
@@ -311,6 +339,10 @@ function createStepper(els, sources, gnd, dt, seed) {
           addE(e.c, e.e);
         }
       } // opto on -> LED & phototransistor conduct
+      else if (e.type === 'SSR') {
+        if (Vof(e.a) - Vof(e.b) > 0.4) addE(e.a, e.b); // LED forward-biased conducts (input side)
+        if (e.closedWhenOn === e.ledOn) addE(e.c, e.d); // output closed in the latched conducting state
+      } // PhotoMOS: input LED + bidirectional output, galvanically isolated from each other
       else if (e.type === 'LDO' && e.ldoOn) addE(e.vin, e.vout); // pass element conducts only while on
     }
     const seen = new Set(seeds),
@@ -337,12 +369,13 @@ function createStepper(els, sources, gnd, dt, seed) {
 
   // snapshot the persistent state so a rebuilt stepper can continue from here (live config change)
   function extractState() {
-    const st = { vn: {}, caps: {}, ind: {}, relays: {}, ldos: {} };
+    const st = { vn: {}, caps: {}, ind: {}, relays: {}, ssrs: {}, ldos: {} };
     for (const n of nodes) st.vn[n] = vn[ni[n]];
     for (const e of all) {
       if (e.type === 'C' && e.ref != null) st.caps[e.ref] = e.vp;
       if (e.type === 'L' && e.ref != null) st.ind[e.ref] = e.ip;
       if (e.type === 'RC' && e.ref != null) st.relays[e.ref] = e.coilOn;
+      if (e.type === 'SSR' && e.ref != null) st.ssrs[e.ref] = e.ledOn;
       if (e.type === 'LDO' && e.ref != null) st.ldos[e.ref] = e.ldoOn;
     }
     return st;
@@ -392,6 +425,15 @@ function createStepper(els, sources, gnd, dt, seed) {
         const Iclamp = 1e-6 * (Math.exp(Math.min((Vof(e.e) - Vof(e.c)) / Vt, 40)) - 1);
         push(e.ref, undefined, e.c, -Ic + Iclamp);
         push(e.ref, undefined, e.e, Ic - Iclamp);
+      } else if (e.type === 'SSR') {
+        // input LED forward current (pins a/b) + the bidirectional output current (pins c/d, only while
+        // the latched state conducts) — so both galvanically-isolated sides balance per-net independently.
+        const Id = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
+        push(e.ref, e.pa, e.a, -Id);
+        push(e.ref, e.pb, e.b, Id);
+        const Io = e.closedWhenOn === e.ledOn ? (Vof(e.c) - Vof(e.d)) / e.ron : 0;
+        push(e.ref, e.pc, e.c, -Io);
+        push(e.ref, e.pd, e.d, Io);
       } else if (e.type === 'LDO') {
         push(e.ref, e.pinVin, e.vin, -(e.icur || 0)); // pass-through current drawn out of the input rail
         push(e.ref, e.pinVout, e.vout, e.icur || 0); // and pushed into the regulated output rail

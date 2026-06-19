@@ -14,6 +14,7 @@ export class Component {
     this.ref = c.ref;
     this.lib = c.lib || '';
     this.value = c.value || '';
+    this.footprint = c.footprint || '';
     this.pins = c.pins || {};
     this.pinfn = c.pinfn || {};
   }

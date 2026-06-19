@@ -13,6 +13,41 @@ is on the K1 talk strap, the K3↔K1 interlock is gone (K1/K2/K3 independent), a
 what's left is firmware + bench validation (below). ERC 0 errors; DRC clean (1 benign isolated-
 copper thieving-zone warning).
 
+## Audio refactor — SSR LED-drive resistors (`kicad/doorbell.kicad_sch`)
+
+- [ ] **Verify the SSR LED-drive resistors R4/R5/R6 (300 Ω).** 300 Ω gives ~7 mA from the 3.3 V
+      GPIO — confirmed adequate for **K3 / GAQY412EH** (recommended I_F 7 mA, operate ≤3 mA, per
+      `docs/GAQY412E_EH_datasheet.pdf`). **Not yet confirmed for K1/K2 / GAQY212GS** (currently
+      U4/U5): we only have the JLCPCB "30 mA" figure and don't know if that's the recommended forward
+      current or an absolute max. Pull the GAQY212GS datasheet; if it wants more than ~7 mA, lower
+      R4/R5 (or add a 2N7002 buffer per part). Pull-downs R7/R8/R9 (10 k, SAFE-6) are fine as-is.
+
+## Audio refactor — session-independent TX (`kicad/doorbell.kicad_sch`)
+
+- [ ] **Evaluate whether the board can TX without an active session.** K1.4 is tied to **P4**, so the
+      talk handshake (`P4 → K1 → 2.2 kΩ → P3`) is only live while the WF26 latch holds a Türruf
+      session — faithful to the handset and fine for the welcome-chime-before-auto-open case, but it
+      blocks autonomous announcements (TTS, "leave it next door", etc.). Bench-test the TV20/S: when
+      talk is asserted with **no session active**, does it forward the line-3 audio (and not
+      misbehave / ring other stations)? If yes and we want it, the change is to source the handshake
+      from the always-on **P2** instead (`K1.4 → P2` — a strict superset, same ~5 mA load). Ties into
+      the TX-out-reach open item (REQUIREMENTS "Open questions" / AUDIO_REFACTOR bench item 3).
+
+## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
+
+Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14→TALK_BRIDGE`; RX:
+`P2→C16→MIC1P`, `P1→C17→MIC1N`; `P1↔GND` bonded). Component-level choices still open:
+
+- [ ] **RX: direct ES8311 differential input vs external in-amp.** Confirm the mic input is high-Z /
+      differential enough to tap P2↔P1 directly; add an instrumentation amp / buffer if not (bench 5).
+- [ ] **Mic-input bias network.** Bias MIC1P/MIC1N to `ES_VMID`; repurpose R24–R27 (currently on the
+      dead `SEC_A`/`SEC_B` nets); set values per the ES8311 line-in reference design.
+- [ ] **TX level + OUTN handling.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do
+      not overdrive the TV20/S amp); decide OUTP-only vs terminating OUTN; add a buffer/atten if needed.
+- [ ] **SAFE-7 protection on the P2/P3 taps.** Series R + TVS clamp (> +12 V); DC-block cap ratings
+      ≥ 25–50 V. Values/placement TBD.
+- [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
+
 ## WF26 replica refdes cleanup (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
 - [ ] **Rename the `WF26_*` reference designators to standard KiCad refdes.** The embedded dumb-core
