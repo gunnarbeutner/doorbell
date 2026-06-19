@@ -80,12 +80,14 @@ function createStepper(els, sources, gnd, dt, seed) {
   const hasD = all.some(
     (e) => e.type === 'D' || e.type === 'OPTO' || e.type === 'MOS' || e.type === 'LDO' || e.type === 'RC',
   );
+  const hasLDO = all.some((e) => e.type === 'LDO');
   for (const e of all) {
     if (e.type === 'C') e.vp = 0;
     if (e.type === 'L') e.ip = 0;
     if (e.type === 'D' || e.type === 'OPTO') e.vl = 0;
     if (e.type === 'OPTO') e.vl2 = 0;
     if (e.type === 'RC') e.coilOn = false; // relay contact latch state (hysteretic)
+    if (e.type === 'LDO') e.ldoOn = true; // pass element conducting? (gated on input being source-fed, below)
   }
   const vn = new Array(N).fill(0);
   const Vof = (x) => (x === gnd ? 0 : vn[ni[x]] || 0);
@@ -97,7 +99,15 @@ function createStepper(els, sources, gnd, dt, seed) {
       if (e.type === 'C' && seed.caps && e.ref in seed.caps) e.vp = seed.caps[e.ref];
       if (e.type === 'L' && seed.ind && e.ref in seed.ind) e.ip = seed.ind[e.ref];
       if (e.type === 'RC' && seed.relays && e.ref in seed.relays) e.coilOn = seed.relays[e.ref]; // keep latch
+      if (e.type === 'LDO' && seed.ldos && e.ref in seed.ldos) e.ldoOn = seed.ldos[e.ref];
     }
+  }
+  // settle each LDO's on/off from whether its input is source-fed in the (possibly seeded) initial state,
+  // before the first stamp. Otherwise a stale "on" on a now-dead input sinks for one step and pumps the
+  // input rail above the supply — which then reverse-biases the feed diode and blocks any later re-feed.
+  if (hasLDO) {
+    const sr = reachFrom(sources.map((s) => s.net));
+    for (const e of all) if (e.type === 'LDO') e.ldoOn = sr.has(e.vin);
   }
 
   // advance one Backward-Euler timestep to time t, Newton-iterating the nonlinear devices
@@ -162,20 +172,31 @@ function createStepper(els, sources, gnd, dt, seed) {
           }
           b[e.bi] += e.vf(t);
         } else if (e.type === 'LDO') {
+          // Unidirectional pass element: it SOURCES current vin->vout to pull vout up to tgt, drawing the
+          // same current from vin (I_in ~ I_out), but it can never SINK (vout->vin). Modeled as a one-sided
+          // transconductance icur = g*max(0, tgt - (vout-vgnd)) >= 0, so it is always passive. A stiff ideal
+          // source instead would sink when the output cap overshoots tgt, pumping charge uphill into the
+          // input and manufacturing energy — that ran a disconnected input rail away to ~100 kV.
           const tgt = Math.min(e.vreg, Math.max(0, Vof(e.vin) - e.drop)),
             o = idx(e.vout),
-            gp = idx(e.gnd);
-          if (o >= 0) {
-            A[o][e.bi] += 1;
-            A[e.bi][o] += 1;
+            gp = idx(e.gnd),
+            vi = idx(e.vin);
+          if (e.ldoOn) {
+            // regulating: ideal source vout - vgnd = tgt, with the same current drawn from vin (the pass
+            // element). The pass element is unidirectional, so when it would have to SINK current back into
+            // vin it drops out instead (latched per step, below) — sinking would pump charge uphill into the
+            // input and manufacture energy, which sent a disconnected input rail off to ~100 kV.
+            if (o >= 0) {
+              A[o][e.bi] += 1;
+              A[e.bi][o] += 1;
+            }
+            if (gp >= 0) A[e.bi][gp] -= 1;
+            if (vi >= 0) A[vi][e.bi] -= 1;
+            b[e.bi] += tgt;
+          } else {
+            A[e.bi][e.bi] += 1; // off: carries no current, vout left to its load/cap
           }
-          if (gp >= 0) {
-            A[gp][e.bi] -= 1;
-            A[e.bi][gp] -= 1;
-          }
-          b[e.bi] += tgt;
-        } // regulated output, floored at 0 (no input -> 0, not -drop); ideal, no input-current draw
-        else if (e.type === 'D') {
+        } else if (e.type === 'D') {
           const Is = e.Is,
             nVt = e.n * Vt,
             vc = nVt * Math.log(nVt / (Math.SQRT2 * Is));
@@ -235,10 +256,14 @@ function createStepper(els, sources, gnd, dt, seed) {
         vn[i] = xi;
       } // absolute tol limit-cycles on low-current diode nodes)
       all.forEach((e) => {
-        if (e.type === 'L' || e.type === 'V') e.icur = x[e.bi] || 0;
+        if (e.type === 'L' || e.type === 'V' || e.type === 'LDO') e.icur = x[e.bi] || 0; // branch current
       });
       if (!hasD || conv) break;
     }
+    // a regulator only works if its input rail is actually fed by a source. On a disconnected input it must
+    // switch OFF, not keep regulating a charged cap — that manufactures energy, and the resulting on/off
+    // feedback oscillates and stalls the Newton solve. So gate each LDO on whether its vin reaches a source.
+    const srcReach = hasLDO ? reachFrom(sources.map((s) => s.net)) : null;
     for (const e of all) {
       if (e.type === 'C') {
         const vcap = Vof(e.a) - Vof(e.b);
@@ -246,6 +271,7 @@ function createStepper(els, sources, gnd, dt, seed) {
         e.vp = vcap;
       }
       if (e.type === 'L') e.ip = e.icur;
+      if (e.type === 'LDO') e.ldoOn = srcReach.has(e.vin);
       if (e.type === 'RC') {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
         e.coilOn = e.coilOn ? vc >= e.release : vc >= e.pickup; // pick up at >=pickup, drop out at <release
@@ -253,20 +279,21 @@ function createStepper(els, sources, gnd, dt, seed) {
     }
   }
 
-  // floating = nets with no DC-conductive path to ground or a source (caps & current-sources don't anchor)
-  function floatingMap() {
+  // nets reachable from `seeds` through edges that conduct at the solved operating point (a reverse diode /
+  // off FET / open switch doesn't conduct; caps & current-sources don't anchor DC). Used both for the
+  // floating map (seed = ground + sources) and the LDO input-power gate (seed = sources only).
+  function reachFrom(seeds) {
     const adj = {},
       addE = (x, y) => {
         (adj[x] = adj[x] || []).push(y);
         (adj[y] = adj[y] || []).push(x);
       };
     for (const e of all) {
-      // conductive edges at the solved operating point (a reverse diode / off FET doesn't anchor)
-      if (e.type === 'R' || e.type === 'L')
-        addE(e.a, e.b); // R, and L (a DC short), always conduct
+      if (e.type === 'R' || e.type === 'L') addE(e.a, e.b); // R, and L (a DC short), always conduct
       else if (e.type === 'D') {
-        if (Vof(e.a) - Vof(e.b) > 0.4) addE(e.a, e.b);
-      } // diode only when forward-conducting
+        // forward-conducting by current, not a fixed Vf threshold (a Schottky at load drops < 0.4 V)
+        if (e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1) > 1e-6) addE(e.a, e.b);
+      }
       else if (e.type === 'SW' && e.closed) addE(e.a, e.b);
       else if (e.type === 'RC') {
         if (e.when === 'always' || (e.when === 'on') === e.coilOn) addE(e.a, e.b);
@@ -280,22 +307,24 @@ function createStepper(els, sources, gnd, dt, seed) {
           addE(e.c, e.e);
         }
       } // opto on -> LED & phototransistor conduct
-      else if (e.type === 'LDO') addE(e.vin, e.vout); // output anchored only when its input is powered
+      else if (e.type === 'LDO' && e.ldoOn) addE(e.vin, e.vout); // pass element conducts only while on
     }
-    const anch = new Set([gnd]),
-      stk = [gnd];
-    for (const s of sources) {
-      anch.add(s.net);
-      stk.push(s.net);
-    }
+    const seen = new Set(seeds),
+      stk = [...seeds];
     while (stk.length) {
       const n = stk.pop();
       for (const m of adj[n] || [])
-        if (!anch.has(m)) {
-          anch.add(m);
+        if (!seen.has(m)) {
+          seen.add(m);
           stk.push(m);
         }
     }
+    return seen;
+  }
+
+  // floating = nets with no DC-conductive path to ground or a source (caps & current-sources don't anchor)
+  function floatingMap() {
+    const anch = reachFrom([gnd, ...sources.map((s) => s.net)]);
     const floating = {};
     for (const n of nodes) floating[n] = !anch.has(n);
     floating[gnd] = false;
@@ -304,12 +333,13 @@ function createStepper(els, sources, gnd, dt, seed) {
 
   // snapshot the persistent state so a rebuilt stepper can continue from here (live config change)
   function extractState() {
-    const st = { vn: {}, caps: {}, ind: {}, relays: {} };
+    const st = { vn: {}, caps: {}, ind: {}, relays: {}, ldos: {} };
     for (const n of nodes) st.vn[n] = vn[ni[n]];
     for (const e of all) {
       if (e.type === 'C' && e.ref != null) st.caps[e.ref] = e.vp;
       if (e.type === 'L' && e.ref != null) st.ind[e.ref] = e.ip;
       if (e.type === 'RC' && e.ref != null) st.relays[e.ref] = e.coilOn;
+      if (e.type === 'LDO' && e.ref != null) st.ldos[e.ref] = e.ldoOn;
     }
     return st;
   }
@@ -346,6 +376,9 @@ function createStepper(els, sources, gnd, dt, seed) {
         const Ic = e.ctr * Math.max(0, Id);
         push(e.ref, undefined, e.c, -Ic);
         push(e.ref, undefined, e.e, Ic);
+      } else if (e.type === 'LDO') {
+        push(e.ref, e.pinVin, e.vin, e.icur || 0); // pass-through current drawn out of the input rail
+        push(e.ref, e.pinVout, e.vout, -(e.icur || 0)); // and pushed into the regulated output rail
       }
     }
     return out;

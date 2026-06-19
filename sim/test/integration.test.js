@@ -78,10 +78,12 @@ test('transformer blocks DC: a 12 V level on P2 does not appear on the secondary
     `SEC_A/SEC_B should be ~0 (DC blocked), got ${V['/SEC_A']?.toFixed(3)} / ${V['/SEC_B']?.toFixed(3)}`);
 });
 
-test('unpowered board: rails float, no phantom voltage', () => {
+test('unpowered board: rails rest at 0, no phantom voltage', () => {
   const { V, floating } = runDC(netlist, { sources: {} });
-  assert.ok(floating['+3V3'], '+3V3 should be flagged floating with no sources');
-  assert.ok(Math.abs(V['+3V3']) < 0.5, `+3V3 should be ~0 unpowered, got ${V['+3V3']?.toFixed(3)}`);
+  // the IC supply loads (ESP32/codec) tie +3V3 toward GND, so unpowered the rail rests at a hard 0
+  // rather than a floating phantom — and it is therefore no longer flagged floating
+  assert.ok(!floating['+3V3'], '+3V3 should be tied to GND by the IC loads, not floating');
+  assert.ok(Math.abs(V['+3V3']) < 0.1, `+3V3 should be ~0 unpowered, got ${V['+3V3']?.toFixed(3)}`);
 });
 
 // Each audio test sweeps two axes: board power (the handset path is passive, so it must work either

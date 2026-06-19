@@ -8,6 +8,7 @@ import Switch from './Switch.js';
 import Transformer from './Transformer.js';
 import Optocoupler from './Optocoupler.js';
 import Ldo from './Ldo.js';
+import Ic from './Ic.js';
 import Mosfet from './Mosfet.js';
 import Diode from './Diode.js';
 import Inductor from './Inductor.js';
@@ -28,6 +29,7 @@ export const REGISTRY = [
   Transformer,
   Optocoupler,
   Ldo,
+  Ic,
   Mosfet,
   Diode,
   Inductor,

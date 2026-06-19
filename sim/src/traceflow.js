@@ -119,15 +119,26 @@ export function traceCurrents(graph, injections) {
     }
     if (cur.every((c) => Math.abs(c) < 1e-12)) continue; // nothing flowing on this net
 
-    // the net's source/connector supplies the KCL residual; put it at a board connector pad if there
-    // is one (the bus feed), else at the node already carrying the most current (a strong driver)
-    let feedNode = (gn.pads.find((p) => /^J/.test(p.ref)) || {}).node;
-    if (feedNode == null) {
+    // The net's current enters/exits the board through its connector, so the KCL residual goes there.
+    // Spread it across *all* of that connector's pads on the net — a multi-pin power/GND connector
+    // (e.g. USB-C's four GND pins) shares the current in parallel; funnelling it through one pad forces
+    // the return to loop through whatever copper reaches that single point (the USB shield ring was
+    // carrying the whole 80 mA return for exactly this reason). Shield/shell pads (pin "SH") are
+    // excluded — they're chassis tie-points, not the supply return.
+    const conn = (gn.pads.find((p) => /^J/.test(p.ref)) || {}).ref;
+    let feedNodes = [];
+    if (conn) {
+      let cp = gn.pads.filter((p) => p.ref === conn && !/^SH/i.test(p.pin || ''));
+      if (!cp.length) cp = gn.pads.filter((p) => p.ref === conn);
+      feedNodes = [...new Set(cp.map((p) => p.node))].filter((n) => idx[n] !== undefined);
+    }
+    if (!feedNodes.length) {
       let bi = 0;
       for (let i = 1; i < N; i++) if (Math.abs(cur[i]) > Math.abs(cur[bi])) bi = i;
-      feedNode = nodeList[bi];
+      feedNodes = [nodeList[bi]];
     }
-    if (idx[feedNode] !== undefined) cur[idx[feedNode]] -= total;
+    const share = total / feedNodes.length;
+    for (const fn of feedNodes) cur[idx[fn]] -= share;
 
     // conductance Laplacian, weakly grounded everywhere so it's non-singular (floating islands -> 0)
     const A = Array.from({ length: N }, () => new Array(N).fill(1e-6));

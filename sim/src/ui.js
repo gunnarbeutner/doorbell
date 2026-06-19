@@ -637,7 +637,10 @@ function redraw() {
   const tc = $('#tcur');
   tc.max = Math.max(0, RES.t.length - 1);
   if (running) tc.value = tIndex;
-  if (stepper) flowSeg = traceCurrents(traceGraph, stepper.padInjections()); // per-segment flow
+  // per-segment flow — but only while something is actually powering the board. With no live source
+  // the only currents are decaying transients off charged caps (and an unanchored powered island can
+  // drift numerically); the user reasonably expects "no source -> no flow", so suppress it.
+  if (stepper) flowSeg = sources.some((s) => !s.off) ? traceCurrents(traceGraph, stepper.padInjections()) : {};
   flowPhase = (flowPhase + 1) % 1e6; // advance the marching dashes one drawn frame
   updTcur();
   drawAll();

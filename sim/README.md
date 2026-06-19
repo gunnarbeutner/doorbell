@@ -58,9 +58,11 @@ from the rated coil voltage in the value string (`DC12`, `4.5V`).
   status bar if they're ever reverse-biased — pin 1 = +), L, diode (KiCad `Device:D`: pin 1 = cathode, pin 2 = anode),
   speaker (→ R), fuse (→ short), **optocoupler** (standard 4-pin: LED diode 1→2 + CTR current source
   4→3 with a saturation clamp), **MOSFET/transistor** (gate-controlled switch, using the symbol's
-  `G/D/S` pin functions), **regulator/LDO** (an IC with `VIN/VOUT/GND` pin functions → ideal regulated
-  output, floored at 0; target voltage parsed from the output net name, e.g. `+3V3` → 3.3 V; ideal, so it
-  doesn't draw input current), **transformer** (two coupled inductors + series winding Rdc),
+  `G/D/S` pin functions), **regulator/LDO** (an IC with `VIN/VOUT/GND` pin functions → regulated
+  output, floored at 0; target voltage parsed from the output net name, e.g. `+3V3` → 3.3 V; draws its
+  output current back out of the input pin so the input rail loads down rather than supplying free power,
+  and only regulates while its input is actually fed by a source — pull the supply and the board
+  de-energizes instead of running forever off a charged cap), **transformer** (two coupled inductors + series winding Rdc),
   **ESD/TVS protection array** (e.g. `TPD2S017`: each channel passes IN↔OUT, with steering diodes that
   clamp the line to VCC/GND and a ~6 V VCC↔GND rail clamp — so a realistic surge through a source
   impedance clamps to ≈ VCC + Vf; an ideal 0 Ω source can't be clamped, as in reality).
@@ -70,8 +72,11 @@ from the rated coil voltage in the value string (`DC12`, `4.5V`).
   closed by default. **Relays are coil-driven** (energized when |V_coil| ≥ ~75 % of the rated coil
   voltage — drive the coil/gate to trigger; read-only state badge). **Switches & solder bridges** toggle
   manually. No configuration UI.
-- **Still bare nodes:** real **ICs** (ESP32, codec) — no model exists; render **red**. Use
-  **Extra elements** for anything else you want to add by hand.
+- **ICs (ESP32, codec) — supply current only:** their I/O (GPIO, I2S, USB, codec) is **not** modeled, so
+  they still render **red** and signals through their pins aren't trusted; but their power draw *is* — each
+  is an equivalent resistive load (`Ic`) from its supply pin to GND at a representative active current
+  (ESP32 ~80 mA, ES8311 ~10 mA), which pulls through the LDO → +5V → Schottky → VBUS. Use **Extra
+  elements** for anything else you want to add by hand.
 - **Floating vs 0 V:** nets with no DC-conductive path to ground or a source are flagged **floating**
   (dashed grey on the board, "(floating)" in the tooltip) — distinct from a real 0 V net.
 
