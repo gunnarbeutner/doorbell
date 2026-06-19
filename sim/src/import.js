@@ -122,10 +122,28 @@ function parsePcb(pcb) {
     if (b.trimStart().startsWith('(gr_rect')) outline.push([x1, y1, x2, y1], [x2, y1, x2, y2], [x2, y2, x1, y2], [x1, y2, x1, y1]);
     else outline.push([x1, y1, x2, y2]);
   }
+  // Copper zones (pours/planes). Capture each zone's net, copper layer(s) and outline polygon — the trace
+  // graph needs them because a plane is the real conductor on power/ground nets (e.g. the +3V3 inner plane),
+  // not the thin stubs the importer would otherwise see. We take the drawn outline, not the filled_polygon:
+  // the fill carves clearance holes around pads, but connect_pads ties those pads to the pour anyway.
+  const zones = [];
+  for (const z of sexprBlocks(s, 'zone')) {
+    const net = netName(z, nummap);
+    if (!net) continue; // no-net rule areas / keepouts
+    const multi = z.match(/\(layers ([^)]+)\)/);
+    const single = z.match(/\(layer "([^"]+)"\)/);
+    const lys = (multi ? [...multi[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]) : single ? [single[1]] : []).filter((l) => l.endsWith('.Cu'));
+    if (!lys.length) continue;
+    const poly = sexprBlocks(z, 'polygon')[0]; // (polygon ...), not (filled_polygon ...)
+    if (!poly) continue;
+    const pts = [...poly.matchAll(/\(xy ([-\d.]+) ([-\d.]+)\)/g)].map((m) => [+m[1], +m[2]]);
+    if (pts.length >= 3) zones.push({ net, layers: lys, poly: pts });
+  }
+
   const xs = outline.flatMap((o) => [o[0], o[2]]).concat(segments.flatMap((s) => [s.x1, s.x2]));
   const ys = outline.flatMap((o) => [o[1], o[3]]).concat(segments.flatMap((s) => [s.y1, s.y2]));
   const bbox = xs.length ? [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] : [0, 0, 100, 100];
-  return { layers, segments, vias, pads, outline, bbox };
+  return { layers, segments, vias, pads, outline, bbox, zones };
 }
 
 // walk instance symbols across the root sheet + hierarchical sub-sheets; cb(symBlock, refsSet)

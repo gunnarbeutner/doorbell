@@ -72,11 +72,12 @@ function createStepper(els, sources, gnd, dt, seed) {
   nodes.forEach((n, i) => (ni[n] = i));
   const N = nodes.length;
   const idx = (x) => (x === gnd ? -1 : ni[x]);
-  const branches = all.filter((e) => e.type === 'L' || e.type === 'V' || e.type === 'LDO');
+  const branches = all.filter((e) => e.type === 'L' || e.type === 'V');
   branches.forEach((e, i) => (e.bi = N + i));
   const M = N + branches.length,
     Vt = 0.025852,
-    Gmin = 1e-12;
+    Gmin = 1e-12,
+    LDO_GM = 1e4; // LDO pass-element transconductance: vout tracks tgt to ~icur/g (a few µV); stiff but stable
   const hasD = all.some(
     (e) => e.type === 'D' || e.type === 'OPTO' || e.type === 'MOS' || e.type === 'LDO' || e.type === 'RC',
   );
@@ -180,22 +181,18 @@ function createStepper(els, sources, gnd, dt, seed) {
           const tgt = Math.min(e.vreg, Math.max(0, Vof(e.vin) - e.drop)),
             o = idx(e.vout),
             gp = idx(e.gnd),
-            vi = idx(e.vin);
-          if (e.ldoOn) {
-            // regulating: ideal source vout - vgnd = tgt, with the same current drawn from vin (the pass
-            // element). The pass element is unidirectional, so when it would have to SINK current back into
-            // vin it drops out instead (latched per step, below) — sinking would pump charge uphill into the
-            // input and manufacture energy, which sent a disconnected input rail off to ~100 kV.
-            if (o >= 0) {
-              A[o][e.bi] += 1;
-              A[e.bi][o] += 1;
-            }
-            if (gp >= 0) A[e.bi][gp] -= 1;
-            if (vi >= 0) A[vi][e.bi] -= 1;
-            b[e.bi] += tgt;
-          } else {
-            A[e.bi][e.bi] += 1; // off: carries no current, vout left to its load/cap
-          }
+            vi = idx(e.vin),
+            g = LDO_GM;
+          if (e.ldoOn && tgt > Vof(e.vout) - Vof(e.gnd)) {
+            // conducting: transconductance g between vin and vout, referenced to vgnd (vout -> tgt, drawing
+            // the same current from vin). Gated above on the input being source-fed AND vout below tgt.
+            if (o >= 0) A[o][o] += g;
+            if (o >= 0 && gp >= 0) A[o][gp] -= g;
+            if (vi >= 0 && o >= 0) A[vi][o] -= g;
+            if (vi >= 0 && gp >= 0) A[vi][gp] += g;
+            if (o >= 0) b[o] += g * tgt;
+            if (vi >= 0) b[vi] -= g * tgt;
+          } // else off: vout left to its load/cap (no sinking back into vin)
         } else if (e.type === 'D') {
           const Is = e.Is,
             nVt = e.n * Vt,
@@ -256,7 +253,7 @@ function createStepper(els, sources, gnd, dt, seed) {
         vn[i] = xi;
       } // absolute tol limit-cycles on low-current diode nodes)
       all.forEach((e) => {
-        if (e.type === 'L' || e.type === 'V' || e.type === 'LDO') e.icur = x[e.bi] || 0; // branch current
+        if (e.type === 'L' || e.type === 'V') e.icur = x[e.bi] || 0; // branch current
       });
       if (!hasD || conv) break;
     }
@@ -271,7 +268,12 @@ function createStepper(els, sources, gnd, dt, seed) {
         e.vp = vcap;
       }
       if (e.type === 'L') e.ip = e.icur;
-      if (e.type === 'LDO') e.ldoOn = srcReach.has(e.vin);
+      if (e.type === 'LDO') {
+        const tgt = Math.min(e.vreg, Math.max(0, Vof(e.vin) - e.drop)),
+          head = tgt - (Vof(e.vout) - Vof(e.gnd));
+        e.icur = e.ldoOn && head > 0 ? LDO_GM * head : 0; // current sourced vin->vout this step (>= 0)
+        e.ldoOn = srcReach.has(e.vin); // gate next step on the input being source-fed
+      }
       if (e.type === 'RC') {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
         e.coilOn = e.coilOn ? vc >= e.release : vc >= e.pickup; // pick up at >=pickup, drop out at <release
@@ -377,8 +379,8 @@ function createStepper(els, sources, gnd, dt, seed) {
         push(e.ref, undefined, e.c, -Ic);
         push(e.ref, undefined, e.e, Ic);
       } else if (e.type === 'LDO') {
-        push(e.ref, e.pinVin, e.vin, e.icur || 0); // pass-through current drawn out of the input rail
-        push(e.ref, e.pinVout, e.vout, -(e.icur || 0)); // and pushed into the regulated output rail
+        push(e.ref, e.pinVin, e.vin, -(e.icur || 0)); // pass-through current drawn out of the input rail
+        push(e.ref, e.pinVout, e.vout, e.icur || 0); // and pushed into the regulated output rail
       }
     }
     return out;

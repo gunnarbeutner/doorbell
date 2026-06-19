@@ -262,7 +262,7 @@ function buildStack() {
     st.innerHTML = '<div class="hint" style="padding:10px">no PCB geometry in netlist.json</div>';
     return;
   }
-  const cw = $('#mid').clientWidth - 2,
+  const cw = $('#stack').clientWidth - 2,
     ch = Math.max(180, Math.round((cw * (PCB.bbox[3] - PCB.bbox[1])) / (PCB.bbox[2] - PCB.bbox[0])) + 10);
   TF = computeTF(cw, ch);
   PCB.layers
@@ -348,7 +348,8 @@ function drawLayer(cv, L) {
       g.setLineDash([]);
       g.lineCap = 'round';
     }
-    g.beginPath();
+    g.lineDashOffset = 0; // static base trace — without this, a floating net's dashes inherit the animated
+    g.beginPath(); // offset left over from a previous segment's flow beads and appear to "march" (phantom flow)
     g.moveTo(TF.W(s.x1), TF.H(s.y1));
     g.lineTo(TF.W(s.x2), TF.H(s.y2));
     g.stroke();
@@ -424,18 +425,27 @@ function distToSeg(px, py, s) {
   t = Math.max(0, Math.min(1, t));
   return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
 }
+function fmtA(a) {
+  const x = Math.abs(a);
+  if (x >= 1) return a.toFixed(2) + ' A';
+  if (x >= 1e-3) return (a * 1e3).toFixed(2) + ' mA';
+  if (x >= 1e-6) return (a * 1e6).toFixed(1) + ' µA';
+  return (a * 1e9).toFixed(0) + ' nA';
+}
 function onHover(ev, cv, L) {
   const r = cv.getBoundingClientRect();
   const px = ev.clientX - r.left,
     py = ev.clientY - r.top;
   let best = null,
     bd = 8,
-    bestRef = null;
+    bestRef = null,
+    bestSeg = null;
   for (const s of segsOn(L)) {
     const d = distToSeg(px, py, s);
     if (d < bd + (s.w * TF.sc) / 2) {
       bd = d;
       best = s.net;
+      bestSeg = s;
     }
   }
   if (!best)
@@ -461,6 +471,12 @@ function onHover(ev, cv, L) {
     if (RES && RES.floating && RES.floating[best]) txt += '  (floating)';
     else if (RES && RES.v[best]) txt += `  ${RES.v[best][tIndex].toFixed(3)} V`;
     else txt += '  (not in sim)';
+    // per point-to-point connection current: the actual current in the hovered trace segment (from the
+    // mesh solve), so a dead-end stub reads ~0 while a supply trace shows its full draw
+    if (bestSeg && RES && !(RES.floating && RES.floating[best])) {
+      const I = Math.abs(flowSeg[bestSeg.idx] || 0);
+      txt += `  ·  ${I < 1e-7 ? '≈0 A' : fmtA(I)}`;
+    }
     tip.textContent = txt;
     tip.style.display = 'block';
     tip.style.left = ev.clientX + 12 + 'px';
