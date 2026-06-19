@@ -572,6 +572,10 @@
       {
         "netclass": "WF26 Bus",
         "pattern": "+5V"
+      },
+      {
+        "netclass": "WF26 Bus",
+        "pattern": "/CHIME_C1"
       }
     ]
   },
@@ -703,7 +707,7 @@
         "uuid": "959c5810-086a-4a51-98b0-f68b22907a4f"
       }
     ],
-    "used_designators": "D1,R4-9,R16,R24-27,R29-31,U4-6,#PWR1-3,#PWR28-29,#PWR55,J5",
+    "used_designators": "J3-4,U4",
     "variants": []
   },
   "sheets": [

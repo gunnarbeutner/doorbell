@@ -31,8 +31,8 @@
 	(fp_line (start 2.40 -3.20) (end 2.40 3.20) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 2.40 3.20) (end -2.40 3.20) (layer F.CrtYd) (width 0.05))
 	(fp_line (start -2.40 3.20) (end -2.40 -3.20) (layer F.CrtYd) (width 0.05))
-	(model "kicad/lib_switches/gaqy412eh.3dshapes/SMD-4_L4.8-W6.4-P2.54-LS9.6-BL.wrl"
-		(offset (xyz 0.000 0.000 0.000))
+	(model "${KIPRJMOD}/lib_switches/gaqy412eh.3dshapes/SMD-4_L4.8-W6.4-P2.54-LS9.6-BL.step"
+		(offset (xyz 0 0 -2.875))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))
 	)

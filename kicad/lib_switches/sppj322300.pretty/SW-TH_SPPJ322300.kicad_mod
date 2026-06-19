@@ -57,8 +57,8 @@
 	(fp_line (start -16.00 -2.20) (end -6.00 -2.20) (layer F.CrtYd) (width 0.05))
 	(fp_line (start -6.00 -2.20) (end -6.00 -3.30) (layer F.CrtYd) (width 0.05))
 	(fp_line (start -6.00 -3.30) (end 6.00 -3.30) (layer F.CrtYd) (width 0.05))
-	(model "kicad/lib_switches/sppj322300.3dshapes/SW-TH_SPPJ322300.wrl"
-		(offset (xyz 0.000 0.000 0.000))
+	(model "${KIPRJMOD}/lib_switches/sppj322300.3dshapes/SW-TH_SPPJ322300.step"
+		(offset (xyz 0 0 0.925))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))
 	)

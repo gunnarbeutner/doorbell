@@ -11,371 +11,6 @@
 		(company "Gunnar Beutner")
 	)
 	(lib_symbols
-		(symbol "Connector:Screw_Terminal_01x05"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "J"
-				(at 0 7.62 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Screw_Terminal_01x05"
-				(at 0 -7.62 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Generic screw terminal, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "screw terminal"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "TerminalBlock*:*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "Screw_Terminal_01x05_1_1"
-				(rectangle
-					(start -1.27 6.35)
-					(end 1.27 -6.35)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.5334 5.4102) (xy 0.3302 4.572)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.5334 2.8702) (xy 0.3302 2.032)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.5334 0.3302) (xy 0.3302 -0.508)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.5334 -2.2098) (xy 0.3302 -3.048)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.5334 -4.7498) (xy 0.3302 -5.588)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3556 5.588) (xy 0.508 4.7498)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3556 3.048) (xy 0.508 2.2098)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3556 0.508) (xy 0.508 -0.3302)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3556 -2.032) (xy 0.508 -2.8702)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3556 -4.572) (xy 0.508 -5.4102)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 5.08)
-					(radius 0.635)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 2.54)
-					(radius 0.635)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 0)
-					(radius 0.635)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 -2.54)
-					(radius 0.635)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 -5.08)
-					(radius 0.635)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 5.08 0)
-					(length 3.81)
-					(name "Pin_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 2.54 0)
-					(length 3.81)
-					(name "Pin_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 3.81)
-					(name "Pin_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -5.08 0)
-					(length 3.81)
-					(name "Pin_5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Connector:TestPoint"
 			(pin_numbers
 				(hide yes)
@@ -10350,6 +9985,354 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "dg350_2p:DG350-3.5-02P-14-00A"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "DG350-3.5-02P-14-00A"
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "dg350_2p:CONN-TH_DG350-3.5-02P-14-00A-H"
+				(at 0 -8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.lcsc.com/datasheet/C2760668.pdf"
+				(at 0 -11.43 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "DEGSON(高正/高松)"
+				(at 0 -13.97 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "MPN" "DG350-3.5-02P-14-00A(H)"
+				(at 0 -16.51 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "LCSC Part" "C2760668"
+				(at 0 -19.05 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "Screw terminal"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "DG350-3.5-02P-14-00A_0_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 3.81 -3.81)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(circle
+					(center 0 2.54)
+					(radius 0.38)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin unspecified line
+					(at -3.81 1.27 0)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -3.81 -1.27 0)
+					(length 2.54)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "dg350_3p:DG350-3.5-03P-14-00A"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "DG350-3.5-03P-14-00A"
+				(at 0 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "dg350_3p:CONN-TH_DG350-3.5-03P-14-00A"
+				(at 0 -10.16 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.lcsc.com/datasheet/C2760669.pdf"
+				(at 0 -12.7 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "DEGSON(高正/高松)"
+				(at 0 -15.24 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "MPN" "DG350-3.5-03P-14-00A(H)"
+				(at 0 -17.78 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "LCSC Part" "C2760669"
+				(at 0 -20.32 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "Screw terminal"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "DG350-3.5-03P-14-00A_0_1"
+				(rectangle
+					(start -1.27 5.08)
+					(end 3.81 -5.08)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(circle
+					(center 0 3.81)
+					(radius 0.38)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin unspecified line
+					(at -3.81 2.54 0)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at -3.81 -2.54 0)
+					(length 2.54)
+					(name "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "gaqy212gs:GAQY212GS"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -13942,16 +13925,6 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 125.73) (xy 26.67 125.73)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4e66685a-843b-4647-9493-936175df7b61")
-	)
-	(wire
-		(pts
 			(xy 335.28 171.45) (xy 340.36 171.45)
 		)
 		(stroke
@@ -14199,6 +14172,16 @@
 			(type default)
 		)
 		(uuid "70a3980f-a248-4d80-a1e6-16fb80a9ccba")
+	)
+	(wire
+		(pts
+			(xy 26.67 116.84) (xy 29.21 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "70ae82f9-c1cc-467d-846c-3ea026032ebf")
 	)
 	(wire
 		(pts
@@ -14462,7 +14445,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 133.35) (xy 26.67 133.35)
+			(xy 26.67 132.08) (xy 29.21 132.08)
 		)
 		(stroke
 			(width 0)
@@ -14672,7 +14655,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 130.81) (xy 26.67 130.81)
+			(xy 26.67 129.54) (xy 29.21 129.54)
 		)
 		(stroke
 			(width 0)
@@ -14872,16 +14855,6 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 123.19) (xy 26.67 123.19)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d18759b4-c140-498a-a547-7ee5287cb016")
-	)
-	(wire
-		(pts
 			(xy 85.09 201.93) (xy 91.44 201.93)
 		)
 		(stroke
@@ -15002,7 +14975,7 @@
 	)
 	(wire
 		(pts
-			(xy 24.13 128.27) (xy 26.67 128.27)
+			(xy 26.67 127) (xy 29.21 127)
 		)
 		(stroke
 			(width 0)
@@ -15039,6 +15012,16 @@
 			(type default)
 		)
 		(uuid "e93f5d5b-a0cd-4473-98b4-e0d3e811194b")
+	)
+	(wire
+		(pts
+			(xy 26.67 119.38) (xy 29.21 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e9aaf477-7a7f-42b1-8a88-51d3af045a8d")
 	)
 	(wire
 		(pts
@@ -15379,15 +15362,6 @@
 		)
 		(uuid "309abeb1-5a20-424c-8067-2cfa72a724f5")
 	)
-	(label "P2"
-		(at 24.13 125.73 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "3239b81f-42d4-42bb-85d2-9b7473c1bd47")
-	)
 	(label "+3V3"
 		(at 143.51 168.91 90)
 		(effects
@@ -15482,6 +15456,16 @@
 		)
 		(uuid "43b76f29-e5f1-4fc1-bb5d-dd3c5f97d158")
 	)
+	(label "K1_LED"
+		(at 307.34 41.91 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "461a082f-8327-4aed-9fdc-e10854a4de95")
+	)
 	(label "GND"
 		(at 93.98 255.27 0)
 		(effects
@@ -15565,6 +15549,16 @@
 		)
 		(uuid "557e94d3-9749-4512-a76c-bd7b31fc5c87")
 	)
+	(label "K2_LED"
+		(at 307.34 97.79 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5979979f-8864-44ec-8db0-5badb0898f08")
+	)
 	(label "GND"
 		(at 52.07 232.41 0)
 		(effects
@@ -15642,7 +15636,7 @@
 		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
 	)
 	(label "P4"
-		(at 24.13 130.81 0)
+		(at 26.67 129.54 0)
 		(effects
 			(font
 				(size 1 1)
@@ -15705,6 +15699,16 @@
 		)
 		(uuid "86a9455a-488d-4cf3-b9c8-a93f66f44047")
 	)
+	(label "K3_LED"
+		(at 307.34 156.21 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "89626026-c3b2-48c0-97be-696104f58aea")
+	)
 	(label "I2S_BCLK"
 		(at 186.69 193.04 0)
 		(effects
@@ -15713,15 +15717,6 @@
 			)
 		)
 		(uuid "89665ac7-8ffe-4d35-8d68-b8495748d42a")
-	)
-	(label "P1"
-		(at 24.13 123.19 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "89bbb887-818e-4806-ad67-5719fc1c1d3e")
 	)
 	(label "P4"
 		(at 119.38 213.36 0)
@@ -15828,6 +15823,15 @@
 			(justify left)
 		)
 		(uuid "a09529f3-4da3-43ac-bf8f-e1a99ce0f3b5")
+	)
+	(label "P2"
+		(at 26.67 119.38 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+		)
+		(uuid "a0b3d797-26b6-42e4-bb4c-8573a1cb610e")
 	)
 	(label "TALK_BRIDGE"
 		(at 337.82 57.15 90)
@@ -16010,7 +16014,7 @@
 		(uuid "bf754f44-137e-4166-b5db-83a07f194490")
 	)
 	(label "P3"
-		(at 24.13 128.27 0)
+		(at 26.67 127 0)
 		(effects
 			(font
 				(size 1 1)
@@ -16029,7 +16033,7 @@
 		(uuid "c77b4b0e-9358-4cc8-a571-e16cd5047883")
 	)
 	(label "P5"
-		(at 24.13 133.35 0)
+		(at 26.67 132.08 0)
 		(effects
 			(font
 				(size 1 1)
@@ -16046,6 +16050,15 @@
 			(justify right bottom)
 		)
 		(uuid "d4427718-cbd3-4b7f-add5-098fd70b73ef")
+	)
+	(label "P1"
+		(at 26.67 116.84 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+		)
+		(uuid "d77d8280-2fde-4b82-9e2c-0f763c29df02")
 	)
 	(label "I2S_DOUT"
 		(at 186.69 200.66 0)
@@ -20087,6 +20100,121 @@
 		)
 	)
 	(symbol
+		(lib_id "dg350_2p:DG350-3.5-02P-14-00A")
+		(at 33.02 118.11 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "4ab43918-7589-4c88-9e97-7f64e5f91b62")
+		(property "Reference" "J2"
+			(at 38.1 116.8399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "DG350-3.5-02P-14-00A"
+			(at 38.1 119.3799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "dg350_2p:CONN-TH_DG350-3.5-02P-14-00A-H"
+			(at 33.02 127 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2760668.pdf"
+			(at 33.02 129.54 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 33.02 118.11 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "DEGSON(高正/高松)"
+			(at 33.02 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "DG350-3.5-02P-14-00A(H)"
+			(at 33.02 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part" "C2760668"
+			(at 33.02 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "eeda4ce6-a8fa-4ba6-8061-bdb24047c9fc")
+		)
+		(pin "2"
+			(uuid "84c94f19-cb4b-465f-8e62-d1568360b46a")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
 		(at 101.6 130.81 180)
 		(unit 1)
@@ -22315,6 +22443,124 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "dg350_3p:DG350-3.5-03P-14-00A")
+		(at 33.02 129.54 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "73dae281-c675-402d-858c-ee4203a015be")
+		(property "Reference" "J3"
+			(at 38.1 128.2699 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "DG350-3.5-03P-14-00A"
+			(at 38.1 130.8099 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "dg350_3p:CONN-TH_DG350-3.5-03P-14-00A"
+			(at 33.02 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2760669.pdf"
+			(at 33.02 142.24 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 33.02 129.54 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "DEGSON(高正/高松)"
+			(at 33.02 144.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "DG350-3.5-03P-14-00A(H)"
+			(at 33.02 147.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part" "C2760669"
+			(at 33.02 149.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "3"
+			(uuid "4a214994-1d30-4fe8-82c0-e9de94c0be2c")
+		)
+		(pin "2"
+			(uuid "f9e763ef-3e71-44bf-b06a-901ccbb60abd")
+		)
+		(pin "1"
+			(uuid "879e5473-bc42-40eb-9ba6-b3a6016ef798")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "J3")
 					(unit 1)
 				)
 			)
@@ -28373,97 +28619,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "WF26_C1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Screw_Terminal_01x05")
-		(at 31.75 128.27 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "fe9e2cc6-49c7-4551-b74b-0c1a8d8ce046")
-		(property "Reference" "J2"
-			(at 34.29 126.9999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "WF26 (5-way screw)"
-			(at 34.29 129.5399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "TerminalBlock_4Ucon:TerminalBlock_4Ucon_1x05_P3.50mm_Vertical"
-			(at 31.75 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 31.75 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic screw terminal, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 31.75 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "27d6d4b1-9a09-495b-97e0-c679fbb2333e")
-		)
-		(pin "1"
-			(uuid "5013f1c1-e76d-4ca8-aa3b-9ac279db9372")
-		)
-		(pin "4"
-			(uuid "19400ca5-0c95-4036-a1e2-c16608131f61")
-		)
-		(pin "3"
-			(uuid "06a7bd2a-b79a-400e-940f-9d261613169f")
-		)
-		(pin "5"
-			(uuid "f1ac645e-b53e-4925-b589-205c2b97983e")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "J2")
 					(unit 1)
 				)
 			)
