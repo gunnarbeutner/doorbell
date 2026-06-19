@@ -77,7 +77,9 @@ function createStepper(els, sources, gnd, dt, seed) {
   const M = N + branches.length,
     Vt = 0.025852,
     Gmin = 1e-12,
-    LDO_GM = 1e4; // LDO pass-element transconductance: vout tracks tgt to ~icur/g (a few µV); stiff but stable
+    LDO_GM = 1e4, // LDO pass-element transconductance: vout tracks tgt to ~icur/g (a few µV); stiff but stable
+    SW_GON = 20; // closed switch / made relay contact = 50 mΩ (realistic contact R, not an ideal 0 Ω short):
+  // negligible in load-limited paths, but it keeps a near-short between two stiff sources from drawing kA
   const hasD = all.some(
     (e) => e.type === 'D' || e.type === 'OPTO' || e.type === 'MOS' || e.type === 'LDO' || e.type === 'RC',
   );
@@ -138,7 +140,7 @@ function createStepper(els, sources, gnd, dt, seed) {
         if (e.type === 'R') {
           gS(a, c, 1 / (e.value || 1e12));
         } else if (e.type === 'SW') {
-          gS(a, c, e.closed ? 1e3 : 1e-15);
+          gS(a, c, e.closed ? SW_GON : 1e-15);
         } // open << Gmin so it can't leak source V onto a floating node
         else if (e.type === 'C') {
           const g = (e.value || 0) / dt;
@@ -215,7 +217,7 @@ function createStepper(els, sources, gnd, dt, seed) {
         } else if (e.type === 'RC') {
           // contact follows the latched coil state (set once per step with hysteresis), not the
           // instantaneous coil voltage -> models the relay's mechanical lag and avoids chatter
-          gS(a, c, e.when === 'always' || (e.when === 'on') === e.coilOn ? 1e3 : 1e-15);
+          gS(a, c, e.when === 'always' || (e.when === 'on') === e.coilOn ? SW_GON : 1e-15);
         } // open << Gmin
         else if (e.type === 'OPTO') {
           const Is = e.Is,
@@ -361,11 +363,11 @@ function createStepper(els, sources, gnd, dt, seed) {
         push(e.ref, e.pa, e.a, -I);
         push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'SW' || e.type === 'RC') {
-        // a closed switch / made relay contact is a 1 mΩ link (G = 1e3); its current is otherwise invisible
-        // to the trace flow, so a net reached only through a contact (e.g. /P4 via K3 + the J3 bridge) shows
-        // nothing. Conduction state matches the stamp: SW -> e.closed; RC -> latched coil state.
+        // a closed switch / made relay contact is a low-R link (G = SW_GON); its current is otherwise
+        // invisible to the trace flow, so a net reached only through a contact (e.g. /P4 via K3 + the J3
+        // bridge) shows nothing. Conduction state matches the stamp: SW -> e.closed; RC -> latched coil state.
         const on = e.type === 'SW' ? e.closed : e.when === 'always' || (e.when === 'on') === e.coilOn;
-        const I = on ? (Vof(e.a) - Vof(e.b)) * 1e3 : 0;
+        const I = on ? (Vof(e.a) - Vof(e.b)) * SW_GON : 0;
         push(e.ref, e.pa, e.a, -I);
         push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'L' || e.type === 'C') {
