@@ -48,6 +48,7 @@ let sources = [],
   RES = null,
   tIndex = 0,
   flowSeg = {}, // per-segment current (signed) for the trace flow animation
+  padCur = new Map(), // per-pad injection current (signed; +ve = out of the pad into the copper)
   flowPhase = 0; // advances each drawn frame -> marching dashes
 let selectedNets = new Set(),
   hoveredNet = null;
@@ -302,6 +303,26 @@ function viasOn(L) {
 function padsOn(L) {
   return PCB.pads.filter((p) => p.layers.includes(L) || p.layers.includes('*'));
 }
+// Layers on which a pad has a trace landing on it (a same-net segment endpoint on the pad). Used to
+// suppress the per-pad flow animation where a trace already shows the current — so it only fires for
+// pads whose current goes into a pour/plane (no trace to animate). Static geometry; computed once.
+let _padTraced = null;
+function padTracedLayers(p) {
+  if (!_padTraced) {
+    _padTraced = new Map();
+    for (const pad of PCB.pads) {
+      const eps = Math.max(0.25, Math.max(pad.w, pad.h) / 2); // a segment endpoint anywhere on the pad counts
+      const got = new Set();
+      for (const s of PCB.segments) {
+        if (s.net !== pad.net) continue;
+        if (Math.min(Math.hypot(s.x1 - pad.x, s.y1 - pad.y), Math.hypot(s.x2 - pad.x, s.y2 - pad.y)) <= eps)
+          got.add(s.layer);
+      }
+      _padTraced.set(pad, got);
+    }
+  }
+  return _padTraced.get(p);
+}
 function vRange() {
   return [0, +($('#vmax') || {}).value || 12];
 } // fixed display scale 0..Vmax (default 12 V), not data-dependent
@@ -471,6 +492,26 @@ function drawLayer(cv, L) {
       g.rotate(((p.rot || 0) * Math.PI) / 180);
       g.fillRect(-w / 2, -h / 2, w, h);
       g.restore();
+    }
+    // per-pad flow — only where the current has no trace on this layer to carry it (a pad sinking into
+    // a pour/plane, e.g. a GND return). Confined white ripples *inside* the pad, same look as the trace
+    // beads: expanding = current out into the copper, contracting = in. Suppressed if a trace lands here.
+    const Ipad = flowOn && !padTracedLayers(p)?.has(L) ? padCur.get(p) || 0 : 0;
+    if (Math.abs(Ipad) > 1e-5) {
+      const padR = Math.max(1.5, Math.min(w, h) / 2),
+        spd = Math.max(0.25, Math.min(2, 0.45 * (Math.log10(Math.abs(Ipad)) + 6.5))),
+        ph = ((flowPhase * spd) % 40) / 40;
+      g.globalAlpha = 1;
+      g.lineCap = 'round';
+      for (let k = 0; k < 2; k++) {
+        const fr = (ph + 0.5 * k) % 1,
+          grow = Ipad >= 0 ? fr : 1 - fr;
+        g.strokeStyle = 'rgba(255,255,255,' + 0.45 * (1 - fr) + ')';
+        g.lineWidth = Math.max(0.5, padR * 0.25);
+        g.beginPath();
+        g.arc(x, y, grow * padR * 0.82, 0, 7); // radius 0..0.82*padR -> stays within the pad
+        g.stroke();
+      }
     }
   }
   g.globalAlpha = 1;
@@ -722,6 +763,19 @@ function pushSample() {
   }
 }
 
+// Map each pad object to its (signed) injection current for the per-pad flow animation. +ve = current
+// leaving the pad into the copper net — so a GND/return pad shows its outflow into the pour, which has
+// no trace to animate. Same (ref, pin) / (ref, net) matching that traceCurrents uses.
+function padCurrents(inj) {
+  const m = new Map();
+  for (const it of inj) {
+    const pad = PCB.pads.find(
+      (p) => p.ref === it.ref && (it.pin === undefined ? p.net === it.net : p.pin === it.pin),
+    );
+    if (pad) m.set(pad, (m.get(pad) || 0) + it.I);
+  }
+  return m;
+}
 function redraw() {
   const tc = $('#tcur');
   tc.max = Math.max(0, RES.t.length - 1);
@@ -729,7 +783,11 @@ function redraw() {
   // per-segment flow — but only while something is actually powering the board. With no live source
   // the only currents are decaying transients off charged caps (and an unanchored powered island can
   // drift numerically); the user reasonably expects "no source -> no flow", so suppress it.
-  if (stepper) flowSeg = sources.some((s) => !s.off) ? traceCurrents(traceGraph, stepper.padInjections()) : {};
+  if (stepper) {
+    const inj = sources.some((s) => !s.off) ? stepper.padInjections() : [];
+    flowSeg = inj.length ? traceCurrents(traceGraph, inj) : {};
+    padCur = padCurrents(inj);
+  }
   flowPhase = (flowPhase + 1) % 1e6; // advance the marching dashes one drawn frame
   updTcur();
   drawAll();

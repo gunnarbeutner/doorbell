@@ -2,7 +2,7 @@
 // Connectivity comes from KiCad's own netlister (`kicad-cli sch export netlist`); everything else
 // (values, lib_ids, PCB geometry) is parsed here from the .kicad_sch / .kicad_pcb s-expressions.
 // Nothing is written to disk — callers get the object and serve/consume it live.
-import { readFileSync, readdirSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -220,37 +220,11 @@ function parsePcb(pcb) {
   return { layers, segments, vias, pads, outline, bbox, zones, silk };
 }
 
-// walk instance symbols across the root sheet + hierarchical sub-sheets; cb(symBlock, refsSet)
-function walkSymbols(dir, cb) {
-  for (const fn of readdirSync(dir)) {
-    if (!fn.endsWith('.kicad_sch')) continue;
-    const s = readFileSync(join(dir, fn), 'utf8');
-    for (const sym of sexprBlocks(s, 'symbol')) {
-      if (!/^\(symbol\s*\(lib_id/.test(sym)) continue; // instance symbols only (skip lib cache)
-      const refs = new Set([...sym.matchAll(/\(reference "([^"]+)"\)/g)].map((m) => m[1]));
-      const pr = sym.match(/\(property "Reference" "([^"]+)"/);
-      if (pr) refs.add(pr[1]);
-      cb(sym, new Set([...refs].filter((r) => !r.endsWith('?'))));
-    }
-  }
-}
-
 export function importNetlist(project = 'doorbell') {
   const P = PROJECTS[project];
   if (!P) throw new Error(`unknown project "${project}" (have: ${Object.keys(PROJECTS).join(', ')})`);
   const sch = join(P.dir, P.sch);
   const pcb = join(P.dir, P.pcb);
-
-  // values + lib_ids across all sheets
-  const values = {}, libmap = {};
-  walkSymbols(P.dir, (sym, refs) => {
-    const lib = sym.match(/^\(symbol\s*\(lib_id "([^"]+)"\)/);
-    const val = sym.match(/\(property "Value" "([^"]*)"/);
-    for (const r of refs) {
-      if (lib) libmap[r] = lib[1];
-      if (val) values[r] = val[1];
-    }
-  });
 
   // connectivity from KiCad's own netlister
   const dir = mkdtempSync(join(tmpdir(), 'sim-'));
@@ -260,14 +234,21 @@ export function importNetlist(project = 'doorbell') {
   const nl = readFileSync(out, 'utf8');
   rmSync(dir, { recursive: true, force: true });
 
-  // footprint per ref, from the netlist's (comp (ref ...) ... (footprint ...)) records — so a part can
-  // be classified by its footprint (e.g. the PhotoMOS SSRs) and not only by lib_id / value. Match the
-  // "(comp" records specifically (not the enclosing "(components" / "(comment" blocks, which also start
-  // with that prefix); each record opens with "(comp\n\t...(ref ...)".
-  const fps = {};
+  // value, footprint and lib_id per ref, from the netlist's (comp (ref ...) ...) records. kicad-cli
+  // expands the project's real sheet hierarchy from the root .kicad_sch — it never globs sibling files
+  // on disk, so a stray/orphaned .kicad_sch in the same directory can't bleed its symbols in here. (We
+  // take all three from the same record so a part can be classified by its footprint — e.g. the PhotoMOS
+  // SSRs — and not only by lib_id / value.) Match the "(comp" records specifically (not the enclosing
+  // "(components" / "(comment" blocks, which also start with that prefix); each opens "(comp\n\t...(ref".
+  const fps = {}, values = {}, libmap = {};
   for (const cm of nl.matchAll(/\(comp\s+\(ref "([^"]+)"\)([\s\S]*?)(?=\n\t*\(comp\s|\n\t*\)\s*\(libparts)/g)) {
-    const fm = cm[2].match(/\(footprint "([^"]+)"\)/);
-    if (fm) fps[cm[1]] = fm[1];
+    const ref = cm[1], body = cm[2];
+    const fm = body.match(/\(footprint "([^"]+)"\)/);
+    if (fm) fps[ref] = fm[1];
+    const vm = body.match(/\(value "([^"]*)"\)/);
+    if (vm) values[ref] = vm[1];
+    const lm = body.match(/\(libsource\s+\(lib "([^"]*)"\)\s+\(part "([^"]*)"\)/);
+    if (lm) libmap[ref] = lm[1] + ':' + lm[2];
   }
 
   const comps = {}, nets = new Set();
