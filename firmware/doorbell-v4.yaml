@@ -3,7 +3,7 @@
 # GPIO map:
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO3
 #   Apartment Doorbell (OC2 / Etagenruf sense)     : GPIO2
-#   front_door_buzzer  (K2 / ÖT door opener)       : GPIO21
+#   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO21
 #   suppress_sound     (K3 / chime suppress)       : GPIO22
 #   K1                 (PTT SSR, talk=energised)   : GPIO20
 #   I2C_SDA  (ES8311 control)                      : GPIO18
@@ -265,7 +265,9 @@ output:
     pin: GPIO22              # K3 — chime suppress (open C1: P4↔CHIME_C1)
     id: suppress_doorbell_sound_bin
   - platform: gpio
-    pin: GPIO21              # K2 — front-door buzzer / ÖT (bridge P2↔P3 direct)
+    pin: GPIO21              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
+                             # drop the WF26 latch; K2's make is delayed ~20ms (Q1/RC) so the break
+                             # leads = S1 break-before-make in hardware (no firmware sequencing)
     id: front_door_buzzer_bin
 
 button:

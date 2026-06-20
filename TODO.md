@@ -165,16 +165,19 @@ tether it to a mains-earthed PC. Pair with a DMM.
       handset): short fires, 2.2 kΩ does *not*. This confirms the choices already in the design —
       **R_ot→0** (K2 door needs a short, done) and **2.2 kΩ-on-K1** (R28; talk's incidental bridge
       must *not* fire, done).
-- [ ] **DOOR-4: door-open must RELEASE the latch (mirror S1) — hardware change.** Per REQUIREMENTS.md
-      **DOOR-4 / MODE-3**, a firmware door-open must end the session exactly as the handset button does:
-      break the **P2→K1_COM seal-in** so WF26_K1 drops as the opener fires (break-before-make). K2 as
-      built is a single-pole NO SSR — a plain P2↔P3 short that leaves the latch sealed, so the session
-      lingers to the ~60 s timeout and the held latch bridges live line 4 onto line 3. **Fix:** add a
-      second SSR (or a DPDT SSR) that opens the `WF26_S1.NC2 → K1_COM` path when the door fires, the
-      break leading the P2↔P3 make. The sim tests already exist — a passing **WF26_S1-release reference**, a **'DOOR-4 gap'** tripwire
-      (K2 keeps the latch in; delete it once fixed), and the **DOOR-4 `todo`** (board door-open must
-      release). When the break SSR lands: drive its gate in the `todo`, drop the `todo`, delete the
-      tripwire, and **retire the 1.75 s 'wait out the gong' delay** as the interim mitigation it is. (DESIGN.md "Door opener" / the DOOR-4 gap note.)
+- [x] **DOOR-4: door-open releases the latch (mirror S1) — DONE in hardware.** **K4** (GAQY412EH NC SSR)
+      in series in the `P2→K1_COM` seal-in (`WF26_S1.6 ↔ WF26_K1.3`) drops WF26_K1 on a door-open;
+      **Q1 (2N7002) + R17 (22 kΩ) + C18 (1 µF)** delay K2's make ~20 ms behind K4's break for a hardware
+      break-before-make, all off the one `DOOR_DRV` gate. Sim updated: `WF26_S1-release reference` and
+      `DOOR-4: a board door-open releases WF26_K1` both pass; the gap tripwire is deleted. See DESIGN.md
+      "Door-open mirrors S1".
+- [ ] **Firmware — retire the 1.75 s 'wait out the gong' door-open delay.** With K4+Q1 giving a hardware
+      break-before-make, the held Türruf is never bridged onto line 3, so the `house_doorbell →
+      delay: 1.75s → front_door_buzzer` mitigation is unnecessary. Removing it opens the door ~1.75 s
+      sooner — confirm that's the wanted UX, then drop the delay.
+- [ ] **Bench — confirm the door lead.** On the real board: a door-open drops WF26_K1 (session ends),
+      and K2's make lands after the latch drop (no 12 V-DC/gong blip on line 3). Tune C18/R17 if the
+      ~20 ms lead doesn't clear the actual latch-drop time.
 - [ ] **C1 polarity** — set **+ toward P4** (the Türruf +12 V DC side; + toward P5 would reverse-bias
       it through the held session). Schematic now reflects this; bench-confirm against the genuine unit.
 - [ ] **(Nice-to-have) confirm the audio model** end-to-end: Etagenruf direct on line 5; gong

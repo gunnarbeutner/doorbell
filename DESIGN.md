@@ -79,26 +79,27 @@ rest (de-energised) it is closed, so the Türruf gong reaches the speaker and OC
 energised it opens, muting the gong **without touching line 4, the latch, or the Etagenruf** (which
 reaches LS1 directly on line 5, bypassing C1).
 
-> **DOOR-4 gap (to fix in hardware).** REQUIREMENTS.md **DOOR-4 / MODE-3** now require the door
-> actuator to **mirror S1** — break the **P2→K1_COM seal-in** so the latch drops and the session ends
-> as the door fires (a break-before-make transfer). The single-pole K2 as built **cannot** do that; it
-> is a plain parallel short, and the ~1.75 s firmware delay below is only an **interim mitigation** of
-> the gong-onto-line-3 symptom, *not* a substitute for the transfer. The fix needs a second SSR (or a
-> DPDT SSR) that opens the `WF26_S1.NC2 → K1_COM` seal-in path when the door fires — see TODO.
+**Door-open mirrors S1 — break-before-make in hardware (DOOR-4 / MODE-3).** A door-open must end the
+session exactly as the handset button does: drop the WF26_K1 latch. The handset's **S1 is a DPDT
+*transfer*** — it lifts P2 off K1_COM (breaking the seal-in) just *before* it bridges P2↔P3, so the
+latch drops as the opener fires and the live Türruf on line 4 never reaches line 3. K2 alone (a plain
+P2↔P3 short) can't do that — it would leave the latch sealed and bridge `P4 → WF26_K1 → P2 → K2 → P3`,
+injecting the ring (12 V DC + gong AC) onto the talk line. So the board reproduces S1's transfer with
+two extra parts, both on the **DOOR_DRV** gate:
 
-**Door-open must wait out the gong (firmware timing — interim, see the DOOR-4 gap above).** K2 bridges
-P2↔P3 as a *parallel* short, which — unlike the handset's own button — does **not** break the listen
-path. During a
-ring WF26_K1 is energised (K1_COM↔P4) with the handset's S1 released (P2 parked on K1_COM), so
-**P2↔P4**: line 2 carries the live Türruf. Closing K2 then completes
-**P4 → WF26_K1 → P2 → K2 → P3**, injecting the ring (12 V DC + gong AC) onto line 3 — the
-up-audio / talk line back to the TV20/S. The handset never does this because its door button
-**S1 is a DPDT *transfer*** that lifts P2 off K1_COM the instant it bridges P2↔P3; K2 is a plain
-parallel short with no such break. So the firmware **delays the door-open ~1.75 s after the house
-ring** (`house_doorbell` → `delay: 1.75s` → `front_door_buzzer`), long enough for the gong (the
-AC burst at the ring onset) to finish — K2 then bridges only the residual DC pedestal, not the
-tone. WF26_K1 stays pulled in for the full ~60 s call window, so the delay waits out the *gong*,
-not the whole window.
+- **K4** (GAQY412EH, NC SSR) sits **in series in the seal-in** (`WF26_S1.6 → K4 → WF26_K1.3`, in the
+  `P2 → K1_COM` path). Energised it **opens** → the seal-in breaks → WF26_K1 drops. At rest it's closed,
+  so the passive/unpowered latch is untouched (MODE-1 / SAFE-4).
+- **The break leads the make.** K4's LED is driven straight off DOOR_DRV (opens immediately), while K2's
+  LED returns to ground through **Q1 (2N7002)** whose gate ramps on **R17 (22 kΩ) · C18 (1 µF) ≈ 20 ms**
+  — so K2 closes ~20 ms *after* K4, well past the ~6 ms latch drop. One gate (DOOR_DRV), hardware-timed
+  break-before-make; the firmware just pulses the door line.
+
+With the seal-in broken before P2↔P3 closes, the held Türruf is never bridged onto line 3 — so this
+**supersedes the old ~1.75 s "wait out the gong" firmware delay** (there's nothing left to wait out; the
+delay is retirable — see TODO). Boot/idle: DOOR_DRV low ⇒ Q1 off (K2 open) and K4 LED off (K4 closed)
+⇒ fail-safe (SAFE-6). The latch otherwise stays pulled in for the ~60 s call window (a door-open is now
+the deliberate way to end it early).
 
 > **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
 > it is the junction of C1, R1, the WF26_K1 coil and its NO contact: the ring's **DC energises the
@@ -375,7 +376,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | MCU | **ESP32-C6-MINI-1U-H4** (u.FL external antenna; LCSC C20627095) | ESPHome-supported, native USB, enough GPIO for the audio path (I²S + I²C + 3 SSR gates + 2 opto inputs) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
-| Switches K1/K2/K3 | **PhotoMOS SSRs** — K1/K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; LCSC C7435107); K3 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135) | All three switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) must idle **closed** = **1-Form-B NC**, so an unpowered/booting board still rings the gong (GONG-3/SAFE-6). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — it's bus-self-latched and must work board-dead |
+| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1/K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; LCSC C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: **Q1 2N7002** + R17 (22 kΩ) + C18 (1 µF) | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q1·R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
 | SSR LED drive | **GPIO → 10 k pull-down → 300 Ω → SSR LED** (no transistor, no flyback) | Each SSR "driver" is just its LED + a series R: ~7 mA from the 3V3 GPIO through R4/R5/R6 (300 Ω); R7/R8/R9 (10 k) pull-downs ⇒ SSRs default **off** at boot (SAFE-6). No coil ⇒ no flyback; the one surviving flyback (D1) is on the passive WF26 latch coil. (Retired the old per-channel relay-driver sheet.) |
 | Opto polarity | **Fixed: LED anode → bus line, cathode → R_lim → P1** + **anti-parallel 1N4148W clamp** across each LED | Bus is taken to drive active lines **positive w.r.t. common (P1)**, so polarity is hardwired (no switch) — bench-confirm per channel by ringing each bell. The clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on the AC tone content |
 | WF26 connector | **DG350-3.5 pluggable terminals — J2 (2-way) + J3 (3-way), 5-way total (P1–P5)** | See "WF26 connector". 5-way (not 6): line 4 is one net now — chime-suppress moved off line 4 onto C1, so the IN_P4/P4 split is gone |
@@ -389,9 +390,9 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
-| IO20 | 26 | K1 gate — **TX talk handshake** (K1 gates TALK_BRIDGE↔P4; codec → C14 → R28 2.2 kΩ → line 3) | out | GATE1_DRV → R4 (300 Ω) → SSR LED; R7 10 k pull-down ⇒ off at boot |
-| IO21 | 27 | K2 gate — front-door buzzer / ÖT (bridge P2↔P3 direct) | out | GATE2_DRV → R5 (300 Ω) → SSR LED; R8 10 k pull-down ⇒ off at boot |
-| IO22 | 28 | K3 gate — chime suppress (open C1: P4↔CHIME_C1) | out | GATE3_DRV → R6 (300 Ω) → SSR LED; R9 10 k pull-down ⇒ off (NC SSR ⇒ off = gong rings) |
+| IO20 | 26 | K1 gate — **TX talk handshake** (K1 gates TALK_BRIDGE↔P4; codec → C14 → R28 2.2 kΩ → line 3) | out | PTT_DRV → R4 (300 Ω) → SSR LED; R7 10 k pull-down ⇒ off at boot |
+| IO21 | 27 | K2 gate — front-door buzzer / ÖT (bridge P2↔P3 direct) | out | DOOR_DRV → R5 (300 Ω) → SSR LED; R8 10 k pull-down ⇒ off at boot |
+| IO22 | 28 | K3 gate — chime suppress (open C1: P4↔CHIME_C1) | out | MUTE_DRV → R6 (300 Ω) → SSR LED; R9 10 k pull-down ⇒ off (NC SSR ⇒ off = gong rings) |
 | IO3  | 6 | OC1 collector — house bell (Türruf, line 4 / P4) | in | held high by **R22** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
 | IO2  | 5 | OC2 collector — apartment bell (Etagenruf, P5) | in | held high by **R23** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
 | IO19 / IO23 | 25 / 29 | **spare** — unused GPIO, pad free | — | available for reuse |
@@ -470,13 +471,14 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   reaches LS1 via C1, which strips the DC the opto rides on — so OC1's `delayed_off: 2s` also
   bridges the gaps between the three Klang so one ring = one event.
 
-### Switches (K1/K2/K3 — PhotoMOS SSRs)
+### Switches (K1/K2/K3/K4 — PhotoMOS SSRs)
 
 ```
-K1 (talk gate,   GAQY212GS NO): TALK_BRIDGE ↔ P4  — energise to tie the codec TX node to line 4 (talk handshake)
-K2 (door opener, GAQY212GS NO): P2 ↔ P3           — energise to bridge P2↔P3 (the ÖT direct short)
-K3 (chime mute,  GAQY412EH NC): P4 ↔ CHIME_C1     — at rest CLOSED (gong → C1 → speaker); energise to OPEN = mute
-LED drive (all): GATEn_DRV → Rn(300Ω) → LED → GND ; pins 3/4 = switched contact, pins 1/2 = LED
+K1 (talk gate,     GAQY212GS NO): TALK_BRIDGE ↔ P4         — energise to tie the codec TX node to line 4 (talk handshake)
+K2 (door opener,   GAQY212GS NO): P2 ↔ P3                  — energise to bridge P2↔P3 (the ÖT direct short)
+K3 (chime mute,    GAQY412EH NC): P4 ↔ CHIME_C1            — at rest CLOSED (gong → C1 → speaker); energise to OPEN = mute
+K4 (seal-in break, GAQY412EH NC): WF26_S1.6 ↔ WF26_K1.3    — in the P2→K1_COM seal-in; energise to OPEN = drop the latch
+LED drive: PTT_DRV → R4; MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q1 delay) + R21→K4 LED (each Rn = 300 Ω) ; pins 3/4 = contact, 1/2 = LED
 ```
 
 - **PhotoMOS, single-pole, bidirectional.** Pins 3/4 are the AC/DC contact (back-to-back MOSFETs),
@@ -495,14 +497,20 @@ LED drive (all): GATEn_DRV → Rn(300Ω) → LED → GND ; pins 3/4 = switched c
   it. Line 3 is light (the TV20/S amp input ∥ R28's 2.2 kΩ), so the codec drives **line 3** while K1
   supplies the line-4 handshake.
 - **K2 — door opener.** Energise to bridge **P2↔P3** directly (dead short) — the ÖT the TV20/S reads
-  as "open".
+  as "open". Paired with **K4 + the Q1 lead** to mirror S1's break-before-make — see "Door-open
+  mirrors S1".
 - **K3 — chime mute.** In the gong's audio path (`P4 ↔ CHIME_C1 ↔ C1 ↔ P5 → LS1`). NC ⇒ de-energised
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
   = gong muted, with **line 4, the latch and the Etagenruf all untouched** (Etagenruf reaches LS1
   directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4).
-- K1/K2/K3 are independent (no interlock). Firmware holds **K3 de-energised whenever a ring should be
-  heard**. Whether the TV20/S forwards the line-3 audio to the door station once it sees the R28
-  handshake bridge is the open **TX-out reach** question (see "Audio path").
+- **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`WF26_S1.6 ↔
+  WF26_K1.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
+  (off DOOR_DRV, immediate) = open = WF26_K1 drops. With K2's make delayed ~20 ms (Q1·R17·C18) the
+  break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
+- K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
+  door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. Whether the TV20/S
+  forwards the line-3 audio to the door station once it sees the R28 handshake bridge is the open
+  **TX-out reach** question (see "Audio path").
 
 ### SSR LED drive (per channel)
 

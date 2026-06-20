@@ -81,11 +81,17 @@ export function buildTraceGraph(pcb) {
     (epByLayer[s.layer] = epByLayer[s.layer] || []).push([s.x1, s.y1], [s.x2, s.y2]);
   });
   const padOwn = pads.map((p) => {
-    const layers = p.layers.includes('*') ? Object.keys(epByLayer) : p.layers;
+    const layers = (p.layers.includes('*') ? Object.keys(epByLayer) : p.layers).filter((l) => l.endsWith('.Cu'));
     const reach = Math.max(p.w, p.h) / 2 + 0.15;
-    let best = null,
-      bestD = reach;
-    for (const L of layers)
+    const own = key(p.x, p.y, layers[0] || 'F.Cu');
+    // A through-hole pad's plated barrel ties the copper on every layer it spans, so snap to the nearest
+    // copper on EACH layer (not just the single globally-nearest) and union them all through `own`.
+    // Otherwise a TH connector pad joins only one layer's trace and the other layer's copper splits into
+    // its own piece — the /P4 coil trace (F.Cu) became an island because J3's through-hole pad snapped to
+    // its B.Cu routing only, so the coil current vanished into the pour-hub instead of its real segments.
+    for (const L of layers) {
+      let best = null,
+        bestD = reach;
       for (const [ex, ey] of epByLayer[L] || []) {
         const d = Math.hypot(ex - p.x, ey - p.y);
         if (d <= bestD) {
@@ -93,8 +99,8 @@ export function buildTraceGraph(pcb) {
           best = key(ex, ey, L);
         }
       }
-    const own = key(p.x, p.y, layers[0] || 'F.Cu');
-    if (best) union(own, best);
+      if (best) union(own, best);
+    }
     return own;
   });
 

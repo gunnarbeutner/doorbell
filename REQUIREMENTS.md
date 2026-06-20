@@ -148,8 +148,9 @@ shared party line across apartments.
   latch **sealed in**, with two wrong consequences: **(a)** the session **lingers** until the ~60 s
   timeout, so the board still reads "session active" (line 4 hot, OC1 high) after the door is already
   open; and **(b)** the held latch **bridges the live line 4 onto line 3** (P4→K1_COM→line 2→line 3).
-  Mirroring S1's transfer removes both. *(Gap: the single-pole door SSR as currently built does **not**
-  meet DOOR-4 — it needs the seal-in break; see DESIGN.md "Door opener" / TODO.)*
+  Mirroring S1's transfer removes both. *(Met: **K4** — an NC SSR in series in the seal-in — drops the
+  latch on a door-open, and a **2N7002 (Q1) + R17·C18 RC** delays K2's make ~20 ms behind K4's break for
+  a hardware break-before-make; see DESIGN.md "Door-open mirrors S1". Verified in `sim/test`.)*
 
 ## FW — Firmware host & control
 

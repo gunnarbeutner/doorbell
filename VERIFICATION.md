@@ -96,7 +96,7 @@ within the stable range. Input ~4.65 V (5 V − SS14) leaves ample dropout headr
 
 ### MCU (U1 ESP32-C6-MINI-1U) — full pad map confirmed against the datasheet
 
-- Power / USB / I²S / I²C / GATE / sense pads all map to the correct module pads; GPIO12 (pad 17) = USB_D−,
+- Power / USB / I²S / I²C / SSR-drive / sense pads all map to the correct module pads; GPIO12 (pad 17) = USB_D−,
   GPIO13 (pad 18) = USB_D+ → native USB-Serial-JTAG. ✓
 - **Strapping:** GPIO8 (pad 22) ↑ R12 3.3 kΩ = **1 → SPI boot** ✓; GPIO9 (pad 23, BOOT) ↑ R11 10 kΩ +
   SW1 → GND = default 1, button = download boot ✓; EN ↑ R10 10 kΩ + C5 1 µF + SW2 ✓; GPIO15 (pad 20,
