@@ -48,8 +48,12 @@ for ref, edge in EDGE_FLUSH.items():
     oh = EDGE_OVERHANG.get(ref, 0.0)
     sign = -1 if edge in ("left", "top") else 1
     expected = be + sign * oh
-    name = (f"{ref} flush with {edge} board edge" if not oh
-            else f"{ref} overhangs {edge} edge by {oh} mm")
+    if not oh:
+        name = f"{ref} flush with {edge} board edge"
+    elif oh > 0:
+        name = f"{ref} overhangs {edge} edge by {oh} mm"
+    else:
+        name = f"{ref} set back from {edge} edge by {-oh} mm"
     check(name, abs(e - expected) <= TOL, f"part {e:.2f} mm vs expected {expected:.2f} mm")
 
 # 2. every footprint inside the board outline (antenna keep-out removed: the antenna overhangs)
@@ -79,6 +83,48 @@ floating = sorted({f"{ref}.{p.GetNumber()}" for ref, fp in fps.items()
                    and (ref, p.GetNumber()) not in _nc})
 check("every pad in a net or marked No-Connect", not floating,
       ("floating: " + ", ".join(floating)) if floating else "all pads accounted for")
+
+# 4. ceramic caps clear of mounting-hole flex stress (MLCC crack avoidance).
+#    Screw-down flexes the board; a ceramic cap near a hole cracks at its fillets.
+#    Fail any cap too close (CAP_HOLE_HARD_MM) or, in the caution band, oriented
+#    radially (pad-to-pad axis pointing at the hole -- the worst case for flex).
+import math
+from doorbell_design import (MOUNTING_HOLES, CAP_HOLE_HARD_MM, CAP_HOLE_CAUTION_MM,
+                             CAP_HOLE_RADIAL_DEG, CAP_HOLE_EXEMPT)
+holes = {h: fps[h].GetPosition() for h in MOUNTING_HOLES if h in fps}
+def cap_axis_deg(fp):                       # pad-to-pad long axis of a 2-terminal cap, 0..180
+    pads = list(fp.Pads())
+    if len(pads) < 2:
+        return None
+    a, b = pads[0].GetPosition(), pads[1].GetPosition()
+    return math.degrees(math.atan2(b.y - a.y, b.x - a.x)) % 180.0
+hard, radial, caution = [], [], []
+for ref, fp in fps.items():
+    if not (ref[:1] == "C" and ref[1:].isdigit()) or ref in CAP_HOLE_EXEMPT:
+        continue
+    p = fp.GetPosition()
+    for h, hp in holes.items():
+        d = math.hypot(MM(p.x - hp.x), MM(p.y - hp.y))
+        if d > CAP_HOLE_CAUTION_MM:
+            continue
+        if d <= CAP_HOLE_HARD_MM:
+            hard.append(f"{ref} {d:.1f}mm<{CAP_HOLE_HARD_MM:g} of {h}")
+            continue
+        ax = cap_axis_deg(fp)
+        rad = math.degrees(math.atan2(p.y - hp.y, p.x - hp.x)) % 180.0
+        off = abs(ax - rad) if ax is not None else 90.0
+        off = min(off, 180.0 - off)
+        if ax is not None and off <= CAP_HOLE_RADIAL_DEG:
+            radial.append(f"{ref} {d:.1f}mm of {h} (axis {off:.0f}° off radius)")
+        else:
+            caution.append(f"{ref} {d:.1f}mm of {h}")
+check(f"no ceramic cap within {CAP_HOLE_HARD_MM:g} mm of a mounting hole", not hard,
+      "; ".join(hard) if hard else "all clear")
+check(f"caps within {CAP_HOLE_CAUTION_MM:g} mm of a hole are tangential, not radial", not radial,
+      "; ".join(radial) if radial else "none radial")
+if caution:
+    print(f"  [note] tangential caps in the {CAP_HOLE_HARD_MM:g}-{CAP_HOLE_CAUTION_MM:g} mm flex band "
+          f"(acceptable, keep an eye on torque): {', '.join(caution)}")
 
 print("PCB constraint checklist:")
 ok_all = True

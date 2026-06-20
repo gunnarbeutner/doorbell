@@ -12,4 +12,5 @@
 	(lib (name "SGM2212")(type "KiCad")(uri "${KIPRJMOD}/lib_power/SGM2212.pretty")(options "")(descr "SGM2212-3.3 LDO SOT-223 (board-authoritative copy; diverged from PCM_JLCPCB)"))
 	(lib (name "dg350_3p")(type "KiCad")(uri "${KIPRJMOD}/lib_terminal/dg350_3p.pretty")(options "")(descr "DEGSON DG350-3.5-03P 3-way 3.5mm screw terminal — bus connector (with dg350_2p) (easyeda2kicad import)"))
 	(lib (name "dg350_2p")(type "KiCad")(uri "${KIPRJMOD}/lib_terminal/dg350_2p.pretty")(options "")(descr "DEGSON DG350-3.5-02P 2-way 3.5mm screw terminal — bus connector (with dg350_3p) (easyeda2kicad import)"))
+	(lib (name "db125_5p")(type "KiCad")(uri "${KIPRJMOD}/lib_terminal/db125_5p.pretty")(options "")(descr "DORABO DB125-3.5-5P-GN-S 5-way 3.5mm screw terminal — WF26 bus connector P1-P5 (replaces dg350_2p+dg350_3p) (easyeda2kicad import)"))
 )

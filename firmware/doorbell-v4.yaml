@@ -3,18 +3,21 @@
 # GPIO map:
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO3
 #   Apartment Doorbell (OC2 / Etagenruf sense)     : GPIO2
-#   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO21
-#   suppress_sound     (K3 / chime suppress)       : GPIO22
-#   K1                 (PTT SSR, talk=energised)   : GPIO20
-#   I2C_SDA  (ES8311 control)                      : GPIO18
-#   I2C_SCL  (ES8311 control)                      : GPIO15
-#   I2S_MCLK (master clock)                        : GPIO14
-#   I2S_BCLK (bit clock, SCLK)                     : GPIO7
-#   I2S_DIN  (capture, ASDOUT)                     : GPIO6
-#   I2S_WS   (LRCK)                                : GPIO1
-#   I2S_DOUT (DAC / playback, DSDIN)               : GPIO0
+#   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO14
+#   suppress_sound     (K3 / chime suppress)       : GPIO7
+#   K1                 (PTT SSR, talk=energised)   : GPIO18
+#   I2C_SDA  (ES8311 control)                      : GPIO16
+#   I2C_SCL  (ES8311 control)                      : GPIO17
+#   I2S_MCLK (master clock)                        : GPIO23
+#   I2S_BCLK (bit clock, SCLK)                     : GPIO22
+#   I2S_DIN  (capture, ASDOUT)                     : GPIO21
+#   I2S_WS   (LRCK)                                : GPIO20
+#   I2S_DOUT (DAC / playback, DSDIN)               : GPIO19
 #   logger                                         : native USB-Serial-JTAG (GPIO12/GPIO13 = USB D-/D+)
-# The I2S/I2C pins are ordered so U1's codec-facing edge fans to the ES8311 in pin order, no crossings.
+# All seven ES8311 lines (I2C SDA/SCL + the five I2S clocks) are on U1's east edge (pads 31..25),
+# ordered top-to-bottom to match U3's pin sequence so the bus fans out with no crossings. The three
+# SSR gates are on GPIO7/14/18. GPIO15 is unused — it is the JTAG-source strapping pin, so hold it
+# with a pull-up (or rely on the eFuse default) to keep the USB-Serial-JTAG boot mode.
 #
 # SSR gate outputs are ACTIVE-HIGH (see the output section): GPIO HIGH -> SSR LED on -> contact made.
 #
@@ -70,15 +73,15 @@ wifi:
     dns1: 192.168.3.53
 
 i2c:
-  sda: GPIO18              # I2C_SDA — ES8311 (U3) control bus
-  scl: GPIO15              # I2C_SCL — ES8311 (U3) control bus (GPIO15 strap: the SCL pull-up holds it high at reset = USB-Serial-JTAG, the wanted state)
+  sda: GPIO16              # I2C_SDA — ES8311 (U3) control bus
+  scl: GPIO17              # I2C_SCL — ES8311 (U3) control bus
   scan: false
 
 i2s_audio:
   id: i2s_bus
-  i2s_lrclk_pin: GPIO1    # I2S_WS / LRCK
-  i2s_bclk_pin: GPIO7     # I2S_BCLK / SCLK
-  i2s_mclk_pin: GPIO14    # I2S_MCLK
+  i2s_lrclk_pin: GPIO20   # I2S_WS / LRCK
+  i2s_bclk_pin: GPIO22    # I2S_BCLK / SCLK
+  i2s_mclk_pin: GPIO23    # I2S_MCLK
 
 audio_dac:
   - platform: es8311
@@ -94,14 +97,14 @@ speaker:
     i2s_audio_id: i2s_bus
     dac_type: external
     audio_dac: es8311_codec
-    i2s_dout_pin: GPIO0    # I2S_DOUT / DSDIN (ESP→codec, playback)
+    i2s_dout_pin: GPIO19   # I2S_DOUT / DSDIN (ESP→codec, playback)
 
 microphone:
   - platform: i2s_audio
     id: intercom_mic
     i2s_audio_id: i2s_bus
     adc_type: external     # ES8311 does the conversion; ESP only receives I2S
-    i2s_din_pin: GPIO6     # I2S_DIN / ASDOUT (codec→ESP, capture)
+    i2s_din_pin: GPIO21    # I2S_DIN / ASDOUT (codec→ESP, capture)
 
 # Two-way intercom via Home Assistant Assist. PTT-triggered (no on-device wake word),
 # replies played back through the intercom speaker.
@@ -259,13 +262,13 @@ switch:
 # suppressed) — exactly what the gate pull-downs are there to prevent.
 output:
   - platform: gpio
-    pin: GPIO20              # K1 — PTT SSR (energised = talk handshake: TALK_BRIDGE↔P4, codec→R28→P3)
+    pin: GPIO18              # K1 — PTT SSR (energised = talk handshake: TALK_BRIDGE↔P4, codec→R28→P3)
     id: ptt_relay_bin
   - platform: gpio
-    pin: GPIO22              # K3 — chime suppress (open C1: P4↔CHIME_C1)
+    pin: GPIO7               # K3 — chime suppress (open C1: P4↔CHIME_C1)
     id: suppress_doorbell_sound_bin
   - platform: gpio
-    pin: GPIO21              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
+    pin: GPIO14              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
                              # drop the WF26 latch; K2's make is delayed ~20ms (Q1/RC) so the break
                              # leads = S1 break-before-make in hardware (no firmware sequencing)
     id: front_door_buzzer_bin

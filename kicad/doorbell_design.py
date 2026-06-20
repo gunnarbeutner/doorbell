@@ -50,15 +50,29 @@ NOCONN = [("K2","2"),("K2","5"),("K2","6"),("K2","7"),
 ]
 
 # --- PCB edge constraints (verified by check_pcb.py against the KiCad board) ---
-EDGE_FLUSH = {              # component ref -> board edge its outer face sits flush on (or overhangs)
-    "J1": "bottom",        # USB-C receptacle, middle of bottom edge (overhangs, see EDGE_OVERHANG)
-    "J2": "top",           # WF26 spring terminal
-    "U1": "bottom",        # ESP32-C6-WROOM-1: antenna faces south, flush to bottom edge
+EDGE_FLUSH = {              # component ref -> board edge its outer face sits flush on / is offset from
+    "J1": "left",          # USB-C receptacle on the left edge (overhangs, see EDGE_OVERHANG)
+    "J2": "top",           # WF26 bus terminal (DB125-3.5-5P, pins 1-5 = P1-P5), top-edge strip
 }
-# component ref -> mm its footprint bbox extends BEYOND its EDGE_FLUSH board edge.
-# The board edge stays at the flush line; the part is pushed out past it so the USB-C
-# shell sticks out and a cable seats fully without the PCB blocking it.
-# J1 (USB4105): courtyard front 4.18 minus the footprint's own "PCB Edge" marker line at
-# 3.675 -> 0.505, which puts the board edge exactly on GCT's recommended edge line (the
-# shell mouth then protrudes ~1.3 mm, per the datasheet).
-EDGE_OVERHANG = {"J1": 0.505}
+# component ref -> signed mm offset of its footprint bbox from the EDGE_FLUSH edge:
+#   positive = overhangs past the edge (part pushed out); negative = set back inside it.
+# J1 (USB4105): the courtyard overhangs the left edge 0.505 so the USB-C shell mouth protrudes and a
+#   cable seats fully (front courtyard 4.18 minus the footprint's "PCB Edge" marker line 3.675).
+# J2 (DB125-5P): the terminal courtyard sits 0.95 mm in from the top edge -- the screw/wire mouths
+#   face out over it.
+EDGE_OVERHANG = {"J1": 0.505, "J2": -0.95}
+
+# --- mounting-hole flex keepout (MLCC crack avoidance) -------------------------
+# Driving a fastener flexes the board around the hole; ceramic chip caps in that
+# flex field crack at their solder fillets (often a latent, invisible failure).
+# check_pcb.py enforces two rules per hole:
+#   * no ceramic cap center within CAP_HOLE_HARD_MM (too close at any orientation), and
+#   * a cap within CAP_HOLE_CAUTION_MM must sit TANGENTIALLY -- its pad-to-pad axis
+#     across the radius, not pointing at the hole. A radial cap (axis within
+#     CAP_HOLE_RADIAL_DEG of the radius) takes the full fillet-separating strain.
+# Caps that are tangential within the caution band are reported as a note, not a fail.
+MOUNTING_HOLES = ("H1", "H2")
+CAP_HOLE_HARD_MM = 6.0
+CAP_HOLE_CAUTION_MM = 9.0
+CAP_HOLE_RADIAL_DEG = 30.0
+CAP_HOLE_EXEMPT = ()        # non-ceramic caps (electrolytic/tantalum/film) -- flex-tolerant, e.g. ("C19",)
