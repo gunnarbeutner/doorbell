@@ -212,6 +212,7 @@ export function traceCurrents(graph, injections) {
     const N = nodeList.length;
 
     const padNodeOf = (ref, pin) => {
+      // pins are strings throughout (PCB pads + device models); match exactly, else fall back to ref only.
       let m = gn.pads.find((p) => p.ref === ref && (pin === undefined || p.pin === pin));
       if (!m && pin !== undefined) m = gn.pads.find((p) => p.ref === ref);
       return m ? m.node : null;

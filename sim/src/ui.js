@@ -9,6 +9,10 @@ const BOARD = new URLSearchParams(location.search).get('board') || 'doorbell';
 const NETLIST = await fetch('/netlist.json?board=' + encodeURIComponent(BOARD)).then((r) => r.json());
 const PCB = NETLIST.pcb;
 if (PCB) PCB.segments.forEach((s, i) => (s.idx = i)); // segment index for per-segment flow lookup
+// nets with a copper pour/plane: a pad on one of these sinks its current into the plane (which has no
+// trace to animate), so its per-pad ripple must NOT be suppressed just because a short stub-to-via lands
+// on the pad — that stub is the pour entry, not a competing trace that already shows the current.
+const POUR_NETS = new Set((PCB?.zones || []).map((z) => z.net));
 const traceGraph = PCB ? buildTraceGraph(PCB) : { nets: {} };
 const $ = (s) => document.querySelector(s);
 const nets = NETLIST.nets;
@@ -493,10 +497,12 @@ function drawLayer(cv, L) {
       g.fillRect(-w / 2, -h / 2, w, h);
       g.restore();
     }
-    // per-pad flow — only where the current has no trace on this layer to carry it (a pad sinking into
-    // a pour/plane, e.g. a GND return). Confined white ripples *inside* the pad, same look as the trace
-    // beads: expanding = current out into the copper, contracting = in. Suppressed if a trace lands here.
-    const Ipad = flowOn && !padTracedLayers(p)?.has(L) ? padCur.get(p) || 0 : 0;
+    // per-pad flow — for a pad whose current sinks into a pour/plane (e.g. a GND return) there's no trace
+    // to animate, so show a confined white ripple *inside* the pad (same look as the trace beads:
+    // expanding = current out into the copper, contracting = in). Suppress it only on a non-pour net where
+    // a real same-layer trace already carries the current; pour nets always show (the stub-to-via landing
+    // on the pad is the pour entry, not a competing trace).
+    const Ipad = flowOn && (POUR_NETS.has(p.net) || !padTracedLayers(p)?.has(L)) ? padCur.get(p) || 0 : 0;
     if (Math.abs(Ipad) > 1e-5) {
       const padR = Math.max(1.5, Math.min(w, h) / 2),
         spd = Math.max(0.25, Math.min(2, 0.45 * (Math.log10(Math.abs(Ipad)) + 6.5))),
@@ -769,6 +775,8 @@ function pushSample() {
 function padCurrents(inj) {
   const m = new Map();
   for (const it of inj) {
+    // pins are strings throughout — PCB pads and every device model's pinout — so a plain === matches.
+    // An injection with no pin (the galvanically-isolated opto / SSR / MOS, modelled per-net) matches by net.
     const pad = PCB.pads.find(
       (p) => p.ref === it.ref && (it.pin === undefined ? p.net === it.net : p.pin === it.pin),
     );

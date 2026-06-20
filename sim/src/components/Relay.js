@@ -17,10 +17,10 @@ export default class Relay extends Component {
     // Omron G6K-2F has no pin functions in its symbol -> hard-coded DPDT numbering
     if (/g6k/i.test(this.lib)) {
       return {
-        coil: [1, 8],
+        coil: ['1', '8'],
         contacts: [
-          { com: 3, nc: 2, no: 4 },
-          { com: 6, nc: 7, no: 5 },
+          { com: '3', nc: '2', no: '4' },
+          { com: '6', nc: '7', no: '5' },
         ],
       };
     }
