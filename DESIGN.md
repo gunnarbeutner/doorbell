@@ -493,7 +493,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   ch2 lifts line 3 off the permanently-wired codec ⇒ **line 3 is high-Z (BUS-1 met)**; energised, the
   codec audio and the handshake reach line 3 through R28. The handshake sources from the **always-on
   P2** — the session-independent superset, so the board can assert talk without an incoming session —
-  *pending the bench check that the TV20/S forwards line-3 audio with no session active* (AUDIO_REFACTOR / TODO).
+  *pending the bench check that the TV20/S forwards line-3 audio with no session active* (TODO: TX-out-reach).
 - **Why TX drives line 3, not line 4.** A WF26 hangs **C1 (22 µF) + the 16 Ω speaker across line 4**
   = a ~20–30 Ω near-short to common across the voice band; injecting there would dump the drive into
   it. Line 3 is light (the TV20/S amp input ∥ R28's 2.2 kΩ), so the codec drives **line 3**, and K1's

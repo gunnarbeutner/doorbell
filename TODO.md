@@ -9,9 +9,18 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
 All planned board changes are now in the KiCad files: K2 is a direct P2↔P3 short, the 2.2 kΩ (R28)
 is on the K1 talk strap, the K3↔K1 interlock is gone (K1/K2/K3 independent), and the third
 (session-sense) opto is gone — the two remaining bell-sense optos are **OC1** = house/Türruf and
-**OC2** = apartment/Etagenruf. All matching the handset. **No open schematic/layout items remain**;
-what's left is firmware + bench validation (below). ERC 0 errors; DRC clean (1 benign isolated-
-copper thieving-zone warning).
+**OC2** = apartment/Etagenruf. All matching the handset. ERC 0 errors; DRC clean (1 benign isolated-copper thieving-zone warning).
+Open layout items:
+
+- [ ] **PCB: re-stamp the ten 10 k → R_0402 + reroute.** 0603 10 k (C25804) is out of stock at JLCPCB;
+      the schematic is already restamped to **R_0402 / C25744** (R7/8/9/10/11/18/19/20/22/23 — all
+      logic-side, ≤3.3 V). Do "Update PCB from Schematic" + reroute (0402 < 0603, drops into the space);
+      the other resistor values stay R_0603.
+- [ ] **PCB: place/route the dual K1 (GAQW212GS SOP-8) + R24 (ch2 LED) + TX_OUT net** — gated-TX layout;
+      the schematic + sim are done (see "gated TX" below), only the layout remains.
+- [ ] **Verify OC1/OC2 in JLCPCB's placement preview before ordering.** The per-footprint `ROT_FIX`
+      (`kicad/jlcpcb_cpl.py`) now applies the +180 opto correction to OC1/OC2 — they were silently 0
+      under the old dead `OK1-3` keys, so this is a 180° change worth eyeballing.
 
 ## Audio refactor — SSR LED-drive resistors (`kicad/doorbell.kicad_sch`)
 
@@ -32,7 +41,7 @@ load** — a muted output is still a low-Z node at VMID (an AC ground); only Hi-
 than mute) or a hardware gate lifts it. Plus the handshake is sourced from **P4**, so it's only live
 during a session (blocks autonomous TTS/announcements).
 
-- [ ] **Replace K1 → GAQW212GS dual 1-Form-A NO (C7435123, SOP-8, 60 V).** Imported to
+- [ ] **Replace K1 → GAQW212GS dual 1-Form-A NO (C7435123, SOP-8, 60 V).** *Schematic + sim done — only the PCB place/route (SOP-8 + R24 + TX_OUT) remains.* Imported to
       `kicad/lib_switches/gaqw212gs` + `sym-lib-table`. Both LEDs on **PTT_DRV** (no new GPIO/firmware):
       - **ch1 (LED 1/2, contact 7/8): `P2 ↔ TALK_BRIDGE`** — handshake gate, sourced from the **always-on
         P2** (not P4) ⇒ TX works **with or without a session**.
@@ -42,9 +51,10 @@ during a session (blocks autonomous TTS/announcements).
       PTT on ⇒ `P2 → ch1 → TALK_BRIDGE → R28 → ch2 → P3` (the 2.2 kΩ talk handshake) + codec audio; idle ⇒
       both open, TALK_BRIDGE floats with only the codec, both shared lines high-Z. **BOM delta:** the dual
       replaces the K1 single (+1 channel, no added package) + one 300 Ω LED-drive R for ch2 (the R7 10 k
-      pull-down already covers both LEDs on PTT_DRV). Confirm the LED anode/cathode per the datasheet (the
-      easyeda symbol pins are unnamed). **Side effects:** K1 no longer touches line 4 ⇒ the **OC1 PTT-mask**
-      worry disappears (drop that mask), and the `TX idle isolation` sim todo can become an active test.
+      pull-down already covers both LEDs on PTT_DRV). LED→contact mapping confirmed (ch1 LED 1/2→contact 7/8,
+      ch2 LED 3/4→5/6; modelled in `sim/src/components/Photomos.js`). **Side effects:** K1 no longer touches
+      line 4 ⇒ the **OC1 PTT-mask** worry disappears (drop that mask), and the `TX idle isolation` sim test
+      is now active and passing.
       Still open: whether a P2-sourced **no-session** handshake is actually forwarded = the **TX-out-reach**
       bench question — but the hardware now *enables* on-demand TX, which is the point.
 - [ ] **(Deferred) K3+K4 → one dual-NC PhotoMOS (GAQW412S, C7435125).** Would save one footprint (both are
@@ -73,10 +83,10 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
       protection margin) / 4.7k (−15 dB, more level); revisit only if a real voice level is ever captured.
 - [ ] **TX level + OUTN handling.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do
       not overdrive the TV20/S amp); decide OUTP-only vs terminating OUTN; add a buffer/atten if needed.
-- [ ] **TX line-3 isolation (BUS-1) — folded into "gated TX" above.** Resolved by replacing K1 with the
-      dual GAQW212GS: ch2 lifts the codec off line 3 at idle (no standing load), ch1 sources the handshake
-      from the always-on P2. The `TX idle isolation` todo test (`sim/test/integration.test.js`) becomes an
-      active test once it lands. (Mute ≠ no load — only the gate or a DAC Hi-Z removes it.)
+- [x] **TX line-3 isolation (BUS-1) — met by the dual GAQW212GS (schematic + sim).** ch2 lifts the codec
+      off line 3 at idle (no standing load), ch1 sources the handshake from the always-on P2. The
+      `TX idle isolation` test (`sim/test/integration.test.js`) is now active and passing. (Mute ≠ no load
+      — only the gate or a DAC Hi-Z removes it.) Bench-confirm the real idle load via the TX-out-reach item.
 - [ ] **SAFE-7 protection on the P2/P3 taps.** C16 (on P2) sees **+16 V peak** (measured P2 max, ring4)
       plus fault transients → DC-block caps rate **≥ 50 V** (not the 6.3/16 V default at 1 µF 0603). Add a
       bidirectional TVS / clamp (> ±12 V) at the taps; the RX `Rs` (22 k, above) limits the clamp current.
@@ -106,12 +116,11 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
 
 ## WF26 replica refdes cleanup (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
-- [ ] **Rename the `WF26_*` reference designators to standard KiCad refdes.** The embedded dumb-core
-      WF26 handset replica uses prefixed, non-standard designators — `C19, K5, P4,
-      P5, R29, SW3, SW4` — instead of the plain `<class><number>` form KiCad's
-      annotator and the BOM/CPL exports expect. Re-annotate to unique standard refdes in their own
-      number band so they don't collide with the board's own C/K/R/S parts, and give the P4/P5 bus
-      pads a proper class (e.g. J or TP, not `P`). Update any DESIGN.md references; keep ERC/DRC clean.
+- [x] **Rename the `WF26_*` reference designators to standard KiCad refdes — DONE.** Their embedded
+      digits + `_` broke JLCPCB's designator parser, so `WF26_K1/S1/S2/R1/C1 → K5/SW3/SW4/R29/C19` —
+      both the refdes and the nets that embed them (`/WF26_K1_COM → /K5_COM`, …) — across the sch, pcb,
+      sim, docs and firmware. The `wf26/` reverse-engineered original handset keeps its own names (its
+      K1/S1 are the real device's). Bus lines P3/P4/P5 are J3 pins (no `P`-class refdes). ERC 0 errors.
 
 ## D5 refdes — `D` prefix on a powered IC (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
@@ -182,6 +191,10 @@ tether it to a mains-earthed PC. Pair with a DMM.
       energising it mutes the gong **without breaking line 4 or the latch** — the session should
       survive by construction (C1 isn't in the latch path). Bench-confirm: with a call up, energise K3
       and check RX/TX keep working (probe P4 + P2 + P3).
+- [ ] **Gong-mute timing — does K3 open inside the gong's pedestal→tone gap?** Measure the pedestal→tone
+      gap (working assumption ≥~10 ms) and confirm a step-driven **K3 (GAQY412EH NC SSR)** opens within it
+      so the first Klang is muted; scope where the chime becomes audible vs the pedestal rise. K3's own
+      turn-off can't be isolated from the bus capture — step-drive it directly.
 - [ ] **Door-opener firing threshold** — the linchpin test. Bridge P2↔P3 with (a) a **dead
       short** and (b) **2.2 kΩ**; does each fire the TV20/S opener? Expected (per the genuine
       handset): short fires, 2.2 kΩ does *not*. This confirms the choices already in the design —

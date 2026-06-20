@@ -1,7 +1,7 @@
 // Integration tests: run scenarios against the live schematic and assert on net voltages.
 // The netlist is imported on the fly (reads the KiCad files via kicad-cli) — nothing baked.
 //
-// Architecture under test (see DESIGN.md / AUDIO_REFACTOR.md):
+// Architecture under test (see DESIGN.md):
 //  - K1/K2/K3 are PhotoMOS SSRs driven by a GPIO through a 300 Ω LED resistor on /PTT_DRV /DOOR_DRV /MUTE_DRV.
 //    K1 (NO) gates /TALK_BRIDGE↔/P4 (the talk handshake); K2 (NO) bridges /P2↔/P3 (door opener);
 //    K3 (NC) bridges /P4↔/CHIME_C1 (chime) — closed at rest, opened to suppress.
@@ -178,7 +178,7 @@ test('chime suppress fail-safe: line 4 stays bridged to C1 when the ESP is unpow
   assert.ok(near(V['/CHIME_C1'], 12), `unpowered, K3 NC must bridge line 4 → /CHIME_C1, got ${V['/CHIME_C1']?.toFixed(2)} V`);
 });
 
-// Safety invariant (AUDIO_REFACTOR Decision 2 / the new GONG requirement): the Etagenruf (apartment
+// Safety invariant (GONG requirement — the Etagenruf must always ring): the Etagenruf (apartment
 // door — someone physically at your own door) reaches LS1 directly on line 5, bypassing K3, so it is
 // *structurally* non-suppressible. K3 can mute only the Türruf (through C1). The guarantee is hardware,
 // not firmware — so it must hold even in the very state that suppresses the Türruf.
@@ -216,7 +216,7 @@ test('codec talk (TX): the codec DAC (OUTP) reaches line 3 only while K1 is talk
 
 // BUS-1: the dual GAQW212GS gates the TX *output* — ch2 (/TX_OUT↔/P3). With K1 open that contact lifts,
 // so the permanently-wired codec (ES_OUTP→C14→TALK_BRIDGE→R28→TX_OUT) cannot reach line 3: line 3 is
-// high-Z at idle. This is the whole point of the dual gate (AUDIO_REFACTOR Decision 4/7).
+// high-Z at idle. This is the whole point of the dual gate.
 test('TX idle isolation: codec audio must not reach line 3 when K1 is open (BUS-1)', () => {
   const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * 1000 * t);
   const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/PTT_DRV': 0, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1) }, ...AC });
@@ -243,7 +243,7 @@ test('TX is session-independent: K1 energised drives line 3 from P2 with line 4 
   assert.ok(V['/P3'] > 6, `P2-sourced handshake should reach line 3 with no session, got ${V['/P3']?.toFixed(2)} V`);
 });
 
-// The session itself is the passive K5 latch (AUDIO_REFACTOR Decision 5): a Türruf energises the
+// The session itself is the passive K5 latch: a Türruf energises the
 // coil (line 4 ↔ P1) and its NO contact closes K1_COM onto line 4. (The seal-in from P2 after line 4
 // drops is dynamic — exercised by the engine's relay latch, not this steady-state DC check.)
 test('session latch: a Türruf pulls in K5 (its contact closes K1_COM onto line 4)', () => {
