@@ -58,6 +58,26 @@ function sexprBlocks(s, tag) {
   return out;
 }
 
+// Each "(comp ...)" record in the netlist, extracted by balanced parens. Matches "(comp" only when
+// followed by whitespace, so the enclosing "(components" section header (and "(comment") are skipped.
+// Balanced-paren bounding is robust to whatever follows a record; a lazy regex span keyed off the *next*
+// record's delimiter silently drops a record the moment a neighbour doesn't match the expected shape.
+function sexprComps(s) {
+  const out = [];
+  const re = /\(comp\s/g;
+  let m;
+  while ((m = re.exec(s))) {
+    let d = 0, j = m.index;
+    for (; j < s.length; j++) {
+      if (s[j] === '(') d++;
+      else if (s[j] === ')') { d--; if (d === 0) break; }
+    }
+    out.push(s.slice(m.index, j + 1));
+    re.lastIndex = j + 1;
+  }
+  return out;
+}
+
 function netName(block, nummap) {
   let m = block.match(/\(net (\d+) "([^"]*)"\)/);
   if (m) return m[2];
@@ -238,11 +258,14 @@ export function importNetlist(project = 'doorbell') {
   // expands the project's real sheet hierarchy from the root .kicad_sch — it never globs sibling files
   // on disk, so a stray/orphaned .kicad_sch in the same directory can't bleed its symbols in here. (We
   // take all three from the same record so a part can be classified by its footprint — e.g. the PhotoMOS
-  // SSRs — and not only by lib_id / value.) Match the "(comp" records specifically (not the enclosing
-  // "(components" / "(comment" blocks, which also start with that prefix); each opens "(comp\n\t...(ref".
-  const fps = {}, values = {}, libmap = {};
-  for (const cm of nl.matchAll(/\(comp\s+\(ref "([^"]+)"\)([\s\S]*?)(?=\n\t*\(comp\s|\n\t*\)\s*\(libparts)/g)) {
-    const ref = cm[1], body = cm[2];
+  // SSRs — and not only by lib_id / value.) `recorded` tracks which refs came from a record so a dropped
+  // part is caught loudly below rather than modelled as nothing.
+  const fps = {}, values = {}, libmap = {}, recorded = new Set();
+  for (const body of sexprComps(nl)) {
+    const rm = body.match(/\(ref "([^"]+)"\)/);
+    if (!rm) continue;
+    const ref = rm[1];
+    recorded.add(ref);
     const fm = body.match(/\(footprint "([^"]+)"\)/);
     if (fm) fps[ref] = fm[1];
     const vm = body.match(/\(value "([^"]*)"\)/);
@@ -262,6 +285,16 @@ export function importNetlist(project = 'doorbell') {
       if (fn) c.pinfn[pin] = fn;
     }
   }
+
+  // Fail loud, not silent: every part that appears in the connectivity must have come from a (comp)
+  // record (giving it a lib/footprint to classify on). A ref with pins but no record means the importer
+  // dropped it — otherwise it surfaces only as a part that mysteriously models as nothing, far downstream.
+  const dropped = Object.keys(comps).filter((r) => !recorded.has(r));
+  if (dropped.length)
+    throw new Error(
+      `importNetlist(${project}): ${dropped.length} component(s) appear in the netlist connectivity but ` +
+        `were parsed from no (comp) record — the importer dropped them: ${dropped.sort().join(', ')}`,
+    );
 
   for (const ref in comps) {
     if (!comps[ref].value) {

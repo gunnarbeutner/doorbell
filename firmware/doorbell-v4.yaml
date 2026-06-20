@@ -1,11 +1,11 @@
-# Klingel V4 — ESPHome config for the ESP32-C6 doorbell board (U1 = ESP32-C6-MINI-1/U, U3 = ES8311 codec).
+# Klingel V4 — ESPHome config for the ESP32-C6 doorbell board (U1 = ESP32-C6-MINI-1U-H4, U3 = ES8311 codec).
 #
 # GPIO map:
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO3
 #   Apartment Doorbell (OC2 / Etagenruf sense)     : GPIO2
 #   front_door_buzzer  (K2 / ÖT door opener)       : GPIO21
 #   suppress_sound     (K3 / chime suppress)       : GPIO22
-#   K1                 (PTT relay, talk=energised) : GPIO20
+#   K1                 (PTT SSR, talk=energised)   : GPIO20
 #   I2C_SDA  (ES8311 control)                      : GPIO18
 #   I2C_SCL  (ES8311 control)                      : GPIO15
 #   I2S_MCLK (master clock)                        : GPIO14
@@ -16,14 +16,15 @@
 #   logger                                         : native USB-Serial-JTAG (GPIO12/GPIO13 = USB D-/D+)
 # The I2S/I2C pins are ordered so U1's codec-facing edge fans to the ES8311 in pin order, no crossings.
 #
-# Relay outputs are ACTIVE-HIGH (see the output section): GPIO HIGH -> 2N7002 on -> coil energised.
+# SSR gate outputs are ACTIVE-HIGH (see the output section): GPIO HIGH -> SSR LED on -> contact made.
 #
 # Sense disambiguation for the V4 sense points:
 #   - OC2 taps the speaker pair (P5↔P1) and pulses at audio rate on ANY loud speaker audio
 #     (floor tone, door gong, speech). Its filter chain stretches the half-cycle pulses into a
 #     level (delayed_off before delayed_on) and is masked by house_doorbell / PTT — see the sensor.
-#   - OC1 is masked during board PTT: K1's IN_P4↔P3 bridge (via R16) can disturb the line-4 sense
-#     and fake a house ring.
+#   - OC1 is masked during board PTT as a PRECAUTION: K1 closed bridges P4↔P3 via R28 (2.2k), which
+#     *could* couple P3's bias onto line 4 — but this is bench-UNconfirmed (the WF26_K1 coil ~1.3k
+#     clamps P4 toward common; OC1's 50ms debounce already rejects audio-rate AC). See the sensor.
 #
 # The api encryption key, OTA password and static IP are fixed so the Home Assistant integration
 # pairs without changes.
@@ -32,7 +33,8 @@ esphome:
   name: doorbell
 
 esp32:
-  board: esp32-c6-devkitc-1     # generic ESP32-C6 board def (U1 = ESP32-C6-MINI-1/U)
+  board: esp32-c6-devkitc-1     # generic ESP32-C6 board def; U1 = ESP32-C6-MINI-1U-H4
+  flash_size: 4MB               # H4 module = 4 MB embedded flash (devkitc-1 def is generic; pin it)
   framework:
     type: esp-idf
 
@@ -82,7 +84,7 @@ audio_dac:
   - platform: es8311
     id: es8311_codec
     address: 0x18          # CE → R20 (10k) → GND on U3 → I2C addr 0x18
-    use_microphone: true   # enable the ADC path (analog MIC1P/MIC1N, fed from T1 via C16/C17)
+    use_microphone: true   # enable the ADC path (analog MIC1P/MIC1N — RX = line 2 via C16/C17, diff vs P1)
     mic_gain: 0DB          # the PGA cannot attenuate and the line carries speaker-level
                            # audio (gong peaks > 2Vrms full-scale) — keep all the headroom
 
@@ -154,16 +156,19 @@ binary_sensor:
     icon: mdi:doorbell
     id: house_doorbell
     pin:
-      number: GPIO3            # OC1 collector — Türruf (P4 / IN-P4) sense
+      number: GPIO3            # OC1 collector — Türruf (line 4 / P4) sense
       inverted: true
       mode:
         input: true            # R22 (10k to +3V3) holds it HIGH at idle
     filters:
-      # Mask while board PTT perturbs line 4: K1 bridges IN_P4↔P3 through R16 (2.2k), which
-      # can disturb OC1's line-4 sense and fake a ring, so OC1 stays masked for the PTT window.
-      # A phantom ring is worse than a missed one here — on_press can pulse the door buzzer
-      # (auto-open). (Only board PTT is masked; the resident's own talk could disturb it too —
-      # exact coupling: confirm on the bench.)
+      # Precautionary mask while board PTT is engaged. K1 closed ties P4↔P3 through R28 (2.2k), so
+      # P3's resting bias (and the codec's AC drive, via C14) could couple onto line 4 and fake a
+      # ring. This is BENCH-UNCONFIRMED: the WF26_K1 coil (~1.3k, P4↔P1) clamps P4 toward common
+      # (P4 ≈ 0.32·V_P3 through the R28/coil divider — needs P3 idling ≳8V to reach OC1's threshold),
+      # and OC1's 50ms debounce already rejects the codec's audio-rate AC. Kept because a phantom
+      # ring is worse than a missed one (on_press can auto-open the door). Cost: it also blanks a
+      # GENUINE ring that lands during the board's own PTT window (a real ring drives P4 ~10V and is
+      # distinguishable). TODO: measure P3 idle bias + whether PTT alone trips OC1, then keep/drop.
       - lambda: |-
           if (id(intercom_ptt).state) return false;
           return x;
@@ -205,29 +210,27 @@ binary_sensor:
     id: doorbell_sound_state
     icon: mdi:music-note
     lambda: |-
-      // K3 energised breaks line 4 — but ALL audio rides line 4 (autonomous TX out, and RX/listen
-      // via the WF26 coil+C1), so K3 MUST be OFF whenever the board needs the line. Never suppress
-      // while transmitting (PTT): return true (= "let it ring", K3 off, line 4 continuous). Only
-      // suppress when idle and the conditions call for it.
-      //   Consequence: per this line-4 model, suppressing the gong and answering are mutually
-      //   exclusive (both want line 4 during the ring). Decoupling them — so the board can capture
-      //   incoming audio while the handset gong is silenced — is the open "tap P1↔IN_P4 for RX"
-      //   investigation (see DESIGN.md "TX-out reach" / TODO). NOTE: there is no session-active
-      //   input; a session arm should be added here once "session active" is derived from the
-      //   OC1 (Türruf) event + a timer.
+      // K3 (NC SSR) opens C1 to mute the front-door gong. It sits in the C1 audio path (P4↔C1), NOT
+      // in line 4 — so it does NOT break the session, and the board's codec RX/TX (on the speech pair,
+      // lines 2/3) is independent of it. (It does mute the handset's own LS1 listen, which rides C1.)
+      // Current policy: keep K3 OFF while transmitting (PTT) — return true (= "let it ring", K3 off) —
+      // and suppress only when idle and the conditions call for it.
+      //   TODO: add a session-active arm here. The session-sense opto that used to supply it was
+      //   dropped, so this gate is PTT-only; "session active" should be derived from the OC1 (Türruf)
+      //   event + a timer and gate K3 on it (see DESIGN.md "TX-out reach" / TODO).
       if (id(intercom_ptt).state) return true;
       return !id(internet_connection).state || (id(apartment_occupancy).state && !id(someone_at_house_door).state && id(doorbell_sound).state);
     on_press:
       then:
-        # State went true ("keep line 4 intact"): drop K3 so the line is continuous (talk/listen
-        # audio + the gong). No inter-relay timing constraint: K1 bridges IN_P4↔P3 (via R16), so
-        # re-closing K3's NC while K1 is up only re-makes line 4↔line 3 (talk), never a P2↔P3 short.
+        # State went true ("let it ring"): drop K3 so the gong's C1 path is closed (the gong rings).
+        # K3 (the C1 mute) and K1 (the talk handshake) are independent — no inter-SSR timing
+        # constraint, and K3 never makes a P2↔P3 short.
         # (PTT is not forced off here — that would fight the PTT gate above; session-end PTT cleanup
         # belongs to the session-active work.)
-        - output.turn_off: suppress_doorbell_sound_bin   # K3 off -> line 4 continuous
+        - output.turn_off: suppress_doorbell_sound_bin   # K3 off -> C1 closed -> gong rings
     on_release:
       then:
-        - output.turn_on: suppress_doorbell_sound_bin    # K3 on -> break line 4 -> silence the gong
+        - output.turn_on: suppress_doorbell_sound_bin    # K3 on -> C1 open -> silence the gong
 
 switch:
   - platform: output
@@ -249,17 +252,17 @@ switch:
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
 
-# *** IMPORTANT — the relay drivers are ACTIVE-HIGH, so these outputs are NOT inverted. ***
-# Each coil is driven by a discrete low-side N-MOSFET (2N7002): GPIO HIGH -> FET on -> coil
-# energised, so `turn_on` drives the pin HIGH => no `inverted:` here. Adding `inverted: true`
-# by mistake would energise BOTH relays at boot (door opener pulsing + chime force-suppressed)
-# — exactly what the gate pull-downs are there to prevent.
+# *** IMPORTANT — the SSR gates are ACTIVE-HIGH, so these outputs are NOT inverted. ***
+# Each SSR LED is driven from the GPIO through a 300 Ω series R (with a 10 k pull-down): GPIO HIGH ->
+# LED on -> contact made, so `turn_on` drives the pin HIGH => no `inverted:` here. Adding
+# `inverted: true` by mistake would energise BOTH at boot (door opener pulsing + chime force-
+# suppressed) — exactly what the gate pull-downs are there to prevent.
 output:
   - platform: gpio
-    pin: GPIO20              # K1 — PTT relay (energised = talk: IN_P4↔P3 via R16)
+    pin: GPIO20              # K1 — PTT SSR (energised = talk handshake: TALK_BRIDGE↔P4, codec→R28→P3)
     id: ptt_relay_bin
   - platform: gpio
-    pin: GPIO22              # K3 — chime suppress (break line 4)
+    pin: GPIO22              # K3 — chime suppress (open C1: P4↔CHIME_C1)
     id: suppress_doorbell_sound_bin
   - platform: gpio
     pin: GPIO21              # K2 — front-door buzzer / ÖT (bridge P2↔P3 direct)

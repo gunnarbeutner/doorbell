@@ -13031,7 +13031,7 @@
 		)
 		(uuid "82b1de50-1b0b-492a-9f62-302212d80072")
 	)
-	(text "RELAY DRIVERS"
+	(text "BUS SWITCHES (PhotoMOS SSRs)"
 		(exclude_from_sim no)
 		(at 274 16 0)
 		(effects
@@ -13067,7 +13067,7 @@
 		)
 		(uuid "a2992d15-2815-4656-b195-3a0c72f0684b")
 	)
-	(text "VIRTUAL PTT\nbridges IN_P4<->P3 (talk)"
+	(text "TALK (K1, NO SSR)\ngates TALK_BRIDGE<->P4;\ncodec TX -> R28 -> line 3"
 		(exclude_from_sim no)
 		(at 357.378 44.45 0)
 		(effects
@@ -13079,7 +13079,7 @@
 		)
 		(uuid "a63a6625-5276-47a2-a274-5b6b0df154ac")
 	)
-	(text "CHIME SUPPRESS\nbreaks line 4 (IN_P4->P4);\npole B interlocks K1 gate"
+	(text "CHIME SUPPRESS (K3, NC SSR)\nopens the C1 path (P4<->CHIME_C1);\nmutes gong; line 4 + latch intact"
 		(exclude_from_sim no)
 		(at 357.378 158.496 0)
 		(effects
@@ -13103,7 +13103,7 @@
 		)
 		(uuid "b435b7d0-8575-429b-977e-a705ee1743ff")
 	)
-	(text "HOUSE BELL / Tuerruf (P1->IN_P4)"
+	(text "HOUSE BELL / Tuerruf (P1->P4)"
 		(exclude_from_sim no)
 		(at 54.73 148.31 0)
 		(effects
@@ -13115,7 +13115,7 @@
 		)
 		(uuid "bfa7480e-f514-4566-9846-c21352046beb")
 	)
-	(text "DOOR OPENER\nbridges P2<->P3 via R16,\nemulating the WF26 OeT button"
+	(text "DOOR OPENER (K2, NO SSR)\nbridges P2<->P3 directly (dead short),\nemulating the WF26 OeT button (S1)"
 		(exclude_from_sim no)
 		(at 357.378 100.838 0)
 		(effects
@@ -18486,7 +18486,7 @@
 				)
 			)
 		)
-		(property "Description" "T1 secondary -> MIC1P AC-coupling"
+		(property "Description" "Line 2 (P2) -> MIC1P AC-coupling (codec RX listen tap; transformer-less)"
 			(at 242.57 220.98 0)
 			(hide yes)
 			(show_name no)
@@ -18775,7 +18775,7 @@
 				)
 			)
 		)
-		(property "Description" "ÖT bridge series R; matches the WF26's genuine 2.2k button resistor"
+		(property "Description" "Talk-handshake series R: codec TX -> TALK_BRIDGE -> R28 -> line 3 (K1 gates TALK_BRIDGE<->P4). Matches the WF26's genuine 2.2k talk resistor R1 (S2). NOT the door bridge — K2 is a direct P2<->P3 short."
 			(at 344.17 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -18952,7 +18952,7 @@
 				)
 			)
 		)
-		(property "Description" "Omron G6K-2F-Y DC12, SMD DPDT signal relay (2 Form C), 12V coil ~1.315k. Used as SPDT: coil 1/8 (P1, WF26_P4); pole-1 COM=3, NO=4, NC=2; pole-2 5/6/7 spare. Türruf-driven."
+		(property "Description" "Omron G6K-2F-Y DC12, SMD DPDT signal relay (2 Form C), 12V coil ~1.315k. Used as SPDT: coil pin1=WF26_P4 (+), pin8=P1; pole-1 COM=3, NO=4->P4, NC=2 open; pole-2 5/6/7 spare. On-board WF26 latch: Türruf-pulsed (~1s), then sealed in from the P2 supply; flyback D1 on the coil."
 			(at 129.54 226.06 0)
 			(hide yes)
 			(show_name no)
@@ -20563,7 +20563,7 @@
 				)
 			)
 		)
-		(property "Description" "DAC OUTP AC-coupling to T1 secondary"
+		(property "Description" "DAC OUTP AC-coupling to TALK_BRIDGE (codec TX; K1 gates ->P4, R28 ->line 3; transformer-less)"
 			(at 212.09 220.98 0)
 			(hide yes)
 			(show_name no)
@@ -21221,7 +21221,7 @@
 				)
 			)
 		)
-		(property "Description" "T1 secondary -> MIC1N AC-coupling"
+		(property "Description" "GND (P1) -> MIC1N AC-coupling (codec RX differential reference; transformer-less)"
 			(at 232.41 220.98 0)
 			(hide yes)
 			(show_name no)
@@ -22293,7 +22293,7 @@
 				)
 			)
 		)
-		(property "Description" "House-bell (Türruf) sense opto across P1<->IN_P4"
+		(property "Description" "House-bell (Türruf) sense opto across P1<->P4"
 			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
@@ -24571,7 +24571,7 @@
 				)
 			)
 		)
-		(property "Description" "DAC OUTN AC-coupling to T1 secondary"
+		(property "Description" "DAC OUTN AC-coupling to its parked termination (R16 2.2k to GND); TX is single-ended off OUTP; transformer-less"
 			(at 222.25 220.98 0)
 			(hide yes)
 			(show_name no)

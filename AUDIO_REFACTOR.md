@@ -308,7 +308,7 @@ speaker, and the TV20/S amps.
 6. **Hum** with the P1↔GND bond once RX is active.
 7. **K2 door-signal current** — confirm it's a mA-class signalling bridge (not strike current routed
    through the handset) before sizing the K2 PhotoMOS.
-8. **K3 gong speaker-drive current** — *resolved from ring4 (no station surgery needed):* the
+8. **K3 gong speaker-drive current** — *resolved from ring4 (no handset surgery needed):* the
    speaker/K3 branch current is `V_line4(AC) / |Z_C1+Z_LS1|` (C1 = 22 µF, LS1 = 16 Ω → |Z| ≈ 17.5 Ω
    at 1010 Hz), peaking at **~80 mA** composite / ~26 mA at door-open → ~6× under the GAQY412EH's
    500 mA. (Bench confirmation optional: probe AC volts across LS1, divide by Z.)

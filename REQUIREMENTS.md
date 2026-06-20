@@ -13,17 +13,24 @@ The board is a smart interface to a **TCS TV20/S** apartment-intercom bus (5-wir
 230 V→12 VAC). It replaces or augments a **WF26** apartment handset. The smart layer is an ESP32
 (ESPHome). See DESIGN.md "System context" for the full picture.
 
-**Deployment scope:** line 4 (front-door / Türruf) is a **private, two-station line** — at most this
-board plus **one** real WF26 (replacement = board alone; parallel = board + one WF26; never more).
-The speech pair (lines 1/2/3) is a shared party line across apartments.
+**Three units, kept distinct** (more than one thing on the bus could loosely be called a "station", so
+we don't use the bare word): the **TV20/S** (a.k.a. the **central unit** — the central control box that
+supplies the bus, pulses line 4 for ~1 s to start a call, and runs the door opener and the ~60 s
+timeout); the **handset** (the apartment **WF26**/Sprechstelle — the board emulates or replaces one);
+and the **door station** (the building-entrance unit — call button + mic/speaker, the far end of the
+speech path). A bus tap on line 4 (the board, or a handset) is an **endpoint**.
+
+**Deployment scope:** line 4 (front-door / Türruf) is a **private line** — the board is the single
+endpoint at the WF26 tap (**replacement-only**: the board *is* the handset, carrying its own passive
+WF26 core; it does not run in parallel with a separate handset). The speech pair (lines 1/2/3) is a
+shared party line across apartments.
 
 | Term | Meaning | Bus line |
 |------|---------|----------|
-| **Front-door call** | *Türruf* — the building/house door (Haustür); ~12 V DC gong pulse | Line 4 (IN-P4 incoming) |
+| **Front-door call** | *Türruf* — the building/house door (Haustür); ~12 V DC gong pulse | Line 4 |
 | **Apartment-door call** | *Etagenruf* — the apartment's own floor/landing door | Line 5 (across 5↔1) |
 | **Speech pair** | half-duplex audio: listen = line 2, talk = line 3, ref = line 1 | Lines 1/2/3 |
-| **Replacement mode** | board is the only station at the tap; on-board passive WF26 core live (J3/J4 closed) | — |
-| **Parallel mode** | board taps the bus alongside an external WF26; on-board core isolated (J3/J4 open) | — |
+| **Passive WF26 core** | the handset circuit reproduced on-board (the `WF26_*` parts) — the unpowered fallback | — |
 
 ---
 
@@ -37,15 +44,18 @@ The speech pair (lines 1/2/3) is a shared party line across apartments.
     transducer) and talk (transducer-as-mic → line 3, via the talk button), with no ESP/codec involved.
   - **MODE-1c (MUST)** **chime suppression is disabled** → the front-door gong rings (suppression
     needs power; see GONG-3).
-- **MODE-2 (MUST)** With **J3/J4 open**, operate in **parallel** alongside an existing, unmodified
-  WF26, tapping the same bus terminals.
-- **MODE-3 (MUST)** In parallel mode (the only other station being **one** real WF26) the board MUST
-  NOT double the load the apartment presents to the bus — no second transducer/coil/C1 across the
-  lines — nor otherwise disturb that WF26 or the shared speech pair. The on-board passive core is
-  isolated by J3/J4 (only line 1 stays connected, as reference), and the audio tap stays high-Z
-  (see AUDIO-4).
-- **MODE-4 (MUST)** The two modes are **mutually exclusive** — never run the on-board core and an
-  external WF26 together.
+- **MODE-2 (MUST)** **Exactly one passive WF26 is always in the loop** — the board's own hardwired
+  core. The board *replaces* the handset; there is **no parallel mode** (running alongside a separate
+  WF26 isn't supported — chime-suppress would have to break line 4 in series with that handset, which
+  conflicts with keeping its session alive; see DESIGN.md). So the board must present a
+  **WF26-equivalent** load to the shared bus, not an additional one (BUS-1).
+- **MODE-3 (MUST)** **Powered, the smart actuators mirror the handset's *behaviour*, not merely its
+  function.** Where an SSR stands in for a handset switch (door ↔ S1, talk ↔ S2), it MUST reproduce the
+  **full** behaviour of that switch — including its effect on the **session / latch** — not just the
+  minimal bus signal that triggers the function. A handset switch can do several things in one motion
+  (S1 both fires the opener *and* ends the session by dropping the WF26 latch); the smart stand-in MUST
+  do **all** of them, so an app action is indistinguishable from the equivalent physical button press.
+  This is the powered counterpart to MODE-1's additive/fallback rule. (Concrete case: DOOR-4.)
 
 ## BUS — bus loading & compatibility
 
@@ -55,11 +65,12 @@ The speech pair (lines 1/2/3) is a shared party line across apartments.
   MUST stay negligible against the stock load:
   - **sense optos** tap high-Z and only on an active line (~2 mA off a ringing line, far below the
     WF26's own ~37 mA Türruf-relay coil);
-  - the **audio tap** is transformer-coupled, DC-blocked and high-Z (AUDIO-4) — no DC load, negligible
-    AC load across the speech pair;
-  - **relays** default open (SAFE-6) — nothing added at rest.
+  - the **audio tap** is AC-coupled (DC-blocked) and high-Z (AUDIO-4) — no DC load, negligible AC load
+    across the speech pair;
+  - the **SSRs** default open (SAFE-6) — nothing added at rest.
 
-  MODE-3 is this rule applied to parallel mode (don't double the apartment's load).
+  (BUS-1 is about presenting a WF26-equivalent load to the *shared* bus — other apartments share lines
+  1/2/3.)
 
 ## RING — Ring detection
 
@@ -105,12 +116,14 @@ The speech pair (lines 1/2/3) is a shared party line across apartments.
   after a ring; single transducer, so no echo cancellation). Full-duplex is a **MAY** (nice-to-have)
   and is **contingent on the TV20/S supporting it at all** — likely it does not; it needs a bench
   test of the TV20/S before it could be committed (see Open questions / TX-out reach).
-- **AUDIO-4 (MUST)** The bus audio tap MUST be transformer-coupled and MUST NOT DC-load or saturate
-  the bus: a series DC-block in the bus winding so no DC flows through it, and the tap presents a
-  high AC impedance so it does not appreciably attenuate other stations (the speech-pair case of
-  BUS-1; supports MODE-3).
-- **AUDIO-5 (SHOULD)** The audio path SHOULD be galvanically isolated from the ESP/codec (see
-  SAFE-3) — the isolation transformer serves both AUDIO-4 and SAFE-3.
+- **AUDIO-4 (MUST)** The bus audio tap MUST NOT DC-load the bus: **AC-coupled** (a series DC-block, so
+  no DC flows) and presenting a **high AC impedance** so it does not appreciably attenuate other
+  handsets on the shared speech pair (the speech-pair case of BUS-1). *(Met by series DC-block caps +
+  the differential high-Z RX tap; the original isolation-transformer coupling was dropped — see AUDIO-5.)*
+- **AUDIO-5 (SHOULD)** The audio path SHOULD be galvanically isolated from the bus (see SAFE-3).
+  **Deviation:** the design drops the isolation transformer for an active, AC-coupled front-end with
+  **P1 bonded to board GND** — a measurement-justified SHOULD deviation (P1 ≈ earth), so SAFE-3 is
+  *not met* and containment falls to SAFE-7.
 - **AUDIO-6 (SHOULD)** RX and TX SHOULD carry intelligible voice-band speech at a usable level — a
   clean half-duplex turnaround, no speech-masking pops — not merely "a signal is present".
 - **AUDIO-7 (MAY)** Privacy (optional, **firmware-gated**): the firmware MAY restrict bus-audio
@@ -119,13 +132,24 @@ The speech pair (lines 1/2/3) is a shared party line across apartments.
 
 ## DOOR — Door opener
 
-- **DOOR-1 (MUST)** Trigger the door opener under firmware control, electrically equivalent to a
-  handset door-button press (the line-2↔line-3 bridge the TV20/S reads as "open").
+- **DOOR-1 (MUST)** Trigger the door opener under firmware control, **behaviourally equivalent to
+  pressing the handset's own door button (S1)** — which means the button's *whole* effect, not just
+  the line-2↔line-3 bridge the TV20/S reads as "open" (see DOOR-4 and MODE-3).
 - **DOOR-2 (SHOULD)** The trigger SHOULD coexist with an in-progress ring (e.g. wait out / not be
   defeated by the gong), per the TV20/S timing in DESIGN.md.
 - **DOOR-3 (MUST)** No single fault may open the door: a booting, unpowered, or floating board MUST
   NOT actuate the opener (relays default off, SAFE-6), and a welded audio/PTT relay MUST NOT be able
   to fire it (the opener takes a deliberate, separate closure that idle/talk states never assert).
+- **DOOR-4 (MUST)** A firmware door-open MUST **end the session exactly as the handset button does** —
+  release the passive WF26 latch (WF26_K1). The handset's S1 is a **break-before-make DPDT transfer**:
+  it lifts line 2 off the latch's seal-in node (K1_COM) *before* it bridges line 2↔line 3, so the latch
+  drops and the call ends as the door fires. The board's door actuator MUST reproduce that transfer — it
+  MUST NOT stand in as a bare parallel line-2↔line-3 short. A bare short fires the opener but leaves the
+  latch **sealed in**, with two wrong consequences: **(a)** the session **lingers** until the ~60 s
+  timeout, so the board still reads "session active" (line 4 hot, OC1 high) after the door is already
+  open; and **(b)** the held latch **bridges the live line 4 onto line 3** (P4→K1_COM→line 2→line 3).
+  Mirroring S1's transfer removes both. *(Gap: the single-pole door SSR as currently built does **not**
+  meet DOOR-4 — it needs the seal-in break; see DESIGN.md "Door opener" / TODO.)*
 
 ## FW — Firmware host & control
 
@@ -149,13 +173,15 @@ provides them.
 - **SAFE-1 (MUST)** Tolerate bus over-voltage and transients (surge / ESD on the exposed bus
   terminals) without damage.
 - **SAFE-2 (MUST)** Be reverse-polarity protected on the bus and local-power inputs.
-- **SAFE-3 (SHOULD)** Galvanically isolate the smart layer (ESP/codec/GND) from the TV20/S bus — the
-  primary means of SAFE-7's bus-side containment. The current design **meets this**: the only
-  bus↔logic crossings are *through* the sense optocouplers, the relay coil↔contact air gaps, and the
-  audio transformer (2000 VRMS), and **P1 is the bus common, not board GND**. The barrier SHOULD be
-  preserved in layout (no plane bridges the two domains).
-- **SAFE-4 (MUST)** **Fail-safe / fail-passive**: with no board power, replacement mode degrades to
-  a working passive handset (MODE-1) and parallel mode leaves the external WF26 undisturbed.
+- **SAFE-3 (SHOULD)** Galvanically isolate the smart layer (ESP/codec/GND) from the TV20/S bus. The
+  current design **does *not* meet this** — a deliberate, measurement-justified deviation: the
+  transformer-less audio bonds **P1 to board GND** (the bench measured P1 ~0.5 V from earth, so it's
+  benign). The sense optos and the SSRs still give LED barriers on the detection and actuator paths,
+  but the codec RX/TX taps and the P1↔GND bond couple the bus to logic ground. Bus-side fault
+  containment therefore rests on **SAFE-7** (per-tap protection + the sacrificial board behind F1),
+  not a galvanic barrier.
+- **SAFE-4 (MUST)** **Fail-safe / fail-passive**: with no board power, the board degrades to a working
+  passive handset (MODE-1) — the on-board WF26 core runs bus-powered while the SSRs/optos/codec go inert.
 - **SAFE-5 (MUST)** The smart layer is powered locally (USB-C / 5 V), not from the bus; absence of
   that feed MUST degrade gracefully to the passive behaviour of SAFE-4.
 - **SAFE-6 (MUST)** All actuators default to their inactive/safe state at power-on and while the MCU
@@ -167,8 +193,9 @@ provides them.
   - **upstream** — it must not damage the **USB power supply**: F1 fuses the board off VBUS before a
     clamp or short can back-feed the supply, so the board fails open to USB;
   - **downstream** — it must not damage the **TV20/S bus or the rest of the apartment**: the board
-    must never put damaging voltage/energy onto the bus, and bus-side faults stay behind the
-    opto / relay-gap / transformer barrier (SAFE-3).
+    must never put damaging voltage/energy onto the bus; with no galvanic barrier (SAFE-3 not met),
+    bus-side faults are contained by **per-tap protection** (series R + clamps + DC-block caps) and
+    the board's own destruction.
   Net: everything the board connects to survives; only the (replaceable) board is lost.
 
 ## MECH — Mechanical (enclosure fit)
@@ -183,7 +210,7 @@ provides them.
 ## VER — Verification
 
 - **VER-1 (MUST)** The design MUST be validated with **unit / integration tests in the project's
-  circuit simulator** (`sim/`), exercising **both** the **original WF26 station** (the reference
+  circuit simulator** (`sim/`), exercising **both** the **original WF26 handset** (the reference
   behaviour the board must match) and the **board**, with the board in both **powered** (smart layer
   active) and **unpowered** (passive fallback) states. The tests MUST show the unpowered board
   reproduces the WF26's behaviour (MODE-1, SAFE-4) and the powered board adds the smart functions
@@ -194,15 +221,15 @@ provides them.
 ## Open questions (to nail down)
 
 1. **TX-out reach & full-duplex feasibility (open, bench)** — does the TV20/S forward the board's
-   line-3 talk audio to the door station once it sees the R16 handshake bridge (AUDIO-2), and does it
+   line-3 talk audio to the door station once it sees the R28 handshake bridge (AUDIO-2), and does it
    tolerate simultaneous RX+TX at all (the prerequisite for the AUDIO-3 full-duplex MAY)? Both need a
    bench test against the real TV20/S; see DESIGN.md "Audio path".
 
 *Resolved:* Galvanic isolation — **SHOULD**, not MUST; the hard requirement is fault containment
 (SAFE-7) — the board may fry, but the USB supply and the apartment must not. Etagenruf — MUST stay
 audible in all states and is structurally never suppressible (GONG-4); only the Türruf is suppressed.
-Half-duplex — sufficient (AUDIO-3). Station count — at most board + one WF26 on a private line 4
-(Context / MODE-3).
+Half-duplex — sufficient (AUDIO-3). Replacement-only — the board is the single endpoint on its
+private line 4, carrying its own passive WF26 core (Context / MODE-2).
 
 ## Status
 

@@ -1,9 +1,18 @@
 // Integration tests: run scenarios against the live schematic and assert on net voltages.
 // The netlist is imported on the fly (reads the KiCad files via kicad-cli) — nothing baked.
+//
+// Architecture under test (see DESIGN.md / AUDIO_REFACTOR.md):
+//  - K1/K2/K3 are PhotoMOS SSRs driven by a GPIO through a 300 Ω LED resistor on /GATE{1,2,3}_DRV.
+//    K1 (NO) gates /TALK_BRIDGE↔/P4 (the talk handshake); K2 (NO) bridges /P2↔/P3 (door opener);
+//    K3 (NC) bridges /P4↔/CHIME_C1 (chime) — closed at rest, opened to suppress.
+//  - The embedded WF26 core (WF26_K1 latch + S1/S2 + C1) is passive and works unpowered (SAFE-4).
+//  - Audio is transformer-less: RX taps /P2 through C16 to the ES8311 ADC (MICP/MICN); TX runs the
+//    codec DAC (OUTP) through C14 → /TALK_BRIDGE → R28 (2.2 k) → /P3.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { importNetlist } from '../src/import.js';
-import { runDC } from '../src/components/index.js';
+import { runDC, buildElements, defaultSwitchState } from '../src/components/index.js';
+import { createStepper, gndOf } from '../src/engine.js';
 
 const netlist = importNetlist();
 const near = (a, b, tol = 0.5) => Math.abs(a - b) <= tol;
@@ -41,8 +50,19 @@ function meanLevel(RES, a, b) {
   return sum / count;
 }
 
-// the loudspeaker's two terminals (LS1)
+// the loudspeaker's two terminals (LS1) — now across /P5 ↔ GND
 const SPEAKER = Object.values(netlist.components.find((c) => c.ref === 'LS1').pins);
+const AC = { T: 12 / 1000, dt: 1 / (1000 * 64) }; // a 1 kHz run with a settled second half
+
+// Import sanity: every connected part must carry a library, so it can be classified rather than silently
+// modelled as nothing. (importNetlist already throws on a part with no (comp) record at all; this also
+// catches a record that parsed but lost its libsource — both should fail loudly, not slip through.)
+test('import sanity: every component is parsed with a library (no silent drops)', () => {
+  const empty = netlist.components.filter((c) => !c.lib);
+  assert.equal(empty.length, 0, `components with no library: ${empty.map((c) => c.ref).join(', ') || '(none)'}`);
+});
+
+// ── embedded WF26 core (passive: must work with no board power, SAFE-4 / MODE-1) ──
 
 test('WF26_S1 (door release) pressed shorts P2 onto P3', () => {
   const { V } = runDC(netlist, { sources: { '/P2': 12, '/P1': 0 }, switches: { WF26_S1: true } });
@@ -55,109 +75,54 @@ test('WF26_S1 released does NOT tie P3 to P2', () => {
     `P3 should not be at 12 V with S1 open, got ${V['/P3']?.toFixed(3)} (floating=${floating['/P3']})`);
 });
 
-// K2's coil runs off the +5V rail, so the board must be powered (VBUS) for it to pull in.
-test('GATE2_DRV = 3.3 V energizes K2 (door opener) -> P3 = P2', () => {
-  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/GATE2_DRV': 3.3 } });
-  assert.ok(near(V['/P3'], 12), `energized K2 should tie P3 to P2 (12 V), got ${V['/P3']?.toFixed(3)}`);
+test('WF26_S2 (talk) pressed bridges line 4 onto line 3 through R1 (the handshake)', () => {
+  // S2 connects /WF26_R1_BRIDGE↔/P3; WF26_R1 (2.2 k) ties /P4↔/WF26_R1_BRIDGE. So a held line 4
+  // reaches line 3 through R1 when S2 is pressed — the handset's own DC talk handshake.
+  const { V } = runDC(netlist, { sources: { '/P4': 12, '/P1': 0 }, switches: { WF26_S2: true } });
+  assert.ok(near(V['/P3'], 12, 1.0), `S2 pressed should bring P3 up toward line 4, got ${V['/P3']?.toFixed(3)}`);
+
+  const { V: off } = runDC(netlist, { sources: { '/P4': 12, '/P1': 0 }, switches: { WF26_S2: false } });
+  assert.ok(!near(off['/P3'], 12, 1.0), `S2 released should leave P3 clear of line 4, got ${off['/P3']?.toFixed(3)}`);
 });
 
-test('GATE2_DRV = 0 V leaves K2 idle -> P3 not pulled to P2', () => {
-  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/GATE2_DRV': 0 } });
-  assert.ok(!near(V['/P3'], 12), `idle K2 should not tie P3 to 12 V, got ${V['/P3']?.toFixed(3)}`);
-});
-
-test('power rails: +3V3 regulated, +5V behind the Schottky', () => {
-  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 } });
-  assert.ok(near(V['+3V3'], 3.3, 0.1), `+3V3 should regulate to ~3.3 V, got ${V['+3V3']?.toFixed(3)}`);
-  assert.ok(V['+5V'] > 4.6 && V['+5V'] < 5.05, `+5V should sit just below VBUS, got ${V['+5V']?.toFixed(3)}`);
-});
-
-test('transformer blocks DC: a 12 V level on P2 does not appear on the secondary', () => {
-  const { V } = runDC(netlist, { sources: { '/P2': 12, '/P1': 0 } });
-  assert.ok(Math.abs(V['/SEC_A']) < 1 && Math.abs(V['/SEC_B']) < 1,
-    `SEC_A/SEC_B should be ~0 (DC blocked), got ${V['/SEC_A']?.toFixed(3)} / ${V['/SEC_B']?.toFixed(3)}`);
-});
-
-test('unpowered board: rails rest at 0, no phantom voltage', () => {
-  const { V, floating } = runDC(netlist, { sources: {} });
-  // the IC supply loads (ESP32/codec) tie +3V3 toward GND, so unpowered the rail rests at a hard 0
-  // rather than a floating phantom — and it is therefore no longer flagged floating
-  assert.ok(!floating['+3V3'], '+3V3 should be tied to GND by the IC loads, not floating');
-  assert.ok(Math.abs(V['+3V3']) < 0.1, `+3V3 should be ~0 unpowered, got ${V['+3V3']?.toFixed(3)}`);
-});
-
-// Each audio test sweeps two axes: board power (the handset path is passive, so it must work either
-// way) and the solder bridges (which connect the board's lines to the embedded handset). The bridges
-// move together — a mixed J3/J4 state isn't a real configuration. Closed -> the tone is heard; open ->
-// the handset is isolated from the lines and the speaker is silent.
+// ── bus rings heard at the loudspeaker. The acoustic path is passive, so it works powered or not. ──
 const POWER = [
   ['powered (VBUS = 5 V)', { '/VBUS': 5 }],
   ['unpowered (no VBUS)', {}],
 ];
-const BRIDGES = [
-  ['bridges closed', {}, true], //                      handset connected to the lines -> heard
-  ['bridges open', { J3: false, J4: false }, false], // handset isolated -> silent
-];
 
-// apartment ring (Etagenruf): an AC tone on line 5 drives the handset loudspeaker directly
-const f = 1000; // 1 kHz, 2 V amplitude (4 Vpp)
-const tone = (t) => 2 * Math.sin(2 * Math.PI * f * t);
-
+// apartment ring (Etagenruf): an AC tone on line 5 drives the loudspeaker (LS1 across /P5 ↔ GND).
 for (const [pwr, power] of POWER) {
-  for (const [brg, bridges, heard] of BRIDGES) {
-    test(`apartment ring: P5 tone at the loudspeaker — ${pwr}, ${brg}`, () => {
-      const { RES } = runDC(netlist, {
-        sources: { ...power, '/P1': 0, '/P5': tone },
-        switches: bridges,
-        T: 8 / f,
-        dt: 1 / (f * 256),
-      });
-      const pp = swingPP(RES, SPEAKER[0], SPEAKER[1]);
-
-      if (heard) assert.ok(pp > 3.5, `LS1 should play the ~2 V tone (~4 Vpp), got ${pp.toFixed(2)} Vpp`);
-      else assert.ok(pp < 0.5, `handset isolated -> LS1 should be silent, got ${pp.toFixed(2)} Vpp`);
-    });
-  }
+  test(`apartment ring: P5 tone reaches the loudspeaker — ${pwr}`, () => {
+    const tone = (t) => 2 * Math.sin(2 * Math.PI * 1000 * t); // 2 V amplitude → 4 Vpp
+    const { RES } = runDC(netlist, { sources: { ...power, '/P1': 0, '/P5': tone }, ...AC });
+    assert.ok(swingPP(RES, SPEAKER[0], SPEAKER[1]) > 3.0,
+      `LS1 should play the ~4 Vpp tone, got ${swingPP(RES, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
+  });
 }
 
-// ringing the station (Türruf gong): line 4 held at 12 V DC during the ~1 s ring with the gong tone
-// superimposed. The DC energizes the session; only the AC couples through C1 to the speaker. We sample
-// a window inside the ring — the coupling settles in ~2 ms, so the full second isn't needed.
+// ringing the station (Türruf gong): line 4 held at 12 V DC with the gong tone on top. At rest K3 (NC)
+// passes line 4 → /CHIME_C1; WF26_C1 (22 µF) couples the AC to /P5/LS1 and blocks the DC.
 for (const [pwr, power] of POWER) {
-  for (const [brg, bridges, heard] of BRIDGES) {
-    test(`ringing the station: P4 gong at the loudspeaker — ${pwr}, ${brg}`, () => {
-      const fGong = 1000;
-      const ring = (t) => 12 + 1.5 * Math.sin(2 * Math.PI * fGong * t); // 12 V DC + 1.5 V tone
-
-      const { RES } = runDC(netlist, {
-        sources: { ...power, '/P1': 0, '/P2': 12, '/P4': ring },
-        switches: bridges,
-        T: 12 / fGong,
-        dt: 1 / (fGong * 64),
-      });
-      const ac = swingPP(RES, SPEAKER[0], SPEAKER[1]);
-
-      if (heard) {
-        const dc = meanLevel(RES, SPEAKER[0], SPEAKER[1]);
-        assert.ok(ac > 1.0, `the gong tone should couple through C1 to LS1, got ${ac.toFixed(2)} Vpp`);
-        assert.ok(Math.abs(dc) < 1.0, `C1 should block the 12 V DC (no cone offset), got ${dc.toFixed(2)} V`);
-      } else {
-        assert.ok(ac < 0.5, `handset isolated -> LS1 should be silent, got ${ac.toFixed(2)} Vpp`);
-      }
-    });
-  }
+  test(`ringing the station: P4 gong reaches the loudspeaker through K3+C1 — ${pwr}`, () => {
+    const ring = (t) => 12 + 1.5 * Math.sin(2 * Math.PI * 1000 * t); // 12 V DC + 1.5 V tone
+    const { RES } = runDC(netlist, { sources: { ...power, '/P1': 0, '/P4': ring }, ...AC });
+    assert.ok(swingPP(RES, SPEAKER[0], SPEAKER[1]) > 1.0,
+      `the gong tone should couple through C1 to LS1, got ${swingPP(RES, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
+    assert.ok(Math.abs(meanLevel(RES, SPEAKER[0], SPEAKER[1])) < 1.0,
+      `C1 should block the 12 V DC (no cone offset), got ${meanLevel(RES, SPEAKER[0], SPEAKER[1]).toFixed(2)} V`);
+  });
 }
 
-// ── call detection: the sense optocouplers (OC1 on the Türruf line, OC2 on the Etagenruf line) ──
-// Each LED hangs off a bus line through a 5.1 kΩ limiter to P1; the phototransistor collector is
-// pulled to +3V3 (10 kΩ) and read by the ESP. So a hot line pulls the GPIO low = "ringing". These
-// need the board powered (the +3V3 rail biases the collector pull-ups).
+// ── call detection: the sense optocouplers (OC1 on line 4 = Türruf, OC2 on line 5 = Etagenruf) ──
+// Each LED hangs off its bus line through a 5.1 kΩ limiter to P1; the phototransistor collector is
+// pulled to +3V3 (10 kΩ) and read by the ESP, so a hot line pulls the GPIO low. Needs board power.
 
-test('Türruf detection: a hot line 4 (IN_P4) pulls OC1_OUT low; idle line stays high', () => {
-  const hot = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/IN_P4': 12 } }).V;
+test('Türruf detection: a hot line 4 pulls OC1_OUT low; an idle line stays high', () => {
+  const hot = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': 12 } }).V;
   assert.ok(hot['/OC1_OUT'] < 1.0, `a ringing line 4 should pull OC1_OUT low, got ${hot['/OC1_OUT']?.toFixed(2)} V`);
 
-  const idle = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/IN_P4': 0 } }).V;
+  const idle = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': 0 } }).V;
   assert.ok(idle['/OC1_OUT'] > 3.0, `an idle line 4 should leave OC1_OUT high (~3V3), got ${idle['/OC1_OUT']?.toFixed(2)} V`);
 });
 
@@ -173,120 +138,218 @@ test('Etagenruf detection: a hot line 5 pulls OC2_OUT low; D9 blocks a reverse-p
   assert.ok(rev['/OC2_OUT'] > 3.0, `reverse polarity must not trigger OC2 (LED protected by D9), got ${rev['/OC2_OUT']?.toFixed(2)} V`);
 });
 
-// ── chime suppress: K3 (DESIGN.md "suppress the chime by switching line 4") ──
-// At rest K3 passes the incoming gong IN_P4 -> P4 (it rings, and OC1 still senses it). Energising K3
-// breaks P4 off the line: the chime goes silent while OC1 keeps detecting on the retained IN_P4 side.
-const fGong = 1000;
-const gong = (t) => 12 + 1.5 * Math.sin(2 * Math.PI * fGong * t); // incoming Türruf: 12 V DC + gong tone
+// ── actuators (PhotoMOS SSRs, energised via /GATE{1,2,3}_DRV through the 300 Ω LED resistor) ──
+
+test('K2 door opener: GATE2_DRV = 3.3 V bridges P2 onto P3; idle does not', () => {
+  const on = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/GATE2_DRV': 3.3 } }).V;
+  assert.ok(near(on['/P3'], 12), `energised K2 should tie P3 to P2 (12 V), got ${on['/P3']?.toFixed(3)}`);
+
+  const off = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/GATE2_DRV': 0 } }).V;
+  assert.ok(!near(off['/P3'], 12), `idle K2 should not tie P3 to 12 V, got ${off['/P3']?.toFixed(3)}`);
+});
+
+test('K2 door fail-safe: an unpowered board cannot bridge P2→P3 (door stays shut at boot/fault, SAFE-6)', () => {
+  // no VBUS, no GPIO drive — K2 (1-Form-A NO) is open, so the door bridge can never form unpowered
+  const { V } = runDC(netlist, { sources: { '/P1': 0, '/P2': 12 } });
+  assert.ok(!near(V['/P3'], 12, 1.0), `unpowered K2 must leave P2↔P3 open, got ${V['/P3']?.toFixed(2)} V`);
+});
+
+// chime suppress (K3, NC): at rest it passes the gong AND OC1 keeps detecting (OC1 is on line 4 itself,
+// ahead of K3). Energising K3 opens line 4 → /CHIME_C1, silencing the chime while detection survives.
+const gong = (t) => 12 + 1.5 * Math.sin(2 * Math.PI * 1000 * t); // incoming Türruf: 12 V DC + gong tone
 
 test('chime suppress: K3 idle passes the gong to the speaker AND OC1 still detects it', () => {
-  const { V, RES } = runDC(netlist, {
-    sources: { '/VBUS': 5, '/P1': 0, '/IN_P4': gong }, // GATE3_DRV unset -> K3 idle
-    T: 12 / fGong,
-    dt: 1 / (fGong * 64),
-  });
-  const ac = swingPP(RES, SPEAKER[0], SPEAKER[1]);
-  assert.ok(ac > 1.0, `K3 idle should let the gong reach LS1, got ${ac.toFixed(2)} Vpp`);
+  const { V, RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': gong }, ...AC }); // GATE3 unset → K3 idle (NC closed)
+  assert.ok(swingPP(RES, SPEAKER[0], SPEAKER[1]) > 1.0,
+    `K3 idle should let the gong reach LS1, got ${swingPP(RES, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
   assert.ok(V['/OC1_OUT'] < 1.0, `OC1 should detect the ring, got ${V['/OC1_OUT']?.toFixed(2)} V`);
 });
 
 test('chime suppress: K3 energised silences the speaker but OC1 keeps detecting', () => {
-  const { V, RES } = runDC(netlist, {
-    sources: { '/VBUS': 5, '/P1': 0, '/IN_P4': gong, '/GATE3_DRV': 3.3 }, // K3 pulled in
-    T: 12 / fGong,
-    dt: 1 / (fGong * 64),
-  });
-  const ac = swingPP(RES, SPEAKER[0], SPEAKER[1]);
-  assert.ok(ac < 0.5, `K3 energised should silence the chime at LS1, got ${ac.toFixed(2)} Vpp`);
-  assert.ok(V['/OC1_OUT'] < 1.0, `detection must survive suppression (OC1 on the retained side), got ${V['/OC1_OUT']?.toFixed(2)} V`);
+  const { V, RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': gong, '/GATE3_DRV': 3.3 }, ...AC }); // K3 opened
+  assert.ok(swingPP(RES, SPEAKER[0], SPEAKER[1]) < 0.5,
+    `K3 energised should silence the chime at LS1, got ${swingPP(RES, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
+  assert.ok(V['/OC1_OUT'] < 1.0, `detection must survive suppression (OC1 on line 4, ahead of K3), got ${V['/OC1_OUT']?.toFixed(2)} V`);
 });
 
-test('chime suppress fail-safe: IN_P4 and P4 stay bridged when the ESP is unpowered (K3 idle)', () => {
-  // no VBUS at all -> the ESP can never pull K3 in, so the gong must still pass to the handset
-  const { V } = runDC(netlist, { sources: { '/P1': 0, '/IN_P4': 12 } });
-  assert.ok(near(V['/P4'], 12), `unpowered, K3 NC must bridge IN_P4 -> P4, got ${V['/P4']?.toFixed(2)} V`);
+test('chime suppress fail-safe: line 4 stays bridged to C1 when the ESP is unpowered (K3 NC closed)', () => {
+  // no VBUS → the ESP can never open K3, so the gong path (line 4 → /CHIME_C1) must stay made
+  const { V } = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 } });
+  assert.ok(near(V['/CHIME_C1'], 12), `unpowered, K3 NC must bridge line 4 → /CHIME_C1, got ${V['/CHIME_C1']?.toFixed(2)} V`);
 });
 
-// ── handset talk (up-audio): the handset speaker doubles as the mic. Pressing S2 (Sprechen) bridges
-// the mic -> C1 -> R1 onto line 3 (DESIGN.md line 179). Inject a tone at the speaker, look for it on P3.
-const fVoice = 1000;
-const mic = (t) => 1.0 * Math.sin(2 * Math.PI * fVoice * t); // ~1 V mic-level tone at LS1
-
-test('handset talk (S2): pressing S2 puts the mic signal onto line 3 (P3); releasing it does not', () => {
-  const acRun = (switches) =>
-    runDC(netlist, { sources: { '/P1': 0, '/WF26_P5': mic }, switches, T: 8 / fVoice, dt: 1 / (fVoice * 256) }).RES;
-
-  const talk = acRun({ WF26_S2: true });
-  const ppTalk = swingPP(talk, '/P3', '/P1');
-  assert.ok(ppTalk > 0.5, `S2 pressed should bridge the mic onto P3, got ${ppTalk.toFixed(2)} Vpp`);
-
-  const quiet = acRun({ WF26_S2: false });
-  const ppQuiet = swingPP(quiet, '/P3', '/P1');
-  assert.ok(ppQuiet < 0.1, `S2 released should leave P3 clear of mic audio, got ${ppQuiet.toFixed(2)} Vpp`);
+// Safety invariant (AUDIO_REFACTOR Decision 2 / the new GONG requirement): the Etagenruf (apartment
+// door — someone physically at your own door) reaches LS1 directly on line 5, bypassing K3, so it is
+// *structurally* non-suppressible. K3 can mute only the Türruf (through C1). The guarantee is hardware,
+// not firmware — so it must hold even in the very state that suppresses the Türruf.
+test('Etagenruf is structurally non-suppressible: K3 energised mutes the Türruf but not line 5', () => {
+  const tone = (t) => 2 * Math.sin(2 * Math.PI * 1000 * t);
+  const ring = (t) => 12 + 1.5 * Math.sin(2 * Math.PI * 1000 * t);
+  // in the suppressing state, the Türruf gong on line 4 is muted ...
+  const turruf = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': ring, '/GATE3_DRV': 3.3 }, ...AC }).RES;
+  assert.ok(swingPP(turruf, SPEAKER[0], SPEAKER[1]) < 0.5,
+    `K3 energised should mute the Türruf, got ${swingPP(turruf, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
+  // ... yet the Etagenruf on line 5 stays audible in that same state
+  const etagen = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P5': tone, '/GATE3_DRV': 3.3 }, ...AC }).RES;
+  assert.ok(swingPP(etagen, SPEAKER[0], SPEAKER[1]) > 3.0,
+    `the Etagenruf must stay audible while K3 suppresses, got ${swingPP(etagen, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
 });
 
-// ── codec talk / record (ES8311 ↔ line, through T1 with K1 in talk). The codec's differential DAC
-// (OUTP/OUTN) feeds the transformer secondary through C14/C15 + R24/R25; its ADC (MICP/MICN) taps the
-// same secondary through R26/R27 + C16/C17. K1 in talk routes the transformer's primary onto line 3.
-// (U3 is unmodeled, so we drive/read its analog pins directly; the ADC pins read "floating" — no DC
-// load — but the AC couples faithfully, which is what we measure.)
-const fAudio = 1000;
-const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * fAudio * t); // ±0.5 V differential DAC
+// ── audio (transformer-less codec front-end). Exact gains are bench-gated; here we assert the path
+// couples (or doesn't), not its level. ──
 
-test('codec talk: ES8311 audio (OUTP/OUTN) reaches line 3 only when K1 is in talk', () => {
-  // realistic call: P2 held at 12 V, line 4 held hot by the session (so the talk handshake is live)
-  const run = (sources) =>
-    runDC(netlist, {
-      sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/IN_P4': 12, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1), ...sources },
-      T: 16 / fAudio,
-      dt: 1 / (fAudio * 128),
-    }).RES;
-
-  const talk = run({ '/GATE1_DRV': 3.3 }); // K1 energised: T1 primary -> P3
-  assert.ok(swingPP(talk, '/P3', '/P1') > 0.5, `codec audio should reach line 3 in talk, got ${swingPP(talk, '/P3', '/P1').toFixed(2)} Vpp`);
-
-  const listen = run({}); // K1 idle: T1 primary parked on P2, so line 3 stays clear
-  assert.ok(swingPP(listen, '/P3', '/P1') < 0.1, `codec audio should not leak onto line 3 at rest, got ${swingPP(listen, '/P3', '/P1').toFixed(2)} Vpp`);
+test('codec record (RX): a tone on line 2 reaches the ES8311 mic inputs (MICP/MICN)', () => {
+  // RX taps line 2 differentially: /P2 → C16 → MICP, GND → C17 → MICN
+  const tone = (t) => 1.0 * Math.sin(2 * Math.PI * 1000 * t); // 1 V on the line → 2 Vpp
+  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': tone }, ...AC });
+  assert.ok(swingPP(RES, '/ES_MICP', '/ES_MICN') > 1.0,
+    `line-2 audio should reach the codec ADC, got ${swingPP(RES, '/ES_MICP', '/ES_MICN').toFixed(2)} Vpp`);
 });
 
-// During codec talk, the K1 pole-A handshake (R28, 2.2 kΩ from line 4) must hold line 3 DC-hot — exactly
-// as the handset's S2 strap does (~12 V) — since that's what signals talk to the station. This FAILS
-// today: K1 pole B hangs the transformer primary (115 Ω winding, no bus-side DC block) onto line 3 and
-// shunts the handshake down to ~0.6 V (the same winding also pulls ~100 mA off the held line in listen).
-// Marked todo until a series DC-blocking cap is added in series with the transformer's bus winding; then
-// line 3 should sit near line 4 (~12 V) with the codec AC riding on top.
-test('codec talk: line 3 sits DC-hot from the talk handshake (needs the bus-winding DC-block cap)', { todo: true }, () => {
-  const { RES } = runDC(netlist, {
-    sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/IN_P4': 12, '/GATE1_DRV': 3.3, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1) },
-    T: 16 / fAudio,
-    dt: 1 / (fAudio * 128),
-  });
-  const dc = meanLevel(RES, '/P3', '/P1');
-  assert.ok(dc > 10, `line 3 should be DC-hot near line 4 (~12 V) during talk, got ${dc.toFixed(2)} V`);
+test('codec talk (TX): the codec DAC (OUTP) couples onto line 3 through C14/R28', () => {
+  // TX: ES_OUTP → C14 (DC-block) → /TALK_BRIDGE → R28 (2.2 k) → /P3
+  const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * 1000 * t); // ±0.5 V differential DAC
+  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1) }, ...AC });
+  assert.ok(swingPP(RES, '/P3', '/P1') > 0.5, `codec audio should reach line 3, got ${swingPP(RES, '/P3', '/P1').toFixed(2)} Vpp`);
 });
 
-test('codec record: an AC signal on line 3 reaches the ES8311 mic inputs (MICP/MICN) when K1 is in talk', () => {
-  const sig = (t) => 1.0 * Math.sin(2 * Math.PI * fAudio * t); // 1 V on the line
-
-  const rec = runDC(netlist, {
-    sources: { '/VBUS': 5, '/P1': 0, '/GATE1_DRV': 3.3, '/P3': sig },
-    T: 16 / fAudio,
-    dt: 1 / (fAudio * 128),
-  }).RES;
-  assert.ok(swingPP(rec, '/ES_MICP', '/ES_MICN') > 1.0, `line audio should reach the codec ADC, got ${swingPP(rec, '/ES_MICP', '/ES_MICN').toFixed(2)} Vpp`);
-
-  const idle = runDC(netlist, {
-    sources: { '/VBUS': 5, '/P1': 0, '/P3': sig }, // K1 idle: P3 not tied to the transformer
-    T: 16 / fAudio,
-    dt: 1 / (fAudio * 128),
-  }).RES;
-  assert.ok(swingPP(idle, '/ES_MICP', '/ES_MICN') < 0.1, `with K1 idle, P3 should not reach the ADC, got ${swingPP(idle, '/ES_MICP', '/ES_MICN').toFixed(2)} Vpp`);
+// AUDIO_REFACTOR Decision 4/7 intends K1 to gate the TX *audio* so line 3 is high-Z at idle (BUS-1):
+// `codec → DC-block → R16 → K1 → P3`. The current schematic instead wires the audio codec→C14→
+// TALK_BRIDGE→R28→P3 permanently and uses K1 only to gate the DC handshake (TALK_BRIDGE↔line 4), so the
+// codec couples onto line 3 regardless of K1 — line 3 is not high-Z while the codec is active but
+// untalking. Open until the bench-gated audio front-end is finalised (AUDIO_REFACTOR open items / TODO).
+test('TX idle isolation: codec audio must not reach line 3 when K1 is open (BUS-1)', { todo: true }, () => {
+  const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * 1000 * t);
+  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1) }, ...AC });
+  assert.ok(swingPP(RES, '/P3', '/P1') < 0.1, `K1 open should keep codec audio off line 3, got ${swingPP(RES, '/P3', '/P1').toFixed(2)} Vpp`);
 });
 
-// ── Tier 2: protection / power front-end ──
+test('talk handshake (K1): energised + line 4 held hot brings line 3 DC-hot; idle leaves it clear', () => {
+  // K1 (NO) closes /TALK_BRIDGE↔/P4. With line 4 held by a session, the DC reaches line 3 through R28
+  // (2.2 k) — the talk handshake to the station. TX is session-gated: no hot line 4 ⇒ no handshake.
+  const talk = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': 12, '/GATE1_DRV': 3.3 } }).V;
+  assert.ok(talk['/P3'] > 6, `K1 in talk should bring line 3 DC-hot off line 4, got ${talk['/P3']?.toFixed(2)} V`);
+
+  const idle = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': 12, '/GATE1_DRV': 0 } }).V;
+  assert.ok(!(idle['/P3'] > 6), `K1 idle should leave line 3 clear of the handshake, got ${idle['/P3']?.toFixed(2)} V`);
+});
+
+// TX is deliberately session-gated (AUDIO_REFACTOR Decision 5, K1.4 → P4): the handshake DC comes from
+// line 4, so the board can assert talk only while a Türruf session holds line 4 hot. K1 energised with
+// no session must NOT drive line 3 — i.e. no autonomous announcement without an incoming call.
+test('TX is session-gated: K1 energised with no session (line 4 cold) does not assert line 3', () => {
+  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': 0, '/GATE1_DRV': 3.3 } });
+  assert.ok(!(V['/P3'] > 1.0), `no session ⇒ no handshake on line 3, got ${V['/P3']?.toFixed(2)} V`);
+});
+
+// The session itself is the passive WF26_K1 latch (AUDIO_REFACTOR Decision 5): a Türruf energises the
+// coil (line 4 ↔ P1) and its NO contact closes K1_COM onto line 4. (The seal-in from P2 after line 4
+// drops is dynamic — exercised by the engine's relay latch, not this steady-state DC check.)
+test('session latch: a Türruf pulls in WF26_K1 (its contact closes K1_COM onto line 4)', () => {
+  const hot = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 } }).V;
+  assert.ok(near(hot['/WF26_K1_COM'], 12, 1.0), `a Türruf should pull the latch in (COM→line 4), got ${hot['/WF26_K1_COM']?.toFixed(2)} V`);
+
+  const { V: idle, floating } = runDC(netlist, { sources: { '/P1': 0, '/P4': 0 } });
+  assert.ok(!near(idle['/WF26_K1_COM'], 12, 1.0) || floating['/WF26_K1_COM'],
+    `idle line 4 should leave the latch open, got ${idle['/WF26_K1_COM']?.toFixed(2)} V (floating=${floating['/WF26_K1_COM']})`);
+});
+
+// The session is a P2 seal-in (bench: osci/ring-20260617-195221.md, pending a dedicated handset
+// confirmation — see TODO). A Türruf *pulse* on line 4 pulls WF26_K1 in; because P2 is *always*
+// energised it then seals the coil in (`P2 → S1 NC → K1_COM → the closed NO contact → line 4 → coil`)
+// and self-holds. **Dropping line 4 does NOT release it** — P2 holds it. The session ends via P2: the
+// ~60 s timeout drives P2 low. A door-open also ends a session — but only the *handset's* button does
+// it directly: S1 is a DPDT break-before-make that lifts P2 off K1_COM, dropping the latch (asserted in
+// the WF26_S1 / DOOR-4 tests below). The board's K2 is a plain P2↔P3 short and does NOT (DOOR-4 gap).
+test('session seal-in: dropping line 4 does NOT release WF26_K1 (P2 holds it); driving P2 low ends it', () => {
+  const els = buildElements(netlist, { switchState: defaultSwitchState(netlist) });
+  const gnd = gndOf(netlist), dt = 20e-6;
+  const settle = (srcs, seed) => {
+    const sim = createStepper(els, srcs.map(([net, v]) => ({ net, vf: () => v })), gnd, dt, seed);
+    for (let t = 0; t < 0.01; t += dt) sim.step(t);
+    return sim.extractState();
+  };
+  // ring: line 4 pulsed hot with P2 energised -> pull in
+  const latched = settle([['/P2', 12], ['/P4', 12], ['/P1', 0]]);
+  assert.ok(latched.relays.WF26_K1, 'a Türruf should pull WF26_K1 in');
+  // line 4 released (floats), P2 still energised: the latch self-holds — dropping line 4 does NOT release
+  const held = settle([['/P2', 12], ['/P1', 0]], latched);
+  assert.ok(held.relays.WF26_K1, 'dropping line 4 must NOT release the latch — P2 seals it in');
+  // session end: P2 driven low (the ~60 s timeout) releases it
+  const released = settle([['/P2', 0], ['/P1', 0]], latched);
+  assert.ok(!released.relays.WF26_K1, 'driving P2 low (timeout) must release the latch');
+});
+
+// ── Door-open vs the WF26 latch (REQUIREMENTS DOOR-4 / MODE-3) ──────────────────────────────────────
+// The handset's door button S1 is a DPDT break-before-make: pressing it lifts line 2 off the latch's
+// seal-in node (K1_COM) *and* bridges P2↔P3, so WF26_K1 drops as the opener fires. In the sim the coil
+// node (P4) is loaded by WF26_C1 (22 µF, via the closed K3) so it decays on an ~RC of a few tens of ms
+// — far slower than the bench ~6 ms break-before-make (a model artifact) — so these settle ~100 ms and
+// assert the END state, not the timing.
+const latchSettle = (els, srcs, T, seed) => {
+  const sim = createStepper(els, srcs.map(([net, v]) => ({ net, vf: () => v })), gndOf(netlist), 20e-6, seed);
+  for (let t = 0; t < T; t += 20e-6) sim.step(t);
+  return sim.extractState();
+};
+
+test('WF26_S1 (handset door button) releases the WF26_K1 latch — the break-before-make reference', () => {
+  const ds = defaultSwitchState(netlist);
+  const elsReleased = buildElements(netlist, { switchState: ds });
+  const elsPressed = buildElements(netlist, { switchState: { ...ds, WF26_S1: true } });
+  const latched = latchSettle(elsReleased, [['/P2', 12], ['/P4', 12], ['/P1', 0]], 0.01);
+  assert.ok(latched.relays.WF26_K1, 'a Türruf should pull WF26_K1 in');
+  const held = latchSettle(elsReleased, [['/P2', 12], ['/P1', 0]], 0.01, latched);
+  assert.ok(held.relays.WF26_K1, 'dropping line 4 must not release the latch (P2 seal-in)');
+  // press S1: it breaks P2→K1_COM (seal-in) and bridges P2↔P3 — the latch must drop, the door must fire
+  const pressed = latchSettle(elsPressed, [['/P2', 12], ['/P1', 0]], 0.1, held);
+  assert.ok(!pressed.relays.WF26_K1, 'pressing S1 must release WF26_K1 (it lifts P2 off the seal-in)');
+  assert.ok(near(pressed.vn['/P3'], 12), `S1 press must bridge P2→P3 (door), got ${pressed.vn['/P3']?.toFixed(2)} V`);
+});
+
+test('DOOR-4 gap: K2 as built (a plain P2↔P3 short) does NOT release the latch', () => {
+  // Tripwire for the gap. K2 fires the opener (P2↔P3) but does not break the seal-in, so the latch
+  // stays sealed (the session lingers; live line 4 bridges onto line 3). When the seal-in-break
+  // hardware lands this flips to "releases" — delete this test and un-todo the DOOR-4 test below.
+  const els = buildElements(netlist, { switchState: defaultSwitchState(netlist) });
+  const latched = latchSettle(els, [['/P2', 12], ['/P4', 12], ['/P1', 0]], 0.01);
+  const held = latchSettle(els, [['/P2', 12], ['/P1', 0]], 0.01, latched);
+  // fire K2 (board door-open): GATE2_DRV high bridges P2↔P3, but the seal-in (WF26_S1 released) stays
+  const k2 = latchSettle(els, [['/P2', 12], ['/P1', 0], ['/VBUS', 5], ['/GATE2_DRV', 3.3]], 0.1, held);
+  assert.ok(near(k2.vn['/P3'], 12), `K2 should still fire the opener (P2→P3), got ${k2.vn['/P3']?.toFixed(2)} V`);
+  assert.ok(k2.relays.WF26_K1, 'K2 alone leaves the latch sealed in — the DOOR-4 gap (needs the seal-in break)');
+});
+
+test('DOOR-4: a board door-open must release WF26_K1 like S1',
+  { todo: 'needs the seal-in-break SSR (2nd SSR / DPDT) — not yet in the schematic' }, () => {
+  // Target behaviour. The firmware door-open must ALSO open the WF26_S1.NC2→K1_COM seal-in (break-
+  // before-make) so the latch drops. Today the board has no actuator for that break, so driving the
+  // door-open (GATE2_DRV) leaves the latch in and this fails — hence todo. When the break SSR is added
+  // and wired to the door command, drive its gate here too and remove the todo.
+  const els = buildElements(netlist, { switchState: defaultSwitchState(netlist) });
+  const latched = latchSettle(els, [['/P2', 12], ['/P4', 12], ['/P1', 0]], 0.01);
+  const held = latchSettle(els, [['/P2', 12], ['/P1', 0]], 0.01, latched);
+  const opened = latchSettle(els, [['/P2', 12], ['/P1', 0], ['/VBUS', 5], ['/GATE2_DRV', 3.3]], 0.1, held);
+  assert.ok(near(opened.vn['/P3'], 12), 'door-open must fire the opener (P2→P3)');
+  assert.ok(!opened.relays.WF26_K1, 'DOOR-4: a board door-open must release the latch like S1');
+});
+
+// ── power & protection front-end ──
+
+test('power rails: +3V3 regulated, +5V behind the Schottky', () => {
+  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 } });
+  assert.ok(near(V['+3V3'], 3.3, 0.1), `+3V3 should regulate to ~3.3 V, got ${V['+3V3']?.toFixed(3)}`);
+  assert.ok(V['+5V'] > 4.6 && V['+5V'] < 5.05, `+5V should sit just below VBUS, got ${V['+5V']?.toFixed(3)}`);
+});
+
+test('unpowered board: rails rest at 0, no phantom voltage', () => {
+  const { V, floating } = runDC(netlist, { sources: {} });
+  // the IC supply loads (ESP32/codec) tie +3V3 toward GND, so unpowered the rail rests at a hard 0
+  assert.ok(!floating['+3V3'], '+3V3 should be tied to GND by the IC loads, not floating');
+  assert.ok(Math.abs(V['+3V3']) < 0.1, `+3V3 should be ~0 unpowered, got ${V['+3V3']?.toFixed(3)}`);
+});
 
 test('ESD array (D5): a surge on the USB data line is clamped to ~VBUS, not passed to the ESP', () => {
-  // a 500 V transient through a 330 Ω source impedance (the IEC ESD network) onto D-
+  // a 500 V transient through a 330 Ω source impedance (the IEC ESD network) onto D−
   const { V } = runDC(netlist, {
     sources: { '/VBUS': 5, '/SURGE': 500 },
     extra: [{ type: 'R', a: '/SURGE', b: '/USB_DN', value: 330 }],
