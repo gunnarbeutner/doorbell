@@ -195,6 +195,17 @@ function updateRelayStates() {
   });
 }
 
+// a "· <Value>" hint span (e.g. SW3 → "Tueroeffner (door release)") so the row says which part it is.
+// textContent, not innerHTML, so a free-form Value can't inject markup; empty span when there is none.
+function valueHint(value) {
+  const v = document.createElement('span');
+  if (value) {
+    v.className = 'hint';
+    v.textContent = '· ' + value + ' ';
+  }
+  return v;
+}
+
 function buildRelays() {
   const box = $('#relays');
   box.innerHTML = '';
@@ -207,9 +218,17 @@ function buildRelays() {
 
     // a relay is read-only: it follows its coil
     if (c.role === 'relay') {
-      row.innerHTML =
-        `<b>${c.ref}</b> <span class="hint">relay</span> ` +
-        `<span class="rstate hint" data-ref="${c.ref}">—</span>`;
+      const label = document.createElement('span');
+      label.innerHTML = `<b>${c.ref}</b> <span class="hint">relay</span> `;
+      label.appendChild(valueHint(c.value));
+      row.appendChild(label);
+
+      const st = document.createElement('span');
+      st.className = 'rstate hint';
+      st.dataset.ref = c.ref;
+      st.textContent = '—';
+      row.appendChild(st);
+
       box.appendChild(row);
       continue;
     }
@@ -220,6 +239,7 @@ function buildRelays() {
 
     const label = document.createElement('span');
     label.innerHTML = `<b>${c.ref}</b> <span class="hint">${bridge ? 'solder bridge' : 'switch'}</span> `;
+    label.appendChild(valueHint(c.value));
     row.appendChild(label);
 
     const toggle = document.createElement('button');

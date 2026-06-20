@@ -35,7 +35,7 @@ Chime-suppress works by breaking line 4; in parallel mode the board is in series
 WF26's line 4, so suppressing cuts that handset off the Türruf (no gong **and** no session). The two
 are mutually exclusive, so parallel mode is dropped.
 - **Keep the passive WF26 core, hardwired** (it's the unpowered fallback, MODE-1) — no isolation
-  needed without an external unit. Remove the J3/J4 links; merge `/WF26_P4≡/P4`, `/WF26_P5≡/P5`.
+  needed without an external unit. Remove the J3/J4 links; merge `/P4≡/P4`, `/P5≡/P5`.
 - One configuration: the board *is* the handset.
 
 ### 2. K3: line-4 break → speaker mute (chime-suppress without killing the session)
@@ -132,7 +132,7 @@ board, F1 on the USB feed). Removing T1 also **fixes the talk handshake** (line 
 
 ### 5. Session / handshake mechanics (unchanged principle)
 The talk DC on P3 originates at P2 and is routed by the **passive WF26 latch**:
-`P2 → S1(NC) → WF26_K1_COM → WF26_K1 contact → line 4 → R16 → P3`. The latch (bus-energised, no GPIO)
+`P2 → S1(NC) → K5_COM → K5 contact → line 4 → R16 → P3`. The latch (bus-energised, no GPIO)
 is what self-holds the session; our K1+R16 only adds the last hop. So the board's session-dependent
 functions require the passive core present and latched — which replacement-only guarantees.
 
@@ -147,15 +147,15 @@ TX-out-reach open item.
 
 ### 6. Session-sense stays on OC1 — the latch has no spare contact
 Front-door detection would *ideally* track the **latch state** rather than a bus voltage (a latched
-contact → 3V3 + GPIO is neighbour-immune and isolated). **But WF26_K1 is a single-pole 1-Form-C
+contact → 3V3 + GPIO is neighbour-immune and isolated). **But K5 is a single-pole 1-Form-C
 (HJR-4102-N)** — its one pole's NO is already in the latch path and its COM is K1_COM (in the bus, so
 not isolatable), and the free NC pin is not an independent contact. An isolated latch-sense would need
-a *second* pole, i.e. replacing WF26_K1 with a 2-pole relay — **not happening** (the stock latch
+a *second* pole, i.e. replacing K5 with a 2-pole relay — **not happening** (the stock latch
 stays). So **detection stays on OC1** (line-4 opto + its 5.1 kΩ limiter + D8 clamp); the earlier
-"spare-contact, drop OC1" idea is withdrawn. (Still **don't** sense WF26_K1_COM directly — at idle
+"spare-contact, drop OC1" idea is withdrawn. (Still **don't** sense K5_COM directly — at idle
 it's tied to the shared P2 via S1 → neighbour false-triggers.)
 
-### 6b. Add a flyback/TVS across the WF26_K1 coil (P4↔P1)
+### 6b. Add a flyback/TVS across the K5 coil (P4↔P1)
 The stock WF26 leaves the latch coil unclamped because the **speaker sits across it** (coil P4↔P1 ∥
 C1+LS1) and damps the de-energisation kick to <0.5 V (16 Ω discharge). **K3 in series with C1 breaks
 that path when open** — so during suppress, at session-end (line 4 collapses → coil de-energises) the
@@ -217,7 +217,7 @@ and off-state leakage (µA — negligible here). Per relay:
     SSR over the relay** (correcting the earlier "speed kills the leak" claim). The SSR's real pull
     for K3 is no coil power, near-free pre-arm hold, no bounce/wear, and isolation — not speed.
   - Datasheet recommends a clamp diode / CR snubber across the load for inductive spikes — corroborates
-    Decision 6b (WF26_K1 coil flyback/TVS).
+    Decision 6b (K5 coil flyback/TVS).
 
   **Net: relay and GAQY412EH NC-SSR are both viable for K3** (NC confirmed, Ron/current/AC all OK).
   The choice is *not* about speed (a wash, ~1–2 ms vs ~3 ms): the SSR trades the relay's simplicity
@@ -243,7 +243,7 @@ no coil-kick, no pull-down-for-coil) — too trivial to wrap in a sheet; (b) the
 identical (K1/K2 = GAQY212GS NO SOP-4; K3 = GAQY412EH NC SMD-4 or a relay). **Place the SSRs flat.**
 Drive: K3/GAQY412EH ~7 mA → GPIO-direct via ~300 Ω (no transistor); K1/K2/GAQY212GS — confirm its LED
 current, keep a small 2N7002 buffer (repurposed from the old block) if tens of mA, but drop the
-flyback. The one surviving flyback is on the **WF26_K1 coil** (Decision 6b), not any SSR. (A single
+flyback. The one surviving flyback is on the **K5 coil** (Decision 6b), not any SSR. (A single
 *non-reused* "switching" page grouping the SSRs + latch + line-4 protection is fine for tidiness, but
 that's organisation, not the reuse pattern.) Executed in the coherent refactor pass.
 
@@ -262,7 +262,7 @@ sacrificial).**
 - **K2** — the one unmeasured value (bench 7): mimics the WF26's *direct* P2↔P3 short, current set by
   the TV20/S. Under "not ~12 W / 1 A", the 800 mA continuous / 2 A peak covers it; scope both the
   steady door current and the closing inrush into P3's line capacitance.
-- **WF26_K1** (passive latch, HJR-4102-N, *not* replaced) — fine by construction: coil ~29 mA at the
+- **K5** (passive latch, HJR-4102-N, *not* replaced) — fine by construction: coil ~29 mA at the
   9.22 V hold (native 12 V-relay operating point), contacts carry only the ~30 mA self-hold + mA audio
   (door goes via K2, not here) vs ~1–2 A contact rating; our high-Z additions don't shift its pull-in.
   Its only sizing-adjacent issue is the unclamped-coil kick → see Decision 6b (add coil flyback/TVS).

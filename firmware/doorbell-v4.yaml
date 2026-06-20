@@ -23,7 +23,7 @@
 #     (floor tone, door gong, speech). Its filter chain stretches the half-cycle pulses into a
 #     level (delayed_off before delayed_on) and is masked by house_doorbell / PTT — see the sensor.
 #   - OC1 is masked during board PTT as a PRECAUTION: K1 closed bridges P4↔P3 via R28 (2.2k), which
-#     *could* couple P3's bias onto line 4 — but this is bench-UNconfirmed (the WF26_K1 coil ~1.3k
+#     *could* couple P3's bias onto line 4 — but this is bench-UNconfirmed (the K5 coil ~1.3k
 #     clamps P4 toward common; OC1's 50ms debounce already rejects audio-rate AC). See the sensor.
 #
 # The api encryption key, OTA password and static IP are fixed so the Home Assistant integration
@@ -163,7 +163,7 @@ binary_sensor:
     filters:
       # Precautionary mask while board PTT is engaged. K1 closed ties P4↔P3 through R28 (2.2k), so
       # P3's resting bias (and the codec's AC drive, via C14) could couple onto line 4 and fake a
-      # ring. This is BENCH-UNCONFIRMED: the WF26_K1 coil (~1.3k, P4↔P1) clamps P4 toward common
+      # ring. This is BENCH-UNCONFIRMED: the K5 coil (~1.3k, P4↔P1) clamps P4 toward common
       # (P4 ≈ 0.32·V_P3 through the R28/coil divider — needs P3 idling ≳8V to reach OC1's threshold),
       # and OC1's 50ms debounce already rejects the codec's audio-rate AC. Kept because a phantom
       # ring is worse than a missed one (on_press can auto-open the door). Cost: it also blanks a

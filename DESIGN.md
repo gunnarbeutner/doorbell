@@ -67,10 +67,10 @@ no longer breaks line 4 (it opens C1; see "Relays" / "Audio path").
 | Line | TV20/S role | Role in our circuit |
 |------|-------------|---------------------|
 | **P1** (= board GND) | Common reference (all bell/speech ref to line 1) | Bonded to board GND; opto LED returns (each via 5.1 kΩ to P1); the codec RX/TX reference |
-| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); WF26_S1; the **P2 supply** that seals the WF26 latch in |
+| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in |
 | **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (codec DAC → C14 → R28 2.2 kΩ → P3); WF26 talk/door switches |
-| **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K1** talk-handshake gate (TALK_BRIDGE↔P4); **K3** chime-mute (P4↔C1); WF26_K1 coil + flyback **D1**; WF26_R1 |
-| **P5** | Etagenruf — apartment/floor call (tone) | **OC2** sense; **LS1** speaker (P5↔GND); WF26_C1 (the gong cap, P4↔P5) |
+| **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K3** chime-mute (P4↔C1); K5 coil + flyback **D1**; R29 |
+| **P5** | Etagenruf — apartment/floor call (tone) | **OC2** sense; **LS1** speaker (P5↔GND); C19 (the gong cap, P4↔P5) |
 
 **Door opener (K2, SSR).** Energising K2 bridges **P2↔P3 directly** (a dead short, no series R) →
 the TV20/S reads the ÖT and fires the opener. **Chime suppress (K3, NC SSR).** K3 sits in the gong's
@@ -80,15 +80,15 @@ energised it opens, muting the gong **without touching line 4, the latch, or the
 reaches LS1 directly on line 5, bypassing C1).
 
 **Door-open mirrors S1 — break-before-make in hardware (DOOR-4 / MODE-3).** A door-open must end the
-session exactly as the handset button does: drop the WF26_K1 latch. The handset's **S1 is a DPDT
+session exactly as the handset button does: drop the K5 latch. The handset's **S1 is a DPDT
 *transfer*** — it lifts P2 off K1_COM (breaking the seal-in) just *before* it bridges P2↔P3, so the
 latch drops as the opener fires and the live Türruf on line 4 never reaches line 3. K2 alone (a plain
-P2↔P3 short) can't do that — it would leave the latch sealed and bridge `P4 → WF26_K1 → P2 → K2 → P3`,
+P2↔P3 short) can't do that — it would leave the latch sealed and bridge `P4 → K5 → P2 → K2 → P3`,
 injecting the ring (12 V DC + gong AC) onto the talk line. So the board reproduces S1's transfer with
 two extra parts, both on the **DOOR_DRV** gate:
 
-- **K4** (GAQY412EH, NC SSR) sits **in series in the seal-in** (`WF26_S1.6 → K4 → WF26_K1.3`, in the
-  `P2 → K1_COM` path). Energised it **opens** → the seal-in breaks → WF26_K1 drops. At rest it's closed,
+- **K4** (GAQY412EH, NC SSR) sits **in series in the seal-in** (`SW3.6 → K4 → K5.3`, in the
+  `P2 → K1_COM` path). Energised it **opens** → the seal-in breaks → K5 drops. At rest it's closed,
   so the passive/unpowered latch is untouched (MODE-1 / SAFE-4).
 - **The break leads the make.** K4's LED is driven straight off DOOR_DRV (opens immediately), while K2's
   LED returns to ground through **Q1 (2N7002)** whose gate ramps on **R17 (22 kΩ) · C18 (1 µF) ≈ 20 ms**
@@ -102,10 +102,10 @@ delay is retirable — see TODO). Boot/idle: DOOR_DRV low ⇒ Q1 off (K2 open) a
 the deliberate way to end it early).
 
 > **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
-> it is the junction of C1, R1, the WF26_K1 coil and its NO contact: the ring's **DC energises the
+> it is the junction of C1, R1, the K5 coil and its NO contact: the ring's **DC energises the
 > coil** (coil = P1↔P4 = common↔Türruf — a ~1 s TV20/S pulse, then sealed in from P2), and its **AC
 > tone reaches the speaker via C1** (P4↔P5 → LS1 = the gong). **Talk** is a 2.2 kΩ bridge of **line
-> 4↔line 3** (S2 + R1); **listen** routes line 2 → WF26_K1 → P4 → C1 → speaker. **Chime suppression
+> 4↔line 3** (S2 + R1); **listen** routes line 2 → K5 → P4 → C1 → speaker. **Chime suppression
 > opens C1** (K3, NC, in the P4↔C1 path) so the Türruf tone never reaches the speaker — line 4, the
 > latch and the Etagenruf are untouched. There is no local tone generator (no ICs); the chime *is*
 > the audio on line 4. See "WF26 internal circuit" below.
@@ -154,7 +154,7 @@ From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehl
   seal-in) ~6 ms *before* it closes the P2↔P3 bridge — so the coil drops (line 4 falls and P2 *rises*
   ~9.4→11 V as the ~29 mA coil load comes off it, then both settle ~9 V at the bridge); the **~60 s
   timeout** (after the last talk activity, or the initial Türruf with no talk) ends it by an
-  **unconfirmed** mechanism — *likely* a brief **P2-low** pulse that forces WF26_K1 to drop (see TODO).
+  **unconfirmed** mechanism — *likely* a brief **P2-low** pulse that forces K5 to drop (see TODO).
 - **Tones:** Türruf = **3-Klang-Gong** (3-chime) — the gong is an **AC tone superimposed on the
   line-4 DC pedestal at the *start*** of the window; once the chime finishes, line 4 holds
   **steady DC** for the remainder. Etagenruf = **Dauerton** (continuous).
@@ -234,7 +234,7 @@ internals are captured in **`wf26/wf26.kicad_sch`** (standalone, ERC-clean; neut
 readout in `wf26/wf26-schematic.md`; teardown photos `IMG_5082.jpg` /
 `reference/intercom-teardown-collage.png`). Parts: LS1 (16 Ω speaker/mic),
 **S1 (Türöffner / door release, DPDT)**, **S2 (Sprechen/Hören / talk, DPDT)**, R1 (2.2 kΩ,
-colour bands red-red-red-gold), C1 (22 µF/50 V), WF26_K1 (6-pin DIL SPDT signal relay,
+colour bands red-red-red-gold), C1 (22 µF/50 V), K5 (6-pin DIL SPDT signal relay,
 HJR-4102-N-12V), J1 (5-way bus = P1–P5).
 
 **The numbering is canonical: Pₙ = bus line n** (J1 pin n → Pₙ), confirmed by measurement — the
@@ -243,14 +243,14 @@ door-opener bridges **P2↔P3** (= the ÖT pair, lines 2/3) and the speaker sits
 
 | Net | Pins |
 |-----|------|
-| P1 *(line 1, common)* | J1.1, LS1.1, WF26_K1.8 (coil) |
+| P1 *(line 1, common)* | J1.1, LS1.1, K5.8 (coil) |
 | P2 *(line 2)* | J1.2, S1.2, S1.5, S1.6 |
 | P3 *(line 3)* | J1.3, S1.3, S1.4, S2.3, S2.4 |
-| P4 *(line 4, Türruf)* | J1.4, C1.1(+), R1.1, WF26_K1.5 (coil), WF26_K1.6 (NO) |
+| P4 *(line 4, Türruf)* | J1.4, C1.1(+), R1.1, K5.5 (coil), K5.6 (NO) |
 | P5 *(line 5, Etagenruf)* | J1.5, C1.2(−), LS1.2 |
-| K1_COM | WF26_K1.1, WF26_K1.12, S1.1 |
+| K1_COM | K5.1, K5.12, S1.1 |
 | R1_BRIDGE | R1.2, S2.2, S2.5 |
-| n/c | S2.1, S2.6, WF26_K1.7 (NC) |
+| n/c | S2.1, S2.6, K5.7 (NC) |
 
 Topology: LS1 across **P1↔P5**; C1 across **P5↔P4** (**+ toward P4**, the Türruf +12 V DC side);
 the relay coil across **P1↔P4**; R1 from **P4** to R1_BRIDGE (the talk-switch common).
@@ -263,19 +263,19 @@ Key facts:
 - **Talk = P4↔P3 through R1 (2.2 kΩ).** S2 (Sprechen) *pressed* ties R1_BRIDGE↔P3, putting R1
   across **P4↔P3**; *released* it parks on the unused NC (open). The talk handshake the TV20/S
   sees is a **2.2 kΩ bridge of line 4 to line 3**.
-- **Why the talk bridge is resistive, not a short.** During a held session WF26_K1 ties **P2↔P4**
+- **Why the talk bridge is resistive, not a short.** During a held session K5 ties **P2↔P4**
   (the listen path), so the talk bridge **P4↔P3** is electrically **P2↔P3** — the *door-opener*
   pattern. The 2.2 kΩ keeps it below the opener's fire threshold (a dead short fires; 2.2 kΩ does
   not), so talking can't pop the door; it also limits the load on the line-4 session hold.
 - **The relay coil is across P1↔P4 = common ↔ Türruf, so the house ring energises it directly.**
   The TV20/S **pulses line 4 high for ~1 s** — ~12 V/320 Ω ≈ 37 mA through the coil to common — and
-  pulls WF26_K1 in. After that the TV20/S lets go of line 4; **P2 seals the latch in** (`S1 NC →
+  pulls K5 in. After that the TV20/S lets go of line 4; **P2 seals the latch in** (`S1 NC →
   K1_COM → the closed NO contact → line 4 → coil`), so the **handset holds line 4 hot from the P2
   supply** for the session — the TV20/S is not driving line 4. **Dropping line 4 does *not* release it** — P2
   holds it; the session ends via **P2**: at a door-open S1's **break-before-make** transfer opens
   P2↔K1_COM ~6 ms *before* bridging P2↔P3, dropping the coil (line 4 falls, P2 *rises* as it unloads —
   **bench-confirmed, `ring4`**); or the ~60 s inactivity timeout ends it by an **unconfirmed** mechanism
-  (likely the TV20/S briefly pulls P2 low; see TODO). **WF26_K1:**
+  (likely the TV20/S briefly pulls P2 low; see TODO). **K5:**
   6-pin DIL SPDT (1 Form C), HJR-4102-N-12V, coil 5/8 (~320 Ω), common
   1+12 = K1_COM, **NO pin 6 = P4**, NC pin 7 = open. Energised → K1_COM↔P4.
 - **Single transducer:** LS1 (16 Ω) is the **only** transducer (no separate mic), across
@@ -376,21 +376,21 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | MCU | **ESP32-C6-MINI-1U-H4** (u.FL external antenna; LCSC C20627095) | ESPHome-supported, native USB, enough GPIO for the audio path (I²S + I²C + 3 SSR gates + 2 opto inputs) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
-| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1/K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; LCSC C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: **Q1 2N7002** + R17 (22 kΩ) + C18 (1 µF) | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q1·R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
+| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: **Q1 2N7002** + R17 (22 kΩ) + C18 (1 µF) | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q1·R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
 | SSR LED drive | **GPIO → 10 k pull-down → 300 Ω → SSR LED** (no transistor, no flyback) | Each SSR "driver" is just its LED + a series R: ~7 mA from the 3V3 GPIO through R4/R5/R6 (300 Ω); R7/R8/R9 (10 k) pull-downs ⇒ SSRs default **off** at boot (SAFE-6). No coil ⇒ no flyback; the one surviving flyback (D1) is on the passive WF26 latch coil. (Retired the old per-channel relay-driver sheet.) |
 | Opto polarity | **Fixed: LED anode → bus line, cathode → R_lim → P1** + **anti-parallel 1N4148W clamp** across each LED | Bus is taken to drive active lines **positive w.r.t. common (P1)**, so polarity is hardwired (no switch) — bench-confirm per channel by ringing each bell. The clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on the AC tone content |
 | WF26 connector | **DG350-3.5 pluggable terminals — J2 (2-way) + J3 (3-way), 5-way total (P1–P5)** | See "WF26 connector". 5-way (not 6): line 4 is one net now — chime-suppress moved off line 4 onto C1, so the IN_P4/P4 split is gone |
 | USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers |
 | Layers | **4-layer** | the USB Type-C single-row escape needs the extra layers + a solid plane reference; see "PCB — layout constraints & rationale" |
 | Power | **USB-C 5 V** → SS14 reverse-protection Schottky → **SGM2212-3.3** low-dropout LDO (C3294699) | The ~0.45 V Schottky drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
-| Audio | **Transformer-less half-duplex**: ES8311 mono codec on the bus speech pair — **RX** a differential sense of line 2 (P2→C16→ADC, P1→C17→ADC), **TX** the codec DAC → C14 (DC-block) → R28 (2.2 kΩ) → line 3, **K1** gating the talk handshake (TALK_BRIDGE↔P4); session-gated on **OC1**. Needs the **hard P1↔GND bond**; analog values bench-gated | Half-duplex by design (single LS1 transducer) ⇒ no echo cancellation. The TV20/S speech path is AC-coupled and P1 sits ~0.5 V from earth, so bonding P1↔GND is benign and lets active AC-coupled front-ends replace the transformer (smaller, fixes the talk-handshake load, no core saturation). Trade: SAFE-3 isolation → *not met*; containment is per-tap protection + F1 (SAFE-7) |
+| Audio | **Transformer-less half-duplex**: ES8311 mono codec on the bus speech pair — **RX** a differential sense of line 2 (P2→C16→ADC, P1→C17→ADC), **TX** the codec DAC → C14 (DC-block) → R28 (2.2 kΩ) → TX_OUT → line 3, the **dual K1** (GAQW212GS) gating both the P2-sourced handshake and the TX output onto line 3 (high-Z at idle, BUS-1). Needs the **hard P1↔GND bond**; analog values bench-gated | Half-duplex by design (single LS1 transducer) ⇒ no echo cancellation. The TV20/S speech path is AC-coupled and P1 sits ~0.5 V from earth, so bonding P1↔GND is benign and lets active AC-coupled front-ends replace the transformer (smaller, fixes the talk-handshake load, no core saturation). Trade: SAFE-3 isolation → *not met*; containment is per-tap protection + F1 (SAFE-7) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
 ### ESP32-C6 GPIO map (matches `firmware/doorbell-v4.yaml` and the schematic)
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
-| IO20 | 26 | K1 gate — **TX talk handshake** (K1 gates TALK_BRIDGE↔P4; codec → C14 → R28 2.2 kΩ → line 3) | out | PTT_DRV → R4 (300 Ω) → SSR LED; R7 10 k pull-down ⇒ off at boot |
+| IO20 | 26 | K1 gate — **TX (PTT)**: the dual K1 sources the P2 handshake + gates the codec onto line 3 (high-Z at idle, BUS-1) | out | PTT_DRV → R4+R24 (300 Ω each) → K1's two SSR LEDs; R7 10 k pull-down ⇒ off at boot |
 | IO21 | 27 | K2 gate — front-door buzzer / ÖT (bridge P2↔P3 direct) | out | DOOR_DRV → R5 (300 Ω) → SSR LED; R8 10 k pull-down ⇒ off at boot |
 | IO22 | 28 | K3 gate — chime suppress (open C1: P4↔CHIME_C1) | out | MUTE_DRV → R6 (300 Ω) → SSR LED; R9 10 k pull-down ⇒ off (NC SSR ⇒ off = gong rings) |
 | IO3  | 6 | OC1 collector — house bell (Türruf, line 4 / P4) | in | held high by **R22** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
@@ -427,7 +427,7 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   the LED-cathode net, clamp cathode on the LED-anode net — so the clamp conducts only on
   the reverse half-wave and limits the LED's reverse voltage to ~0.7 V (< its 6 V VR).
   **Lib convention: 1N4148W pin 1 = cathode, pin 2 = anode** (CDFER JLCPCB lib, same as the
-  WF26_K1 coil flyback D1 and Schottky D4 — pin 1 toward +5V there).
+  K5 coil flyback D1 and Schottky D4 — pin 1 toward +5V there).
   V3 ran both channels with **no reverse clamp** and detects fine, so **D8 (OC1 / line 4, DC) is
   droppable** (one polarity, nothing to clamp) and **D9 (OC2 / line 5) is optional** — line 5 is an
   AC tone that does reverse-bias the LED, so D9 is the only one with a real (if V3-survivable) job.
@@ -445,7 +445,7 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   - **House Doorbell (OC1)** is masked while PTT is engaged, as a **precaution**: K1 closed
     ties P4↔P3 via R28 (2.2 kΩ), so P3's resting bias (and the codec's AC drive through C14)
     could couple onto line 4 and report a phantom ring — which can pulse the door buzzer via
-    auto-open. **Bench-unconfirmed, and possibly negligible:** the WF26_K1 coil (~1.3 kΩ across
+    auto-open. **Bench-unconfirmed, and possibly negligible:** the K5 coil (~1.3 kΩ across
     P4↔P1) clamps P4 toward common (P4 ≈ 0.32·V_P3 through the R28/coil divider — needs P3 idling
     ≳ 8 V to reach OC1's threshold), and OC1's 50 ms debounce already rejects the codec's
     audio-rate AC. The mask's cost is that it also blanks a *genuine* ring landing during the
@@ -474,28 +474,30 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
 ### Switches (K1/K2/K3/K4 — PhotoMOS SSRs)
 
 ```
-K1 (talk gate,     GAQY212GS NO): TALK_BRIDGE ↔ P4         — energise to tie the codec TX node to line 4 (talk handshake)
+K1 (talk+TX gate,  GAQW212GS 2×NO): ch1 P2↔TALK_BRIDGE, ch2 TX_OUT↔P3  — energise: source handshake from P2 + gate codec TX onto line 3
 K2 (door opener,   GAQY212GS NO): P2 ↔ P3                  — energise to bridge P2↔P3 (the ÖT direct short)
 K3 (chime mute,    GAQY412EH NC): P4 ↔ CHIME_C1            — at rest CLOSED (gong → C1 → speaker); energise to OPEN = mute
-K4 (seal-in break, GAQY412EH NC): WF26_S1.6 ↔ WF26_K1.3    — in the P2→K1_COM seal-in; energise to OPEN = drop the latch
-LED drive: PTT_DRV → R4; MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q1 delay) + R21→K4 LED (each Rn = 300 Ω) ; pins 3/4 = contact, 1/2 = LED
+K4 (seal-in break, GAQY412EH NC): SW3.6 ↔ K5.3    — in the P2→K1_COM seal-in; energise to OPEN = drop the latch
+LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q1 delay) + R21→K4 LED (each Rn = 300 Ω)
 ```
 
-- **PhotoMOS, single-pole, bidirectional.** Pins 3/4 are the AC/DC contact (back-to-back MOSFETs),
-  pins 1/2 the LED. K1/K2 are **1-Form-A (NO)** = open at idle; K3 is **1-Form-B (NC)** = closed at
-  idle. Off-state default is fail-safe: K1/K2 open ⇒ no talk/door at boot (the passive core's S2/S1
-  cover those unpowered); K3 closed ⇒ the gong rings at boot/unpowered (GONG-3/SAFE-6).
-- **K1 — talk handshake (session-gated).** The codec TX path is `DAC → C14 (DC-block) → TALK_BRIDGE
-  → R28 (2.2 kΩ) → line 3` — the same 2.2 kΩ line-3 strap the handset's S2 asserts, i.e. how the
-  TV20/S is told "talk". K1 gates **TALK_BRIDGE ↔ line 4**, so closing it lets the held Türruf DC on
-  line 4 pull line 3 DC-hot (the handshake) — but **only while a session holds line 4** (K1.4 → P4;
-  no session ⇒ line 4 cold ⇒ no handshake). *As-built caveat:* the intended design put K1 **in** the
-  audio path (high-Z at idle, BUS-1); the schematic gates only the handshake, so the codec sits on
-  line 3 through R28 whenever it's driving — a BUS-1 deviation tracked in TODO (see "Audio path").
+- **PhotoMOS, bidirectional.** K2/K3/K4 are single-pole (pins 3/4 the AC/DC contact of back-to-back
+  MOSFETs, 1/2 the LED); **K1 is the dual GAQW212GS** — two independent 1-Form-A poles in one SOP-8.
+  K1/K2 are **1-Form-A (NO)** = open at idle; K3/K4 are **1-Form-B (NC)** = closed at idle. Off-state
+  default is fail-safe: K1/K2 open ⇒ no talk/door at boot (the passive core's S2/S1 cover those
+  unpowered); K3 closed ⇒ the gong rings at boot/unpowered (GONG-3/SAFE-6).
+- **K1 — talk handshake + TX gate (BUS-1).** The codec TX path is `DAC → C14 (DC-block) → TALK_BRIDGE
+  → R28 (2.2 kΩ) → TX_OUT → line 3` — the same 2.2 kΩ line-3 strap the handset's S2 asserts, i.e. how
+  the TV20/S is told "talk". The dual K1 closes both halves on **PTT_DRV**: ch1 ties **P2 ↔
+  TALK_BRIDGE** (sourcing the handshake DC) and ch2 ties **TX_OUT ↔ line 3** (the output gate). At idle
+  ch2 lifts line 3 off the permanently-wired codec ⇒ **line 3 is high-Z (BUS-1 met)**; energised, the
+  codec audio and the handshake reach line 3 through R28. The handshake sources from the **always-on
+  P2** — the session-independent superset, so the board can assert talk without an incoming session —
+  *pending the bench check that the TV20/S forwards line-3 audio with no session active* (AUDIO_REFACTOR / TODO).
 - **Why TX drives line 3, not line 4.** A WF26 hangs **C1 (22 µF) + the 16 Ω speaker across line 4**
   = a ~20–30 Ω near-short to common across the voice band; injecting there would dump the drive into
-  it. Line 3 is light (the TV20/S amp input ∥ R28's 2.2 kΩ), so the codec drives **line 3** while K1
-  supplies the line-4 handshake.
+  it. Line 3 is light (the TV20/S amp input ∥ R28's 2.2 kΩ), so the codec drives **line 3**, and K1's
+  ch1 supplies the DC handshake from P2.
 - **K2 — door opener.** Energise to bridge **P2↔P3** directly (dead short) — the ÖT the TV20/S reads
   as "open". Paired with **K4 + the Q1 lead** to mirror S1's break-before-make — see "Door-open
   mirrors S1".
@@ -503,9 +505,9 @@ LED drive: PTT_DRV → R4; MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q1 del
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
   = gong muted, with **line 4, the latch and the Etagenruf all untouched** (Etagenruf reaches LS1
   directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4).
-- **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`WF26_S1.6 ↔
-  WF26_K1.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
-  (off DOOR_DRV, immediate) = open = WF26_K1 drops. With K2's make delayed ~20 ms (Q1·R17·C18) the
+- **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`SW3.6 ↔
+  K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
+  (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~20 ms (Q1·R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
 - K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
   door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. Whether the TV20/S
@@ -612,9 +614,10 @@ that shared common (the SAFE-3 trade; see "Bus↔logic coupling"):
   MIC1N` — AC-coupled and high-Z (no DC bus load, BUS-1); the differential tap rejects hum and the
   ~0.5 V common-mode.
 - **TX (talk):** the codec DAC drives line 3 — `OUTP → C14 (DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) →
-  P3` — the same 2.2 kΩ line-3 strap the handset's S2 asserts. **K1** gates `TALK_BRIDGE ↔ line 4`,
-  asserting the **DC talk handshake** off the held Türruf (so TX is session-gated). ⚠ Whether the
-  TV20/S forwards line-3 audio to the door once it sees that bridge is bench-gated — see "TX-out reach".
+  TX_OUT → P3` — the same 2.2 kΩ line-3 strap the handset's S2 asserts. The **dual K1** gates both:
+  ch1 sources the **DC handshake from the always-on P2** (`P2 ↔ TALK_BRIDGE`) and ch2 gates the output
+  (`TX_OUT ↔ P3`) so line 3 is high-Z at idle (BUS-1). ⚠ Whether the TV20/S forwards line-3 audio to
+  the door once it sees that bridge is bench-gated — see "TX-out reach".
 
 Tapping 1/2/3 (not the WF26 *speaker* pair P1/P5) keeps the smart audio **independent of line 4 / K3 /
 the gong-suppress**, so it works with the gong muted.
@@ -645,11 +648,12 @@ debounce). Audio is gated on the session, direction by K1:
   Pinout per datasheet: CCLK=1, MCLK=2, PVDD/DVDD=3/4, DGND=5, SCLK=6, ASDOUT=7, LRCK=8, DSDIN=9,
   AGND=10, AVDD=11, OUTP/N=12/13, DACVREF/ADCVREF/VMID=14/15/16, MIC1N/P=17/18, CDATA=19, CE=20
   (pull-down → addr 0x18), EP=GND.
-- **TX front-end:** `OUTP → C14 (1 µF DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) → P3`, with **K1** gating
-  `TALK_BRIDGE ↔ P4` (the handshake). The DAC drives **single-ended** off OUTP; OUTN → C15 → /OUTN is
-  parked (terminating OUTN vs OUTP-only is a bench decision).
+- **TX front-end:** `OUTP → C14 (1 µF DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) → TX_OUT → P3`, with the
+  **dual K1** sourcing the handshake from **P2** (`P2 ↔ TALK_BRIDGE`) and gating the output
+  (`TX_OUT ↔ P3`). The DAC drives **single-ended** off OUTP; OUTN → C15 → /OUTN is parked (terminating
+  OUTN vs OUTP-only is a bench decision).
 - **RX front-end:** `P2 → C16 (1 µF) → MIC1P`, `GND → C17 → MIC1N` — fed **differentially** to the
-  ADC. The old divider resistors **R24–R27** (on the now-dead SEC_A/SEC_B nets) are to be
+  ADC. The freed **SEC_A/SEC_B divider resistors** (R24 was reused for K1's ch2 LED) are to be
   **repurposed** as the MIC-bias network (bias MIC1P/N to VMID) and any TX attenuation — values per
   the ES8311 line-in reference design (bench-gated).
 - **Support net:** PVDD/DVDD/AVDD → +3V3 with decoupling; DACVREF/ADCVREF/VMID reservoir caps;
@@ -658,12 +662,13 @@ debounce). Audio is gated on the session, direction by K1:
   wicks solder away, and the codec dissipates milliwatts. EP (and pin 10/AGND, tied to it) bonds to
   GND through adjacent copper.
 
-**As-built caveat — line 3 not high-Z at idle (BUS-1).** The transformer-less plan gated the audio with
-K1 so line 3 is high-Z when not talking (`… → R16 → K1 → P3`). As built, K1 gates only the **handshake**
-(TALK_BRIDGE↔P4); the codec→C14→R28→line 3 path is **always** connected, so the codec sits ~2.2 kΩ on
-the shared talk line whenever it drives, and keeping it quiet is firmware discipline (mute the DAC
-unless talking). A real BUS-1 deviation — tracked in TODO (move K1 into the R28→P3 path if the bench
-shows the idle load/leak matters).
+**BUS-1 (line 3 high-Z at idle) — met by the dual K1.** The transformer-less plan gated the TX audio
+with K1 so line 3 is high-Z when not talking; the dual GAQW212GS does exactly that. The codec sits on
+the permanently-wired `OUTP → C14 → TALK_BRIDGE → R28 → TX_OUT` path, but **ch2 (`TX_OUT ↔ P3`) is the
+output gate**: at idle it lifts line 3 off TX_OUT, so the codec never reaches the shared talk line; only
+with K1 energised does the codec (and the P2 handshake) reach line 3. Confirmed in the sim — the
+`TX idle isolation (BUS-1)` and `talk handshake` tests. Firmware still mutes the DAC off-PTT, but the
+high-Z is now structural, not discipline.
 
 **Bench-gated / open (analog front-end):**
 - **RX — direct ES8311 differential input vs an external in-amp.** Confirm the mic input is high-Z /
@@ -695,9 +700,9 @@ inactive/transparent when unpowered (SSRs off, optos passive, codec quiet).
 ### The passive WF26 core (the `WF26_*` parts)
 These reproduce the handset (see "WF26 internal circuit") and run with zero board power:
 - **LS1** — 16 Ω speaker/mic across **P1↔P5** (doubles as the mic for talk).
-- **WF26_C1** — 22 µF across **P5↔P4** (the gong audio crossover; the `CHIME_C1` node sits between K3
+- **C19** — 22 µF across **P5↔P4** (the gong audio crossover; the `CHIME_C1` node sits between K3
   and this cap).
-- **WF26_K1** — the **latch relay** (G6K-2F-Y), coil across **P1↔P4**, pulled in by the ring's own
+- **K5** — the **latch relay** (G6K-2F-Y), coil across **P1↔P4**, pulled in by the ring's own
   ~12 V Türruf DC pulse and then **sealed in from P2** (see "Bell signals"); its NO contact routes
   listen **line 2 → S1 → K1_COM → P4 → C1 → speaker**. **Bus-energised, not GPIO-driven** — that's
   what makes listen work unpowered. A **flyback diode (D1)** clamps its coil (the stock handset lets
@@ -707,8 +712,8 @@ These reproduce the handset (see "WF26 internal circuit") and run with zero boar
     now, the opto sense works):* make it a **12 V DPDT** with the **coil on P4↔P1**; pole A = K1_COM↔P4
     (listen); pole B = **3V3 → GPIO + pull-down** = a galvanically-isolated, non-inverted **session/ring
     signal** (energised = HIGH) replacing OC1's opto sense (+ its limiter and clamp D8).
-- **WF26_R1** — 2.2 kΩ talk resistor (`P4 → R1 → R1_BRIDGE`).
-- **WF26_S1 (door, DPDT) and WF26_S2 (talk, DPDT)** — SPPJ322300 slide switches wired as in the
+- **R29** — 2.2 kΩ talk resistor (`P4 → R1 → R1_BRIDGE`).
+- **SW3 (door, DPDT) and SW4 (talk, DPDT)** — SPPJ322300 slide switches wired as in the
   handset, so a person can open the door / talk by hand with the board dead.
 
 ### Smart layer defaults (additive, off at rest)
@@ -773,7 +778,7 @@ this document on all system-level conclusions, including the corrected WF26 seal
 **Cross-checked against the WF26** (netlist extracted from `wf26/wf26.kicad_sch` with `kicad-cli`):
 the bus pin map; the door/talk split — **K2 = a direct P2↔P3 short** (genuine S1), the 2.2 kΩ (R28) on
 the K1 talk strap (genuine R1); K3's chime-mute sits in the **C1 audio path** (P4↔C1), not line 4, so
-it can't touch the latch or the Etagenruf; the WF26_K1 coil is across **P1↔P4** (ring-driven, then
+it can't touch the latch or the Etagenruf; the K5 coil is across **P1↔P4** (ring-driven, then
 sealed in from P2 — see "Bell signals"); and K1/K2/K3 are independent (no interlock, like the handset).
 **Session state = OC1 high**, gated directly (line 4 holds through the session), no timer.
 **The end-to-end TX-out reach is the remaining open investigation** — the codec taps the speech pair
@@ -782,7 +787,7 @@ bench-gated is whether the TV20/S forwards the line-3 audio to the door once it 
 bridge (see `TODO.md`, "TX-out reach"). See Switches / Audio path / Bell-sense.
 
 **Datasheet-verified:** GAQY212GS / GAQY412EH PhotoMOS pinout + Ron/Voff/LED drive (K3 = 1-Form-B
-**NC** confirmed); WF26_K1 (G6K-2F-Y) latch pinout; SGM2212 SOT-223 pinout + ~1 V dropout headroom;
+**NC** confirmed); K5 (G6K-2F-Y) latch pinout; SGM2212 SOT-223 pinout + ~1 V dropout headroom;
 1N4148W pin 1 = cathode (CDFER lib); LTV-217 pinout; USB front-end (D+/D− not swapped; TPD2S017
 pinout/V_CC bias, CC 5.1 kΩ Rd); bell-sense GPIO LOW levels; ES8311 full pinout; every U1 pad↔GPIO assignment against the
 **ESP32-C6-MINI-1U-H4** pinout (the GPIO map's pad numbers are the MINI-1U pads, from the schematic).

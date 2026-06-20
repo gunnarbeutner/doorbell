@@ -22,42 +22,64 @@ copper thieving-zone warning).
       current or an absolute max. Pull the GAQY212GS datasheet; if it wants more than ~7 mA, lower
       R4/R5 (or add a 2N7002 buffer per part). Pull-downs R7/R8/R9 (10 k, SAFE-6) are fine as-is.
 
-## Audio refactor — session-independent TX (`kicad/doorbell.kicad_sch`)
+## Audio refactor — gated TX: replace K1 with a dual-NO SSR (`kicad/doorbell.kicad_sch`)
 
-- [ ] **Evaluate whether the board can TX without an active session.** K1.4 is tied to **P4**, so the
-      talk handshake (`P4 → K1 → 2.2 kΩ → P3`) is only live while the WF26 latch holds a Türruf
-      session — faithful to the handset and fine for the welcome-chime-before-auto-open case, but it
-      blocks autonomous announcements (TTS, "leave it next door", etc.). Bench-test the TV20/S: when
-      talk is asserted with **no session active**, does it forward the line-3 audio (and not
-      misbehave / ring other handsets)? If yes and we want it, the change is to source the handshake
-      from the always-on **P2** instead (`K1.4 → P2` — a strict superset, same ~5 mA load). Ties into
-      the TX-out-reach open item (REQUIREMENTS "Open questions" / AUDIO_REFACTOR bench item 3).
+Solves the **BUS-1 idle load** and **session-independent TX** together. Today K1 (single 1-Form-A) gates
+only the DC handshake (`TALK_BRIDGE ↔ P4`), so the codec sits **permanently** on line 3
+(`OUTP → C14 → TALK_BRIDGE → R28 → P3`): a standing **~2.3 kΩ AC load on the *shared* talk pair** whenever
+the codec is powered, and audio reaches line 3 with no session. **Muting the DAC does NOT remove the
+load** — a muted output is still a low-Z node at VMID (an AC ground); only Hi-Z (a DAC power-down, heavier
+than mute) or a hardware gate lifts it. Plus the handshake is sourced from **P4**, so it's only live
+during a session (blocks autonomous TTS/announcements).
+
+- [ ] **Replace K1 → GAQW212GS dual 1-Form-A NO (C7435123, SOP-8, 60 V).** Imported to
+      `kicad/lib_switches/gaqw212gs` + `sym-lib-table`. Both LEDs on **PTT_DRV** (no new GPIO/firmware):
+      - **ch1 (LED 1/2, contact 7/8): `P2 ↔ TALK_BRIDGE`** — handshake gate, sourced from the **always-on
+        P2** (not P4) ⇒ TX works **with or without a session**.
+      - **ch2 (LED 3/4, contact 5/6): `TX_OUT ↔ P3`** — output gate. Split R28 to
+        `TALK_BRIDGE → R28 → TX_OUT`, ch2 the final element ⇒ open lifts the codec off line 3 (and line 2,
+        via ch1) — **zero standing load when idle**.
+      PTT on ⇒ `P2 → ch1 → TALK_BRIDGE → R28 → ch2 → P3` (the 2.2 kΩ talk handshake) + codec audio; idle ⇒
+      both open, TALK_BRIDGE floats with only the codec, both shared lines high-Z. **BOM delta:** the dual
+      replaces the K1 single (+1 channel, no added package) + one 300 Ω LED-drive R for ch2 (the R7 10 k
+      pull-down already covers both LEDs on PTT_DRV). Confirm the LED anode/cathode per the datasheet (the
+      easyeda symbol pins are unnamed). **Side effects:** K1 no longer touches line 4 ⇒ the **OC1 PTT-mask**
+      worry disappears (drop that mask), and the `TX idle isolation` sim todo can become an active test.
+      Still open: whether a P2-sourced **no-session** handshake is actually forwarded = the **TX-out-reach**
+      bench question — but the hardware now *enables* on-demand TX, which is the point.
+- [ ] **(Deferred) K3+K4 → one dual-NC PhotoMOS (GAQW412S, C7435125).** Would save one footprint (both are
+      1-Form-B NC on independent gates — ch1 MUTE_DRV, ch2 DOOR_DRV). **Not adopted:** only ~23 in stock
+      (niche, single-source) and these are the *fail-safe* NC switches — not worth tying bring-up to a thin
+      line for a pure footprint save. Keep **2× GAQY412EH** (well-stocked, already in the design); the dual
+      is a drop-in if stock ever justifies it.
 
 ## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
 
 Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14→TALK_BRIDGE`; RX:
 `P2→C16→MIC1P`, `P1→C17→MIC1N`; `P1↔GND` bonded). Component-level choices still open:
 
-- [ ] **RX: direct ES8311 differential input vs external in-amp.** Confirm the mic input is high-Z /
-      differential enough to tap P2↔P1 directly; add an instrumentation amp / buffer if not (bench 5).
-- [ ] **Mic-input bias network.** Bias MIC1P/MIC1N to `ES_VMID`; repurpose R24–R27 (currently on the
-      dead `SEC_A`/`SEC_B` nets); set values per the ES8311 line-in reference design.
+- [ ] **RX: attenuating bias network (measured from ring4 — mandatory, not just headroom).** ring4 CH2
+      (= P2) shows the gong on line 2 peaks at **±8.8 V** (15.6 Vpp, 1.04 Vrms, on a ~9 V pedestal; P2
+      absolute swing −1.7…+16.1 V), and the gong is the loudest event. **±8.8 V exceeds the ES8311 mic
+      abs-max (~AVDD+0.3 = 3.6 V) by 2.4×**, so the bare `C16→MIC1P` tap AC-couples ±8.8 V into the codec
+      and dumps ~50 mA into its ESD clamps every ring — attenuation + a series R is *required*, not a
+      nicety. Add a divider+bias per side (R24–R27 are **gone** with the old transformer nets — these are
+      NEW parts), matched for CMRR: `P2→C16→Rs(22k)→MIC1P`, `MIC1P→Rb(3.3k)→ES_VMID`; symmetric
+      `GND→C17→Rs'(22k)→MIC1N→Rb'(3.3k)→VMID`. **−18 dB** (Rb/(Rs+Rb)) lands the 8.8 V peak at **~1.1 V**
+      (≈8 dB under the ~2.8 V FS-peak, inside abs-max), gong ~135 mVrms; the PGA (0…+30 dB) brings quieter
+      voice up. `Rs` doubles as the high-Z line-2 load (BUS-1) and current-limit (~0.4 mA on gong/fault);
+      `Rb` biases the pins to VMID — the codec has **no mic bias** (user guide §5.5). Bump **VMID
+      decoupling 1 µF → ~10 µF** (it now carries the bias-shunt AC). Tunable: Rb = 2.2k (−21 dB, more
+      protection margin) / 4.7k (−15 dB, more level); revisit only if a real voice level is ever captured.
 - [ ] **TX level + OUTN handling.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do
       not overdrive the TV20/S amp); decide OUTP-only vs terminating OUTN; add a buffer/atten if needed.
-- [ ] **TX audio isn't K1-gated — line 3 isn't high-Z at idle (BUS-1 deviation).** The intended path
-      (AUDIO_REFACTOR Decision 4/7) is `codec → DC-block → R16 → K1 → P3`, with **K1 in series with the
-      audio** so line 3 is high-Z when not talking. The schematic instead wires the codec *permanently*
-      to line 3 (`OUTP → C14 → TALK_BRIDGE → R28 2.2 kΩ → P3`) and uses K1 only for the DC handshake
-      (`TALK_BRIDGE ↔ P4`). Consequences: (a) codec audio reaches line 3 with no session / K1 open, so
-      keeping it off line 3 is now **firmware discipline** (mute the DAC unless talking), not a hardware
-      gate; (b) a standing **~2.2–2.4 kΩ AC load** sits on the *shared* talk pair whenever the codec is
-      powered, where the stock WF26 (S2 open) is high-Z at idle. C14 still DC-blocks (no DC load/offset).
-      Fix is to move K1 into the audio path (gate `R28 → P3`, not just the handshake), if bench item #3
-      shows the idle load/leak matters. Flagged by the `TX idle isolation` todo test in
-      `sim/test/integration.test.js`. (The sim can't show the *load* — U3/ES8311 is unmodelled, so its
-      output floats unless driven; the test exercises the *injection* path.)
-- [ ] **SAFE-7 protection on the P2/P3 taps.** Series R + TVS clamp (> +12 V); DC-block cap ratings
-      ≥ 25–50 V. Values/placement TBD.
+- [ ] **TX line-3 isolation (BUS-1) — folded into "gated TX" above.** Resolved by replacing K1 with the
+      dual GAQW212GS: ch2 lifts the codec off line 3 at idle (no standing load), ch1 sources the handshake
+      from the always-on P2. The `TX idle isolation` todo test (`sim/test/integration.test.js`) becomes an
+      active test once it lands. (Mute ≠ no load — only the gate or a DAC Hi-Z removes it.)
+- [ ] **SAFE-7 protection on the P2/P3 taps.** C16 (on P2) sees **+16 V peak** (measured P2 max, ring4)
+      plus fault transients → DC-block caps rate **≥ 50 V** (not the 6.3/16 V default at 1 µF 0603). Add a
+      bidirectional TVS / clamp (> ±12 V) at the taps; the RX `Rs` (22 k, above) limits the clamp current.
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
@@ -85,8 +107,8 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
 ## WF26 replica refdes cleanup (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
 - [ ] **Rename the `WF26_*` reference designators to standard KiCad refdes.** The embedded dumb-core
-      WF26 handset replica uses prefixed, non-standard designators — `WF26_C1, WF26_K1, WF26_P4,
-      WF26_P5, WF26_R1, WF26_S1, WF26_S2` — instead of the plain `<class><number>` form KiCad's
+      WF26 handset replica uses prefixed, non-standard designators — `C19, K5, P4,
+      P5, R29, SW3, SW4` — instead of the plain `<class><number>` form KiCad's
       annotator and the BOM/CPL exports expect. Re-annotate to unique standard refdes in their own
       number band so they don't collide with the board's own C/K/R/S parts, and give the P4/P5 bus
       pads a proper class (e.g. J or TP, not `P`). Update any DESIGN.md references; keep ERC/DRC clean.
@@ -141,15 +163,15 @@ tether it to a mains-earthed PC. Pair with a DMM.
       relay drops and the handset goes dead), and V3 senses it fine — so it holds. Just confirm the
       hold level keeps **OC1 above its detection threshold edge-to-edge** (relay hold V < pull-in V),
       so OC1 is a clean session gate. Measure mid-talk-window P4→P1.
-- [ ] **WF26_K1 session *timeout* mechanism — confirm on the genuine handset.** **Session model (P2
+- [ ] **K5 session *timeout* mechanism — confirm on the genuine handset.** **Session model (P2
       seal-in; door-open path bench-confirmed in `ring4`):** the TV20/S supply is on **P2**; it pulses
-      **line 4** high for ~1 s to pull WF26_K1 in, after which the **handset holds line 4 hot itself**,
+      **line 4** high for ~1 s to pull K5 in, after which the **handset holds line 4 hot itself**,
       sealed in from P2 (`P2 → S1 NC → K1_COM → the closed NO contact → line 4 → coil`) — so line 4 sits
       ~0.16 V below P2 (pulled up from it), and **dropping line 4 does NOT release it**. A **door-open**
       ends it: S1's break-before-make transfer opens P2↔K1_COM ~6 ms before bridging P2↔P3, so the coil
       drops (line 4 falls, P2 *rises* as the coil load comes off it — `ring4`). The sim confirms the
       hold (drop line 4 → stays in), the P2-low (timeout) release, **and** the S1 break-before-make
-      release (`WF26_S1` press drops the latch — the reference test). **Still open — the ~60 s timeout:** the
+      release (`SW3` press drops the latch — the reference test). **Still open — the ~60 s timeout:** the
       TV20/S times out ~60 s after the last talk activity (or the initial Türruf with no talk) and ends
       the session by an **unconfirmed** mechanism — *likely* a brief **P2-low pulse** that drops the
       coil. Capture a session that ends on the *timeout* (no door-open) and watch P2 to confirm.
@@ -166,16 +188,16 @@ tether it to a mains-earthed PC. Pair with a DMM.
       **R_ot→0** (K2 door needs a short, done) and **2.2 kΩ-on-K1** (R28; talk's incidental bridge
       must *not* fire, done).
 - [x] **DOOR-4: door-open releases the latch (mirror S1) — DONE in hardware.** **K4** (GAQY412EH NC SSR)
-      in series in the `P2→K1_COM` seal-in (`WF26_S1.6 ↔ WF26_K1.3`) drops WF26_K1 on a door-open;
+      in series in the `P2→K1_COM` seal-in (`SW3.6 ↔ K5.3`) drops K5 on a door-open;
       **Q1 (2N7002) + R17 (22 kΩ) + C18 (1 µF)** delay K2's make ~20 ms behind K4's break for a hardware
-      break-before-make, all off the one `DOOR_DRV` gate. Sim updated: `WF26_S1-release reference` and
-      `DOOR-4: a board door-open releases WF26_K1` both pass; the gap tripwire is deleted. See DESIGN.md
+      break-before-make, all off the one `DOOR_DRV` gate. Sim updated: `SW3-release reference` and
+      `DOOR-4: a board door-open releases K5` both pass; the gap tripwire is deleted. See DESIGN.md
       "Door-open mirrors S1".
 - [ ] **Firmware — retire the 1.75 s 'wait out the gong' door-open delay.** With K4+Q1 giving a hardware
       break-before-make, the held Türruf is never bridged onto line 3, so the `house_doorbell →
       delay: 1.75s → front_door_buzzer` mitigation is unnecessary. Removing it opens the door ~1.75 s
       sooner — confirm that's the wanted UX, then drop the delay.
-- [ ] **Bench — confirm the door lead.** On the real board: a door-open drops WF26_K1 (session ends),
+- [ ] **Bench — confirm the door lead.** On the real board: a door-open drops K5 (session ends),
       and K2's make lands after the latch drop (no 12 V-DC/gong blip on line 3). Tune C18/R17 if the
       ~20 ms lead doesn't clear the actual latch-drop time.
 - [ ] **C1 polarity** — set **+ toward P4** (the Türruf +12 V DC side; + toward P5 would reverse-bias
@@ -192,7 +214,7 @@ tether it to a mains-earthed PC. Pair with a DMM.
       went PTT-only when the old session-opto was dropped; OC1 now supplies the session level).
 - [ ] **OC1 PTT-mask — verify it's needed (bench).** The firmware masks OC1 (house bell) during board
       PTT to block a phantom ring → auto-open. The stated mechanism is **bench-unconfirmed and may be
-      negligible:** K1 closed bridges P4↔P3 via R28 (2.2 kΩ), but the WF26_K1 coil (~1.3 kΩ, P4↔P1)
+      negligible:** K1 closed bridges P4↔P3 via R28 (2.2 kΩ), but the K5 coil (~1.3 kΩ, P4↔P1)
       clamps P4 (P4 ≈ 0.32·V_P3 — needs P3 idling ≳ 8 V to reach OC1's threshold), and OC1's 50 ms
       debounce already rejects the codec's audio-rate AC. **Measure P3 idle bias and whether engaging
       PTT alone (no real ring) trips OC1.** If it doesn't, drop the mask — it currently also blanks a
@@ -236,7 +258,7 @@ What remains is hardware confirmation:
       fine: **D8 (OC1 / line 4, DC) is droppable** outright; **D9 (OC2 / line 5, AC tone) is
       optional** — the tone does reverse-bias the LED, so D9 is the only one with a real (if
       V3-survivable) job. *(DESIGN.md: "Bell / session sense front-end")*
-- [ ] **(Future) fold session-sense into the WF26_K1 latch, drop OC1.** Make WF26_K1 a **12 V DPDT,
+- [ ] **(Future) fold session-sense into the K5 latch, drop OC1.** Make K5 a **12 V DPDT,
       coil on P4↔P1**, with a spare pole = 3V3→GPIO + pull-down for a galvanically-isolated
       session/ring signal — replaces OC1 (+ its limiter, D8). **Not adopted** — OC1 works; keep it for
       now. *(DESIGN.md: "On-board passive WF26 core")*
@@ -245,7 +267,7 @@ What remains is hardware confirmation:
 
 K1/K2/K3 are now **PhotoMOS SSRs**: K1/K2 = **GAQY212GS** (1-Form-A NO, bidirectional; the open-at-idle
 fail-safe is carried by the passive S2/S1), K3 = **GAQY412EH** (1-Form-B **NC**, so the gong rings
-unpowered). **WF26_K1 stays an electromechanical relay** — it's bus-self-latched and must work
+unpowered). **K5 stays an electromechanical relay** — it's bus-self-latched and must work
 board-dead, which an SSR can't do. The per-channel relay-driver sheet is retired (the SSR drive is just
 LED + 300 Ω). See DESIGN.md "Switches (PhotoMOS SSRs)".
 

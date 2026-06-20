@@ -141,7 +141,7 @@ shared party line across apartments.
   NOT actuate the opener (relays default off, SAFE-6), and a welded audio/PTT relay MUST NOT be able
   to fire it (the opener takes a deliberate, separate closure that idle/talk states never assert).
 - **DOOR-4 (MUST)** A firmware door-open MUST **end the session exactly as the handset button does** —
-  release the passive WF26 latch (WF26_K1). The handset's S1 is a **break-before-make DPDT transfer**:
+  release the passive WF26 latch (K5). The handset's S1 is a **break-before-make DPDT transfer**:
   it lifts line 2 off the latch's seal-in node (K1_COM) *before* it bridges line 2↔line 3, so the latch
   drops and the call ends as the door fires. The board's door actuator MUST reproduce that transfer — it
   MUST NOT stand in as a bare parallel line-2↔line-3 short. A bare short fires the opener but leaves the

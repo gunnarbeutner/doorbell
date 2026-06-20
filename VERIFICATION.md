@@ -62,16 +62,16 @@ door ring is a 3-chime gong, the floor call a continuous tone.
   the relay / OC1 / D1). ✓
 - **SSR LED drive:** R4/R5/R6 = 300 Ω from +3V3 → IF ≈ (3.3 − 1.2)/300 ≈ **7 mA**, inside the GAQY
   window (IF 5–30 mA). R7/R8/R9 (10 kΩ) gate pull-downs hold the SSRs off while the GPIOs float at boot. ✓
-- **On-board G6K-2F-Y (WF26_K1)** — internal-connection diagram read directly: coil = pins 1(+) & 8(−);
+- **On-board G6K-2F-Y (K5)** — internal-connection diagram read directly: coil = pins 1(+) & 8(−);
   one pole COM = pin 3, NC = pin 2, NO = pin 4. Board: coil **pin 1 → P4 / pin 8 → GND (P1)** (+ on the
-  +12 VDC P4 side ✓), COM → WF26_K1_COM, NO → P4, NC open, second pole unused. **Faithfully replicates
+  +12 VDC P4 side ✓), COM → K5_COM, NO → P4, NC open, second pole unused. **Faithfully replicates
   the handset HJR-4102 seal-in.** ✓
 
 ### Diodes / polarity (library convention pin 1 = K, pin 2 = A; verified per symbol)
 
 | Ref | Part | K (pin 1) | A (pin 2) | Role | Verdict |
 |-----|------|-----------|-----------|------|---------|
-| D1 | 1N4148W | P4 | GND | flyback across the WF26_K1 coil (P4+ / GND−) | ✓ reverse-biased in normal op |
+| D1 | 1N4148W | P4 | GND | flyback across the K5 coil (P4+ / GND−) | ✓ reverse-biased in normal op |
 | D8 | 1N4148W | P4 | OC1_CATH | anti-parallel across the OC1 LED | ✓ clamps reverse to ~0.7 V |
 | D9 | 1N4148W | P5 | OC2_CATH | anti-parallel across the OC2 LED | ✓ |
 | D4 | SS14 | +5V | VBUS_F | series reverse-polarity protect | ✓ ~0.45 V drop |
@@ -131,7 +131,7 @@ transformer in the path (see Finding 1).
 
 ### On-board passive WF26 core
 
-WF26_R1 (2.2 kΩ), WF26_C1 (22 µF/50 V), WF26_S1/S2 (SPPJ322300 DPDT), LS1 (16 Ω) and WF26_K1 reproduce
+R29 (2.2 kΩ), C19 (22 µF/50 V), SW3/S2 (SPPJ322300 DPDT), LS1 (16 Ω) and K5 reproduce
 the handset's door-release / talk / gong / seal-in topology, so the board behaves like a plain WF26 when
 unpowered (the SSRs/codec/optos are additive on top).
 
@@ -148,8 +148,8 @@ unpowered (the SSRs/codec/optos are additive on top).
    fuse. The blind pass also flagged four cap **`Description` fields still reading "T1 secondary"** — a
    transformer that is not in the netlist; **corrected** to the transformer-less wording.]*
 
-2. **WF26_C1 electrolytic orientation differs from the handset readout — and the board is the correct
-   one.** The handset readout marks C1 "+" toward P5; the board places WF26_C1 "+" toward the P4 side
+2. **C19 electrolytic orientation differs from the handset readout — and the board is the correct
+   one.** The handset readout marks C1 "+" toward P5; the board places C19 "+" toward the P4 side
    (CHIME_C1, via K3). The TV20/S note proves **P4 = +12 VDC standby**, so "+ toward P4" is the
    electrically-correct polarity. Verify P4 is the +12 V line on the install and that the gong drive
    never swings C1 net-negative; if confirmed, ship as drawn. *[Matches the intended polarity.]*
