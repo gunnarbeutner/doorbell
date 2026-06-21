@@ -21,10 +21,11 @@ HANDSOLDER = set()        # parts hand-soldered after SMT assembly (excluded fro
 # is a property of the land pattern, so every instance of a footprint inherits it and renumbering can't
 # desync it (a single part can't carry two different offsets). Values confirmed against JLCPCB's
 # Confirm-Parts-Placement preview. Resistors/caps/buttons are symmetric -> rotation-agnostic; the
-# easyeda2kicad PhotoMOS SSR footprints (gaqw/gaqy) are already JLCPCB-oriented -> no offset.
+# easyeda2kicad footprints (the PhotoMOS gaqw/gaqy, the db125 terminal, the 2N7002DW dual, …) come
+# from the LCSC library already JLCPCB-oriented -> no offset. The corrections below are all KiCad-
+# standard / PCM_JLCPCB land patterns that sit rotated vs JLCPCB's library part.
 ROT_FIX = {
     "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm":  180,   # LTV-217 SOP-4 optos (OC1/OC2): JLCPCB pin 1 is 180° off KiCad
-    "Package_TO_SOT_SMD:SOT-23":           180,   # 2N7002 SOT-23: classic JLCPCB 180° offset
     "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y": -90,   # G6K-2F-Y relay: KiCad-std footprint sits 90° CW off JLCPCB lib
 }
 

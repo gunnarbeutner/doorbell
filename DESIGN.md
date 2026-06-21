@@ -52,15 +52,15 @@ relay**, which the bus drives itself (so it works with the board dead).
 
 ---
 
-## WF26 connector — J2 (2-way) + J3 (3-way) terminal blocks (DG350-3.5, 3.5 mm)
+## WF26 connector — J2, a 5-way DB125-3.5-5P terminal block (3.5 mm)
 
-**Connector:** the **5-way (P1–P5)** WF26 bus across two **DG350-3.5** 3.5 mm **pluggable screw
-terminals** — **J2** (2-way: P1, P2) and **J3** (3-way: P3, P4, P5) — assembled by JLCPCB. The WF26
+**Connector:** the **5-way (P1–P5)** WF26 bus on a single **DB125-3.5-5P** (DORABO, LCSC C3646874)
+3.5 mm **screw terminal** — **J2**, pins 1–5 = P1–P5 — assembled by JLCPCB. The WF26
 bus wires are fine, flimsy stranded (~26–28 AWG flat cable), below the rated minimum of Wago
 picoMAX/221 push-in connectors (0.2 mm² ≈ 24 AWG); a screw terminal clamps thin stranded reliably
-(tin/fold the ends) and matches what the WF26 uses internally. Pluggable so the board unplugs from
-the bus for service. **Line 4 is one net (P4)** — there is no IN_P4/P4 split, because chime-suppress
-no longer breaks line 4 (it opens C1; see "Relays" / "Audio path").
+(tin/fold the ends) and matches what the WF26 uses internally. One 5-pole block spans the whole bus on
+a continuous 3.5 mm pitch (no inter-block gap). **Line 4 is one net (P4)** — there is no IN_P4/P4 split,
+because chime-suppress no longer breaks line 4 (it opens C1; see "Relays" / "Audio path").
 
 ### Pin functions (confirmed from TV20/S Verdrahtungsplan)
 
@@ -91,15 +91,28 @@ two extra parts, both on the **DOOR_DRV** gate:
   `P2 → K1_COM` path). Energised it **opens** → the seal-in breaks → K5 drops. At rest it's closed,
   so the passive/unpowered latch is untouched (MODE-1 / SAFE-4).
 - **The break leads the make.** K4's LED is driven straight off DOOR_DRV (opens immediately), while K2's
-  LED returns to ground through **Q1 (2N7002)** whose gate ramps on **R17 (22 kΩ) · C18 (1 µF) ≈ 20 ms**
-  — so K2 closes ~20 ms *after* K4, well past the ~6 ms latch drop. One gate (DOOR_DRV), hardware-timed
-  break-before-make; the firmware just pulses the door line.
+  LED returns to ground through **Q3 unit 1** (one half of a **2N7002DW** dual N-FET) whose gate ramps on
+  **R17 (22 kΩ) · C18 (1 µF) ≈ 20 ms** — so K2 closes ~20 ms *after* K4, well past the ~6 ms latch drop.
+  One gate (DOOR_DRV), hardware-timed break-before-make; the firmware just pulses the door line.
 
 With the seal-in broken before P2↔P3 closes, the held Türruf is never bridged onto line 3 — so this
 **supersedes the old ~1.75 s "wait out the gong" firmware delay** (there's nothing left to wait out; the
-delay is retirable — see TODO). Boot/idle: DOOR_DRV low ⇒ Q1 off (K2 open) and K4 LED off (K4 closed)
-⇒ fail-safe (SAFE-6). The latch otherwise stays pulled in for the ~60 s call window (a door-open is now
-the deliberate way to end it early).
+delay is retirable — see TODO). Boot/idle: DOOR_DRV low ⇒ Q3 unit 1 off (K2 open) and K4 LED off (K4
+closed) ⇒ fail-safe (SAFE-6). The latch otherwise stays pulled in for the ~60 s call window (a door-open
+is now the deliberate way to end it early).
+
+**Door-open max-on-time watchdog (DOOR-5) — Q3 unit 2 + R25 · C20 · D11.** A firmware hang that left
+DOOR_DRV latched high would hold the opener "pressed" indefinitely — the TV20/S is passive and does not
+time-limit it. A hardware one-shot bounds it: DOOR_DRV charges **C20 (1 µF)** through **R25 (6.8 MΩ) ≈
+6.8 s**, and once that node crosses the FET threshold **Q3 unit 2** pulls DELAY_GATE low — turning off
+Q3 unit 1, so **K2 opens and the P2↔P3 bridge releases** even with DOOR_DRV still asserted (**~6.9 s**
+nominal; ~2.5–10 s across the 2N7002's Vgs(th) spread — a 74LVC1G17 Schmitt could tighten it if a
+predictable time is ever wanted). **D11 (1N4148W)** dumps C20 the instant DOOR_DRV drops, re-arming for
+the next pulse. The 1.75 s firmware pulse ends long before the timeout, so a real open is never cut. It
+releases **K2 only**: K4 stays energised in the fault (it merely holds the seal-in broken, harmless),
+and a reset/brownout still drops everything through the gate pull-downs — so this is defense-in-depth
+over the ESPHome task watchdog (which also reboots a hung MCU). Q3 unit 1 (break-before-make) and unit 2
+(this watchdog) share one **2N7002DW** package. Verified in `sim/test` (~6.9 s release).
 
 > **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
 > it is the junction of C1, R1, the K5 coil and its NO contact: the ring's **DC energises the
@@ -114,13 +127,13 @@ the deliberate way to end it early).
 
 | Colour | J2 pin |
 |--------|----------|
-| Orange | P1 (J2) |
-| Green | P2 (J2) |
-| Blue/white stripe | P3 (J3) |
-| Blue | P4 (line 4, Türruf — J3) |
-| Black | P5 (J3) |
+| Orange | P1 — J2.1 |
+| Green | P2 — J2.2 |
+| Blue/white stripe | P3 — J2.3 |
+| Blue | P4 (line 4, Türruf) — J2.4 |
+| Black | P5 — J2.5 |
 
-> All five WF26 bus wires land directly — P1/P2 on **J2**, P3/P4/P5 on **J3** — with **no jumper**,
+> All five WF26 bus wires land directly on the one 5-way **J2** (P1–P5 = pins 1–5), with **no jumper**,
 > since line 4 is a single net now (chime-suppress no longer breaks it; see "WF26 connector").
 
 ---
@@ -376,10 +389,10 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | MCU | **ESP32-C6-MINI-1U-H4** (u.FL external antenna; LCSC C20627095) | ESPHome-supported, native USB, enough GPIO for the audio path (I²S + I²C + 3 SSR gates + 2 opto inputs) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
-| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: **Q1 2N7002** + R17 (22 kΩ) + C18 (1 µF) | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q1·R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
+| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: **Q3 2N7002DW** dual N-FET — unit 1 + R17 (22 kΩ) · C18 (1 µF), unit 2 + R25 (6.8 MΩ) · C20 (1 µF) · D11 | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q3 unit 1 · R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"); a second one-shot (**Q3 unit 2 + R25·C20·D11**) releases K2 ~6.9 s after assertion, so a hung DOOR_DRV cannot hold the opener (DOOR-5). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
 | SSR LED drive | **GPIO → 10 k pull-down → 300 Ω → SSR LED** (no transistor, no flyback) | Each SSR "driver" is just its LED + a series R: ~7 mA from the 3V3 GPIO through R4/R5/R6 (300 Ω); R7/R8/R9 (10 k) pull-downs ⇒ SSRs default **off** at boot (SAFE-6). No coil ⇒ no flyback; the one surviving flyback (D1) is on the passive WF26 latch coil. (Retired the old per-channel relay-driver sheet.) |
 | Opto polarity | **Fixed: LED anode → bus line, cathode → R_lim → P1** + **anti-parallel 1N4148W clamp** across each LED | Bus is taken to drive active lines **positive w.r.t. common (P1)**, so polarity is hardwired (no switch) — bench-confirm per channel by ringing each bell. The clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on the AC tone content |
-| WF26 connector | **DG350-3.5 pluggable terminals — J2 (2-way) + J3 (3-way), 5-way total (P1–P5)** | See "WF26 connector". 5-way (not 6): line 4 is one net now — chime-suppress moved off line 4 onto C1, so the IN_P4/P4 split is gone |
+| WF26 connector | **DB125-3.5-5P screw terminal — J2, 5-way (P1–P5 = pins 1–5)** (LCSC C3646874) | See "WF26 connector". 5-way (not 6): line 4 is one net now — chime-suppress moved off line 4 onto C1, so the IN_P4/P4 split is gone |
 | USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers |
 | Layers | **4-layer** | the USB Type-C single-row escape needs the extra layers + a solid plane reference; see "PCB — layout constraints & rationale" |
 | Power | **USB-C 5 V** → SS14 reverse-protection Schottky → **SGM2212-3.3** low-dropout LDO (C3294699) | The ~0.45 V Schottky drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
@@ -478,7 +491,7 @@ K1 (talk+TX gate,  GAQW212GS 2×NO): ch1 P2↔TALK_BRIDGE, ch2 TX_OUT↔P3  — 
 K2 (door opener,   GAQY212GS NO): P2 ↔ P3                  — energise to bridge P2↔P3 (the ÖT direct short)
 K3 (chime mute,    GAQY412EH NC): P4 ↔ CHIME_C1            — at rest CLOSED (gong → C1 → speaker); energise to OPEN = mute
 K4 (seal-in break, GAQY412EH NC): SW3.6 ↔ K5.3    — in the P2→K1_COM seal-in; energise to OPEN = drop the latch
-LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q1 delay) + R21→K4 LED (each Rn = 300 Ω)
+LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 unit 1 delay) + R21→K4 LED (each Rn = 300 Ω)
 ```
 
 - **PhotoMOS, bidirectional.** K2/K3/K4 are single-pole (pins 3/4 the AC/DC contact of back-to-back
@@ -499,7 +512,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   it. Line 3 is light (the TV20/S amp input ∥ R28's 2.2 kΩ), so the codec drives **line 3**, and K1's
   ch1 supplies the DC handshake from P2.
 - **K2 — door opener.** Energise to bridge **P2↔P3** directly (dead short) — the ÖT the TV20/S reads
-  as "open". Paired with **K4 + the Q1 lead** to mirror S1's break-before-make — see "Door-open
+  as "open". Paired with **K4 + the Q3-unit-1 lead** to mirror S1's break-before-make — see "Door-open
   mirrors S1".
 - **K3 — chime mute.** In the gong's audio path (`P4 ↔ CHIME_C1 ↔ C1 ↔ P5 → LS1`). NC ⇒ de-energised
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
@@ -507,7 +520,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4).
 - **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`SW3.6 ↔
   K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
-  (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~20 ms (Q1·R17·C18) the
+  (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~20 ms (Q3 unit 1 · R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
 - K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
   door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. Whether the TV20/S
@@ -559,7 +572,7 @@ Part values/footprints/LCSC numbers are maintained **directly in the authoritati
 **exports** the order files from them (`kicad/fab/doorbell-bom-jlcpcb.csv` + `doorbell-cpl.csv`). See
 `ORDERING.md` for the stock/eligibility checks at order time.
 
-> J1/J2/J3 are through-hole but **assembled by JLCPCB** (THT assembly), not hand-soldered.
+> J1/J2 are through-hole but **assembled by JLCPCB** (THT assembly), not hand-soldered.
 
 ### PCB — layout constraints & rationale
 
@@ -734,7 +747,7 @@ not a tweak of the current board:
   bottom edge, at the left/right edges** (confirm the exact boss positions against the real WF26
   with calipers).
 - **Placement is pinned to the enclosure's openings**, not optimised for routing: the transducer
-  behind the **speaker grille**, S1/S2 under the existing **button apertures**, and J2/J3 (the 5-wire
+  behind the **speaker grille**, S1/S2 under the existing **button apertures**, and J2 (the 5-wire
   bus) at the housing's **wire entry**. The switch **plunger tips** must land where the enclosure
   buttons press them — given **relative to the board edges**, so they survive an outline move:
   - **S1 (top button, door release):** **17 mm from the top edge, 20 mm from the right edge**.

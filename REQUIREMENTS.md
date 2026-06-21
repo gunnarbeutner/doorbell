@@ -149,8 +149,17 @@ shared party line across apartments.
   timeout, so the board still reads "session active" (line 4 hot, OC1 high) after the door is already
   open; and **(b)** the held latch **bridges the live line 4 onto line 3** (P4→K1_COM→line 2→line 3).
   Mirroring S1's transfer removes both. *(Met: **K4** — an NC SSR in series in the seal-in — drops the
-  latch on a door-open, and a **2N7002 (Q1) + R17·C18 RC** delays K2's make ~20 ms behind K4's break for
-  a hardware break-before-make; see DESIGN.md "Door-open mirrors S1". Verified in `sim/test`.)*
+  latch on a door-open, and **Q3 unit 1** (a 2N7002DW dual N-FET) **+ R17·C18 RC** delays K2's make
+  ~20 ms behind K4's break for a hardware break-before-make; see DESIGN.md "Door-open mirrors S1".
+  Verified in `sim/test`.)*
+- **DOOR-5 (SHOULD)** A board door-open SHOULD **self-terminate in bounded time even if the firmware
+  hangs** with the drive asserted: a stuck-high door line MUST NOT hold the opener indefinitely (the
+  TV20/S is passive — it does not time-limit the bridge). *(Met: a hardware **max-on-time watchdog** —
+  an RC one-shot, R25 (6.8 MΩ) · C20 (1 µF) ≈ 6.8 s, whose FET (**Q3 unit 2**) gates the K2 drive off
+  ~6.9 s after assertion regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
+  line drops. Reset/brownout already drops the opener via the gate pull-downs (DOOR-3 / SAFE-6), and the
+  ESPHome task watchdog reboots a hang — so this is defense-in-depth. See DESIGN.md "Door-open
+  max-on-time watchdog". Verified in `sim/test`.)*
 
 ## FW — Firmware host & control
 
