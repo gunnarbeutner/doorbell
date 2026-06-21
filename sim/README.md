@@ -75,7 +75,7 @@ from the rated coil voltage in the value string (`DC12`, `4.5V`).
 - **ICs (ESP32, codec) — supply current only:** their I/O (GPIO, I2S, USB, codec) is **not** modeled, so
   they still render **red** and signals through their pins aren't trusted; but their power draw *is* — each
   is an equivalent resistive load (`Ic`) from its supply pin to GND at a representative active current
-  (ESP32 ~80 mA, ES8311 ~10 mA), which pulls through the LDO → +5V → Schottky → VBUS. Use **Extra
+  (ESP32 ~100 mA, ES8311 ~10 mA), which pulls through the LDO → +5V → Schottky → VBUS. Use **Extra
   elements** for anything else you want to add by hand.
 - **Floating vs 0 V:** nets with no DC-conductive path to ground or a source are flagged **floating**
   (dashed grey on the board, "(floating)" in the tooltip) — distinct from a real 0 V net.

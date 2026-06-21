@@ -408,8 +408,8 @@ U3's pin order, so the bus fans out with no crossings.
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
 | IO11 | 15 | K1 gate — **TX (PTT)**: the dual K1 sources the P2 handshake + gates the codec onto line 3 (high-Z at idle, BUS-1) | out | PTT_DRV → R4+R24 (300 Ω each) → K1's two SSR LEDs; R7 10 k pull-down ⇒ off at boot |
-| IO1 | 5 | K2 gate — front-door buzzer / ÖT (bridge P2↔P3 direct; also K4 seal-in break) | out | DOOR_DRV → R5 (300 Ω) → SSR LED; R8 10 k pull-down ⇒ off at boot |
-| IO2 | 6 | K3 gate — chime suppress (open C1: P4↔CHIME_C1) | out | MUTE_DRV → R6 (300 Ω) → SSR LED; R9 10 k pull-down ⇒ off (NC SSR ⇒ off = gong rings) |
+| IO1 | 5 | K3 gate — chime suppress (open C1: P4↔CHIME_C1) | out | MUTE_DRV → R6 (300 Ω) → SSR LED; R9 10 k pull-down ⇒ off (NC SSR ⇒ off = gong rings) |
+| IO2 | 6 | K2 gate — front-door buzzer / ÖT (bridge P2↔P3 direct; also K4 seal-in break) | out | DOOR_DRV → R5 (300 Ω) → SSR LED; R8 10 k pull-down ⇒ off at boot |
 | IO42 | 38 | OC1 collector — house bell (Türruf, line 4 / P4) | in | held high by **R22** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
 | IO41 | 37 | OC2 collector — apartment bell (Etagenruf, P5) | in | held high by **R23** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
 | IO19 / IO20 | 23 / 24 | USB D− / D+ (north edge) | — | native USB-Serial-JTAG: flashing + logs |
@@ -419,8 +419,6 @@ U3's pin order, so the bus fans out with no crossings.
 | IO0 | 4 | BOOT strap | — | 10 kΩ pull-up + SW1 button to GND |
 | EN | 45 | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec) + SW2 button |
 | IO3 | 7 | spare — JTAG-source strap, left unused | — | native USB-Serial-JTAG is the JTAG/flash path |
-| — | — | R12 (3.3 k pull-up) | — | no strapping role on the S3 — leave **DNP** or repurpose as a spare-GPIO pull-up |
-
 ### Bell / session sense front-end
 
 Two identical channels (OC1 = house bell on P4↔P1, OC2 = apartment bell on P5↔P1):

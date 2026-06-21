@@ -8,10 +8,10 @@ import { netV } from '../engine.js';
 // down realistically and the current shows in the trace-flow animation.
 //
 // Representative active-mode currents (adjust here for a different operating point):
-//   ESP32-C6-MINI-1  ~80 mA  CPU running, Wi-Fi connected/listening (TX bursts run much higher)
+//   ESP32-S3-MINI-1  ~100 mA  dual-core 240 MHz, Wi-Fi connected/listening (TX bursts run much higher)
 //   ES8311 codec     ~10 mA  playback DAC + record ADC active
 const LOADS = [
-  { re: /esp32/i, mA: 80 },
+  { re: /esp32/i, mA: 100 },
   { re: /es8311/i, mA: 10 },
 ];
 
