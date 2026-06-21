@@ -305,7 +305,10 @@ Key facts:
   the handset reproduces or picks up is at P1/P5 (its single transducer).
 - **C1 (P5↔P4) is the audio crossover.** It couples the speaker-hot node (P5) to the Türruf
   line (P4) — passing audio (AC), blocking DC — the single component straddling the transducer
-  and the signalling side.
+  and the signalling side. **Polarity: + toward P4 (the +12 V Türruf side), − toward P5 —
+  bench-confirmed on the genuine WF26** (its + lead traces to line 4). All three agree: the
+  genuine unit, the wf26 reverse-engineered schematic (C1.1+ → P4), and the V4 board (C19/1+ →
+  P4 via K3) — only an early +→P5 hand-assumption was wrong.
 
 **Audio path — fully derivable now:**
 
@@ -326,10 +329,6 @@ Key facts:
 > **2.2 kΩ 4↔3 talk bridge (S2)**. No firmware handshake exists.
 
 **Open / inferred (verify on the bench):**
-- C1 polarity: the board sets **+ toward P4** (the Türruf +12 V DC side; see above). The
-  reverse-engineered handset drawing shows + toward P5 — the source of the old assumption — but
-  P4 is the +12 V line, so the board's orientation is the electrically-correct one (VERIFICATION.md
-  Finding 2). Bench-confirm against the genuine unit (the only thing still open).
 - **Does line 4 hold ~12 V through the talk window, not just the ring?** Listen needs the relay
   to stay pulled in for the session, so the Türruf DC must persist past the chime. Re-measure
   P4→P1 idle / ringing / mid-talk-window.

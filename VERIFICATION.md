@@ -117,9 +117,9 @@ These are the kinds of issue this review exists to surface — judgement calls, 
   measurement-justified SAFE-3 deviation. Confirm the TV20/S common is safe to bond to USB/PC
   ground and that no bus conductor floats at a mains-referenced potential; containment then rests
   on per-tap protection + the sacrificial F1 fuse (SAFE-7).
-- **Electrolytic polarity vs the handset readout.** The gong cap's "+" follows the +12 V P4 side,
-  which is the electrically-correct orientation even where the reverse-engineered handset drawing
-  marks it the other way — confirm P4 is the +12 V line on the real install.
+- **Electrolytic polarity vs the handset readout.** The gong cap's "+" follows the +12 V P4 side —
+  **bench-confirmed on the genuine WF26 (+→P4, −→P5)**, matching both the wf26 reverse-engineered
+  schematic (C1.1+ → P4) and the V4 board (C19). Only an early +→P5 hand-assumption was wrong.
 - **Pinouts confirmed by proxy** (see §4) — flag any part not yet checked against its own sheet.
 - **Single-ended TX off OUTP.** The codec's differential negative half is AC-terminated, not
   driven — functionally fine, but the lever if the line-3 drive level proves marginal.
