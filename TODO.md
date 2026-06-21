@@ -172,7 +172,7 @@ tether it to a mains-earthed PC. Pair with a DMM.
       relay drops and the handset goes dead), and V3 senses it fine — so it holds. Just confirm the
       hold level keeps **OC1 above its detection threshold edge-to-edge** (relay hold V < pull-in V),
       so OC1 is a clean session gate. Measure mid-talk-window P4→P1.
-- [ ] **K5 session *timeout* mechanism — confirm on the genuine handset.** **Session model (P2
+- [x] **K5 session *timeout* mechanism — confirm on the genuine handset.** **Session model (P2
       seal-in; door-open path bench-confirmed in `ring4`):** the TV20/S supply is on **P2**; it pulses
       **line 4** high for ~1 s to pull K5 in, after which the **handset holds line 4 hot itself**,
       sealed in from P2 (`P2 → S1 NC → K1_COM → the closed NO contact → line 4 → coil`) — so line 4 sits
@@ -180,10 +180,11 @@ tether it to a mains-earthed PC. Pair with a DMM.
       ends it: S1's break-before-make transfer opens P2↔K1_COM ~6 ms before bridging P2↔P3, so the coil
       drops (line 4 falls, P2 *rises* as the coil load comes off it — `ring4`). The sim confirms the
       hold (drop line 4 → stays in), the P2-low (timeout) release, **and** the S1 break-before-make
-      release (`SW3` press drops the latch — the reference test). **Still open — the ~60 s timeout:** the
-      TV20/S times out ~60 s after the last talk activity (or the initial Türruf with no talk) and ends
-      the session by an **unconfirmed** mechanism — *likely* a brief **P2-low pulse** that drops the
-      coil. Capture a session that ends on the *timeout* (no door-open) and watch P2 to confirm.
+      release (`SW3` press drops the latch — the reference test). **Timeout confirmed = P2-low pulse (`ring-no-answer`):** a ~58.5 s session that ended on
+      the timeout (no door-open) shows the TV20/S **sinking P2** — line 4 tracks 0.18 V under it (tied
+      through the seal-in contact) then releases to 0 as K5 drops. The tell: **P2 holds ~2.8 V for ~18
+      ms after line 4 has separated and fallen**, then snaps back — a *driven* low, not an unload. P3
+      stays cold (no door-open). (Immaterial to the board anyway — OC1 sees line 4 fall either way.)
       DESIGN.md ("Bell signals" / "WF26 internal circuit") describes the model.
 - [ ] **Suppress mid-session — confirm the call survives gong-suppress on the bench.** The session is
       held by the **handset's P2 seal-in** (the TV20/S only pulses line 4 ~1 s), so it does **not**

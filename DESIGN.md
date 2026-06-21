@@ -166,8 +166,14 @@ From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehl
   `ring4`) presses the genuine handset's **break-before-make DPDT S1**, which opens **P2↔K1_COM** (the
   seal-in) ~6 ms *before* it closes the P2↔P3 bridge — so the coil drops (line 4 falls and P2 *rises*
   ~9.4→11 V as the ~29 mA coil load comes off it, then both settle ~9 V at the bridge); the **~60 s
-  timeout** (after the last talk activity, or the initial Türruf with no talk) ends it by an
-  **unconfirmed** mechanism — *likely* a brief **P2-low** pulse that forces K5 to drop (see TODO).
+  timeout** (after the last talk activity, or the initial Türruf with no talk) ends it by a brief **P2-low pulse** — **bench-confirmed, `ring-no-answer`** (a ~58.5 s hold that
+  released with **no door-open**): the TV20/S **sinks P2**, line 4 tracking 0.18 V under it through the
+  closed seal-in contact (both fall ~9.3 → 2.5 V), so the K5 coil loses its supply and drops, line 4
+  following then releasing to 0. The tell that it's P2 driven (not line 4): **P2 holds a ~2.8 V plateau
+  for ~18 ms *after* line 4 has separated and fallen to ~0**, then snaps back to 12 V — a *held* low,
+  not an unload (which would recover the instant K5 releases); P2 also leads line 4 at the fall onset
+  by ~60–100 µs. P3 stays cold throughout. (Which line is pulled is **immaterial to the board** anyway
+  — we sense line 4 via OC1, which falls either way.)
 - **Tones:** Türruf = **3-Klang-Gong** (3-chime) — the gong is an **AC tone superimposed on the
   line-4 DC pedestal at the *start*** of the window; once the chime finishes, line 4 holds
   **steady DC** for the remainder. Etagenruf = **Dauerton** (continuous).
@@ -287,8 +293,11 @@ Key facts:
   supply** for the session — the TV20/S is not driving line 4. **Dropping line 4 does *not* release it** — P2
   holds it; the session ends via **P2**: at a door-open S1's **break-before-make** transfer opens
   P2↔K1_COM ~6 ms *before* bridging P2↔P3, dropping the coil (line 4 falls, P2 *rises* as it unloads —
-  **bench-confirmed, `ring4`**); or the ~60 s inactivity timeout ends it by an **unconfirmed** mechanism
-  (likely the TV20/S briefly pulls P2 low; see TODO). **K5:**
+  **bench-confirmed, `ring4`**); or the ~60 s inactivity timeout ends it by a brief **P2-low pulse** (**bench-confirmed,
+  `ring-no-answer`**): the TV20/S sinks P2 — **held ~2.8 V for ~18 ms *after* line 4 has separated and
+  fallen to 0**, so it's P2 *driven* low (line 4 merely follows) — dropping the K5 coil. P3 stays cold
+  (no door-open). Which line is pulled is immaterial to the board anyway (OC1 sees line 4 fall either
+  way). **K5:**
   6-pin DIL SPDT (1 Form C), HJR-4102-N-12V, coil 5/8 (~320 Ω), common
   1+12 = K1_COM, **NO pin 6 = P4**, NC pin 7 = open. Energised → K1_COM↔P4.
 - **Single transducer:** LS1 (16 Ω) is the **only** transducer (no separate mic), across
