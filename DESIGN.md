@@ -376,6 +376,17 @@ chime-suppress moved off line 4 onto C1).
 relay module work loose over months. The redesign eliminates all inter-board jumpers by
 integrating everything onto one PCB.
 
+**Field failure — the Etagenruf sense is dead.** On the deployed V3 board the apartment
+(Etagenruf, line 5) sense no longer fires while the house (Türruf, line 4) sense works. Root cause:
+the **shared opto limiter** (one 5.1 kΩ in the common cathode return). A Türruf drives line 4 to
+~12 V, lifting the shared cathode node to ~10.8 V and reverse-biasing the *idle* Etagenruf LED past
+its 6 V V_R — and that reverse current returns through line 5's 16 Ω speaker, **bypassing the
+5.1 kΩ**, so it is limited only by the line-4 source impedance (tens of mA, sustained for the ~60 s
+session, on the *frequent* house ring). That cooked the Etagenruf opto's LED; the Türruf opto,
+seeing only the milder/brief AC self-reverse, survived. **V4 fixes this with per-opto limiters**
+(each idle cathode sits at ~0 V — no shared node to lift, no reverse path to cook), and D9 is
+retained. Bench evidence: `osci/p5-chime-20260621-165156`.
+
 ---
 
 ## V4 — integrated single board
@@ -450,12 +461,14 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   the reverse half-wave and limits the LED's reverse voltage to ~0.7 V (< its 6 V VR).
   **Lib convention: 1N4148W pin 1 = cathode, pin 2 = anode** (CDFER JLCPCB lib, same as the
   K5 coil flyback D1 and Schottky D4 — pin 1 toward +5V there).
-  V3 ran both channels with **no reverse clamp** and detects fine, so **D8 (OC1 / line 4, DC) is
-  droppable** (one polarity, nothing to clamp) and **D9 (OC2 / line 5) is optional** — line 5 is an
-  AC tone that does reverse-bias the LED, so D9 is the only one with a real (if V3-survivable) job.
-- **Per-opto limiters (R_lim1–2, 5.1 kΩ):** one per channel; a shared limiter would let a
-  ringing channel lift the common node and reverse-bias the idle LED. R_em (1 kΩ emitter,
-  shared) carries only µA and is not part of any reverse path.
+  **D8 (OC1 / line 4, DC) is droppable** (one polarity, nothing to clamp). **D9 (OC2 / line 5) is
+  kept** — line 5's Etagenruf reverse-biases the LED to ~−5 V, and the deployed V3 board's Etagenruf
+  opto **died of reverse stress** (shared-limiter cross-channel reverse-bias; see "V3"), so this LED
+  avalanches low and reverse-bias is its fatal mode — D9 is cheap insurance.
+- **Per-opto limiters (R_lim1–2, 5.1 kΩ):** one per channel; a shared limiter lets a ringing
+  channel lift the common node and reverse-bias the idle LED — **field-confirmed: this killed V3's
+  Etagenruf opto** (see "V3"). With per-opto limiters each idle cathode sits at ~0 V, so there is no
+  shared node to lift. R_em (1 kΩ emitter, shared) carries only µA and is not part of any reverse path.
 - Bell present → LED conducts → phototransistor pulls the GPIO low → ESPHome
   `inverted: true` ⇒ "on". GPIO LOW level ≈ 0.12–0.27 V.
 - **Sense margin (by analysis):** at IF ≈ 1.7–2.1 mA (10–12 V line) the collector sits at

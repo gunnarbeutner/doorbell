@@ -260,10 +260,12 @@ What remains is hardware confirmation:
 
 ## Bell / session-sense simplifications (optional)
 
-- [ ] **Drop the opto reverse clamps.** V3 runs both channels with no reverse diode and detects
-      fine: **D8 (OC1 / line 4, DC) is droppable** outright; **D9 (OC2 / line 5, AC tone) is
-      optional** — the tone does reverse-bias the LED, so D9 is the only one with a real (if
-      V3-survivable) job. *(DESIGN.md: "Bell / session sense front-end")*
+- [ ] **Drop D8 (Türruf clamp); KEEP D9 (Etagenruf clamp).** **D8 (OC1 / line 4, DC)** is one
+      polarity with nothing to clamp — droppable. **D9 (OC2 / line 5) stays:** line 5's Etagenruf is
+      an AC tone that reverse-biases the LED to ~−5 V, and the deployed **V3 board's Etagenruf opto
+      died of reverse stress** (`osci/p5-chime-20260621-165156`) — so this LED avalanches below ~11 V
+      and reverse-bias is its fatal mode, putting the ~5 V self-reverse too close to risk. D9 is one
+      1N4148W of insurance. *(DESIGN.md: "Bell / session sense front-end", "V3")*
 - [ ] **(Future) fold session-sense into the K5 latch, drop OC1.** Make K5 a **12 V DPDT,
       coil on P4↔P1**, with a spare pole = 3V3→GPIO + pull-down for a galvanically-isolated
       session/ring signal — replaces OC1 (+ its limiter, D8). **Not adopted** — OC1 works; keep it for
