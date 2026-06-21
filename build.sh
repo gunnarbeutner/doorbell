@@ -8,9 +8,10 @@
 #   ./build.sh sch       schematic ERC (+ PDF export)
 #   ./build.sh check     PCB placement constraints (check_pcb.py)
 #   ./build.sh route     verify planes/thieving/connectivity (route.py) + DRC
+#   ./build.sh sim       run the sim/ circuit-simulator unit tests
 #   ./build.sh fab       export Gerbers/drill/position + BOM to kicad/fab/
-#   ./build.sh all       sch + check + route   (all checks, no fab)
-#   ./build.sh all-route sch + check + route + fab   (full run)
+#   ./build.sh all       sch + check + route + sim   (all checks, no fab)
+#   ./build.sh all-route sch + check + route + sim + fab   (full run)
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -37,6 +38,10 @@ route() {
   kicad-cli pcb drc "$PCB" -o /tmp/doorbell_drc.txt 2>&1 | q | tail -1
   grep -iE "unconnected pads|DRC violations" /tmp/doorbell_drc.txt || true
 }
+sim() {
+  echo "▶ sim unit tests"
+  ( cd sim && node --test )
+}
 fab() {
   echo "▶ fab outputs -> kicad/fab/"
   mkdir -p kicad/fab
@@ -59,9 +64,10 @@ case "${1:-all-route}" in
   sch)        sch ;;
   check)      check ;;
   route)      route ;;
+  sim)        sim ;;
   fab)        fab ;;
-  all)        sch; check; route ;;
-  all-route)  sch; check; route; fab ;;
-  *) echo "usage: $0 {sch|check|route|fab|all|all-route}"; exit 1 ;;
+  all)        sch; check; route; sim ;;
+  all-route)  sch; check; route; sim; fab ;;
+  *) echo "usage: $0 {sch|check|route|sim|fab|all|all-route}"; exit 1 ;;
 esac
 echo "✓ done"

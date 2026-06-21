@@ -24,7 +24,8 @@ own ERC/DRC can't express and exports the fab outputs from the authoritative fil
 - **DRC** — 0/0. Clearances are pinned to JLCPCB capability in `kicad/doorbell.kicad_dru`.
 - **`check_pcb.py`** — placement PASS (edge connectors J1/J2 and U1 flush on their board edges;
   parts inside the outline).
-- **`route.py`** — 0 unrouted nets; copper-thieving float islands under the sliver limit.
+- **`route.py`** — 0 unrouted nets; no over-limit copper-thieving float island wide enough to take a
+  GND stitching via (too-narrow slivers are accepted).
 - **Firmware** — `esphome config firmware/doorbell-v4.yaml` parses clean (needs a `secrets.yaml`
   with `wifi_ssid`/`wifi_password` alongside). Confirm the GPIO assignments in the YAML match the
   schematic.
