@@ -9,6 +9,13 @@ to the scope over its raw SCPI socket (:5555) and frames reads/writes reliably. 
 hand-rolled SCPI version hit persistent socket desync and config writes that wouldn't land
 on this unit; pydho800 fixed both, so the custom layer was dropped.)
 
+## Analysis UI
+
+For an interactive alternative to the static `.png` overviews — play the audio, zoom into events,
+read true voltages, measure with cursors, and view the gong spectrum/spectrogram — run the web
+viewer in [`viewer/`](viewer/) (`cd viewer && npm start` → http://localhost:8137). It decompresses
+the `.csv.zst` on the fly and has no dependencies. See [`viewer/README.md`](viewer/README.md).
+
 ## Setup
 
 ```sh

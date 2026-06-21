@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>osci — scope recording viewer</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header id="bar">
+  <div class="grp">
+    <span class="brand">osci</span>
+    <select id="rec" title="recording"></select>
+  </div>
+  <div class="grp" id="chans"></div>
+  <div class="grp">
+    <button id="acdc" title="toggle AC / DC (d)">DC</button>
+    <button id="tl" class="on" title="toggle event timeline (e)">events</button>
+    <button id="reset" title="reset view (0 / double-click)">⟲ fit</button>
+  </div>
+  <div class="grp">
+    <span class="lbl">listen</span>
+    <select id="listen" title="audio channel"></select>
+    <button id="play" class="primary" title="play / pause (space)">▶</button>
+    <button id="playCursor" title="play from cursor A (c)">▶A</button>
+    <button id="playWin" title="play visible window (w)">▶win</button>
+  </div>
+  <div class="grp grow"><span id="readout" class="readout"></span></div>
+</header>
+
+<div id="body">
+  <div id="main">
+    <canvas id="scope"></canvas>
+    <div id="status">loading…</div>
+  </div>
+  <aside id="side">
+    <section>
+      <h2>Cursors <span class="hint">click = A · shift-click = B · x = clear</span></h2>
+      <div id="cursorReadout" class="cur"><div class="hint">No cursors set.</div></div>
+    </section>
+    <section>
+      <h2>Events
+        <span class="seg">
+          <button id="mHigh" class="on" title="semantic protocol events">high-level</button>
+          <button id="mRaw" title="raw edges &amp; bursts">raw</button>
+        </span>
+      </h2>
+      <div class="hint">click to zoom · strip is under the channels</div>
+      <div id="eventList" class="events"><div class="hint">—</div></div>
+    </section>
+    <section>
+      <h2>Spectrum
+        <span class="seg">
+          <button id="mFFT" class="on" title="line FFT (f)">FFT</button>
+          <button id="mSpec" title="spectrogram (s)">spectro</button>
+        </span>
+      </h2>
+      <div class="hint" id="specHint">listen-channel AC · region = cursors A–B, else visible window</div>
+      <canvas id="spectro"></canvas>
+      <div id="peaks" class="peaks"></div>
+    </section>
+    <section id="noteSec">
+      <h2>Note <span class="hint" id="noteName"></span></h2>
+      <div id="note" class="note"><div class="hint">—</div></div>
+    </section>
+    <section id="pngSec">
+      <h2>Legacy overview</h2>
+      <img id="png" class="png" alt="legacy overview" hidden>
+    </section>
+  </aside>
+</div>
+<div id="tip"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

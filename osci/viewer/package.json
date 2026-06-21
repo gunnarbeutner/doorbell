@@ -1,0 +1,12 @@
+{
+  "name": "doorbell-osci-viewer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local web UI to play, zoom, and analyze the osci/ scope recordings (CSV true-voltage + WAV audio per channel).",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "node --test"
+  }
+}
