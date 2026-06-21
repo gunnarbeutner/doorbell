@@ -1,14 +1,16 @@
 # Ordering Klingel V4 from JLCPCB (one assembled board)
 
-Goal: get **one assembled board** via JLCPCB **Economic PCBA**. The board is ~64 × 60 mm,
-**4-layer**, all parts on the **top side**; J2 (6-way screw terminal) is through-hole and
-J1 (USB-C) has THT shell stakes — both **assembled by JLCPCB** (THT assembly — nothing is hand-soldered). Economic
-PCBA batch-panels small boards for us, so we don't supply a panel — but the bottom edge
-carries the USB-C (J1, shell protrudes ~1.3 mm) **and** U1's PCB antenna (flush on the edge), so
-confirm JLCPCB's panel/depanel clears them (see the gates below).
+Goal: get **one assembled board** via JLCPCB **Economic PCBA**. The board is ~64 × 59 mm,
+**4-layer**, all parts on the **top side**; J2 (5-way screw terminal) is through-hole and J1
+(USB-C) has THT shell stakes — both **assembled by JLCPCB** (THT assembly — nothing is
+hand-soldered). Economic PCBA batch-panels small boards for us, so we don't supply a panel — but
+the edge connectors (J1 USB-C, shell protrudes; J2 screw terminal) sit flush on the outline, so
+confirm JLCPCB's panel/depanel clears them (see the gates below). U1 is an **ESP32-S3-MINI-1U** —
+a **u.FL external antenna** module, so there is no PCB-antenna edge keepout to protect (route the
+antenna lead out of the enclosure instead).
 
-> Run `./build.sh all-route` first to (re)generate the fab files in `kicad/fab/` — the
-> committed gerbers/BOM/CPL are build outputs and may lag the design scripts.
+> Run `./build.sh all-route` first to (re)export the fab files in `kicad/fab/` — the committed
+> gerbers/BOM/CPL are build outputs and may lag the schematic.
 
 ## Files to upload
 
@@ -28,12 +30,13 @@ confirm JLCPCB's panel/depanel clears them (see the gates below).
 - **PCB Assembly:** ON
   - **Assembly side:** Top only (the board has no bottom-side parts)
   - **PCBA Type:** **Economic** if the quote allows it — **verify part eligibility at order
-    time**: the BOM was originally curated to be Economic-eligible, but U1 (C6-WROOM-1,
-    C5366877), U3 (ES8311, C962342) and T1 (SM-LP-5001, C7503474) postdate that
-    pass. If any line is Standard-only, the $25/side setup applies —
-    decide then whether to proceed or substitute.
-  - **Stock check:** also confirm LCSC stock on the less-common lines — the three above plus
-    K1–K3 (G6K-2F-Y DC4.5, C397193), J1 (USB4105-GF-A-060, C3025063), J2 (DB125-3.5-6P, C5290323).
+    time**. Most of the BOM is Basic/Preferred (free to assemble); the specialised parts (RF
+    module, codec, LDO, PhotoMOS SSRs, latch relay, USB-C jack, bus terminal) are Extended and
+    carry the per-type setup fee. The full free-vs-fee breakdown is in `JLCPCB-BASIC-PARTS.md`.
+    If a line forces Standard PCBA ($25/side), decide then whether to proceed or substitute.
+  - **Stock check:** confirm LCSC stock on the less-common Extended lines (the RF module, codec,
+    LDO, SSRs, latch relay, USB-C jack, screw terminal, door switches) against the current
+    `kicad/fab/doorbell-bom-jlcpcb.csv` — `JLCPCB-BASIC-PARTS.md` flags the low-stock ones.
   - **Through-hole parts:** J2 (and J1's shell stakes) are assembled by JLCPCB; confirm THT
     assembly is included when JLCPCB reviews/quotes the order.
   - **Assembly Qty:** `2` — assemble one + a spare. The setup/part fees are already paid, so
@@ -41,62 +44,53 @@ confirm JLCPCB's panel/depanel clears them (see the gates below).
 - ☑ **Confirm Parts Placement** — JLCPCB checks rotation/polarity against their library and
   emails a placement preview. **Confirm within 72 h.**
 - ☑ **Depanel boards & edge rail before delivery** — you get the individual boards freed from
-  the frame (required anyway: the USB-C and antenna must be clear of the rails to work).
+  the frame (required anyway: the USB-C and screw terminal must be clear of the rails).
 
 ## ⚠️ The two review gates — don't rubber-stamp these
 
 ### 1. Production file (48 h window)
 
 Economic has **no ≥70 mm / edge-rail requirement**; JLCPCB batch-panels small boards itself.
-If it prepares a production file / panel, check before approving that **no break-tab or
-mousebite lands on**:
+If it prepares a production file / panel, check before approving that **no break-tab or mousebite
+lands on the edge connectors** — wherever they sit on the current outline:
 
-- **bottom edge** — J1 (USB-C, shell protrudes ~1.3 mm past the edge) and the **U1 antenna zone**
-  (the WROOM-1 antenna is flush on this edge over a copper keepout; tabs/drill nubs there
-  sit right at the antenna)
-- **top edge** — J2 (6-way screw terminal, flush on the edge)
+- **J1** (USB-C) — the shell protrudes past the board edge; a tab there fouls the connector.
+- **J2** (5-way screw terminal) — flush on its edge; the wire mouths must stay clear.
 
-A tab/cut on any of those → **reject and comment**. Small mousebite nubs elsewhere on the
-edges are fine as long as they're clear of parts.
+A tab/cut on either → **reject and comment**, and JLCPCB re-prepares it. Small mousebite nubs
+elsewhere on the edges are fine as long as they're clear of parts. (No PCB-antenna edge to worry
+about — the u.FL module's antenna is external.)
 
 ### 2. Parts placement (72 h window)
 
 JLCPCB "corrects" to their library's orientation — usually right, occasionally wrong if their
-pin-1 convention differs. Eyeball pin 1 / direction on the polarity-sensitive parts,
-worst-consequence first:
+pin-1 convention differs. Eyeball pin 1 / band direction on the polarity-sensitive parts against
+the schematic, **worst-consequence first**. Identify the refdes from the BOM; the classes to
+scrutinise:
 
-| Part | Check | If wrong |
+| Class | Why it matters | If wrong |
 |------|-------|----------|
-| **U1** ESP32-C6-WROOM-1-N8 | pin 1 / rotation | dead board |
-| **U2** SGM2212 LDO (SOT-223) | orientation | no 3V3, or damage |
-| **U3** ES8311 codec (QFN-20, 0.4 mm pitch) | pin-1 dot | codec dead / damage |
-| **D4** SS14 (VBUS Schottky) | band direction | blocks VBUS → board dead |
-| **D8, D9** 1N4148W (opto clamps) | band — must be **anti-parallel** to the opto LED (band toward the LED-anode / bus-line net) | both bell-sense channels dead — a silent failure until bench test; scrutinise these hardest |
-| **D1, D2, D3** 1N4148W (relay flybacks) | band direction | shorts the relay drive |
-| **D5** TPD2S017 (USB ESD) | pin-1 orientation — channels are in series with D± | USB dead / wrong clamp |
-| **D10** SMF5.0A (VBUS TVS) | band direction | shorts or leaves VBUS unclamped |
-| **Q1, Q2, Q3** 2N7002 | SOT-23 G/S/D | relay drive dead |
-| **OC1, OC2** LTV-217 optos | pin 1 | sense channels dead |
-| **K1, K2, K3** G6K-2F-Y relays | orientation | contacts swapped → opener/chime logic wrong |
-| **T1** SM-LP-5001 | pin 1 / winding A vs B | bus and codec windings swapped → codec sits on the bus side, isolation defeated |
-| **D6** power LED | anode/cathode | just won't light (harmless) |
+| **Opto reverse-clamps** (1N4148W anti-parallel across the bell-sense opto LEDs) | band must point to the LED-anode / bus-line net | **both bell-sense channels dead** — a silent failure until bench test; **scrutinise hardest** |
+| **MCU** (ESP32-S3-MINI-1U) | pin 1 / rotation | dead board |
+| **LDO** (SGM2212, SOT-223) | orientation | no 3V3, or damage |
+| **Codec** (ES8311, QFN-20, 0.4 mm pitch) | pin-1 dot | codec dead / damage |
+| **USB ESD** (TPD2S017) | pin-1 — channels are in series with D± | USB dead / wrong clamp |
+| **VBUS Schottky / TVS** (SS14 series, SMF5.0A clamp) | band direction | blocks VBUS, or shorts/leaves it unclamped |
+| **PhotoMOS SSRs** (talk/door NO; chime-mute / seal-in-break **NC**) | the NC parts must stay **1-Form-B** | a swapped NO/NC breaks the gong/door fail-safe |
+| **Latch relay** (G6K-2F-Y) + its flyback (1N4148W) | orientation / band | seal-in or flyback wrong |
+| **Dual MOSFET** (2N7002DW) | SOT-363 pinout | door break-before-make / watchdog dead |
+| **Power LED** | anode/cathode | just won't light (harmless) |
 
 ## Cost expectations
 
 The PCB itself is the *small* line. On Economic PCBA there's no $25/side setup; the cost is
-dominated by the per-type **loading/feeder fee** on each unique part (this BOM has ~30 unique
-lines), the parts themselves, and the (small) assembly + stencil cost. Rough budget:
-**€60–110 all-in** on Economic; more if any part forces Standard PCBA ($25/side). You only pay
-assembly on the 1–2 boards you choose to populate.
-
-## Fallback: if JLCPCB's panel mishandles those edges
-
-Reject the production file with a comment describing which edge the tab/cut violates — JLCPCB
-re-prepares it.
+dominated by the per-type **loading/feeder fee** on each unique **Extended** part (~$3 each — see
+`JLCPCB-BASIC-PARTS.md` for the count), the parts themselves, and the (small) assembly + stencil
+cost. Rough budget: **€60–110 all-in** on Economic; more if any part forces Standard PCBA
+($25/side). You only pay assembly on the 1–2 boards you choose to populate.
 
 ## Why this route (one-liner)
 
 Economic PCBA assembles the whole board — SMT, the THT connectors, no setup fee, no forced
-≥70×70 rail panel — while JLCPCB handles fab and panelization of the small board. Watch the
-J1/antenna (bottom) and J2 (top) edges at the Confirm gates, and triple-check
-D8/D9 polarity at the placement gate.
+≥70×70 rail panel — while JLCPCB handles fab and panelization of the small board. Watch the J1 and
+J2 edges at the Confirm gates, and triple-check the opto-clamp polarity at the placement gate.

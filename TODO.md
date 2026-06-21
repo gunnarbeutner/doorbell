@@ -135,20 +135,12 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
 Board widened to 64 mm to match the WF26 PCB; zones re-poured. JLCPCB tooling holes and the M3
 mounting holes (H1/H2) are placed, each with a keepout. **No open enclosure-fit items remain.**
 
-## Docs sweep — drop stale WROOM-1 / PCB-antenna references (DESIGN.md, ORDERING.md)
+## Docs sweep — drop stale MCU / PCB-antenna references — ✓ done
 
-U1 is the ESP32-C6-MINI-1/U (u.FL external antenna) in the schematic, PCB, and firmware (parity
-clean) — the module swap itself is complete. The docs still describe the old WROOM-1 (PCB-antenna)
-module.
-
-- [ ] **Update or delete every WROOM-1 / PCB-antenna reference left in the docs** — the schematic +
-      firmware are the authoritative pin map, so the docs shouldn't restate it. A u.FL module has no
-      PCB antenna, so the antenna-keepout / RF-transparent / antenna-edge notes are moot, not just stale.
-      - **DESIGN.md — ✓ done:** MCU row (→ MINI-1U-H4 / C20627095), GPIO/pad table renumbered to the
-        MINI-1U pads, and the PCB-antenna notes (now a u.FL external antenna, no keepout).
-      - **ORDERING.md** — U1 part/LCSC (C6-WROOM-1 C5366877 → MINI-1U-H4 C20627095), the U1
-        placement-check row, and the antenna-edge depanel/keepout gates.
-      Where a reference merely duplicates the schematic/firmware, delete it rather than re-sync.
+U1 is the **ESP32-S3-MINI-1U-N8** (u.FL external antenna) in the schematic, PCB and firmware
+(parity clean). The docs (DESIGN.md, README.md, ORDERING.md, VERIFICATION.md, docs/) now describe
+the S3 + u.FL module, no longer restate the schematic's pin map, and the PCB-antenna
+keepout / RF-transparent / antenna-edge notes are gone (a u.FL module has no on-board antenna).
 
 ## Bench measurements (settle the remaining open questions)
 

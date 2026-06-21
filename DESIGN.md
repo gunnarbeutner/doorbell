@@ -587,7 +587,7 @@ Part values/footprints/LCSC numbers are maintained **directly in the authoritati
 
 Physical layout — traces, vias, copper zones, component positions, the 4-layer stack — lives in the
 authoritative `kicad/doorbell.kicad_pcb`; this section keeps only the decisions and rules behind it.
-The board is **4-layer**, ~**64 × 60 mm**, all parts on the top side, and **100 % hand-routed in
+The board is **4-layer**, ~**64 × 59 mm**, all parts on the top side, and **100 % hand-routed in
 KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails if any net is unrouted.
 
 - **Why 4-layer.** J1 (USB4105) is a single-row SMD Type-C: D+/D−/CC/VBUS all escape from one
@@ -791,11 +791,12 @@ Automated gates (run by `./build.sh all-route`): **ERC 0 errors, DRC 0/0, routes
 gerbers/BOM/CPL in `kicad/fab/` are exported from them. The firmware config passes `esphome config firmware/doorbell-v4.yaml`
 (ESPHome 2026.5.3; needs a `secrets.yaml` with `wifi_ssid`/`wifi_password` alongside).
 
-An independent blind review (no DESIGN.md / generator scripts; netlist extracted from the
-current schematic, every pinout re-checked against manufacturer datasheets, intercom logic
-cross-checked against the TV20/S PDF + `wf26/wf26.kicad_sch`) is recorded in `VERIFICATION.md`
-— it found **0 polarity / pin-mapping / pin-usability errors** (ERC 0/17) and converged with
-this document on all system-level conclusions, including the corrected WF26 seal-in model.
+`VERIFICATION.md` is the **procedure** for confirming the board before fab — the automated gates,
+an independent blind schematic-review method (reconstruct intent from the netlist + datasheets +
+`wf26/wf26.kicad_sch` + the TV20/S PDF, *without* DESIGN.md), and the bench checks. Run blind
+against the current schematic it found **0 polarity / pin-mapping / pin-usability errors**
+(ERC 0/17), converging with this document on every system-level conclusion (including the WF26
+seal-in model).
 
 **Cross-checked against the WF26** (netlist extracted from `wf26/wf26.kicad_sch` with `kicad-cli`):
 the bus pin map; the door/talk split — **K2 = a direct P2↔P3 short** (genuine S1), the 2.2 kΩ (R28) on

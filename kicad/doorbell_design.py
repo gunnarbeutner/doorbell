@@ -37,7 +37,7 @@ NOCONN = [("K2","2"),("K2","5"),("K2","6"),("K2","7"),
           ("K1","2"),("K1","5"),("K1","6"),("K1","7"),
           ("J1","A8"),("J1","B8"),
           # ES8311 (U3): all 20 pins + EP are used — no NC pins.
-          ("T1","2"),("T1","5"),   # SM-LP-5001 winding center taps — unused for 1:1 isolation
+          # (T1 removed — the audio front-end is transformer-less.)
 
           # U1 (C6-WROOM-1): remaining unused GPIOs.
           # Pads 4-5: GPIO4, GPIO5 (JTAG MTMS/MTDI) — spare

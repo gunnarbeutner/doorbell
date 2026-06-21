@@ -1,59 +1,41 @@
-# Datasheets & review references
+# Datasheets & reference docs
 
-Primary-source documents backing the pre-fab review findings. Local copies so the references
-don't rot.
+Local copies of the primary sources behind the design, so the references don't rot. The
+**authoritative part list is the schematic** (`kicad/doorbell.kicad_sch`, hidden `LCSC`/`MPN`
+fields) exported to `kicad/fab/doorbell-bom-jlcpcb.csv` — this folder is not a BOM, just the
+backing documents. For *how* to use them to check the board, see `../VERIFICATION.md`.
 
-| File | Part / doc | Source |
-|------|-----------|--------|
-| `esp32-c3-mini-1_datasheet_en.pdf` | ESP32-C3-MINI-1 module (U1) | espressif.com/.../esp32-c3-mini-1_datasheet_en.pdf |
-| `esp32-c3_datasheet_en.pdf` | ESP32-C3 chip (GPIO, strapping) | espressif.com/.../esp32-c3_datasheet_en.pdf |
-| `esp32-c3_hardware_design_guidelines_en.pdf` | ESP32-C3 HW Design Guidelines | docs.espressif.com/projects/esp-hardware-design-guidelines/.../esp32c3/ |
-| `ams1117_datasheet.pdf` | AMS1117-3.3 LDO (U2) | advanced-monolithic.com/pdf/ds1117.pdf |
-| `kyocera-avx_TAJ_tantalum_datasheet.pdf` | Kyocera-AVX TAJ tantalum series (C1 part) | datasheets.kyocera-avx.com/TAJ.pdf |
+## Intercom & handset (the primary reverse-engineering sources)
 
-## Decoupling / bulk capacitors — required values
+| File | What |
+|------|------|
+| `STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` | STR TV20/S service plan — Verdrahtungsplan + Fehlersuchhilfe. The authority for the bus (terminal 4 = Türruf ≈ 12 VDC, ÖT bridges 2 & 3, ET interrupts line 5). |
+| `HJR4102.PDF` | HJR-4102 — the WF26's own latch relay (the part the on-board G6K replica reproduces). |
+| `KlingelV4.fzz` | Fritzing source for the V3 perfboard build / early V4 reference. |
 
-The ESP32-C3-MINI-1 is a **module** (internal chip decoupling included), so externally it only
-needs the 3V3 supply + light decoupling.
+## Current-design part datasheets
 
-| Cap | Net / role | Design value | Required value | Reference | OK? |
-|-----|-----------|--------------|----------------|-----------|-----|
-| C3 `C_3v3` | 3V3 bulk at module | 10 µF | 10 µF | HW Design Guidelines, Power Scheme (VDD3P3 = 10 µF) | ✅ |
-| C6 `C_dec` | 3V3 decoupling | 0.1 µF | 0.1 µF | HW Design Guidelines (0.1 µF close to pin) | ✅ |
-| C4 `C_out` | LDO output (3V3) | 22 µF | ≥ 22 µF | AMS1117 datasheet — characterised with C_OUT = 22 µF tantalum | ✅ |
-| C2 `C_in` | LDO input | 10 µF | ~10 µF | AMS1117 typical application | ✅ |
-| C1 `C_bulk` | 5 V (VBUS) bulk | 100 µF / **6.3 V tantalum** | ~100 µF / **≥16 V**, non-tantalum | see finding C1 below | ❌ voltage |
+For the parts on the board: the **ESP32-S3-MINI-1/1U** module (`esp32-s3-mini-1_mini-1u_datasheet_en.pdf`,
+pad map + strapping), **ES8311** codec (`ES8311_datasheet.pdf` + `ES8311.user.Guide.pdf`),
+**SGM2212** LDO (`sgm2212_datasheet.pdf`), **TPD2S017** USB ESD (`tpd2s017_datasheet.pdf`),
+**Omron G6K** relay (`g6k_datasheet.pdf`), **Panasonic GAQY412E/EH** PhotoMOS
+(`GAQY412E_EH_datasheet.pdf`), and the **SPPJ322300** door switch (`SPPJ322300_datasheet.pdf`).
+Parts reasoned from standard pin conventions (SS14, SMF5.0A, 1N4148W, the USB-C jack, the
+GAQW/GAQY212GS SSRs) have no local sheet — see `../VERIFICATION.md` §7.
 
-**Answer to "what capacitance should they have / does the ESP32 datasheet say anything":**
-the *capacitances* are already correct. The ESP32-C3-MINI-1 datasheet (Table 6-2) only specifies
-the **supply: 3.0–3.6 V, I_VDD ≥ 0.5 A** and does not prescribe decoupling values; those come
-from the HW Design Guidelines (10 µF + 0.1 µF on 3V3) and the AMS1117 datasheet (22 µF output).
-C1's *capacitance* is fine — only its **voltage rating** (and part type) must change.
+## Fab capability
 
-## Findings → references
+`PCB Manufacturing & Assembly Capabilities - JLCPCB.pdf` and `… - JLCPCB - PCBA.pdf` — JLCPCB's
+published PCB/PCBA capability limits (clearances, assembly rules), the basis for the DRU and the
+ordering notes in `../ORDERING.md`.
 
-**[CRITICAL] C1 bulk cap under-rated (6.3 V tantalum on 5 V rail)**
-- Placed: `kicad/doorbell_design.py:43` (`C_bulk` = CASE-B-3528, 100 µF); on `+5V` net `:82`.
-- BOM `C16133` = **Kyocera-AVX TAJB107K006RNJ, 100 µF 6.3 V tantalum** (lcsc.com/product-detail/C16133.html; series ds `kyocera-avx_TAJ_tantalum_datasheet.pdf`).
-- VBUS = 4.75–5.25 V (USB 2.0 §7.2 / USB-C up to 5.5 V) → ~80–83 % of 6.3 V.
-- `kyocera-avx_TAJ_tantalum_datasheet.pdf`: 6.3 V part Category Voltage ≤125 °C ≈ 4 V (Ratings table); AVX recommends ~50 % voltage derating on low-impedance rails. Both violated.
-- Doc mismatch: `DESIGN.md` says 470 µF.
-- **Fix:** ~100 µF (or 470 µF) at **≥16 V**, aluminium-polymer or 25 V MLCC (not tantalum on a hot-plug rail). Needs a footprint change (CASE-B can't hold 100 µF/16 V).
+## Superseded / reference-only
 
-**[CRITICAL] doorbell-v3.yaml is the V3 firmware**
-- `firmware/doorbell-v3.yaml:5` `board: esp32dev`; relay outputs `pin: 25` `:135`, `pin: 26` `:139` (+ bell inputs on 32/33). ESP32-C3 has only **GPIO0–GPIO21** — `esp32-c3_datasheet_en.pdf` Pin Definitions (no GPIO25/26/32/33).
-- Correct V4 map: IO4=K1, IO5=K2, IO6=OC1, IO7=OC2 — `DESIGN.md` GPIO table + `kicad/doorbell_design.py` NETS.
-- Relay polarity: `inverted: true` on outputs `firmware/doorbell-v3.yaml:137,141` must be **removed** — V4 driver is NMOS + gate pull-down = active-high (`DESIGN.md` relay-driver section).
+Kept for history; **not** the current design — do not size parts from these:
 
-**[SHOULD-FIX] U1/K1/K2 CPL rotations unverified**
-- `kicad/doorbell_design.py:59` U1 = `PCM_Espressif`, `:63–64` K1/K2 = `Relay_SMD` (KiCad stock) — not the CDFER `PCM_JLCPCB` library the passives use, so not pre-aligned to JLCPCB 0°. Verify in JLCPCB preview; add `ROT_FIX` in `kicad/jlcpcb_cpl.py`.
-
-**[SHOULD-FIX] GPIO8 / GPIO2 floating strapping pins**
-- `kicad/doorbell_design.py:120–127` `NOCONN` includes `("U1","22")`=GPIO8 and `("U1","5")`=GPIO2.
-- Strapping pins = GPIO2/8/9: `esp32-c3_datasheet_en.pdf` §3 Boot Configurations (Table 3-1) and pin table (GPIO8 = IE only, GPIO9 = IE+WPU); `esp32-c3_hardware_design_guidelines_en.pdf` §1.3.9: "GPIO2, GPIO8, GPIO9 are strapping pins," default config GPIO2/GPIO8 = floating, GPIO9 = pull-up, and "add a pull-up or pull-down resistor to pins in the high-impedance state."
-- **Fix:** 10 kΩ pull-up on GPIO8 (and GPIO2). GPIO9 already has 10 k + button.
-
-**[Confirmed OK]**
-- Netlist vs Fritzing `KlingelV4.fzz` (in this `docs/` folder): front-end matches `doorbell_design.py` NETS; only documented V4 changes differ.
-- USB flashing: D+ = J1 A6+B6→IO19, D− = A7+B7→IO18; CC1/CC2 own 5.1 k; VBUS→LDO (`doorbell_design.py` NETS `:82`,`:86`).
-- BOM parts verified at lcsc.com (relay C397193 = G6K-2F-Y-TR DC4.5, MCU C2838502, opto C115450, USB C7095263, terminal C5290323).
+- Earlier MCU iterations: `esp32-c3-*`, `esp32-c6-*` module/devkit sheets (the design moved
+  C3 → C6 → **S3**).
+- Rejected or dropped parts: `ams1117_datasheet.pdf` (the high-dropout LDO rejected for the
+  SGM2212), `kyocera-avx_TAJ_tantalum_datasheet.pdf` (old bulk-cap study), `SM-LP-5001_datasheet.pdf`
+  (the isolation transformer dropped for the transformer-less audio front-end), `cp2102n-datasheet.pdf`
+  (USB-UART, superseded by native USB), `SPPJ223200_datasheet.pdf` (alternate switch variant).

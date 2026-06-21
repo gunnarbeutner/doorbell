@@ -224,7 +224,8 @@ provides them.
   behaviour the board must match) and the **board**, with the board in both **powered** (smart layer
   active) and **unpowered** (passive fallback) states. The tests MUST show the unpowered board
   reproduces the WF26's behaviour (MODE-1, SAFE-4) and the powered board adds the smart functions
-  without violating BUS-1. (Test *results* live in DESIGN.md "Verification status" / VERIFICATION.md.)
+  without violating BUS-1. (Test *results* live in DESIGN.md "Verification status"; the verification
+*procedure* — what to run and check — is VERIFICATION.md.)
 
 ---
 
@@ -245,4 +246,5 @@ private line 4, carrying its own passive WF26 core (Context / MODE-2).
 
 Requirement *verification* — the **simulator test suite** (VER-1, `sim/test/`), the ERC/DRC/route
 gates, bench tests against the real TV20/S, and the open analog/TX-out items — is tracked in
-**DESIGN.md "Verification status"** and **VERIFICATION.md**; results are not duplicated here.
+**DESIGN.md "Verification status"** (the results); **VERIFICATION.md** is the *procedure* (what to
+run and check). Results are not duplicated here.

@@ -74,7 +74,7 @@ Confirmed against the full 616k-part mirror — these have **zero** Basic/Prefer
 
 | Ref | Part | LCSC | Why it stays Extended |
 |---|---|---|---|
-| U1 | ESP32-C6-MINI-1U-H4 | C20627095 | No RF/WiFi module is ever free-library. Core part. |
+| U1 | ESP32-S3-MINI-1U-N8 | C2980299 | No RF/WiFi module is ever free-library. Core part. |
 | U3 | ES8311 audio codec | C962342 | No free audio codec. Tied to the firmware I²S path. |
 | U2 | SGM2212-3.3 LDO | C3294699 | Needs ~350 mA at **low dropout** (~0.45 V). The only free 3.3 V LDOs are AMS1117-3.3 (`C6186`, 1.1 V dropout — DESIGN.md rejects it: browns out under WiFi-TX), XC6206 (200 mA) and HT7533 (100 mA) — all inadequate. |
 | C19 | 22 µF / **50 V** electrolytic | C98744 | The catalog has **no free aluminium electrolytics at all**, and free 22 µF MLCCs top out at 25 V < the required 50 V. |
@@ -112,7 +112,7 @@ swap also changes the $3 setup fee. None of these is a guaranteed drop-in — re
   catalog; the next-nearest are dearer.
 - **K1/K2 PhotoMOS SSRs**: the few cheaper SOP-8/SOP-4 parts are either undocumented (no
   spec sheet in the mirror) or lower-current / higher-Ron — not verified equivalents.
-- **U1 ESP32-C6-MINI-1U-H4** and **U3 ES8311**: single catalog listing each; no cheaper twin
+- **U1 ESP32-S3-MINI-1U-N8** and **U3 ES8311**: single catalog listing each; no cheaper twin
   (the ESP32 PCB-antenna `-1-` variants are a *different* part, not a drop-in).
 - **Passives, diodes, LED, optocoupler** (all Basic): already at sub-cent / catalog-floor
   pricing — any "cheaper" swap saves a fraction of a cent and risks a known-good Basic part.
