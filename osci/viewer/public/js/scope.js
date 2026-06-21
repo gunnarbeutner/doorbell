@@ -15,6 +15,7 @@ const TL_H_RAW = 38, TL_H_HIGH = 58;
 const HL = {
   'ring-ours': ['#58a6ff', '●'], 'ring-neighbour': ['#8b949e', '○'], 'ring-kick': ['#6e7681', '◌'],
   gong: ['#d29922', '♪'], session: ['#3fb950', '▬'],
+  etagenruf: ['#db61dd', '◉'], 'etagenruf-tone': ['#db61dd', '♬'],
   'door-open': ['#f85149', '⌂'], 'door-neighbour': ['#db6d28', '⌂'], 'door-standalone': ['#db6d28', '⌂'],
   'release-door': ['#bc8cff', '■'], 'release-timeout': ['#f0883e', '■'],
   talk: ['#39c5cf', '▲'], listen: ['#56d4dd', '▼'], 'p2-recovery': ['#6e7681', '↗'],

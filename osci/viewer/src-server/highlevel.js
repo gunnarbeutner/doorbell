@@ -14,7 +14,7 @@
 import { blockStats, detectBursts } from './events.js';
 import { toneSequence } from './fft.js';
 
-const ROLE_BY_LABEL = { P4: 'line4', P2: 'listen', P3: 'talk' };
+const ROLE_BY_LABEL = { P4: 'line4', P2: 'listen', P3: 'talk', P5: 'floor' };
 const HOT = 4.0; // V: a line is "hot" (driven) above this
 const SESSION_MIN_S = 1.0; // a P4 hold shorter than this is just an unsealed ring kick
 
@@ -120,17 +120,27 @@ export function detectHighLevel(items, blockMs = 2) {
     const role = ROLE_BY_LABEL[it.label];
     if (role) byRole[role] = { ...it, st: blockStats(it.rec, blockMs) };
   }
-  const { line4, listen, talk } = byRole;
+  const { line4, listen, talk, floor } = byRole;
   const ev = [];
   const blk = (ms) => Math.max(1, Math.round(ms / blockMs));
 
-  // gong bursts (on line 4 and the shared listen line), merged across channels
+  // Etagenruf (apartment/floor call): an AC tone on P5, gated by the ET button. It couples
+  // through the handset's C1 onto P4 (DC-free, no ring pedestal), where it would otherwise read
+  // as a line-4 "gong" with line 4 cold and be misclassified as a neighbour's ring. Detect the
+  // floor call straight from P5; the coincident P4/P2 bursts are coupling, not a bus gong.
+  const floorCalls = floor
+    ? mergeIntervals(detectBursts(floor.rec, floor.st, floor.label, floor.ch, blockMs))
+    : [];
+  const isFloorCoupling = (g) => floorCalls.some((f) => g.t <= f.tEnd + 0.2 && g.tEnd >= f.t - 0.2);
+
+  // gong bursts (on line 4 and the shared listen line), merged across channels, minus the
+  // Etagenruf's C1 coupling onto line 4.
   const rawBursts = [];
   for (const r of [line4, listen]) {
     if (!r) continue;
     for (const b of detectBursts(r.rec, r.st, r.label, r.ch, blockMs)) rawBursts.push(b);
   }
-  const gongs = mergeIntervals(rawBursts);
+  const gongs = mergeIntervals(rawBursts).filter((g) => !isFloorCoupling(g));
 
   // P4 hot spans (sessions vs unsealed kicks); P3 door bridges
   const p4spans = line4 ? spansAbove(line4.st.dc, HOT, line4.st.tOf, blk(50), blk(200)) : [];
@@ -146,6 +156,13 @@ export function detectHighLevel(items, blockMs = 2) {
       ? { kind: 'hl', type: 'ring-ours', t: g.t, title: 'Our ring (Türruf)', detail: 'line 4 hot + 3-Klang gong' + (tone ? ` · ${tone}` : '') }
       : { kind: 'hl', type: 'ring-neighbour', t: g.t, title: 'Neighbour ring', detail: 'gong on shared P2, line 4 cold' + (tone ? ` · ${tone}` : '') });
     ev.push({ kind: 'hl', type: 'gong', span: true, t: g.t, tEnd: g.tEnd, title: '3-Klang gong', detail: tone || 'doorbell chime' });
+  }
+
+  // apartment ring (Etagenruf) on P5 — its own audible alert, structurally never a Türruf/neighbour gong
+  for (const f of floorCalls) {
+    const tone = tones(floor.rec.volts, f.t, f.tEnd, floor.rec);
+    ev.push({ kind: 'hl', type: 'etagenruf', t: f.t, title: 'Apartment ring (Etagenruf)', detail: 'floor call · P5' + (tone ? ` · ${tone}` : '') });
+    ev.push({ kind: 'hl', type: 'etagenruf-tone', span: true, t: f.t, tEnd: f.tEnd, title: 'Etagenruf tone', detail: tone || 'floor-call tone' });
   }
 
   // door bridges: during our call (ÖT) · during a neighbour's call · standalone (no ring at all)

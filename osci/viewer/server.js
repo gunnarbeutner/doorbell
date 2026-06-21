@@ -34,7 +34,9 @@ const MIME = {
 };
 
 // Bus-pin names per channel (grounds on P1). CH1 reads line 4 (IN_P4 bridged to P4).
-const DEFAULT_LABELS = { 1: 'P4', 2: 'P2', 3: 'P3' };
+// CH4 (P5 / Etagenruf) is optional — only the 4-channel recordings carry it; 3-channel
+// recordings just omit it. Any further channel falls back to a generic CH<n> label.
+const DEFAULT_LABELS = { 1: 'P4', 2: 'P2', 3: 'P3', 4: 'P5' };
 
 const sendJson = (res, obj, status = 200) => {
   res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' });
