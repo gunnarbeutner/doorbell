@@ -15617,16 +15617,6 @@
 	)
 	(wire
 		(pts
-			(xy 330.2 218.44) (xy 330.2 226.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1de21a12-e02d-470d-807f-d227087a5b39")
-	)
-	(wire
-		(pts
 			(xy 101.6 213.36) (xy 101.6 222.25)
 		)
 		(stroke
@@ -19531,80 +19521,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 330.2 226.06 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "0df84083-8292-453b-a0be-f19e215549c8")
-		(property "Reference" "#PWR53"
-			(at 330.2 229.87 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 330.2 230.56 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 330.2 226.06 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 330.2 226.06 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 330.2 226.06 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "8b54556b-2eb5-40d2-ba2c-b853f0adb884")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR53")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "db125_5p:DB125-3.5-5P-GN-S")
 		(at 33.02 123.19 0)
 		(unit 1)
@@ -21788,22 +21704,22 @@
 			)
 		)
 		(pin "5"
-			(uuid "7c94b4a4-8325-4d21-aa9b-00ca6dba9819")
+			(uuid "7c94b4a4-8325-4d21-aa9b-00ca6dba981a")
 		)
 		(pin "1"
-			(uuid "17e03b26-29db-4fb2-838b-91e421f4eb9d")
+			(uuid "17e03b26-29db-4fb2-838b-91e421f4eb9e")
 		)
 		(pin "6"
-			(uuid "39724484-801c-4ad9-97d5-e12b6b99c52c")
+			(uuid "39724484-801c-4ad9-97d5-e12b6b99c52d")
 		)
 		(pin "2"
-			(uuid "db6a2b3f-cfc6-42aa-946e-dc38e96c6647")
+			(uuid "db6a2b3f-cfc6-42aa-946e-dc38e96c6648")
 		)
 		(pin "4"
-			(uuid "3e80c758-c835-480b-bf82-2cc97f85fb86")
+			(uuid "3e80c758-c835-480b-bf82-2cc97f85fb87")
 		)
 		(pin "3"
-			(uuid "03701498-bd4a-433d-ada0-1a6a043b49e0")
+			(uuid "03701498-bd4a-433d-ada0-1a6a043b49e1")
 		)
 		(instances
 			(project "doorbell"
@@ -28234,83 +28150,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 330.2 218.44 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files no)
-		(dnp no)
-		(uuid "a0bc1979-1868-45ee-8507-f6b7b4d55a4c")
-		(property "Reference" "TP2"
-			(at 330.2 210.82 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 332.74 218.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 330.2 218.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 330.2 218.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 330.2 218.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f88c3e01-02ff-4039-99bd-5be29a4f4258")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "TP2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 261.62 22.86 0)
 		(unit 1)
@@ -31972,7 +31811,7 @@
 		(in_pos_files no)
 		(dnp no)
 		(uuid "e3e6a27f-5920-48de-ae03-142c739e650b")
-		(property "Reference" "TP3"
+		(property "Reference" "TP2"
 			(at 355.6 210.82 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32032,7 +31871,7 @@
 		(instances
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "TP3")
+					(reference "TP2")
 					(unit 1)
 				)
 			)

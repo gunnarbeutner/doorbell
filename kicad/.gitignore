@@ -9,3 +9,6 @@ __pycache__/
 *.pyc
 *-backups/
 *.kicad_pcb-bak
+# MCP/tooling render + report artifacts
+*_2d_view.svg
+*_drc_violations.json

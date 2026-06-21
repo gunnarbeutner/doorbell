@@ -576,6 +576,10 @@
       {
         "netclass": "WF26 Bus",
         "pattern": "/CHIME_C1"
+      },
+      {
+        "netclass": "WF26 Bus",
+        "pattern": "/VBUS*"
       }
     ]
   },
