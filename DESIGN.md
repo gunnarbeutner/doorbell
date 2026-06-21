@@ -352,7 +352,7 @@ over.
 | R1 | 1 kΩ (2010 SMD) | Opto phototransistor emitter resistor (shared, to GND) |
 | J4–J9 | Camdenboss CTB0158 screw terminals | Wiring breakout |
 
-| GPIO (V3) | ESPHome entity | Direction | Hardware | V4 (C6) pin |
+| GPIO (V3) | ESPHome entity | Direction | Hardware | V4 (S3) pin |
 |------|---------------|-----------|----------|----|
 | 32 | `"Apartment Doorbell"` — binary sensor, pullup, inverted | Input | OC3 collector (P5 / Etagenruf) | IO2 |
 | 33 | `"House Doorbell"` — binary sensor, pullup, inverted | Input | OC2 collector (IN-P4 / Türruf) | IO3 |
@@ -386,7 +386,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 
 | Decision | Choice | Reason |
 |----------|--------|--------|
-| MCU | **ESP32-C6-MINI-1U-H4** (u.FL external antenna; LCSC C20627095) | ESPHome-supported, native USB, enough GPIO for the audio path (I²S + I²C + 3 SSR gates + 2 opto inputs) |
+| MCU | **ESP32-S3-MINI-1U-N8** (u.FL external antenna; **8 MB** flash; LCSC C2980299) | ESPHome-supported, native USB, **dual-core** (headroom for simultaneous I²S audio + WiFi), enough GPIO for the audio path (I²S + I²C + 3 SSR gates + 2 opto inputs); 8 MB flash gives OTA + growth headroom. The 802.15.4 radio of the C6 was unused (audio needs WiFi), and no C6/C3-MINI offers 8 MB — so the dual-core S3-MINI is the fit. Central placement forces the u.FL external antenna (no clean board edge for a PCB antenna) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
 | Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: **Q3 2N7002DW** dual N-FET — unit 1 + R17 (22 kΩ) · C18 (1 µF), unit 2 + R25 (6.8 MΩ) · C20 (1 µF) · D11 | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q3 unit 1 · R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"); a second one-shot (**Q3 unit 2 + R25·C20·D11**) releases K2 ~6.9 s after assertion, so a hung DOOR_DRV cannot hold the opener (DOOR-5). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
@@ -399,25 +399,27 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | Audio | **Transformer-less half-duplex**: ES8311 mono codec on the bus speech pair — **RX** a differential sense of line 2 (P2→C16→ADC, P1→C17→ADC), **TX** the codec DAC → C14 (DC-block) → R28 (2.2 kΩ) → TX_OUT → line 3, the **dual K1** (GAQW212GS) gating both the P2-sourced handshake and the TX output onto line 3 (high-Z at idle, BUS-1). Needs the **hard P1↔GND bond**; analog values bench-gated | Half-duplex by design (single LS1 transducer) ⇒ no echo cancellation. The TV20/S speech path is AC-coupled and P1 sits ~0.5 V from earth, so bonding P1↔GND is benign and lets active AC-coupled front-ends replace the transformer (smaller, fixes the talk-handshake load, no core saturation). Trade: SAFE-3 isolation → *not met*; containment is per-tap protection + F1 (SAFE-7) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
-### ESP32-C6 GPIO map (matches `firmware/doorbell-v4.yaml` and the schematic)
+### ESP32-S3 GPIO map (matches `firmware/doorbell-v4.yaml` and the schematic)
+
+U1 is placed so the USB pins face **north** (toward J1 / the D5 ESD) and the ES8311 bus exits
+the **east** edge toward U3; the seven codec lines occupy the east-edge GPIOs **IO4→IO10** in
+U3's pin order, so the bus fans out with no crossings.
 
 | GPIO | U1 pad | Signal | Dir | Notes |
 |------|--------|--------|-----|-------|
-| IO20 | 26 | K1 gate — **TX (PTT)**: the dual K1 sources the P2 handshake + gates the codec onto line 3 (high-Z at idle, BUS-1) | out | PTT_DRV → R4+R24 (300 Ω each) → K1's two SSR LEDs; R7 10 k pull-down ⇒ off at boot |
-| IO21 | 27 | K2 gate — front-door buzzer / ÖT (bridge P2↔P3 direct) | out | DOOR_DRV → R5 (300 Ω) → SSR LED; R8 10 k pull-down ⇒ off at boot |
-| IO22 | 28 | K3 gate — chime suppress (open C1: P4↔CHIME_C1) | out | MUTE_DRV → R6 (300 Ω) → SSR LED; R9 10 k pull-down ⇒ off (NC SSR ⇒ off = gong rings) |
-| IO3  | 6 | OC1 collector — house bell (Türruf, line 4 / P4) | in | held high by **R22** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
-| IO2  | 5 | OC2 collector — apartment bell (Etagenruf, P5) | in | held high by **R23** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
-| IO19 / IO23 | 25 / 29 | **spare** — unused GPIO, pad free | — | available for reuse |
-| IO12 / IO13 | 17 / 18 | USB D− / D+ | — | native USB-Serial-JTAG: flashing + logs |
-| IO18 / IO15 | 24 / 20 | I²C SDA / SCL (10 k pull-ups R18/R19) | — | ES8311 control, addr 0x18; IO15 is a JTAG-source strap — the SCL pull-up holds it high at reset (= USB-Serial-JTAG, the wanted state) |
-| IO14 / IO7 / IO1 | 19 / 16 / 13 | I²S MCLK / BCLK / WS(LRCK) | out | ES8311 |
-| IO6 / IO0 | 15 / 12 | I²S DIN(ASDOUT) / DOUT(DSDIN) | in / out | ES8311; GPIOs ordered so U1's codec-facing edge fans to U3 in pin order, no crossings |
-| IO9 | 23 | BOOT strap | — | 10 kΩ pull-up + button to GND |
-| EN | 8 | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec) + button |
-| IO8 | 22 | strap | — | 3.3 kΩ pull-up (R12, per C6 datasheet / DevKitC-1 R6) |
-| IO4 / IO5 | 9 / 10 | spare | — | No-Connect |
-| IO16 / IO17 | 31 / 30 | U0TXD / U0RXD | — | No-Connect |
+| IO11 | 15 | K1 gate — **TX (PTT)**: the dual K1 sources the P2 handshake + gates the codec onto line 3 (high-Z at idle, BUS-1) | out | PTT_DRV → R4+R24 (300 Ω each) → K1's two SSR LEDs; R7 10 k pull-down ⇒ off at boot |
+| IO1 | 5 | K2 gate — front-door buzzer / ÖT (bridge P2↔P3 direct; also K4 seal-in break) | out | DOOR_DRV → R5 (300 Ω) → SSR LED; R8 10 k pull-down ⇒ off at boot |
+| IO2 | 6 | K3 gate — chime suppress (open C1: P4↔CHIME_C1) | out | MUTE_DRV → R6 (300 Ω) → SSR LED; R9 10 k pull-down ⇒ off (NC SSR ⇒ off = gong rings) |
+| IO42 | 38 | OC1 collector — house bell (Türruf, line 4 / P4) | in | held high by **R22** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
+| IO41 | 37 | OC2 collector — apartment bell (Etagenruf, P5) | in | held high by **R23** (10 k → +3V3); firmware sets `mode: input` (no internal pull-up) |
+| IO19 / IO20 | 23 / 24 | USB D− / D+ (north edge) | — | native USB-Serial-JTAG: flashing + logs |
+| IO10 / IO9 | 14 / 13 | I²C SDA / SCL (10 k pull-ups R18/R19) | — | ES8311 control, addr 0x18 |
+| IO8 / IO7 / IO5 | 12 / 11 / 9 | I²S MCLK / BCLK / WS(LRCK) | out | ES8311 (east edge) |
+| IO6 / IO4 | 10 / 8 | I²S DIN(ASDOUT) / DOUT(DSDIN) | in / out | ES8311; east-edge GPIOs run IO4→IO10 in U3's pin order ⇒ no crossings |
+| IO0 | 4 | BOOT strap | — | 10 kΩ pull-up + SW1 button to GND |
+| EN | 45 | Reset | — | 10 kΩ pull-up + 1 µF to GND (Espressif EN-RC spec) + SW2 button |
+| IO3 | 7 | spare — JTAG-source strap, left unused | — | native USB-Serial-JTAG is the JTAG/flash path |
+| — | — | R12 (3.3 k pull-up) | — | no strapping role on the S3 — leave **DNP** or repurpose as a spare-GPIO pull-up |
 
 ### Bell / session sense front-end
 
@@ -542,9 +544,9 @@ the one surviving flyback (D1) is on the passive WF26 latch coil.
 ### Power tree
 
 ```
-USB-C VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ── SGM2212-3.3 ── +3V3 ── ESP32-C6 + codec + SSR LEDs
+USB-C VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ── SGM2212-3.3 ── +3V3 ── ESP32-S3 + codec + SSR LEDs
 CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3: 10µF (C_out) + 10µF + 100nF decoupling
-USB D±  ── IO12/IO13 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)
+USB D±  ── IO19/IO20 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from fused VBUS; VBUS_F TVS: SMF5.0A (D10)
 VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all protection — a clamping D10 blows it (fail-safe)
 ```
@@ -595,7 +597,7 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
 - **Bus-width policy.** Nets at WF26-bus potential (P1–P5, TALK_BRIDGE, CHIME_C1) and +5V are routed
   wider than signal nets — the bus carries the Türruf and the door currents, +5V feeds the LDO and the
   ESP32's WiFi-TX peak (via +3V3). KiCad's DRC does not enforce this; it's a routing rule.
-- **Pin assignment exploits the C6 GPIO matrix** (plus an I²C/I²S swap) so U1's and U3's escape fans
+- **Pin assignment exploits the S3 GPIO matrix** (the seven codec lines on IO4→IO10) so U1's and U3's escape fans
   route without crossings — see the GPIO map.
 - **Copper thieving:** both outer layers carry fill zones; the build refills and checks them, and any
   oversized floating island is grounded with a hand-placed GND stitching via in KiCad (vias are never
@@ -638,7 +640,7 @@ the gong-suppress**, so it works with the gong muted.
 Consequences:
 - **No acoustic echo cancellation.** Both directions are never streamed at once, so AEC is moot —
   full-duplex is physically impossible on this bus regardless of MCU, and the half-duplex path the
-  bus supports is within the C6's reach (I²S codec + ESPHome half-duplex).
+  bus supports is within the S3's reach (I²S codec + ESPHome half-duplex).
 - **Sequencing, not mixing:** assert direction → settle → stream → release → stream the other
   (walkie-talkie cadence).
 
@@ -803,7 +805,7 @@ bridge (see `TODO.md`, "TX-out reach"). See Switches / Audio path / Bell-sense.
 **NC** confirmed); K5 (G6K-2F-Y) latch pinout; SGM2212 SOT-223 pinout + ~1 V dropout headroom;
 1N4148W pin 1 = cathode (CDFER lib); LTV-217 pinout; USB front-end (D+/D− not swapped; TPD2S017
 pinout/V_CC bias, CC 5.1 kΩ Rd); bell-sense GPIO LOW levels; ES8311 full pinout; every U1 pad↔GPIO assignment against the
-**ESP32-C6-MINI-1U-H4** pinout (the GPIO map's pad numbers are the MINI-1U pads, from the schematic).
+**ESP32-S3-MINI-1U-N8** pinout (the GPIO map's pad numbers are the MINI-1U pads, from the schematic).
 
 **Known minor items (accepted):**
 - One 0.388 mm bus↔logic clearance spot (<0.5 mm aspiration; fine for 12 V).
