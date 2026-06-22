@@ -12,6 +12,31 @@ antenna lead out of the enclosure instead).
 > Run `./build.sh all-route` first to (re)export the fab files in `kicad/fab/` — the committed
 > gerbers/BOM/CPL are build outputs and may lag the schematic.
 
+## Pre-fab mechanical fit test (3D-print the board)
+
+Do this **before ordering** — a board that doesn't seat in the WF26 housing or whose buttons don't
+line up is a respin, and it's the one failure class no gerber/DRC/sim gate can catch (MECH-1 /
+MECH-1a). `./build.sh all-route` (or `./build.sh step`) exports `kicad/fab/doorbell.step` — the PCB
+plus all component bodies as a solid. Print it (FDM is fine; the test is dimensional, not cosmetic)
+and check it against the **original WF26 enclosure** and its buttons:
+
+- **Board fits the housing (MECH-1).** Outline clears the housing walls/posts; the mounting holes
+  (H1–H5) line up with the enclosure's bosses; nothing tall (U1, the latch relay K5, the
+  electrolytics, the screw terminal) fouls a rib or the lid.
+- **Connector access.** J1 (USB-C, shell protrudes past the edge) reaches its wall aperture, and
+  J2's wire mouths are reachable to land the 5 bus wires once installed.
+- **Switches fit + actuate (MECH-1a) — the point of the test.** The STEP model **deliberately omits
+  SW3/SW4** (the `STEP_Exclude` field; see `kicad/step_exclude.py`) — the door-release and talk
+  front-panel buttons (`SPPJ322300`) — so you fit-test the printed board against the **real**
+  switches and the housing's button apertures. Confirm each plunger tip lands under its aperture and
+  that pressing the housing button fully actuates the switch (this is also what makes the manual
+  buttons work unpowered, MODE-1a). SW1/SW2 are just the BOOT/EN commissioning tactiles — not
+  enclosure-critical.
+
+If anything fouls or misaligns, fix it in the PCB and re-print before committing the order. The
+print is also a free sanity check on the 3D-model alignment (parts should sit min-z = 0 on the
+board face).
+
 ## Files to upload
 
 | Step | File |

@@ -184,7 +184,7 @@ provides them.
   terminals) without damage.
 - **SAFE-2 (MUST)** **Survive** reverse polarity and any incorrect bus-line ordering at J2 (and reverse
   polarity on the local-power input) **without damage**. The board **need not function** while the bus is
-  miswired, but a reversed/scrambled plug MUST NOT damage it, and it MUST recover once wired correctly.
+  miswired, but reversed/scrambled bus wiring MUST NOT damage it, and it MUST recover once wired correctly.
   (A bidirectional AC+DC bus rules out series blocking — see DESIGN "SAFE-7 bus protection".)
 - **SAFE-3 (SHOULD)** Galvanically isolate the smart layer (ESP/codec/GND) from the TV20/S bus. The
   current design **does *not* meet this** — a deliberate, measurement-justified deviation: the

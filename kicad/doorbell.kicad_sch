@@ -21079,7 +21079,7 @@
 				)
 			)
 		)
-		(property "Description" "DAC OUTP AC-coupling to TALK_BRIDGE (codec TX; K1 gates ->P4, R28 ->line 3; transformer-less)"
+		(property "Description" "Door-lead make-delay cap (R17·C18 RC): delays the K2 P2<->P3 make ~20ms behind the K4 seal-in break (break-before-make)"
 			(at 320.04 106.68 0)
 			(hide yes)
 			(show_name no)
@@ -24420,7 +24420,7 @@
 				)
 			)
 		)
-		(property "Description" "DAC OUTP AC-coupling to TALK_BRIDGE (codec TX; K1 gates ->P4, R28 ->line 3; transformer-less)"
+		(property "Description" "Codec DAC OUTP AC-coupling (codec TX) onto the talk node TALK_BRIDGE; reaches line 3 via R28 (2.2k) when K1 is energized; transformer-less"
 			(at 212.09 220.98 0)
 			(hide yes)
 			(show_name no)
@@ -28540,7 +28540,7 @@
 				)
 			)
 		)
-		(property "Description" "Talk-handshake series R: codec TX -> TALK_BRIDGE -> R28 -> line 3 (K1 gates TALK_BRIDGE<->P4). Matches the WF26's genuine 2.2k talk resistor R1 (S2)."
+		(property "Description" "Talk-handshake series R (2.2k): codec TX -> TALK_BRIDGE -> R28 -> TX_OUT; K1 (energized) bridges this as the P2<->P3 talk handshake onto line 3. Matches the WF26's genuine 2.2k talk resistor R1 (S2)."
 			(at 359.41 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -34343,7 +34343,7 @@
 				)
 			)
 		)
-		(property "Description" "OC1 LED reverse-voltage clamp, anti-parallel (limits reverse V to ~0.7V)"
+		(property "Description" "Door-watchdog one-shot re-arm diode: fast-discharges C20/WD_GATE when DOOR_DRV releases, re-arming the R25·C20 max-on timer (DOOR-5)"
 			(at 302.26 90.17 0)
 			(hide yes)
 			(show_name no)

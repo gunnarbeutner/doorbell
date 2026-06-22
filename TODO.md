@@ -47,6 +47,9 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
       protection margin) / 4.7k (−15 dB, more level); revisit only if a real voice level is ever captured.
 - [ ] **TX level + OUTN handling.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do
       not overdrive the TV20/S amp); decide OUTP-only vs terminating OUTN; add a buffer/atten if needed.
+      The drive level is firmware-soft (codec digital volume), so the only fab-burning unknowns are the
+      analog topology (R28 value, buffer-vs-none, OUTN) — capture the WF26's own line-3 talk level first
+      (see "Record a real test call") for the target, and lay R28/buffer/OUTN out as reworkable.
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
@@ -83,17 +86,21 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
       **SAFE-2 (survive miswire, need not function):** the bidirectional TVS + bidirectional front-end
       already tolerate any line ordering; the one fix is **C19 → non-polar** (single NP electrolytic SMD is
       scarce on JLCPCB → use an **anti-series pair, 2× 47 µF/50 V** `C3349`/`C97806` ≈ 22 µF NP, or a THT NP
-      can). **Key/label J2** to prevent a reversed/scrambled plug.
+      can). **J2 keying is N/A** — J2 is a *fixed* PCB-mount screw terminal (DIBO DB125-3.5-5P,
+      `C3646874`), not a pluggable block: there's no plug to key and no plug to insert reversed. Bare
+      wires clamp directly into the soldered block, so the only miswire mode is a per-conductor scramble,
+      which no connector feature can prevent. SAFE-2 rests entirely on the silkscreen labels (an installer
+      aid, already present) + the survive-miswire topology above (bidirectional TVS/front-end + non-polar C19).
       **Chosen + imported:** TVS = **H24VND3BA** (`C20615815`, SOD-323, 24 V/31 V/50 V bidirectional,
       Preferred/free) → `kicad/lib_protection/h24vnd3ba` (+ sym/fp tables); C19 → non-polar **anti-series
       pair, 2× RVT1H470M0607** (`C3349`, Honor Elec, 47 µF/50 V — Economy-PCBA eligible; `C72523`/ROQANG is
       the identical part with higher stock but not Economy-eligible) → `kicad/lib_audio/rvt1h470m0607`. (TVS also exists
       in the installed `PCM_JLCPCB-Diodes` PCM lib if a repo-local copy isn't wanted.)
       **Placed & routed:** 4× H24VND3BA (D2/D3/D7/D12, P2–P5 → P1/GND) and the C19/C21 anti-series
-      non-polar pair are in the schematic; board re-routed, DRC clean (0 errors). **Still open:** (1) **key/label
-      J2** against a reversed plug (SAFE-2); (2) a **higher-bandwidth capture** of a ring/door onset (25–50 kSa/s
+      non-polar pair are in the schematic; board re-routed, DRC clean (0 errors). **Still open:** (1) a
+      **higher-bandwidth capture** of a ring/door onset (25–50 kSa/s
       undersamples fast spikes — confirm the true transient stays below the ~31 V breakdown knee, else step the
-      standoff up); (3) align the imported 3D models (min-z = 0) + clear KiCad's 3D cache. Subsumes the
+      standoff up); (2) align the imported 3D models (min-z = 0) + clear KiCad's 3D cache. Subsumes the
       "SAFE-7 protection on the P2/P3 taps" item above.
 
 ## D5 refdes — `D` prefix on a powered IC (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
@@ -115,8 +122,14 @@ tether it to a mains-earthed PC. Pair with a DMM.
       but not a **call with audio**. Drive the genuine sequence: **pulse line 4 (P4) to initiate**,
       with **P2 held at +12 V for the whole call (at least)**, then talk/listen. Capture via
       `osci/capture.py` (DHO804 isolated, grounds on **P1**, 3 ch — P4, P2, P3) and write the
-      usual `*.md` timeline. Use it to ground-truth (a) the real line levels during a call (P2 held at
-      12 V, the line-4 session level, P3 in talk) and (b) the **mic-bleed-during-TX** question the sim
+      usual `*.md` timeline. **Talk through the WF26 handset during the capture** — every existing P3
+      trace is idle or a door-open bridge, so there is *no* TX-direction (voice-on-line-3) data yet.
+      Use it to ground-truth (a) the real line levels during a call (P2 held at
+      12 V, the line-4 session level, P3 in talk); (b) the **WF26's own TX drive on line 3 + the talk
+      handshake DC** S2+R1 asserts — this is the **target level the codec must match** and the direct
+      answer to whether the 2.2 kΩ R28 bridge alone flips the TV20/S to talk (**derisks the TX-out-reach
+      / TX-level items below before committing a fab spin** — see "TX level + OUTN handling" and
+      "Outgoing (TX)"); and (c) the **mic-bleed-during-TX** question the sim
       raised: the handset (LS1→C1→K3(NC)→P4) couples onto transmit line 3 through K1's 2.2 kΩ (R28)
       handshake whenever **K3 is idle** — sim shows ~1.5 Vpp on P3 *and* in the codec's own ADC (louder
       than the codec's own ~0.9 Vpp TX), and it vanishes with K3 energised. Confirm whether a real call
@@ -180,7 +193,11 @@ What remains is hardware confirmation:
       window, does the codec driving **line 3** get audio out to the door station, and is the **R28
       2.2 kΩ line-4↔line-3 bridge** (gated by K1) the only thing the TV20/S needs to switch to talk — or
       something more? A WF26's C1 + 16 Ω speaker always loads line 4, which is why TX drives line 3,
-      not line 4 — check the line-3 drive level with that load present. *(DESIGN.md: "TX-out reach")*
+      not line 4 — check the line-3 drive level with that load present. **Derisk before fab:** the
+      real-test-call capture (above) measures the WF26's own line-3 talk level + handshake DC with the
+      true load present — get that first, then optionally inject a tone through a breadboard
+      `DC-block + 2.2 kΩ` onto line 3 (real WF26 load on line 4) to confirm reach with no board.
+      *(DESIGN.md: "TX-out reach")*
 - [ ] **Incoming (RX) — confirm the line-2 tap level/impedance.** RX is on **line 2** (ref line 1),
       independent of line 4 / K3. Bench-check the received level and source impedance on line 2↔P1
       during a call, and that the R26/R27 divider lands the codec input in range.

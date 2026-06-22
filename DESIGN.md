@@ -67,7 +67,7 @@ because chime-suppress no longer breaks line 4 (it opens C1; see "Relays" / "Aud
 | Line | TV20/S role | Role in our circuit |
 |------|-------------|---------------------|
 | **P1** (= board GND) | Common reference (all bell/speech ref to line 1) | Bonded to board GND; opto LED returns (each via 5.1 kΩ to P1); the codec RX/TX reference |
-| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in |
+| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in. **Idles at +12 V vs P1** — a continuous standing bus rail (`osci/`: 12.06–12.11 V at rest), sagging to ~9.4 V under the seal-in load during a session and momentarily to ~2.6 V at session-end before snapping back |
 | **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (codec DAC → C14 → R28 2.2 kΩ → P3); WF26 talk/door switches |
 | **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K3** chime-mute (P4↔C1); K5 coil + flyback **D1**; R29 |
 | **P5** | Etagenruf — apartment/floor call (tone) | **OC2** sense; **LS1** speaker (P5↔GND); C19 (the gong cap, P4↔P5) |
@@ -724,8 +724,10 @@ high-Z is now structural, not discipline.
   stays idle in normal use — clamping over-envelope surge/ESD/miswire to ~50 V, under the 60 V SSRs.
   DC-block caps ≥ 50 V (C16 sees the +16–17 V P2 transients). **SAFE-2 / miswire:** the bidirectional TVS
   clamps any line in any order and the front-end is bidirectional (optos + anti-parallel clamps, AC/DC SSRs,
-  non-polar AC caps), so a reversed/scrambled J2 plug **survives** (need not function) — the gong cap is a
-  **non-polar anti-series pair (C19 + C21)**; key/label J2 to prevent the miswire. Envelope + parts: see TODO / "Protection".
+  non-polar AC caps), so a scrambled bus wiring **survives** (need not function) — the gong cap is a
+  **non-polar anti-series pair (C19 + C21)**. J2 is a *fixed* screw terminal (no plug to key/reverse), so
+  the only miswire mode is a per-conductor scramble at the clamps, which no connector feature can prevent —
+  survival rests on this bidirectional topology plus the silkscreen labels. Envelope + parts: see TODO / "Protection".
 - **Hum** with the P1↔GND bond once RX is live.
 - **⚠ TX-out reach (bench-gated).** Not yet confirmed on hardware: that the TV20/S **forwards the
   line-3 audio out to the door station** once it sees the R28 2.2 kΩ line-4↔line-3 handshake bridge,
@@ -750,7 +752,7 @@ inactive/transparent when unpowered (SSRs off, optos passive, codec quiet).
 These reproduce the handset (see "WF26 internal circuit") and run with zero board power:
 - **LS1** — 16 Ω speaker/mic across **P1↔P5** (doubles as the mic for talk).
 - **C19 + C21** — the gong audio crossover across **P5↔P4** (~22 µF non-polar: two 47 µF/50 V
-  electrolytics in anti-series, so a reversed/scrambled plug can't reverse-stress it, SAFE-2; the
+  electrolytics in anti-series, so scrambled bus wiring can't reverse-stress it, SAFE-2; the
   `CHIME_C1` node sits between K3 and this cap).
 - **K5** — the **latch relay** (G6K-2F-Y), coil across **P1↔P4**, pulled in by the ring's own
   ~12 V Türruf DC pulse and then **sealed in from P2** (see "Bell signals"); its NO contact routes
