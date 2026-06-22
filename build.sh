@@ -32,9 +32,51 @@ check() {
   echo "▶ check placement constraints"
   "$KPY" kicad/check_pcb.py 2>&1 | q
 }
+report_unrouted() {
+  # Pinpoint route.py's "unrouted connection(s)" by pad/position, via the DRC
+  # engine's unconnected-items report. kicad-cli does NOT refill zones, so this
+  # assumes the committed board has zones filled+saved (the normal workflow — see
+  # route.py); if it doesn't, plane pads read as unrouted and the count balloons,
+  # which we detect and flag rather than dumping the whole GND net.
+  kicad-cli pcb drc --format json --exit-code-violations "$PCB" \
+    -o /tmp/doorbell_drc.json >/dev/null 2>&1 || true
+  python3 - "$1" <<'PY' || true
+import json, sys
+expected = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 0
+try:
+    items = json.load(open("/tmp/doorbell_drc.json")).get("unconnected_items", [])
+except Exception:
+    items = []
+# Many more unconnected than route.py counted ⇒ zones aren't filled on disk.
+if expected and len(items) > expected + 2:
+    print(f"    ({len(items)} unconnected items vs {expected} expected — fill + save "
+          "zones in KiCad, then re-run to pinpoint)")
+    items = []
+if not items:
+    print("    (could not pinpoint; inspect the ratsnest in KiCad)")
+for v in items:
+    legs = []
+    for it in v.get("items", []):
+        p = it.get("pos", {})
+        legs.append(f"{it.get('description','?')} @ ({p.get('x',0):.2f}, {p.get('y',0):.2f}) mm")
+    print("    ✗ " + "  ↔  ".join(legs))
+PY
+  rm -f /tmp/doorbell_drc.json
+}
 route() {
   echo "▶ verify planes/thieving/connectivity + DRC"
-  "$KPY" kicad/route.py 2>&1 | q
+  local rc=0
+  "$KPY" kicad/route.py >/tmp/doorbell_route.txt 2>&1 || rc=$?
+  q </tmp/doorbell_route.txt
+  if [ "$rc" -ne 0 ]; then
+    if grep -q "unrouted connection" /tmp/doorbell_route.txt; then
+      local n
+      n=$(grep -oE "ERROR: [0-9]+ unrouted" /tmp/doorbell_route.txt | grep -oE "[0-9]+" | head -1)
+      echo "  unrouted connection location(s):"
+      report_unrouted "${n:-0}"
+    fi
+    exit "$rc"
+  fi
   kicad-cli pcb drc "$PCB" -o /tmp/doorbell_drc.txt 2>&1 | q | tail -1
   grep -iE "unconnected pads|DRC violations" /tmp/doorbell_drc.txt || true
 }

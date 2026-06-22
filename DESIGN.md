@@ -714,12 +714,12 @@ high-Z is now structural, not discipline.
 - **SAFE-7 bus protection** — per-line **bidirectional TVS** (each P-line→P1, at the connector). The
   front-end already tolerates the measured working envelope (`osci/`: **≈ −11 V to +17 V**; SSRs at
   60 V Voff, optos current-limited + reverse-clamped, codec taps AC-coupled ≥ 50 V), so the TVS is
-  **fault-only**: **~20 V standoff** — above the +16–17 V ring/door switching transients, so it stays
-  idle in normal use — clamping over-envelope surge/ESD/miswire to ~32 V, well under the 60 V SSRs.
+  **fault-only** (H24VND3BA): **24 V standoff** — above the +16–17 V ring/door switching transients, so it
+  stays idle in normal use — clamping over-envelope surge/ESD/miswire to ~50 V, under the 60 V SSRs.
   DC-block caps ≥ 50 V (C16 sees the +16–17 V P2 transients). **SAFE-2 / miswire:** the bidirectional TVS
   clamps any line in any order and the front-end is bidirectional (optos + anti-parallel clamps, AC/DC SSRs,
-  non-polar AC caps), so a reversed/scrambled J2 plug **survives** (need not function) — provided **C19, the
-  lone polar part, is made non-polar**; key/label J2 to prevent the miswire. Envelope + parts: see TODO / "Protection".
+  non-polar AC caps), so a reversed/scrambled J2 plug **survives** (need not function) — the gong cap is a
+  **non-polar anti-series pair (C19 + C21)**; key/label J2 to prevent the miswire. Envelope + parts: see TODO / "Protection".
 - **Hum** with the P1↔GND bond once RX is live.
 - **⚠ TX-out reach (bench-gated).** Not yet confirmed on hardware: that the TV20/S **forwards the
   line-3 audio out to the door station** once it sees the R28 2.2 kΩ line-4↔line-3 handshake bridge,
@@ -743,8 +743,9 @@ inactive/transparent when unpowered (SSRs off, optos passive, codec quiet).
 ### The passive WF26 core (the `WF26_*` parts)
 These reproduce the handset (see "WF26 internal circuit") and run with zero board power:
 - **LS1** — 16 Ω speaker/mic across **P1↔P5** (doubles as the mic for talk).
-- **C19** — 22 µF across **P5↔P4** (the gong audio crossover; the `CHIME_C1` node sits between K3
-  and this cap).
+- **C19 + C21** — the gong audio crossover across **P5↔P4** (~22 µF non-polar: two 47 µF/50 V
+  electrolytics in anti-series, so a reversed/scrambled plug can't reverse-stress it, SAFE-2; the
+  `CHIME_C1` node sits between K3 and this cap).
 - **K5** — the **latch relay** (G6K-2F-Y), coil across **P1↔P4**, pulled in by the ring's own
   ~12 V Türruf DC pulse and then **sealed in from P2** (see "Bell signals"); its NO contact routes
   listen **line 2 → S1 → K1_COM → P4 → C1 → speaker**. **Bus-energised, not GPIO-driven** — that's

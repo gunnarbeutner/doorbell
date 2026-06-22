@@ -59,7 +59,10 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
       install, or to run RX-only) plus a soft **~1 MΩ** bleed so `/P1` doesn't float when open; vs the
       RX-preferred soft-tie-only (no hard bond — but then TX needs another return). A hard merge blocks
       the hum A/B (bench 6), can't measure the P1↔earth offset in-circuit, and puts the bus common on
-      the USB ground **unfused** (F1 is on VBUS, not GND). Decide jumper vs merge vs soft-tie.
+      the USB ground **unfused** (F1 is on VBUS, not GND). **Decided: kept the hard merge** (simplest,
+      lowest-impedance TX return); the breakable option is a respin-free swap if the bench hum A/B (bench 6)
+      ever needs it — a default-closed **0 Ω** (`C17888`) between separate `/P1` and `GND` nets plus a soft
+      **1 MΩ** bleed (`C17927`) so `/P1` doesn't float when the 0 Ω is removed.
 - [ ] **Bus-interface transient/ESD protection (whole 5-way bus) — per-line bidirectional TVS to P1
       at the connector.** Today's only bus-side clamps are small-signal 1N4148W (D1 coil flyback,
       D8/D9 opto reverse) — **no primary TVS**; SAFE-1 (MUST) wants surge/ESD tolerance on the terminals.
@@ -83,13 +86,15 @@ Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14�
       can). **Key/label J2** to prevent a reversed/scrambled plug.
       **Chosen + imported:** TVS = **H24VND3BA** (`C20615815`, SOD-323, 24 V/31 V/50 V bidirectional,
       Preferred/free) → `kicad/lib_protection/h24vnd3ba` (+ sym/fp tables); C19 → non-polar **anti-series
-      pair, 2× RVT1H470M0607** (`C72523`, 47 µF/50 V) → `kicad/lib_audio/rvt1h470m0607`. (TVS also exists
+      pair, 2× RVT1H470M0607** (`C3349`, Honor Elec, 47 µF/50 V — Economy-PCBA eligible; `C72523`/ROQANG is
+      the identical part with higher stock but not Economy-eligible) → `kicad/lib_audio/rvt1h470m0607`. (TVS also exists
       in the installed `PCM_JLCPCB-Diodes` PCM lib if a repo-local copy isn't wanted.)
-      **Next:** (1) place **4× H24VND3BA** (P2–P5 → P1, a short trace inboard of J2) + the C19 anti-series
-      pair, re-route, DRC; (2) **key/label J2** against a reversed plug (SAFE-2); (3) a **higher-bandwidth
-      capture** of a ring/door onset (25–50 kSa/s undersamples fast spikes — confirm the true transient
-      stays below the ~31 V breakdown knee, else step the standoff up); (4) align the imported 3D models
-      (min-z = 0) + clear KiCad's 3D cache. Subsumes the "SAFE-7 protection on the P2/P3 taps" item above.
+      **Placed & routed:** 4× H24VND3BA (D2/D3/D7/D12, P2–P5 → P1/GND) and the C19/C21 anti-series
+      non-polar pair are in the schematic; board re-routed, DRC clean (0 errors). **Still open:** (1) **key/label
+      J2** against a reversed plug (SAFE-2); (2) a **higher-bandwidth capture** of a ring/door onset (25–50 kSa/s
+      undersamples fast spikes — confirm the true transient stays below the ~31 V breakdown knee, else step the
+      standoff up); (3) align the imported 3D models (min-z = 0) + clear KiCad's 3D cache. Subsumes the
+      "SAFE-7 protection on the P2/P3 taps" item above.
 
 ## D5 refdes — `D` prefix on a powered IC (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 

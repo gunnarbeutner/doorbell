@@ -6246,6 +6246,272 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "PCM_JLCPCB-Diodes:TVS-Bi,H24VND3BA"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "D"
+				(at 2.032 0.834 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "H24VND3BA"
+				(at 2.032 -1.2122 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 0.8 0.8)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "PCM_JLCPCB:D_SOD-323"
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261525_hongjiacheng-H24VND3BA_C20615815.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "7A 50V 350W 31V Bidirectional 24V SOD-323 ESD and Surge Protection (TVS/ESD) ROHS"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "LCSC" "C20615815"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Stock" "25562"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Price" "0.029USD"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Process" "SMT"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Minimum Qty" "20"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Attrition Qty" "6"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Class" "Preferred Component"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Category" "TVS/Fuse/Board Level Protection,Electrostatic And Surge Protection (TVS/ESD)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "hongjiacheng"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Part" "H24VND3BA"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "D_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TVS-Bi,H24VND3BA_0_1"
+				(polyline
+					(pts
+						(xy -1.905 -0.635) (xy -1.27 0) (xy 1.27 0) (xy 1.905 0.635)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 2.54) (xy 0 0) (xy 1.27 2.54) (xy -1.27 2.54)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -2.54) (xy 0 0) (xy -1.27 -2.54) (xy 1.27 -2.54)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TVS-Bi,H24VND3BA_1_1"
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 3.81)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 3.81 270)
+					(length 3.81)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "PCM_JLCPCB-Diodes:TVS-Uni,SMF5.0A"
 			(pin_numbers
 				(hide yes)
@@ -14849,6 +15115,12 @@
 		(uuid "08408275-959e-4430-9e52-8306958d7b66")
 	)
 	(junction
+		(at 43.18 138.43)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0855bd2d-d241-41e9-b7a4-40300ffdb3cb")
+	)
+	(junction
 		(at 320.04 95.25)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -14861,16 +15133,16 @@
 		(uuid "16b1d0d2-64e7-4354-a5a1-518df6bacdeb")
 	)
 	(junction
-		(at 185.42 113.03)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "1ebb4edc-9b31-4de0-aad4-64d9ac6bd662")
-	)
-	(junction
 		(at 302.26 97.79)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "26c7f5d2-f772-4129-ad18-4ed4ba8909e5")
+	)
+	(junction
+		(at 50.8 271.78)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "2f1da9e0-05f6-44ee-848a-15a426bec98f")
 	)
 	(junction
 		(at 294.64 82.55)
@@ -14891,10 +15163,40 @@
 		(uuid "3d8d816d-2a26-40cf-818f-3e5d3048c62f")
 	)
 	(junction
+		(at 101.6 201.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4578c48f-b903-48a9-911e-1dd5b62299dc")
+	)
+	(junction
+		(at 251.46 29.21)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5301f64f-15df-4a88-8c43-f25e137d461f")
+	)
+	(junction
+		(at 226.06 29.21)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "62064a8b-59ca-4c4f-9200-a2b07250fedc")
+	)
+	(junction
 		(at 74.93 35.56)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6961541d-46eb-4cdd-8f3b-aed7afd5daa3")
+	)
+	(junction
+		(at 36.83 138.43)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "78b9a7b9-c25e-4c34-87d7-f09058b9dcf0")
+	)
+	(junction
+		(at 101.6 146.05)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "80b0daef-2d87-432b-9eb7-c97dec5ce385")
 	)
 	(junction
 		(at 294.64 110.49)
@@ -14903,16 +15205,10 @@
 		(uuid "8d2b4a6a-69a9-48f9-9e4a-de9426d458b9")
 	)
 	(junction
-		(at 101.6 201.93)
+		(at 185.42 113.03)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "9524d704-3d2b-48f1-b554-0aa125732fc1")
-	)
-	(junction
-		(at 101.6 146.05)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "971918c1-b3e1-4010-ac5e-117c967abc1b")
+		(uuid "90bbd5d0-fa09-4a15-8b38-9694163c680e")
 	)
 	(junction
 		(at 320.04 102.87)
@@ -14975,10 +15271,10 @@
 		(uuid "c78ccc22-10a2-44b4-be1c-ad7cd1b02f11")
 	)
 	(junction
-		(at 50.8 271.78)
+		(at 49.53 138.43)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "d08101e5-2dfd-4d1b-83d7-bd8dc74481b3")
+		(uuid "cb5345d4-572c-40b1-b916-9e4a516faf49")
 	)
 	(junction
 		(at 292.1 153.67)
@@ -15053,6 +15349,16 @@
 	(no_connect
 		(at 99.06 262.89)
 		(uuid "efa6e893-e2be-4f02-9df7-493460f00093")
+	)
+	(wire
+		(pts
+			(xy 85.09 146.05) (xy 91.44 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "00596609-ab2d-466a-b2e1-e82cf323c198")
 	)
 	(wire
 		(pts
@@ -15156,7 +15462,7 @@
 	)
 	(wire
 		(pts
-			(xy 26.67 125.73) (xy 29.21 125.73)
+			(xy 35.56 116.84) (xy 38.1 116.84)
 		)
 		(stroke
 			(width 0)
@@ -15276,16 +15582,6 @@
 	)
 	(wire
 		(pts
-			(xy 85.09 146.05) (xy 91.44 146.05)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1a8ae74b-80d6-4ea8-9e64-d1f6a19cc8c7")
-	)
-	(wire
-		(pts
 			(xy 196.85 46.99) (xy 196.85 44.45)
 		)
 		(stroke
@@ -15343,6 +15639,16 @@
 			(type default)
 		)
 		(uuid "20e2ae46-a010-4ba0-b67c-576eb32abeff")
+	)
+	(wire
+		(pts
+			(xy 62.23 125.73) (xy 62.23 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2128574d-9df2-4623-a856-563bb4226ff1")
 	)
 	(wire
 		(pts
@@ -15426,7 +15732,7 @@
 	)
 	(wire
 		(pts
-			(xy 26.67 128.27) (xy 29.21 128.27)
+			(xy 35.56 119.38) (xy 38.1 119.38)
 		)
 		(stroke
 			(width 0)
@@ -15436,7 +15742,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 201.93) (xy 114.3 201.93)
+			(xy 99.06 201.93) (xy 101.6 201.93)
 		)
 		(stroke
 			(width 0)
@@ -15546,6 +15852,16 @@
 	)
 	(wire
 		(pts
+			(xy 24.13 138.43) (xy 36.83 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "34624eb4-7f53-4f21-9411-c3ef274bab13")
+	)
+	(wire
+		(pts
 			(xy 74.93 35.56) (xy 74.93 17.78)
 		)
 		(stroke
@@ -15606,6 +15922,26 @@
 	)
 	(wire
 		(pts
+			(xy 43.18 138.43) (xy 49.53 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3dd856f4-33b3-4aac-92e3-abac376dd496")
+	)
+	(wire
+		(pts
+			(xy 43.18 138.43) (xy 43.18 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3f36fe24-0129-4396-8c33-8f0cf3a9abdb")
+	)
+	(wire
+		(pts
 			(xy 316.23 39.37) (xy 312.42 39.37)
 		)
 		(stroke
@@ -15653,6 +15989,16 @@
 			(type default)
 		)
 		(uuid "436aac25-c2bf-4294-8602-910b52c34fba")
+	)
+	(wire
+		(pts
+			(xy 185.42 113.03) (xy 185.42 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4447e064-6e24-4107-9e4e-98c459f9a6a1")
 	)
 	(wire
 		(pts
@@ -15716,16 +16062,6 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 146.05) (xy 101.6 134.62)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4b302aee-ce20-4fa4-93ab-e1af8e33e1fd")
-	)
-	(wire
-		(pts
 			(xy 312.42 54.61) (xy 316.23 54.61)
 		)
 		(stroke
@@ -15733,6 +16069,16 @@
 			(type default)
 		)
 		(uuid "4d1a3541-801e-4e70-bfad-15b45576f0a0")
+	)
+	(wire
+		(pts
+			(xy 50.8 271.78) (xy 73.66 271.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4e0dad54-d754-454a-a1c2-888422ac55de")
 	)
 	(wire
 		(pts
@@ -15876,6 +16222,16 @@
 	)
 	(wire
 		(pts
+			(xy 36.83 125.73) (xy 36.83 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5c9662fb-c2d8-44e1-85a5-68b4697d8be5")
+	)
+	(wire
+		(pts
 			(xy 63.5 90.17) (xy 68.58 90.17)
 		)
 		(stroke
@@ -15953,16 +16309,6 @@
 			(type default)
 		)
 		(uuid "6424240e-f053-4d6b-b49a-22a9bda3ade5")
-	)
-	(wire
-		(pts
-			(xy 101.6 201.93) (xy 101.6 185.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6448506a-e895-4d24-85e9-7bd18d356f29")
 	)
 	(wire
 		(pts
@@ -16086,6 +16432,16 @@
 	)
 	(wire
 		(pts
+			(xy 101.6 185.42) (xy 101.6 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "75267b5c-2727-47e0-9f8f-362499267026")
+	)
+	(wire
+		(pts
 			(xy 231.14 29.21) (xy 226.06 29.21)
 		)
 		(stroke
@@ -16096,7 +16452,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 146.05) (xy 114.3 146.05)
+			(xy 99.06 146.05) (xy 101.6 146.05)
 		)
 		(stroke
 			(width 0)
@@ -16116,13 +16472,13 @@
 	)
 	(wire
 		(pts
-			(xy 22.86 271.78) (xy 50.8 271.78)
+			(xy 62.23 135.89) (xy 62.23 138.43)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "7ba79ce4-d604-4672-9629-38c9740892ea")
+		(uuid "7c51ecb7-a032-43a3-930c-c06ae91b4d3b")
 	)
 	(wire
 		(pts
@@ -16196,7 +16552,17 @@
 	)
 	(wire
 		(pts
-			(xy 50.8 271.78) (xy 73.66 271.78)
+			(xy 185.42 113.03) (xy 210.82 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8140ccfd-a41f-412a-b47a-3c190967ea87")
+	)
+	(wire
+		(pts
+			(xy 22.86 271.78) (xy 50.8 271.78)
 		)
 		(stroke
 			(width 0)
@@ -16236,16 +16602,6 @@
 	)
 	(wire
 		(pts
-			(xy 170.18 210.82) (xy 170.18 218.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8523b984-68d5-4800-8fef-63fa29480765")
-	)
-	(wire
-		(pts
 			(xy 262.89 182.88) (xy 262.89 158.75)
 		)
 		(stroke
@@ -16253,6 +16609,16 @@
 			(type default)
 		)
 		(uuid "8566832d-77a7-4ba4-be7d-dc9197ac046d")
+	)
+	(wire
+		(pts
+			(xy 36.83 135.89) (xy 36.83 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "85d9eaad-4a0e-478c-aa26-5a077f4d2bac")
 	)
 	(wire
 		(pts
@@ -16276,7 +16642,7 @@
 	)
 	(wire
 		(pts
-			(xy 26.67 120.65) (xy 29.21 120.65)
+			(xy 35.56 111.76) (xy 38.1 111.76)
 		)
 		(stroke
 			(width 0)
@@ -16416,16 +16782,6 @@
 	)
 	(wire
 		(pts
-			(xy 50.8 254) (xy 50.8 257.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9ba1b6da-5ff9-44e7-af42-673a344969ea")
-	)
-	(wire
-		(pts
 			(xy 247.65 195.58) (xy 262.89 195.58)
 		)
 		(stroke
@@ -16466,6 +16822,16 @@
 	)
 	(wire
 		(pts
+			(xy 50.8 269.24) (xy 50.8 271.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9dc38588-e4e8-4664-9a62-79b51c6c3c64")
+	)
+	(wire
+		(pts
 			(xy 316.23 92.71) (xy 316.23 95.25)
 		)
 		(stroke
@@ -16483,6 +16849,16 @@
 			(type default)
 		)
 		(uuid "a18c8cbd-9dc7-4c41-932f-3d0517eed994")
+	)
+	(wire
+		(pts
+			(xy 101.6 201.93) (xy 114.3 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a22331e2-09b2-4b3d-bfe8-4d6e736edb81")
 	)
 	(wire
 		(pts
@@ -16576,6 +16952,16 @@
 	)
 	(wire
 		(pts
+			(xy 36.83 138.43) (xy 43.18 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a8a8f447-d878-4d96-b49d-2c89aa7b3c7f")
+	)
+	(wire
+		(pts
 			(xy 288.29 110.49) (xy 294.64 110.49)
 		)
 		(stroke
@@ -16666,13 +17052,13 @@
 	)
 	(wire
 		(pts
-			(xy 22.86 254) (xy 50.8 254)
+			(xy 22.86 251.46) (xy 50.8 251.46)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "b405dc86-2271-4d44-9374-b4c9ac6258b1")
+		(uuid "b451db67-0db6-4cef-8dc3-64926f42f15c")
 	)
 	(wire
 		(pts
@@ -16806,6 +17192,16 @@
 	)
 	(wire
 		(pts
+			(xy 49.53 135.89) (xy 49.53 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c50ad416-8c10-49f8-b572-c5be60e79c2b")
+	)
+	(wire
+		(pts
 			(xy 191.77 195.58) (xy 186.69 195.58)
 		)
 		(stroke
@@ -16846,16 +17242,6 @@
 	)
 	(wire
 		(pts
-			(xy 50.8 265.43) (xy 50.8 271.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c8154504-ce37-4616-892a-ff815bd224eb")
-	)
-	(wire
-		(pts
 			(xy 114.3 260.35) (xy 120.65 260.35)
 		)
 		(stroke
@@ -16863,6 +17249,16 @@
 			(type default)
 		)
 		(uuid "c932def2-beef-44d8-a2f2-9c8e2b7837f3")
+	)
+	(wire
+		(pts
+			(xy 49.53 138.43) (xy 62.23 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c9ff71f7-6d0d-46da-b24e-621d9e45dd0e")
 	)
 	(wire
 		(pts
@@ -16916,6 +17312,16 @@
 	)
 	(wire
 		(pts
+			(xy 49.53 125.73) (xy 49.53 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d0a19251-7b7e-44a3-aaad-02a6825dd56c")
+	)
+	(wire
+		(pts
 			(xy 247.65 198.12) (xy 255.27 198.12)
 		)
 		(stroke
@@ -16936,7 +17342,17 @@
 	)
 	(wire
 		(pts
-			(xy 26.67 118.11) (xy 29.21 118.11)
+			(xy 50.8 251.46) (xy 50.8 254)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d25cf664-09cd-431c-be0c-f082aae88626")
+	)
+	(wire
+		(pts
+			(xy 35.56 109.22) (xy 38.1 109.22)
 		)
 		(stroke
 			(width 0)
@@ -16976,7 +17392,7 @@
 	)
 	(wire
 		(pts
-			(xy 181.61 113.03) (xy 210.82 113.03)
+			(xy 181.61 113.03) (xy 185.42 113.03)
 		)
 		(stroke
 			(width 0)
@@ -17026,6 +17442,26 @@
 	)
 	(wire
 		(pts
+			(xy 101.6 146.05) (xy 114.3 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ddc517b0-363d-43cd-97be-9dcd968ff20f")
+	)
+	(wire
+		(pts
+			(xy 167.64 212.09) (xy 167.64 219.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "df1201db-aa28-446c-97f4-75dcc41b37cc")
+	)
+	(wire
+		(pts
 			(xy 294.64 93.98) (xy 294.64 97.79)
 		)
 		(stroke
@@ -17046,7 +17482,17 @@
 	)
 	(wire
 		(pts
-			(xy 26.67 123.19) (xy 29.21 123.19)
+			(xy 101.6 134.62) (xy 101.6 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e1c3ab93-b8e4-469e-b9d2-474ec89998f6")
+	)
+	(wire
+		(pts
+			(xy 35.56 114.3) (xy 38.1 114.3)
 		)
 		(stroke
 			(width 0)
@@ -17073,6 +17519,16 @@
 			(type default)
 		)
 		(uuid "e447fd29-f07e-4568-8027-7c454fa90f73")
+	)
+	(wire
+		(pts
+			(xy 24.13 125.73) (xy 24.13 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e49e2a5e-0f75-4c1a-9b08-6e48a11c2663")
 	)
 	(wire
 		(pts
@@ -17113,6 +17569,16 @@
 			(type default)
 		)
 		(uuid "ea5438db-470f-4a91-84fe-d3f1e5a1c2bc")
+	)
+	(wire
+		(pts
+			(xy 24.13 135.89) (xy 24.13 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ec5591cb-0edc-4581-9908-9a354febd2d6")
 	)
 	(wire
 		(pts
@@ -17459,6 +17925,16 @@
 		)
 		(uuid "2af19b3f-6c59-43fb-9a32-26b0f217ce1c")
 	)
+	(label "P1"
+		(at 167.64 212.09 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2bb7ab60-0ac7-4e66-a5ba-538765a46e26")
+	)
 	(label "USB_CC2"
 		(at 63.5 43.18 0)
 		(effects
@@ -17487,6 +17963,16 @@
 			)
 		)
 		(uuid "309abeb1-5a20-424c-8067-2cfa72a724f5")
+	)
+	(label "CHIME_MID"
+		(at 50.8 261.62 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3161dd7c-1e3a-48e3-a272-420633dd0f6d")
 	)
 	(label "WD_GATE"
 		(at 294.64 97.79 0)
@@ -17536,6 +18022,16 @@
 			(justify bottom)
 		)
 		(uuid "3527dccb-9af5-4e5f-9f01-5c29561893ea")
+	)
+	(label "P1"
+		(at 43.18 142.24 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3606a611-f360-4dc5-bc0b-bb5cbf31df3a")
 	)
 	(label "USB_CC1"
 		(at 63.5 40.64 0)
@@ -17602,16 +18098,6 @@
 			)
 		)
 		(uuid "4367be3c-a9fc-453e-9964-a1435a2edbe7")
-	)
-	(label "P1"
-		(at 85.09 201.93 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "43b76f29-e5f1-4fc1-bb5d-dd3c5f97d158")
 	)
 	(label "I2S_DIN"
 		(at 110.49 46.99 180)
@@ -17797,7 +18283,7 @@
 		(uuid "700fa97f-16a2-41a8-9936-4196e0b5f567")
 	)
 	(label "P1"
-		(at 26.67 118.11 0)
+		(at 35.56 109.22 0)
 		(effects
 			(font
 				(size 1 1)
@@ -17853,6 +18339,16 @@
 			(justify right bottom)
 		)
 		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
+	)
+	(label "P1"
+		(at 232.41 226.06 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7a26ec8d-51e8-4e46-9a1e-9cfd97d2b241")
 	)
 	(label "VBUS_F"
 		(at 66.04 87.63 0)
@@ -17921,7 +18417,7 @@
 		(uuid "86a9455a-488d-4cf3-b9c8-a93f66f44047")
 	)
 	(label "P4"
-		(at 26.67 125.73 0)
+		(at 35.56 116.84 0)
 		(effects
 			(font
 				(size 1 1)
@@ -17997,6 +18493,16 @@
 			(justify left bottom)
 		)
 		(uuid "946e12d3-bace-40ec-8baa-df16bb10865c")
+	)
+	(label "CHIME_C1"
+		(at 22.86 251.46 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "94c6dfa5-7d39-457c-a2b7-b66385cb3f1b")
 	)
 	(label "P1"
 		(at 68.58 269.24 0)
@@ -18102,6 +18608,16 @@
 		)
 		(uuid "ae67b695-bbf8-4919-ae04-0cc1a25ddb72")
 	)
+	(label "P2"
+		(at 24.13 125.73 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "afcfdfd5-bc70-4b27-a6af-a611ba68c8d5")
+	)
 	(label "P3"
 		(at 119.38 257.81 180)
 		(effects
@@ -18130,6 +18646,16 @@
 			(justify left)
 		)
 		(uuid "b2c2f2dd-1da0-44a8-8276-78979c19f0a8")
+	)
+	(label "P5"
+		(at 62.23 125.73 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b5222200-4e6f-4853-8e9c-5898ab8ec3e9")
 	)
 	(label "OC1_OUT"
 		(at 134.62 128.27 0)
@@ -18160,16 +18686,6 @@
 		)
 		(uuid "b825da95-0e87-4822-b8ba-c930d03ced4f")
 	)
-	(label "CHIME_C1"
-		(at 22.86 254 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "b988ffd6-a737-4d20-b7c7-8cf2d6f0e0e1")
-	)
 	(label "I2S_MCLK"
 		(at 186.69 182.88 0)
 		(effects
@@ -18178,6 +18694,16 @@
 			)
 		)
 		(uuid "bb930ac1-73ec-4d03-99a9-ca742502c5a2")
+	)
+	(label "P3"
+		(at 36.83 125.73 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "bcd6f4fd-d333-4ac8-bb58-6f9e27353e7b")
 	)
 	(label "K2_CATH"
 		(at 331.47 97.79 180)
@@ -18198,16 +18724,6 @@
 		)
 		(uuid "bde12bc1-ad03-4d7e-b875-45715109a0da")
 	)
-	(label "P1"
-		(at 170.18 210.82 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "bf754f44-137e-4166-b5db-83a07f194490")
-	)
 	(label "K5_COM"
 		(at 85.09 240.03 180)
 		(effects
@@ -18219,7 +18735,7 @@
 		(uuid "c21a25bd-888f-442c-9759-f7e24566eb23")
 	)
 	(label "P3"
-		(at 26.67 123.19 0)
+		(at 35.56 114.3 0)
 		(effects
 			(font
 				(size 1 1)
@@ -18228,7 +18744,7 @@
 		(uuid "c2468b92-6bc8-4514-8f0e-3a0d0de0ecf7")
 	)
 	(label "P5"
-		(at 26.67 128.27 0)
+		(at 35.56 119.38 0)
 		(effects
 			(font
 				(size 1 1)
@@ -18236,15 +18752,15 @@
 		)
 		(uuid "c40cbbc2-cb47-4fd9-951c-9ba635fe66cd")
 	)
-	(label "P1"
-		(at 85.09 146.05 0)
+	(label "P4"
+		(at 49.53 125.73 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "c77b4b0e-9358-4cc8-a571-e16cd5047883")
+		(uuid "c9d8a199-1c57-474d-a68e-4f50b1acf14f")
 	)
 	(label "OC1_OUT"
 		(at 181.61 64.77 0)
@@ -18276,16 +18792,6 @@
 		)
 		(uuid "d432ff3a-db46-40b9-b4e8-42e571f5fab0")
 	)
-	(label "P1"
-		(at 232.41 226.06 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d4427718-cbd3-4b7f-add5-098fd70b73ef")
-	)
 	(label "I2S_DOUT"
 		(at 186.69 200.66 0)
 		(effects
@@ -18316,7 +18822,7 @@
 		(uuid "da1e7001-706b-4642-850e-0605a2c8c24d")
 	)
 	(label "P2"
-		(at 26.67 120.65 0)
+		(at 35.56 111.76 0)
 		(effects
 			(font
 				(size 1 1)
@@ -19495,7 +20001,7 @@
 	)
 	(symbol
 		(lib_id "db125_5p:DB125-3.5-5P-GN-S")
-		(at 33.02 123.19 0)
+		(at 41.91 114.3 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -19506,7 +20012,7 @@
 		(fields_autoplaced yes)
 		(uuid "11620926-4f2e-442a-b60b-f28d2d981603")
 		(property "Reference" "J2"
-			(at 38.1 121.9199 0)
+			(at 46.99 113.0299 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -19517,7 +20023,7 @@
 			)
 		)
 		(property "Value" "WF26 bus"
-			(at 38.1 124.4599 0)
+			(at 46.99 115.5699 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -19528,7 +20034,7 @@
 			)
 		)
 		(property "Footprint" "db125_5p:CONN-TH_5P-P3.50_DORABO_DB125-3.5-5P-GN-S"
-			(at 33.02 135.89 0)
+			(at 41.91 127 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19539,7 +20045,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C3646874.pdf"
-			(at 33.02 138.43 0)
+			(at 41.91 129.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19550,7 +20056,7 @@
 			)
 		)
 		(property "Description" "WF26 intercom bus screw terminal, 5-way (P1-P5)"
-			(at 33.02 123.19 0)
+			(at 41.91 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19561,7 +20067,7 @@
 			)
 		)
 		(property "Manufacturer" "DORABO(地博电气)"
-			(at 33.02 140.97 0)
+			(at 41.91 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19572,7 +20078,7 @@
 			)
 		)
 		(property "MPN" "DB125-3.5-5P-GN-S"
-			(at 33.02 143.51 0)
+			(at 41.91 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19583,7 +20089,7 @@
 			)
 		)
 		(property "LCSC" "C3646874"
-			(at 33.02 146.05 0)
+			(at 41.91 137.16 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20678,7 +21184,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,1uF")
-		(at 185.42 116.84 0)
+		(at 185.42 119.38 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -20688,17 +21194,6 @@
 		(dnp no)
 		(uuid "248dd4e9-33d6-4a7d-b0cc-e1fc38bf6a56")
 		(property "Reference" "C5"
-			(at 187.2 115.57 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "1uF"
 			(at 187.2 118.11 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20709,8 +21204,19 @@
 				(justify left)
 			)
 		)
+		(property "Value" "1uF"
+			(at 187.2 120.65 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
 		(property "Footprint" "PCM_JLCPCB:C_0603"
-			(at 185.42 116.84 0)
+			(at 185.42 119.38 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20721,7 +21227,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
-			(at 185.42 116.84 0)
+			(at 185.42 119.38 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20732,7 +21238,7 @@
 			)
 		)
 		(property "Description" "EN reset RC (Espressif-spec 1uF)"
-			(at 185.42 116.84 0)
+			(at 185.42 119.38 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20743,7 +21249,7 @@
 			)
 		)
 		(property "LCSC" "C15849"
-			(at 185.42 116.84 0)
+			(at 185.42 119.38 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20754,7 +21260,7 @@
 			)
 		)
 		(property "MPN" "CL10A105KB8NNNC"
-			(at 185.42 116.84 0)
+			(at 185.42 119.38 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23752,6 +24258,112 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 50.8 265.43 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "53055ba5-a54b-48f4-b763-5a65468506e7")
+		(property "Reference" "C21"
+			(at 45.72 266.954 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "47uF/50V"
+			(at 45.72 264.668 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "rvt1h470m0607:CAP-SMD_BD6.3-L6.6-W6.6-LS7.6-FD"
+			(at 50.8 265.43 0)
+			(hide yes)
+			(show_name yes)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 46.99 270.51 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "47uF 50V SMD aluminium electrolytic (C1 audio crossover)"
+			(at 46.99 270.51 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C3349"
+			(at 46.99 270.51 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "RVT1H470M0607"
+			(at 46.99 270.51 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+    (property "Manufacturer" "Honor Elec" (at 50.8 265.43 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+		(pin "1"
+			(uuid "7434cd85-90d1-4f37-8543-f16868ae1ce3")
+		)
+		(pin "2"
+			(uuid "27a1bc1c-ffaa-4a58-8d65-5672819bd787")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "C21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:USB_C_Receptacle_USB2.0_16P")
 		(at 48.26 50.8 0)
 		(unit 1)
@@ -25666,8 +26278,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 170.18 218.44 0)
+		(lib_id "PCM_JLCPCB-Diodes:TVS-Bi,H24VND3BA")
+		(at 62.23 132.08 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -25675,10 +26287,31 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "7ac4c4b2-37a1-475b-af91-54f13ef0d8d4")
-		(property "Reference" "#PWR028"
-			(at 170.18 224.79 0)
+		(uuid "79b01492-56ed-4467-95ba-b9626cb0d6ee")
+		(property "Reference" "D12"
+			(at 65.024 130.8099 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "H24VND3BA"
+			(at 65.024 133.35 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:D_SOD-323"
+			(at 60.452 132.08 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25688,18 +26321,8 @@
 				)
 			)
 		)
-		(property "Value" "GND"
-			(at 170.18 223.52 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 170.18 218.44 0)
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261525_hongjiacheng-H24VND3BA_C20615815.pdf"
+			(at 62.23 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25709,8 +26332,8 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
-			(at 170.18 218.44 0)
+		(property "Description" "7A 50V 350W 31V Bidirectional 24V SOD-323 ESD and Surge Protection (TVS/ESD) ROHS"
+			(at 62.23 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25720,8 +26343,8 @@
 				)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 170.18 218.44 0)
+		(property "LCSC" "C20615815"
+			(at 62.23 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25730,14 +26353,307 @@
 					(size 1.27 1.27)
 				)
 			)
+		)
+		(property "Stock" "25562"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Price" "0.029USD"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Process" "SMT"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Minimum Qty" "20"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Attrition Qty" "6"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Class" "Preferred Component"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Category" "TVS/Fuse/Board Level Protection,Electrostatic And Surge Protection (TVS/ESD)"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "hongjiacheng"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Part" "H24VND3BA"
+			(at 62.23 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "e171b47f-7182-4d40-b4b8-abf43668b3bb")
 		)
 		(pin "1"
-			(uuid "fdf5533c-43aa-4667-81bc-2ed190961e44")
+			(uuid "cc14b0e6-0b3b-4ed0-af2b-2e6f24b803f6")
 		)
 		(instances
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "#PWR028")
+					(reference "D12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Diodes:TVS-Bi,H24VND3BA")
+		(at 36.83 132.08 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "7a34a8c7-8ff2-4929-ade3-7d862edcac20")
+		(property "Reference" "D3"
+			(at 39.624 130.8099 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "H24VND3BA"
+			(at 39.624 133.35 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:D_SOD-323"
+			(at 35.052 132.08 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261525_hongjiacheng-H24VND3BA_C20615815.pdf"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "7A 50V 350W 31V Bidirectional 24V SOD-323 ESD and Surge Protection (TVS/ESD) ROHS"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C20615815"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Stock" "25562"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Price" "0.029USD"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Process" "SMT"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Minimum Qty" "20"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Attrition Qty" "6"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Class" "Preferred Component"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Category" "TVS/Fuse/Board Level Protection,Electrostatic And Surge Protection (TVS/ESD)"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "hongjiacheng"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Part" "H24VND3BA"
+			(at 36.83 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "1e4827ad-85ed-4ad5-a46e-7c2e38c5042e")
+		)
+		(pin "1"
+			(uuid "7178c6c8-3d4e-4625-a959-30398490cbcc")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "D3")
 					(unit 1)
 				)
 			)
@@ -26929,7 +27845,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
+		(lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ")
 		(at 83.82 247.65 90)
 		(unit 1)
 		(body_style 1)
@@ -27551,6 +28467,112 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 50.8 257.81 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "9290428b-38ea-4341-916f-71096957fedf")
+		(property "Reference" "C19"
+			(at 55.88 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "47uF/50V"
+			(at 55.88 257.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "rvt1h470m0607:CAP-SMD_BD6.3-L6.6-W6.6-LS7.6-FD"
+			(at 50.8 257.81 0)
+			(hide yes)
+			(show_name yes)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 54.61 252.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "47uF 50V SMD aluminium electrolytic (C1 audio crossover)"
+			(at 54.61 252.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C3349"
+			(at 54.61 252.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "RVT1H470M0607"
+			(at 54.61 252.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+    (property "Manufacturer" "Honor Elec" (at 50.8 257.81 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+		(pin "1"
+			(uuid "431207b3-263b-4b39-a26d-c5a476053fd3")
+		)
+		(pin "2"
+			(uuid "b4f24a85-8feb-4976-aecf-3a1bef4381b1")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "C19")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 285.75 195.58 0)
 		(mirror y)
@@ -27726,6 +28748,84 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "C15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 85.09 201.93 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "96479c8c-c194-43ab-9e47-14dc4db90734")
+		(property "Reference" "#PWR033"
+			(at 85.09 208.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 85.09 207.01 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 85.09 201.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 85.09 201.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 85.09 201.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0512be8a-e4c8-4c92-8a3c-324c2ce575f9")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR033")
 					(unit 1)
 				)
 			)
@@ -28051,6 +29151,84 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 85.09 146.05 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a2fa1d30-b03b-4742-a42a-2c2e8f4c971f")
+		(property "Reference" "#PWR028"
+			(at 85.09 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 85.09 151.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 85.09 146.05 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 85.09 146.05 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 85.09 146.05 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a4c7e877-e270-4414-9e7d-ac777b8dae93")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR028")
 					(unit 1)
 				)
 			)
@@ -29349,6 +30527,84 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "R14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 167.64 219.71 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "bdebc2e8-a5c0-4963-b610-763cf1b05efa")
+		(property "Reference" "#PWR031"
+			(at 167.64 226.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 167.64 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 167.64 219.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 167.64 219.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 167.64 219.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "48885d12-a40d-4e13-a113-1df63f8ca244")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR031")
 					(unit 1)
 				)
 			)
@@ -31079,7 +32335,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 185.42 120.65 0)
+		(at 185.42 123.19 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -31089,7 +32345,7 @@
 		(dnp no)
 		(uuid "da17b908-d534-40b2-9f25-87f641be2443")
 		(property "Reference" "#PWR35"
-			(at 185.42 120.65 0)
+			(at 185.42 123.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31100,7 +32356,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 185.42 125.15 0)
+			(at 185.42 127.69 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31110,7 +32366,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 185.42 120.65 0)
+			(at 185.42 123.19 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31120,7 +32376,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 185.42 120.65 0)
+			(at 185.42 123.19 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31130,7 +32386,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 185.42 120.65 0)
+			(at 185.42 123.19 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31146,6 +32402,197 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR35")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Diodes:TVS-Bi,H24VND3BA")
+		(at 24.13 132.08 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ddfa760b-0072-49df-a520-e25275545c08")
+		(property "Reference" "D2"
+			(at 26.924 130.8099 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "H24VND3BA"
+			(at 26.924 133.35 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:D_SOD-323"
+			(at 22.352 132.08 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261525_hongjiacheng-H24VND3BA_C20615815.pdf"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "7A 50V 350W 31V Bidirectional 24V SOD-323 ESD and Surge Protection (TVS/ESD) ROHS"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C20615815"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Stock" "25562"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Price" "0.029USD"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Process" "SMT"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Minimum Qty" "20"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Attrition Qty" "6"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Class" "Preferred Component"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Category" "TVS/Fuse/Board Level Protection,Electrostatic And Surge Protection (TVS/ESD)"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "hongjiacheng"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Part" "H24VND3BA"
+			(at 24.13 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "40e33d16-2c52-4373-bc86-f66772c714bc")
+		)
+		(pin "1"
+			(uuid "952b9bcb-6ec7-4fcb-b744-73d36deef3a3")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "D2")
 					(unit 1)
 				)
 			)
@@ -32086,6 +33533,197 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_JLCPCB-Diodes:TVS-Bi,H24VND3BA")
+		(at 49.53 132.08 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "f86da849-333d-4895-86f8-296d513b3c08")
+		(property "Reference" "D7"
+			(at 52.324 130.8099 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "H24VND3BA"
+			(at 52.324 133.35 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:D_SOD-323"
+			(at 47.752 132.08 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261525_hongjiacheng-H24VND3BA_C20615815.pdf"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "7A 50V 350W 31V Bidirectional 24V SOD-323 ESD and Surge Protection (TVS/ESD) ROHS"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C20615815"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Stock" "25562"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Price" "0.029USD"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Process" "SMT"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Minimum Qty" "20"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Attrition Qty" "6"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Class" "Preferred Component"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Category" "TVS/Fuse/Board Level Protection,Electrostatic And Surge Protection (TVS/ESD)"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "hongjiacheng"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Part" "H24VND3BA"
+			(at 49.53 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "f9f8bfb1-cc43-4d4f-a552-4e5918f6fb5e")
+		)
+		(pin "1"
+			(uuid "8e455ad7-aa61-416c-999e-74d27d0d2b15")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "D7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:Switching,1N4148W")
 		(at 302.26 90.17 180)
 		(unit 1)
@@ -32253,12 +33891,28 @@
 				)
 			)
 		)
-    (property "LCSC" "C20627095" (at 146.05 54.61 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (property "MPN" "ESP32-C6-MINI-1U-H4" (at 146.05 54.61 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
+		(property "LCSC" "C20627095"
+			(at 146.05 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "ESP32-C6-MINI-1U-H4"
+			(at 146.05 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "26"
 			(uuid "f5f0f0f8-5c68-4148-957e-daa5a5b15ad1")
 		)
@@ -32626,109 +34280,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR19")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C_Polarized")
-		(at 50.8 261.62 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "fe513876-e21e-4d80-89e7-e69893fb80d0")
-		(property "Reference" "C19"
-			(at 55.88 259.08 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "22uF/50V"
-			(at 55.88 264.16 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:CP_Elec_6.3x5.4"
-			(at 50.8 261.62 0)
-			(hide yes)
-			(show_name yes)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 54.61 256.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "22uF 50V SMD aluminium electrolytic (C1 audio crossover)"
-			(at 54.61 256.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C98744"
-			(at 54.61 256.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "CS1H220M-CRE54"
-			(at 54.61 256.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "210696d5-14f2-4815-8f76-09f14e8ed25f")
-		)
-		(pin "2"
-			(uuid "b128c343-fa13-4a2f-a492-f04d345ad998")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "C19")
 					(unit 1)
 				)
 			)
