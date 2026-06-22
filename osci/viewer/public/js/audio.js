@@ -18,6 +18,7 @@ export class AudioEngine {
     this.raf = 0;
     this.endScopeT = null;
     this.gain = null;
+    this.unlocked = false;
   }
 
   ensureCtx() {
@@ -28,6 +29,20 @@ export class AudioEngine {
       this.gain.connect(this.ctx.destination);
     }
     if (this.ctx.state === 'suspended') this.ctx.resume();
+    // Safari only unlocks the AudioContext when a source actually *starts* inside the user gesture —
+    // resume() alone isn't enough. play() starts its real source only after an async fetch+decode, by
+    // which point the gesture is spent and Safari leaves the context suspended (silent until you click
+    // play a few times). Kick a 1-sample silent buffer once, synchronously, so the first play sounds.
+    // Harmless and a no-op in Chrome; only takes effect when ensureCtx() runs within a gesture.
+    if (!this.unlocked) {
+      try {
+        const s = this.ctx.createBufferSource();
+        s.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+        s.connect(this.ctx.destination);
+        s.start(0);
+        this.unlocked = true;
+      } catch { /* pre-gesture call; will retry on the next ensureCtx() */ }
+    }
     return this.ctx;
   }
 
