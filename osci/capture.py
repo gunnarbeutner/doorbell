@@ -14,11 +14,13 @@ Modes (give exactly one):
 (the old software-trigger "watch" loop was dropped with the hand-rolled SCPI layer.)
 
 Per channel it writes:
-  <out>-<ts>-ch<n>.csv   full true voltages (time_s, volt), for analysis
-  <out>-<ts>-ch<n>.wav   16-bit PCM of the AC content (DC pedestal removed, peak-normalized),
-                         the FULL record by default; pass --skip-silence to gate flat stretches.
-Plus one overview image (unless --no-plot):
-  <out>-<ts>.png         DC baseline + AC component per channel, on a shared time axis.
+  <out>-ch<n>.csv   full true voltages (time_s, volt), for analysis
+  <out>-ch<n>.wav   16-bit PCM of the AC content (DC pedestal removed, peak-normalized),
+                    the FULL record by default; pass --skip-silence to gate flat stretches.
+Plus, per recording:
+  <out>.png         DC baseline + AC component per channel, on a shared time axis (unless --no-plot).
+  <out>.json        capture timestamp + acquisition params (the date is no longer in the filename, so
+                    pick a unique --out per capture; the viewer reads captured_at from here).
 Idle channels (no tone and Vpp < --min-vpp) are skipped for CSV/WAV but still plotted.
 Channels are read in parallel from one acquisition, so they're time-aligned.
 
@@ -29,6 +31,7 @@ Examples:
 
 import argparse
 import csv
+import json
 import time
 import wave
 from datetime import datetime
@@ -124,6 +127,27 @@ def write_wav(path, samples, fs):
         w.setframerate(rate)
         w.writeframes(pcm.tobytes())
     return rate
+
+
+def write_meta(path, captured_at, chans, probe, d):
+    """Per-recording sidecar: the capture timestamp + machine-knowable acquisition params.
+    This is the home for the capture date now that it's no longer in the filename — the viewer
+    reads captured_at from here, and it survives a clone (unlike the file mtime)."""
+    x = np.asarray(d["x"], dtype=float)
+    n = len(x)
+    span = float(x[-1] - x[0]) if n > 1 else 0.0
+    fs = (n - 1) / span if span > 0 else 0.0
+    meta = {
+        "captured_at": captured_at.strftime("%Y-%m-%dT%H:%M:%S"),
+        "channels": list(chans),
+        "probe_ratio": probe,
+        "sample_rate_hz": round(fs, 3),
+        "samples_per_channel": n,
+        "duration_s": round(span, 6),
+    }
+    with open(path, "w") as f:
+        json.dump(meta, f, indent=2)
+        f.write("\n")
 
 
 def write_csv(path, t, volts):
@@ -266,7 +290,8 @@ def main():
     ap.add_argument("--host", default="osci.beutner.name", help="scope hostname/IP")
     ap.add_argument("--channels", default="1", help="comma list, 1-based, e.g. 1,2,3 (default 1)")
     ap.add_argument("--probe", type=float, default=10.0, help="probe attenuation ratio per channel (default 10x)")
-    ap.add_argument("--out", default="capture", help="output basename -> <out>-<ts>-ch<n>.csv/.wav")
+    ap.add_argument("--out", default="capture",
+                    help="output basename -> <out>-ch<n>.csv/.wav (+ <out>.json); pick a unique name per capture")
     ap.add_argument("--now", action="store_true", help="grab current deep memory (STOP + read), then exit")
     ap.add_argument("--record", type=float, default=0, help="set a ~N-second window, RUN, wait, STOP, grab")
     ap.add_argument("--screen", action="store_true",
@@ -329,15 +354,18 @@ def main():
         win = displayed_window(dho, idx[0]) if args.screen else None
         if win:
             print(f"  on-screen window: {(win[1] - win[0]) * 1e3:.3f} ms")
-        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+        now = datetime.now()
         what = "on-screen window" if args.screen else "deep-memory"
-        print(f"[{ts}] reading {what}, {len(chans)} channel(s)...")
+        print(f"[{now:%Y%m%d-%H%M%S}] reading {what}, {len(chans)} channel(s)...")
         d = dho.query_waveform(idx)
         if win:
             n_full = len(np.asarray(d["x"]))
             d = trim_to_window(d, win[0], win[1])
             print(f"  trimmed {n_full:,} -> {len(np.asarray(d['x'])):,} samples (the displayed window)")
-        if not process_capture(d, chans, f"{args.out}-{ts}", args):
+        if process_capture(d, chans, args.out, args):
+            write_meta(f"{args.out}.json", now, chans, args.probe, d)
+            print(f"  wrote {args.out}.json (captured_at {now:%Y-%m-%dT%H:%M:%S} + acquisition params)")
+        else:
             print("  no activity on any channel -- nothing written")
 
 

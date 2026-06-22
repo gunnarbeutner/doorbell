@@ -125,6 +125,57 @@ These are the kinds of issue this review exists to surface — judgement calls, 
 - **Single-ended TX off OUTP.** The codec's differential negative half is AC-terminated, not
   driven — functionally fine, but the lever if the line-3 drive level proves marginal.
 
+## 5.5 Bench bring-up with an emulated bus (before the real TV20/S)
+
+Settle the board's own behaviour on the bench with a **current-limited PSU standing in for the
+bus** before risking the real intercom. The TV20/S is, electrically, a current-limited standing
+**+12 V rail on P2** (source impedance ~90 Ω — it sags 12 → 9.4 V under the ~29 mA seal-in load) plus
+**~1 s +12 V pulses on P4/P5** for rings. A bench PSU at 12 V through a **~100 Ω series R into P2**
+with a **low current limit** emulates both and adds a fault backstop the real bus doesn't. Everything
+except the central's *active responses* (opener firing, gong tone, TX-out forwarding, timeout sink —
+those are §6) can be exercised this way.
+
+**Rig:** floating PSU (2-ch ideal, or 1-ch + a momentary button for the ring tap), a ~100 Ω resistor
+on the P2 feed, an isolated/battery 2-ch scope, a DMM, and the board's own USB-C 5 V (via a current
+meter if available). **Ground discipline:** P1 is hard-bonded to board GND *and* USB GND, so
+`PSU− = P1 = USB-GND = scope-ground` is **one node** — float the PSU, isolate the scope, grounds on
+P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isolation rule).
+
+**Stage 0 — power-off continuity (DMM).** P1↔GND ≈ 0 Ω (the deliberate bond); no short P2/P3/P4/P5 to
+each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
+continuous; TP1/TP2/TP3 present; C19 "+" toward P4.
+
+**Stage 1 — local power only, no bus.** USB-C 5 V → **TP2 ≈ +4.5–5 V** (after the SS14 drop),
+**TP3 ≈ +3.30 V**, quiescent current sane, board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
+toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
+**closed** — validating each SSR + driver + GPIO map with no bus voltage present.
+
+**Stage 2 — emulated bus** (`PSU+ → 100 Ω → P2`, `PSU− → P1`, 12 V, limit ~120 mA):
+- **2a passive seal-in, board UNPOWERED (MODE-1/SAFE-4):** tap 12 V onto P4 ~1 s → K5 pulls in;
+  release → confirm it **seals in** (P4 holds just under P2); pull P2 to 0 → K5 drops.
+- **2b ring sense, powered:** 12 V on P4 → "House Doorbell" asserts (clears on removal); 12 V on P5 →
+  Etagenruf/OC2 asserts; non-detect ⇒ swap that LED's two bus connections (silent, not damage).
+  **Cross-stress:** drive P4 high, confirm the idle OC2 cathode stays clamped near 0 (per-opto
+  limiter + D9 fix).
+- **2c door open (DOOR-4/5):** seal in, fire a door-open, 2-ch scope the seal-in node vs the P2↔P3
+  bridge — **K4 opens ~20 ms before K2 closes** (latch drops, P4 falls, live P4 never reaches P3);
+  hold the command asserted → K2 still releases after **~6.7 s** (watchdog).
+- **2d chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
+  closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
+  regardless of mute.
+- **2e audio (partial):** RX — inject P2↔P1, confirm the codec ADC sees it; TX — assert talk, drive a
+  DAC tone, scope it on P3 through R28, confirm high-Z when talk is off.
+
+**Stage 3 — protection, last and current-limited (SAFE-2):** with the limit still low, deliberately
+reverse P2/P1 (and a mis-order or two), confirm the per-tap clamps/TVS hold and the board survives and
+still works once correct wiring is restored — F1 only protects the USB side, the bus taps rely on
+per-tap protection.
+
+This proves power, default-safe states, sense + polarity, the full latch seal-in/drop mechanics, the
+door break-before-make timing, the watchdog and chime-mute — every board property that does **not**
+depend on a TV20/S response. The responses that do (TX-out reach, opener firing, real gong/levels/hum,
+the timeout P2-sink and shared-bus interactions) carry over to §6.
+
 ## 6. Bench verification against the real TV20/S
 
 Some claims can only be settled on hardware. Probe via the commissioning test points (TP1 = GND

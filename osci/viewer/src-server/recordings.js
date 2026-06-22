@@ -6,14 +6,15 @@
 //   <basename>-ch<n>.wav        DC-removed, peak-normalized audio, sample-aligned 1:1 with the CSV
 // plus per-recording <basename>.png (legacy overview) and <basename>.md (analysis note).
 
-import { readdir, stat } from 'node:fs/promises';
+import { readdir, stat, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const CH_RE = /^(.+)-ch(\d+)\.(csv\.zst|csv|wav)$/;
-// trailing  -YYYYMMDD-HHMMSS  in a basename, e.g. ring-no-answer-20260621-135809
+// optional trailing  -YYYYMMDD-HHMMSS  in a basename, e.g. some-capture-20260621-135809
+// (current captures carry no timestamp — then name = full basename, date = null)
 const TS_RE = /^(.*?)-(\d{8})-(\d{6})$/;
 
-// "ring-no-answer-20260621-135809" -> { name: "ring-no-answer", date: "2026-06-21 13:58:09", sortKey }
+// "some-capture-20260621-135809" -> { name: "some-capture", date: "2026-06-21 13:58:09", sortKey }
 function describe(basename) {
   const m = TS_RE.exec(basename);
   if (!m) return { name: basename, date: null, sortKey: basename };
@@ -46,13 +47,24 @@ export async function listRecordings(osciDir) {
     }
     if (f.endsWith('.png')) extras.add(`png:${f.slice(0, -4)}`);
     else if (f.endsWith('.md')) extras.add(`md:${f.slice(0, -3)}`);
+    else if (f.endsWith('.json')) extras.add(`json:${f.slice(0, -5)}`);
   }
 
   const out = [];
   for (const [basename, r] of recs) {
     const channels = [...r.exts.keys()].sort((a, b) => a - b);
     if (!channels.length) continue;
-    const { name, date, sortKey } = describe(basename);
+    let { name, date, sortKey } = describe(basename);
+    // No timestamp in the filename? Take captured_at from the per-recording JSON sidecar.
+    if (!date && extras.has(`json:${basename}`)) {
+      try {
+        const meta = JSON.parse(await readFile(join(osciDir, `${basename}.json`), 'utf8'));
+        if (meta.captured_at) {
+          date = meta.captured_at.replace('T', ' '); // "2026-06-22T20:31:53" -> "2026-06-22 20:31:53"
+          sortKey = meta.captured_at;                // ISO sorts chronologically as a string
+        }
+      } catch {} // missing/garbled sidecar -> no date, sort by basename (describe's fallback)
+    }
     out.push({
       basename,
       label: date ? `${name}  ·  ${date}` : name,

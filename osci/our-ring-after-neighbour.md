@@ -1,0 +1,51 @@
+# our-ring-after-neighbour — our ring + door-open, with a neighbour's ring first
+
+A parcel courier rang a **neighbouring** handset first, then **ours**; a door-open ended our
+session. The recording cleanly separates the two because **IN_P4 and P4 were bridged** (CH1 reads
+*our* line 4 directly, WF26 coil + C1 in the loop), so a "line 4 cold" reading unambiguously means
+"not our door." Consistent with the session model from `our-ring-door-open`.
+
+## Capture
+
+| | |
+|---|---|
+| Date | 2026-06-19 18:32:18 |
+| Sample rate | 25 kSa/s |
+| Duration / points | 30.0 s, 749,250 samples/channel |
+| Probe ratio | 10× |
+| Channels (grounds on **P1**) | **CH1 = IN_P4 (= P4, bridged)**, **CH2 = P2**, **CH3 = P3** |
+| Files | `*-ch{1,2,3}.csv` / `.wav`, `*.png` |
+
+Times are **elapsed seconds** from the start.
+
+## Timeline
+
+| Elapsed | Event |
+|---------|-------|
+| 0 – 2.7 s | Idle. P2 **+12.10 V**, line 4 & P3 ≈ 0 V. |
+| **~2.74 s** | **Neighbour's ring** — 3-Klang gong on the **shared line 2 (P2)**, but **our line 4 stays cold (0 V)**. Not our door. (The courier rang another handset first.) |
+| **~11.90 s** | **Our ring** — line 4 (IN_P4 = P4) goes hot; **1010 Hz** gong on line 4 **and** P2; P2 drops from 12.1 V toward the ~9.3 V listen-tie (brief transient dip at onset). |
+| 11.9 – 25.2 s | **Session held** — line 4 steady at **9.22 V** for **~13.3 s**. |
+| **~25.19 s** | **Door-open** — P3 jumps 0 → **9.12 V**, and line 4 collapses 9.22 → 0 V in the same step. Session ends. |
+
+## Findings
+
+**Two gongs, two different sources.** Only the second is ours. The discriminator is line 4:
+- 2.74 s: gong present on P2, **CH1 (our real line 4) flat at 0** → a neighbour's ring bleeding onto
+  the shared line 2 (the per-apartment line 4 / shared line 2 model).
+- 11.90 s: line 4 itself goes hot (9.22 V), the gong is **on line 4**, a session holds, and it ends in
+  a door-open → all four markers of *our* front-door ring.
+
+**The gong tone lags the line-4 pedestal — there's a reactive-suppress window.** At our ring onset the
+TV20/S **sequences pedestal-then-tone**:
+- line-4 DC pedestal rises first: **1 V at 11902 ms → 8 V at 11914 ms** (~12 ms);
+- the 1010 Hz gong tone only starts **~11917 ms** (|AC| envelope at baseline through 11910 ms, up by
+  ~11920 ms) — i.e. **~13–16 ms after** the pedestal begins.
+
+So there is a **~10–15 ms gap** between "line 4 starts rising" (which the OC1 sense crosses within a
+couple ms) and "tone audible." That is enough to suppress the gong **reactively** — a relay's ~5 ms
+pull-in just fits, a PhotoMOS (µs) fits easily — so chime-suppress does **not** require pre-arming.
+(Confirms the bench intuition that the gong is delayed relative to the pedestal.)
+
+**Tone:** ~**1010 Hz** fundamental (the 3-Klang), decaying over a few seconds — matches the 1010/3032 Hz
+of the clean ring in `our-ring-door-open`.

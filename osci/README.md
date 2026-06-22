@@ -40,16 +40,21 @@ python3 -m venv .venv
 .venv/bin/python capture.py --screen --channels 1,2,3 --out screen
 ```
 
-Each run writes `<out>-<timestamp>-ch<n>.{csv,wav}` per channel, plus one overview image
-`<out>-<timestamp>.png` (**DC baseline + AC component per channel**, shared time axis — use
-`--no-plot` to skip), and prints sample count, rate, Vpp, and the dominant chime tones.
-Channels are read from a single acquisition, so they're **time-aligned**.
+Each run writes `<out>-ch<n>.{csv,wav}` per channel, plus one overview image `<out>.png`
+(**DC baseline + AC component per channel**, shared time axis — use `--no-plot` to skip) and a
+`<out>.json` sidecar (capture timestamp + acquisition params), and prints sample count, rate, Vpp,
+and the dominant chime tones. Channels are read from a single acquisition, so they're **time-aligned**.
+
+> **Filenames carry no timestamp** — pick a unique, descriptive `--out` per capture (e.g.
+> `our-ring-door-open`, `door-open-standalone`). The capture date lives in `<out>.json`
+> (`captured_at`, ISO 8601), which the viewer reads for its date label and sort; it survives a clone,
+> unlike the file mtime.
 
 > **Storage:** raw `.csv` dumps are large (a 180 s, 25 kSa/s capture is ~135 MB/channel, over
 > GitHub's 100 MB limit), so the repo tracks the **zstd-compressed `*.csv.zst`** (`zstd --ultra -22`,
 > ~4–6× smaller) rather than the raw `.csv`. Compress before committing (`zstd --ultra -22 *.csv`)
-> and read back with `zstd -dc file.csv.zst` (or `zstdcat`). The `.wav`, `.png`, and per-session
-> `.md` are committed uncompressed.
+> and read back with `zstd -dc file.csv.zst` (or `zstdcat`). The `.wav`, `.png`, `.json`, and
+> per-session `.md` are committed uncompressed.
 
 ## Modes & options
 

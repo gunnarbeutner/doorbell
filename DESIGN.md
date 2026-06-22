@@ -84,28 +84,32 @@ session exactly as the handset button does: drop the K5 latch. The handset's **S
 *transfer*** — it lifts P2 off K1_COM (breaking the seal-in) just *before* it bridges P2↔P3, so the
 latch drops as the opener fires and the live Türruf on line 4 never reaches line 3. K2 alone (a plain
 P2↔P3 short) can't do that — it would leave the latch sealed and bridge `P4 → K5 → P2 → K2 → P3`,
-injecting the ring (12 V DC + gong AC) onto the talk line. So the board reproduces S1's transfer with
+injecting the ring (12 V DC + gong AC) onto the talk line. **Bus-confirmed both ways:** a *handset*
+door-open ends the call within ~1.5 s (`osci/neighbour-ring-door-open`), whereas a bare P2↔P3 relay
+short (the V3 controller, API-triggered during a live session) leaves the latch **sealed for ~51 s**
+(`osci/door-open-call-held`) — exactly the "K2-alone leaves it sealed" case this transfer exists to avoid.
+So the board reproduces S1's transfer with
 two extra parts, both on the **DOOR_DRV** gate:
 
 - **K4** (GAQY412EH, NC SSR) sits **in series in the seal-in** (`SW3.6 → K4 → K5.3`, in the
   `P2 → K1_COM` path). Energised it **opens** → the seal-in breaks → K5 drops. At rest it's closed,
   so the passive/unpowered latch is untouched (MODE-1 / SAFE-4).
 - **The break leads the make.** K4's LED is driven straight off DOOR_DRV (opens immediately), while K2's
-  LED returns to ground through **Q3 unit 1** (one half of a **2N7002DW** dual N-FET) whose gate ramps on
+  LED returns to ground through **Q3** (a **2N7002** N-FET) whose gate (DELAY_GATE) ramps on
   **R17 (22 kΩ) · C18 (1 µF) ≈ 20 ms** — so K2 closes ~20 ms *after* K4, well past the ~6 ms latch drop.
   One gate (DOOR_DRV), hardware-timed break-before-make; the firmware just pulses the door line.
 
 With the seal-in broken before P2↔P3 closes, the held Türruf is never bridged onto line 3 — so this
 **supersedes the old ~1.75 s "wait out the gong" firmware delay** (there's nothing left to wait out; the
-delay is retirable — see TODO). Boot/idle: DOOR_DRV low ⇒ Q3 unit 1 off (K2 open) and K4 LED off (K4
+delay is retirable — see TODO). Boot/idle: DOOR_DRV low ⇒ Q3 off (K2 open) and K4 LED off (K4
 closed) ⇒ fail-safe (SAFE-6). The latch otherwise stays pulled in for the ~60 s call window (a door-open
 is now the deliberate way to end it early).
 
-**Door-open max-on-time watchdog (DOOR-5) — Q3 unit 2 + R25 · C20 · D11.** A firmware hang that left
+**Door-open max-on-time watchdog (DOOR-5) — Q4 + R25 · C20 · D11.** A firmware hang that left
 DOOR_DRV latched high would hold the opener "pressed" indefinitely — the TV20/S is passive and does not
 time-limit it. A hardware one-shot bounds it: DOOR_DRV charges **C20 (2.2 µF)** through **R25 (3 MΩ) ≈
-6.6 s**, and once that node crosses the FET threshold **Q3 unit 2** pulls DELAY_GATE low — turning off
-Q3 unit 1, so **K2 opens and the P2↔P3 bridge releases** even with DOOR_DRV still asserted (**~6.7 s**
+6.6 s**, and once that node (WD_GATE) crosses the FET threshold **Q4** pulls DELAY_GATE low — turning off
+Q3, so **K2 opens and the P2↔P3 bridge releases** even with DOOR_DRV still asserted (**~6.7 s**
 nominal; ~2.4–9.4 s across the 2N7002's Vgs(th) spread). C20 is sized at **2.2 µF** with R25 at
 **3 MΩ** — the same RC band as a 6.8 MΩ·1 µF timer, but the lower node impedance draws ~2.3× more
 current at threshold, cutting the leakage 'never-releases' risk on this high-MΩ gate; the fast corner
@@ -114,8 +118,8 @@ release; a 74LVC1G17 Schmitt is the permanent fix if a predictable time is ever 
 the next pulse. The 1.75 s firmware pulse ends long before the timeout, so a real open is never cut. It
 releases **K2 only**: K4 stays energised in the fault (it merely holds the seal-in broken, harmless),
 and a reset/brownout still drops everything through the gate pull-downs — so this is defense-in-depth
-over the ESPHome task watchdog (which also reboots a hung MCU). Q3 unit 1 (break-before-make) and unit 2
-(this watchdog) share one **2N7002DW** package. Verified in `sim/test` (~6.6 s release).
+over the ESPHome task watchdog (which also reboots a hung MCU). Q3 (break-before-make) and Q4
+(this watchdog) are separate **2N7002** SOT-23 N-FETs. Verified in `sim/test` (~6.6 s release).
 
 > **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
 > it is the junction of C1, R1, the K5 coil and its NO contact: the ring's **DC energises the
@@ -166,10 +170,10 @@ From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehl
   bench, line 4 sits ~0.16 V *below* P2 through the session — pulled up from P2 across the coil/contact
   drop, with the coil load on P2. **Dropping line 4 does *not* release it** —
   P2 holds the seal-in. The session ends via **line 2 (P2)**: a **door-open** (bench-confirmed,
-  `ring4`) presses the genuine handset's **break-before-make DPDT S1**, which opens **P2↔K1_COM** (the
+  `our-ring-after-neighbour`) presses the genuine handset's **break-before-make DPDT S1**, which opens **P2↔K1_COM** (the
   seal-in) ~6 ms *before* it closes the P2↔P3 bridge — so the coil drops (line 4 falls and P2 *rises*
   ~9.4→11 V as the ~29 mA coil load comes off it, then both settle ~9 V at the bridge); the **~60 s
-  timeout** (after the last talk activity, or the initial Türruf with no talk) ends it by a brief **P2-low pulse** — **bench-confirmed, `ring-no-answer`** (a ~58.5 s hold that
+  timeout** (after the last talk activity, or the initial Türruf with no talk) ends it by a brief **P2-low pulse** — **bench-confirmed, `our-ring-no-door`** (a ~58.5 s hold that
   released with **no door-open**): the TV20/S **sinks P2**, line 4 tracking 0.18 V under it through the
   closed seal-in contact (both fall ~9.3 → 2.5 V), so the K5 coil loses its supply and drops, line 4
   following then releasing to 0. The tell that it's P2 driven (not line 4): **P2 holds a ~2.8 V plateau
@@ -296,8 +300,8 @@ Key facts:
   supply** for the session — the TV20/S is not driving line 4. **Dropping line 4 does *not* release it** — P2
   holds it; the session ends via **P2**: at a door-open S1's **break-before-make** transfer opens
   P2↔K1_COM ~6 ms *before* bridging P2↔P3, dropping the coil (line 4 falls, P2 *rises* as it unloads —
-  **bench-confirmed, `ring4`**); or the ~60 s inactivity timeout ends it by a brief **P2-low pulse** (**bench-confirmed,
-  `ring-no-answer`**): the TV20/S sinks P2 — **held ~2.8 V for ~18 ms *after* line 4 has separated and
+  **bench-confirmed, `our-ring-after-neighbour`**); or the ~60 s inactivity timeout ends it by a brief **P2-low pulse** (**bench-confirmed,
+  `our-ring-no-door`**): the TV20/S sinks P2 — **held ~2.8 V for ~18 ms *after* line 4 has separated and
   fallen to 0**, so it's P2 *driven* low (line 4 merely follows) — dropping the K5 coil. P3 stays cold
   (no door-open). Which line is pulled is immaterial to the board anyway (OC1 sees line 4 fall either
   way). **K5:**
@@ -387,7 +391,7 @@ its 6 V V_R — and that reverse current returns through line 5's 16 Ω speaker,
 session, on the *frequent* house ring). That cooked the Etagenruf opto's LED; the Türruf opto,
 seeing only the milder/brief AC self-reverse, survived. **V4 fixes this with per-opto limiters**
 (each idle cathode sits at ~0 V — no shared node to lift, no reverse path to cook), and D9 is
-retained. Bench evidence: `osci/p5-chime-20260621-165156`.
+retained. Bench evidence: `osci/floor-call-p5`.
 
 ---
 
@@ -411,7 +415,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | MCU | **ESP32-C6-MINI-1U-H4** (u.FL external antenna; **4 MB** flash) | ESPHome-supported (esp-idf), **native USB-Serial-JTAG** so flashing + logs need no USB-UART bridge or auto-program circuit, and enough GPIO for the audio path (I²S + I²C + 3 SSR gates + 2 opto inputs). The C6's fully matrix-routed GPIO mux lets any function land on any pad, so the codec bus and the USB escape are placed for clean fan-out (see the GPIO map). Single-core RISC-V is sufficient: the intercom is **half-duplex** (it never streams I²S both directions at once), so audio + WiFi fit one core, and 4 MB flash still covers OTA. Central placement forces the u.FL external antenna (no clean board edge for a PCB antenna) |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
-| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: **Q3 2N7002DW** dual N-FET — unit 1 + R17 (22 kΩ) · C18 (1 µF), unit 2 + R25 (3 MΩ) · C20 (2.2 µF) · D11 | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q3 unit 1 · R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"); a second one-shot (**Q3 unit 2 + R25·C20·D11**) releases K2 ~6.7 s after assertion, so a hung DOOR_DRV cannot hold the opener (DOOR-5). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
+| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: two **2N7002** SOT-23 N-FETs — **Q3** (delay) + R17 (22 kΩ) · C18 (1 µF), **Q4** (watchdog) + R25 (3 MΩ) · C20 (2.2 µF) · D11 | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q3 · R17·C18** RC delays K2's make ~20 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"); a second one-shot (**Q4 + R25·C20·D11**) releases K2 ~6.7 s after assertion, so a hung DOOR_DRV cannot hold the opener (DOOR-5). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
 | SSR LED drive | **GPIO → 10 k pull-down → 300 Ω → SSR LED** (no transistor, no flyback) | Each SSR "driver" is just its LED + a series R: ~7 mA from the 3V3 GPIO through R4/R5/R6 (300 Ω); R7/R8/R9 (10 k) pull-downs ⇒ SSRs default **off** at boot (SAFE-6). No coil ⇒ no flyback; the one surviving flyback (D1) is on the passive WF26 latch coil. (Retired the old per-channel relay-driver sheet.) |
 | Opto polarity | **Fixed: LED anode → bus line, cathode → R_lim → P1** + **anti-parallel 1N4148W clamp** across each LED | Bus is taken to drive active lines **positive w.r.t. common (P1)**, so polarity is hardwired (no switch) — bench-confirm per channel by ringing each bell. The clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on the AC tone content |
 | WF26 connector | **DB125-3.5-5P screw terminal — J2, 5-way (P1–P5 = pins 1–5)** (LCSC C3646874) | See "WF26 connector". 5-way (not 6): line 4 is one net now — chime-suppress moved off line 4 onto C1, so the IN_P4/P4 split is gone |
@@ -513,7 +517,7 @@ K1 (talk+TX gate,  GAQW212GS 2×NO): ch1 P2↔TALK_BRIDGE, ch2 TX_OUT↔P3  — 
 K2 (door opener,   GAQY212GS NO): P2 ↔ P3                  — energise to bridge P2↔P3 (the ÖT direct short)
 K3 (chime mute,    GAQY412EH NC): P4 ↔ CHIME_C1            — at rest CLOSED (gong → C1 → speaker); energise to OPEN = mute
 K4 (seal-in break, GAQY412EH NC): SW3.6 ↔ K5.3    — in the P2→K1_COM seal-in; energise to OPEN = drop the latch
-LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 unit 1 delay) + R21→K4 LED (each Rn = 300 Ω)
+LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21→K4 LED (each Rn = 300 Ω)
 ```
 
 - **PhotoMOS, bidirectional.** K2/K3/K4 are single-pole (pins 3/4 the AC/DC contact of back-to-back
@@ -534,7 +538,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   it. Line 3 is light (the TV20/S amp input ∥ R28's 2.2 kΩ), so the codec drives **line 3**, and K1's
   ch1 supplies the DC handshake from P2.
 - **K2 — door opener.** Energise to bridge **P2↔P3** directly (dead short) — the ÖT the TV20/S reads
-  as "open". Paired with **K4 + the Q3-unit-1 lead** to mirror S1's break-before-make — see "Door-open
+  as "open". Paired with **K4 + the Q3 delay lead** to mirror S1's break-before-make — see "Door-open
   mirrors S1".
 - **K3 — chime mute.** In the gong's audio path (`P4 ↔ CHIME_C1 ↔ C1 ↔ P5 → LS1`). NC ⇒ de-energised
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
@@ -542,7 +546,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4).
 - **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`SW3.6 ↔
   K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
-  (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~20 ms (Q3 unit 1 · R17·C18) the
+  (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~20 ms (Q3 · R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
 - K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
   door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. Whether the TV20/S

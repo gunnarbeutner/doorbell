@@ -32,7 +32,7 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
 Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14→TALK_BRIDGE`; RX:
 `P2→C16→MIC1P`, `P1→C17→MIC1N`; `P1↔GND` bonded). Component-level choices still open:
 
-- [ ] **RX: attenuating bias network (measured from ring4 — mandatory, not just headroom).** ring4 CH2
+- [ ] **RX: attenuating bias network (measured from our-ring-after-neighbour — mandatory, not just headroom).** our-ring-after-neighbour CH2
       (= P2) shows the gong on line 2 peaks at **±8.8 V** (15.6 Vpp, 1.04 Vrms, on a ~9 V pedestal; P2
       absolute swing −1.7…+16.1 V), and the gong is the loudest event. **±8.8 V exceeds the ES8311 mic
       abs-max (~AVDD+0.3 = 3.6 V) by 2.4×**, so the bare `C16→MIC1P` tap AC-couples ±8.8 V into the codec
@@ -118,7 +118,7 @@ ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-c
 tether it to a mains-earthed PC. Pair with a DMM.
 
 - [ ] **Record a real test call (full speech session) — do this before trusting the sim's talk /
-      RX-TX model.** The existing captures cover the ring + door-open (`osci/ring-20260617-195221.md`)
+      RX-TX model.** The existing captures cover the ring + door-open (`osci/our-ring-door-open.md`)
       but not a **call with audio**. Drive the genuine sequence: **pulse line 4 (P4) to initiate**,
       with **P2 held at +12 V for the whole call (at least)**, then talk/listen. Capture via
       `osci/capture.py` (DHO804 isolated, grounds on **P1**, 3 ch — P4, P2, P3) and write the
@@ -222,7 +222,7 @@ What remains is hardware confirmation:
 - [ ] **Drop D8 (Türruf clamp); KEEP D9 (Etagenruf clamp).** **D8 (OC1 / line 4, DC)** is one
       polarity with nothing to clamp — droppable. **D9 (OC2 / line 5) stays:** line 5's Etagenruf is
       an AC tone that reverse-biases the LED to ~−5 V, and the deployed **V3 board's Etagenruf opto
-      died of reverse stress** (`osci/p5-chime-20260621-165156`) — so this LED avalanches below ~11 V
+      died of reverse stress** (`osci/floor-call-p5`) — so this LED avalanches below ~11 V
       and reverse-bias is its fatal mode, putting the ~5 V self-reverse too close to risk. D9 is one
       1N4148W of insurance. *(DESIGN.md: "Bell / session sense front-end", "V3")*
 - [ ] **(Future) fold session-sense into the K5 latch, drop OC1.** Make K5 a **12 V DPDT,
