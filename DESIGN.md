@@ -635,7 +635,13 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
 - **Bench validation against the real TV20/S** (door pulse, chime suppress, session sense,
   PTT) before it goes in the wall. Probe via the commissioning test points (TP1 = GND
   scope anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. The board has
-  **H1/H2 mounting holes** (NPTH 3.2 mm) on the enclosure bosses.
+  **H1/H2 mounting holes** (NPTH 3.2 mm) on the enclosure bosses, plus **H3–H5 JLCPCB tooling
+  holes** (NPTH 1.152 mm, asymmetric) for the assembly order.
+- **3D / fit-test model:** `./build.sh step` exports `kicad/fab/doorbell.step` (also run by
+  `all-route`). Footprints carrying a truthy custom field **`STEP_Exclude`** are omitted from the
+  model — flag SW3/SW4 (set the field in KiCad's Footprint Properties) so the bare board can be
+  fit-tested against the real panel switches. `kicad-cli`'s `--component-filter` is include-only, so
+  `kicad/step_exclude.py` emits the complement.
 
 ---
 

@@ -6766,6 +6766,80 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "H"
+				(at 1.778 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Tooling Hole, PCM_JLCPCB, 1.152mm_0_1"
+				(circle
+					(center 0 0)
+					(radius 0.635)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "PCM_JLCPCB-Optocouplers:LTV-217-B-G"
 			(pin_names
 				(offset 1.016)
@@ -10558,6 +10632,321 @@
 						)
 					)
 					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Transistor_FET:2N7002"
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "Q"
+				(at 5.08 1.905 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "2N7002"
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+				(at 5.08 -1.905 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(justify left)
+				)
+			)
+			(property "Datasheet" "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF"
+				(at 5.08 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Description" "0.115A Id, 60V Vds, N-Channel MOSFET, SOT-23"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "N-Channel Switching MOSFET"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "SOT?23*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "2N7002_0_1"
+				(polyline
+					(pts
+						(xy 0.254 1.905) (xy 0.254 -1.905)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.254 0) (xy -2.54 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 2.286) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 0.508) (xy 0.762 -0.508)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -1.27) (xy 0.762 -2.286)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -1.778) (xy 3.302 -1.778) (xy 3.302 1.778) (xy 0.762 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.016 0) (xy 2.032 0.381) (xy 2.032 -0.381) (xy 1.016 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 1.651 0)
+					(radius 2.794)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 2.54) (xy 2.54 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 2.54 -1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.921 0.381) (xy 3.683 0.381)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 3.302 0.381) (xy 2.921 -0.254) (xy 3.683 -0.254) (xy 3.302 0.381)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "2N7002_1_1"
+				(pin input line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 -5.08 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 5.08 270)
+					(length 2.54)
+					(name "D"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -21587,132 +21976,6 @@
 		)
 	)
 	(symbol
-		(lib_id "mosfet_2n7002dw:2N7002DW-7-F")
-		(at 308.61 97.79 0)
-		(unit 2)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "2b6ed3e3-5a13-438b-883e-1ba9be482037")
-		(property "Reference" "Q3"
-			(at 303.784 101.092 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002DW-7-F"
-			(at 303.784 103.632 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "mosfet_2n7002dw:SOT-363_L2.0-W1.3-P0.65-LS2.1-TL"
-			(at 308.61 113.03 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://lcsc.com/product-detail/MOSFET_DIODES_2N7002DW-7-F_2N7002DW-7-F_C83571.html"
-			(at 308.61 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Door-lead dual N-FET delay: unit 1 (R17·C18) delays K2 make ~20ms behind K4 break (break-before-make); unit 2 (R25·C20·D11) releases K2 ~6.9s after assertion (DOOR-5)"
-			(at 308.61 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "DIODES(美台)"
-			(at 308.61 118.11 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "2N7002DW-7-F"
-			(at 308.61 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C83571"
-			(at 308.61 123.19 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "5"
-			(uuid "7c94b4a4-8325-4d21-aa9b-00ca6dba9819")
-		)
-		(pin "1"
-			(uuid "17e03b26-29db-4fb2-838b-91e421f4eb9d")
-		)
-		(pin "6"
-			(uuid "39724484-801c-4ad9-97d5-e12b6b99c52c")
-		)
-		(pin "2"
-			(uuid "db6a2b3f-cfc6-42aa-946e-dc38e96c6647")
-		)
-		(pin "4"
-			(uuid "3e80c758-c835-480b-bf82-2cc97f85fb86")
-		)
-		(pin "3"
-			(uuid "03701498-bd4a-433d-ada0-1a6a043b49e0")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "Q3")
-					(unit 2)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
 		(at 288.29 90.17 0)
 		(unit 1)
@@ -22077,133 +22340,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "C20")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "mosfet_2n7002dw:2N7002DW-7-F")
-		(at 326.39 102.87 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "30164901-330b-4273-bedb-74f0057e4ad7")
-		(property "Reference" "Q3"
-			(at 334.01 101.5999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002DW-7-F"
-			(at 334.01 104.1399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "mosfet_2n7002dw:SOT-363_L2.0-W1.3-P0.65-LS2.1-TL"
-			(at 326.39 118.11 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://lcsc.com/product-detail/MOSFET_DIODES_2N7002DW-7-F_2N7002DW-7-F_C83571.html"
-			(at 326.39 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "2N7002DW-7-F"
-			(at 326.39 102.87 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "DIODES(美台)"
-			(at 326.39 123.19 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "2N7002DW-7-F"
-			(at 326.39 125.73 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C83571"
-			(at 326.39 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "5"
-			(uuid "7c94b4a4-8325-4d21-aa9b-00ca6dba981a")
-		)
-		(pin "1"
-			(uuid "17e03b26-29db-4fb2-838b-91e421f4eb9e")
-		)
-		(pin "6"
-			(uuid "39724484-801c-4ad9-97d5-e12b6b99c52d")
-		)
-		(pin "2"
-			(uuid "db6a2b3f-cfc6-42aa-946e-dc38e96c6648")
-		)
-		(pin "4"
-			(uuid "3e80c758-c835-480b-bf82-2cc97f85fb87")
-		)
-		(pin "3"
-			(uuid "03701498-bd4a-433d-ada0-1a6a043b49e1")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "Q3")
 					(unit 1)
 				)
 			)
@@ -23906,6 +24042,81 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm")
+		(at 217.17 265.43 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "48334f76-2c5b-47af-a623-1ea4a6e456c4")
+		(property "Reference" "H3"
+			(at 218.44 265.4299 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" ""
+			(at 217.17 265.43 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
+			(at 217.17 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
+			(at 217.17 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
+			(at 217.17 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "H3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 78.74 50.8 0)
 		(unit 1)
@@ -24345,9 +24556,17 @@
 				)
 			)
 		)
-    (property "Manufacturer" "Honor Elec" (at 50.8 265.43 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
+		(property "Manufacturer" "Honor Elec"
+			(at 50.8 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "7434cd85-90d1-4f37-8543-f16868ae1ce3")
 		)
@@ -26072,6 +26291,81 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm")
+		(at 238.76 265.43 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "75959758-b706-46de-b7bc-f3236ed0099b")
+		(property "Reference" "H5"
+			(at 240.03 265.4299 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" ""
+			(at 238.76 265.43 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
+			(at 238.76 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
+			(at 238.76 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
+			(at 238.76 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "H5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,100nF")
 		(at 201.93 154.94 0)
 		(unit 1)
@@ -26654,6 +26948,81 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm")
+		(at 228.6 265.43 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7afbbacc-6a34-4cac-8063-910ccf7292d4")
+		(property "Reference" "H4"
+			(at 229.87 265.4299 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" ""
+			(at 228.6 265.43 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
+			(at 228.6 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
+			(at 228.6 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
+			(at 228.6 265.43 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "H4")
 					(unit 1)
 				)
 			)
@@ -27948,6 +28317,101 @@
 		)
 	)
 	(symbol
+		(lib_id "Transistor_FET:2N7002")
+		(at 326.39 102.87 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "899052b9-d1b4-46cf-9a51-e11a26ca9a47")
+		(property "Reference" "Q3"
+			(at 331.47 104.775 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2N7002"
+			(at 331.47 102.87 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 331.47 100.965 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 331.47 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Door-lead delay N-FET (R17·C18): delays K2 make ~20ms behind K4 break (break-before-make)"
+			(at 326.39 102.87 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C8545"
+			(at 326.39 102.87 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "9da9fb7f-4b67-404c-98bd-e50ac1973f2b")
+		)
+		(pin "1"
+			(uuid "bde8b555-6924-43ef-b80c-13f17e2d9b8e")
+		)
+		(pin "3"
+			(uuid "8aad05c9-8adf-435e-959b-86d9a8bdd9c8")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "Q3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 261.62 39.37 0)
 		(unit 1)
@@ -28554,9 +29018,17 @@
 				)
 			)
 		)
-    (property "Manufacturer" "Honor Elec" (at 50.8 257.81 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
+		(property "Manufacturer" "Honor Elec"
+			(at 50.8 257.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "431207b3-263b-4b39-a26d-c5a476053fd3")
 		)
@@ -29048,6 +29520,101 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#FLG2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Transistor_FET:2N7002")
+		(at 308.61 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a1b4fb55-b1d1-456a-9107-2d108c1fa537")
+		(property "Reference" "Q4"
+			(at 313.69 99.695 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2N7002"
+			(at 313.69 97.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 313.69 95.885 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 313.69 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Door watchdog N-FET (R25·C20·D11): releases K2 ~6.9s after assertion (DOOR-5)"
+			(at 308.61 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C8545"
+			(at 308.61 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "3"
+			(uuid "e672b169-d911-4f3e-adae-f3192f89024d")
+		)
+		(pin "2"
+			(uuid "df068650-3a58-43c2-a1f1-71620da0d189")
+		)
+		(pin "1"
+			(uuid "d2ab9bc6-6b6c-4d5f-b493-64b25b36e8e0")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "Q4")
 					(unit 1)
 				)
 			)

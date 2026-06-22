@@ -10,8 +10,9 @@
 #   ./build.sh route     verify planes/thieving/connectivity (route.py) + DRC
 #   ./build.sh sim       run the sim/ circuit-simulator unit tests
 #   ./build.sh fab       export Gerbers/drill/position + BOM to kicad/fab/
+#   ./build.sh step      export STEP 3D model to kicad/fab/ (omits STEP_Exclude parts)
 #   ./build.sh all       sch + check + route + sim   (all checks, no fab)
-#   ./build.sh all-route sch + check + route + sim + fab   (full run)
+#   ./build.sh all-route sch + check + route + sim + fab + step   (full run)
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -19,7 +20,7 @@ VENVPY="./.venv/bin/python"                       # kiutils lives here (BOM)
 KPY="/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3"  # owns pcbnew
 SCH="kicad/doorbell.kicad_sch"
 PCB="kicad/doorbell.kicad_pcb"
-NOISE='fontconfig|invalid attribute|invalid constant|assert|traits|wxApp|Analytics|New version'
+NOISE='fontconfig|invalid attribute|invalid constant|assert|traits|wxApp|Analytics|New version|Error retrieving source file attributes|NSCocoaErrorDomain'
 q() { grep -vE "$NOISE" || true; }
 
 sch() {
@@ -102,14 +103,29 @@ fab() {
   echo "  -> upload to JLCPCB:  doorbell-jlcpcb.zip (gerbers + IPC-356 netlist)  +  doorbell-bom-jlcpcb.csv (BOM)  +  doorbell-cpl.csv (CPL)"
 }
 
+step() {
+  echo "▶ STEP model -> kicad/fab/doorbell.step"
+  mkdir -p kicad/fab
+  # Parts carrying a truthy custom field 'STEP_Exclude' are dropped from the model
+  # (e.g. SW3/SW4 left off so the bare board can be fit-tested against the real
+  # switches). kicad-cli's --component-filter is include-only, so step_exclude.py
+  # emits the complement; empty output means nothing is flagged → export the lot.
+  local inc args=(--force --subst-models --no-dnp)
+  inc=$(python3 kicad/step_exclude.py "$PCB")   # stdout: include csv; stderr: summary (shown)
+  if [ -n "$inc" ]; then args+=(--component-filter "$inc"); fi
+  kicad-cli pcb export step "${args[@]}" -o kicad/fab/doorbell.step "$PCB" >/tmp/doorbell_step.txt 2>&1 || true
+  q </tmp/doorbell_step.txt | grep -iE "Could not add 3D model|STEP file .* created" || true
+}
+
 case "${1:-all-route}" in
   sch)        sch ;;
   check)      check ;;
   route)      route ;;
   sim)        sim ;;
   fab)        fab ;;
+  step)       step ;;
   all)        sch; check; route; sim ;;
-  all-route)  sch; check; route; sim; fab ;;
-  *) echo "usage: $0 {sch|check|route|sim|fab|all|all-route}"; exit 1 ;;
+  all-route)  sch; check; route; sim; fab; step ;;
+  *) echo "usage: $0 {sch|check|route|sim|fab|step|all|all-route}"; exit 1 ;;
 esac
 echo "✓ done"
