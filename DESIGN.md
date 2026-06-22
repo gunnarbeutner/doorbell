@@ -711,8 +711,15 @@ high-Z is now structural, not discipline.
   differential enough to tap P2↔P1 directly; add a buffer/in-amp if not.
 - **MIC bias + TX level.** Bias MIC1P/N to VMID (repurpose R24–R27); set the codec digital volume to
   the handset's mic-through-2.2 kΩ level, don't overdrive the TV20/S amp (AUDIO-6).
-- **SAFE-7 protection on the P2/P3 taps** — series R + TVS clamp (above +12 V); DC-block ratings
-  ≥ 25–50 V (and the broader bus-TVS question, see TODO / "Protection").
+- **SAFE-7 bus protection** — per-line **bidirectional TVS** (each P-line→P1, at the connector). The
+  front-end already tolerates the measured working envelope (`osci/`: **≈ −11 V to +17 V**; SSRs at
+  60 V Voff, optos current-limited + reverse-clamped, codec taps AC-coupled ≥ 50 V), so the TVS is
+  **fault-only**: **~20 V standoff** — above the +16–17 V ring/door switching transients, so it stays
+  idle in normal use — clamping over-envelope surge/ESD/miswire to ~32 V, well under the 60 V SSRs.
+  DC-block caps ≥ 50 V (C16 sees the +16–17 V P2 transients). **SAFE-2 / miswire:** the bidirectional TVS
+  clamps any line in any order and the front-end is bidirectional (optos + anti-parallel clamps, AC/DC SSRs,
+  non-polar AC caps), so a reversed/scrambled J2 plug **survives** (need not function) — provided **C19, the
+  lone polar part, is made non-polar**; key/label J2 to prevent the miswire. Envelope + parts: see TODO / "Protection".
 - **Hum** with the P1↔GND bond once RX is live.
 - **⚠ TX-out reach (bench-gated).** Not yet confirmed on hardware: that the TV20/S **forwards the
   line-3 audio out to the door station** once it sees the R28 2.2 kΩ line-4↔line-3 handshake bridge,
