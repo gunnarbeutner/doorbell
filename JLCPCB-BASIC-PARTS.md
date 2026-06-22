@@ -15,13 +15,13 @@ free Connectors and no free Relays at all**.
 
 ## Bottom line
 
-- **15 Basic + 1 Preferred** of the 31 distinct parts already assemble for free. The board is
-  already heavily free-leaning: every MLCC, every resistor (bar one high-value), the diodes,
-  the indicator LED, the BOOT switch, **and the LTV-217 optocoupler** are Basic; the SMF5.0A
-  bus TVS is Preferred.
-- **15** distinct parts are Extended → up to **≈ $45** in one-time setup fees.
-- **3** of those 15 can realistically move to a free part: the **6.8 MΩ resistor** (cleanest —
-  same footprint), the **dual MOSFET**, and the **USB ESD clamp**.
+- **15 Basic + 2 Preferred** of the 31 distinct parts already assemble for free. The board is
+  already heavily free-leaning: every MLCC, every resistor, the diodes,
+  the indicator LED, the BOOT switch, **and the LTV-217 optocoupler** are Basic; R25's 3 MΩ and
+  the SMF5.0A bus TVS are Preferred.
+- **14** distinct parts are Extended → up to **≈ $42** in one-time setup fees.
+- **2** of those 14 can move to a free part: the **dual MOSFET** and the **USB ESD clamp** — both at a
+  footprint/pad cost.
 - The other **12** have **no free substitute anywhere in the catalog** — they are Extended
   because they are specialized (RF module, audio codec, low-dropout LDO, PhotoMOS SSRs,
   signal relay, USB-C jack, bus terminal, 50 V electrolytic, fast fuse, panel door-switch).
@@ -38,7 +38,8 @@ free Connectors and no free Relays at all**.
 | Ref(s) | Value / part | LCSC | Type |
 |---|---|---|---|
 | C2,C3,C4,C10,C11 | 10 µF 0603 | C19702 | Basic |
-| C5,C12–C18,C20 | 1 µF 0603 | C15849 | Basic |
+| C5,C12–C18 | 1 µF 0603 | C15849 | Basic |
+| C20 | 2.2 µF 16 V 0603 (door watchdog) | C23630 | Basic |
 | C6–C9 | 100 nF 0603 | C14663 | Basic |
 | D1,D8,D9,D11 | 1N4148W | C81598 | Basic |
 | D4 | SS14 Schottky | C2480 | Basic |
@@ -48,10 +49,10 @@ free Connectors and no free Relays at all**.
 | R1,R2,R13,R14 | 5.1 k 0603 | C23186 | Basic |
 | R3,R15 | 1 k 0603 | C21190 | Basic |
 | R4,R5,R6,R21,R24 | 300 Ω 0603 | C23025 | Basic |
-| R7–R11,R18–R20,R22,R23 | 10 k 0402 | C25744 | Basic |
-| R12 | 3.3 k 0603 | C22978 | Basic |
+| R7–R12,R18–R20,R22,R23 | 10 k 0402 | C25744 | Basic |
 | R16,R28,R29 | 2.2 k 0603 | C4190 | Basic |
 | R17 | 22 k 0603 | C31850 | Basic |
+| R25 | 3 MΩ 0603 (door watchdog) | C23156 | **Preferred** |
 | SW1,SW2 | BOOT tact switch | C720477 | Basic |
 
 ---
@@ -60,11 +61,10 @@ free Connectors and no free Relays at all**.
 
 | Ref | Current part | LCSC | Free replacement | Notes |
 |---|---|---|---|---|
-| R25 | 6.8 MΩ 0603 (watchdog timing) | C23213 (Ext) | **Single free 0603 value, same footprint** — 5.1 MΩ `C13320` (Pref) or 10 MΩ `C7250` (Basic); or **4.7 MΩ `C23163` + 2.2 MΩ `C22938`** in series ≈ 6.9 MΩ | A single 6.8 MΩ 0603 only stocks as Extended, but the R25·C20 one-shot is hugely tolerant — DESIGN.md already quotes a 2.5–10 s release spread from the 2N7002 Vgs(th). So 5.1 MΩ (~5 s) or 10 MΩ (~10 s) drops straight in with no board change; the series pair holds ~6.9 s if you want the nominal. **Cleanest win.** |
 | Q3 | 2N7002DW dual N-FET, SOT-363 | C83571 (Ext) | **2× 2N7002**, SOT-23 — `C8545` (Basic) | No free dual-FET exists, but the two halves are already used independently (unit 1 = break-before-make RC delay, unit 2 = watchdog one-shot), so two singles are equivalent. Costs a footprint change: one SOT-363 → two SOT-23 (more board area). |
 | D5 | TPD2S017 USB ESD clamp | C880115 (Ext) | **Preferred ESD array** — SRV05-4 `C85364` or SMF05C `C15879` (both SOT-23-6) | A free 4-/5-line rail-clamp ESD array covers the USB2.0 D± ESD job. **Caveat:** the TPD2S017 is a *flow-through* device biased from fused VBUS (back-drive / short-to-VBUS aware), which a plain rail-clamp array is not, and the pinout differs (pad remap). Verify it meets the protection intent before swapping. |
 
-Doing all three removes 3 of the 15 fees (≈ −$9), but R25 is the only one with no board/pad penalty.
+Doing both removes 2 of the 14 fees (≈ −$6), but both carry a footprint/pad change.
 
 ---
 
@@ -74,7 +74,7 @@ Confirmed against the full 616k-part mirror — these have **zero** Basic/Prefer
 
 | Ref | Part | LCSC | Why it stays Extended |
 |---|---|---|---|
-| U1 | ESP32-S3-MINI-1U-N8 | C2980299 | No RF/WiFi module is ever free-library. Core part. |
+| U1 | ESP32-C6-MINI-1U-H4 | C20627095 | No RF/WiFi module is ever free-library. Core part. |
 | U3 | ES8311 audio codec | C962342 | No free audio codec. Tied to the firmware I²S path. |
 | U2 | SGM2212-3.3 LDO | C3294699 | Needs ~350 mA at **low dropout** (~0.45 V). The only free 3.3 V LDOs are AMS1117-3.3 (`C6186`, 1.1 V dropout — DESIGN.md rejects it: browns out under WiFi-TX), XC6206 (200 mA) and HT7533 (100 mA) — all inadequate. |
 | C19 | 22 µF / **50 V** electrolytic | C98744 | The catalog has **no free aluminium electrolytics at all**, and free 22 µF MLCCs top out at 25 V < the required 50 V. |
@@ -112,8 +112,9 @@ swap also changes the $3 setup fee. None of these is a guaranteed drop-in — re
   catalog; the next-nearest are dearer.
 - **K1/K2 PhotoMOS SSRs**: the few cheaper SOP-8/SOP-4 parts are either undocumented (no
   spec sheet in the mirror) or lower-current / higher-Ron — not verified equivalents.
-- **U1 ESP32-S3-MINI-1U-N8** and **U3 ES8311**: single catalog listing each; no cheaper twin
-  (the ESP32 PCB-antenna `-1-` variants are a *different* part, not a drop-in).
+- **U1 ESP32-C6-MINI-1U-H4** and **U3 ES8311**: single catalog listing each; no cheaper twin
+  (the PCB-antenna `-1-` and separate-die-flash `-N4` variants are *different* parts, not a
+  drop-in — only the `-1U-H4` keeps the u.FL connector and in-package 4 MB flash).
 - **Passives, diodes, LED, optocoupler** (all Basic): already at sub-cent / catalog-floor
   pricing — any "cheaper" swap saves a fraction of a cent and risks a known-good Basic part.
 

@@ -21495,7 +21495,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "2.2uF"
 			(at 296.42 102.87 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21517,7 +21517,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A225KO8NNNC_C23630.pdf"
 			(at 294.64 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -21528,7 +21528,7 @@
 				)
 			)
 		)
-		(property "Description" "EN reset RC (Espressif-spec 1uF)"
+		(property "Description" "Door-watchdog timing cap: R25·C20 one-shot (D11 re-arm) sets the K2 P2<->P3 release time; 2.2uF 16V X5R"
 			(at 294.64 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -21539,7 +21539,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C23630"
 			(at 294.64 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -21550,7 +21550,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL10A105KB8NNNC"
+		(property "MPN" "CL10A225KO8NNNC"
 			(at 294.64 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -21941,7 +21941,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "6.8M"
+		(property "Value" "3M"
 			(at 294.64 90.17 90)
 			(show_name no)
 			(do_not_autoplace yes)
@@ -21962,7 +21962,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C423449.pdf?spm=wm.sxq.inf.ggs&lcsc_vid=E1BZUFJUEwNcBVwDQFBYVVJSQ1ZbBVACFFNdBFBfRlIxVlNeRVFfXlNQRVNeVTsOAxUeFF5JWBYZEEoKFBINSQcJGk4NBhADEA4cHktXRlhXSQwSGg0%3D"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF3004T5E_C23156.pdf"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -21973,7 +21973,7 @@
 				)
 			)
 		)
-		(property "Description" "Door-lead release one-shot RC (with C20·D11): releases K2 ~6.9s after assertion (DOOR-5)"
+		(property "Description" "Door-lead release one-shot RC (with C20·D11): bounds how long K2 bridges P2<->P3 after DOOR_DRV asserts (DOOR-5)"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -21984,7 +21984,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C23213"
+		(property "LCSC" "C23156"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -21995,7 +21995,7 @@
 				)
 			)
 		)
-		(property "Stock" "843789"
+		(property "Stock" "317736"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -22006,7 +22006,7 @@
 				)
 			)
 		)
-		(property "Price" "0.004USD"
+		(property "Price" "0.001USD"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -22050,7 +22050,7 @@
 				)
 			)
 		)
-		(property "Class" "Basic Component"
+		(property "Class" "Preferred Component"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -22083,7 +22083,7 @@
 				)
 			)
 		)
-		(property "Part" "0603WAF6801T5E"
+		(property "Part" "0603WAF3004T5E"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -22094,7 +22094,7 @@
 				)
 			)
 		)
-		(property "Resistance" "6.8kΩ"
+		(property "Resistance" "3MΩ"
 			(at 294.64 90.17 0)
 			(hide yes)
 			(show_name no)
