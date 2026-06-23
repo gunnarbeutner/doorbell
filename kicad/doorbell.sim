@@ -2,6 +2,7 @@
   "gnd": "GND",
   "hideLayers": ["In1.Cu", "In2.Cu"],
   "sources": [
-    { "net": "/VBUS", "v1": 5 }
+    { "net": "/VBUS", "v1": 5 },
+    { "net": "/P2", "v1": 12 }
   ]
 }

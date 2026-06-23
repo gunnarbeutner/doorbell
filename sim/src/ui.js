@@ -55,7 +55,10 @@ let sources = [],
   padCur = new Map(), // per-pad injection current (signed; +ve = out of the pad into the copper)
   flowPhase = 0; // advances each drawn frame -> marching dashes
 let selectedNets = new Set(),
-  hoveredNet = null;
+  hoveredNet = null,
+  hoveredRef = null,
+  program = {}, // per-IC behavioural state set by clicking a footprint -> buildElements({ program })
+  violByRef = {}; // ref -> [abs-max violations] at the displayed sample (from each part's checkSafe)
 const hideLayers = new Set(NETLIST.config?.hideLayers || []); // default-off layers, per the board's .sim
 const visLayers = new Set((PCB ? PCB.layers : []).filter((L) => !hideLayers.has(L)));
 $('#srcname').textContent = NETLIST.source;
@@ -308,7 +311,11 @@ function buildStack() {
         $('#tip').style.display = 'none';
         drawAll();
       });
-      cv.addEventListener('click', () => {
+      cv.addEventListener('click', (ev) => {
+        if (hoveredRef && isProgrammable(hoveredRef)) {
+          openProgramPanel(hoveredRef, ev); // click an IC footprint -> drive it
+          return;
+        }
         if (hoveredNet) {
           selectedNets.has(hoveredNet) ? selectedNets.delete(hoveredNet) : selectedNets.add(hoveredNet);
           buildScopes();
@@ -548,9 +555,20 @@ function drawLayer(cv, L) {
     g.arc(TF.W(v.x), TF.H(v.y), Math.max(1.5, v.r * TF.sc), 0, 7);
     g.fill();
   }
+  // affordances: ⚙ on programmable ICs (where to click), ⚠ asterisk-in-triangle on abs-max violations
+  for (const ref in COMP) {
+    if (!isProgrammable(ref)) continue;
+    const bb = compBBox(ref);
+    if (bb && bb.layers.includes(L)) drawGearBadge(g, TF.W(bb.cx), TF.H(bb.cy), hoveredRef === ref);
+  }
+  for (const ref in violByRef) {
+    const bb = compBBox(ref);
+    if (bb && bb.layers.includes(L)) drawWarnBadge(g, TF.W(bb.cx), TF.H(bb.cy) - (isProgrammable(ref) ? 14 : 0));
+  }
 }
 function drawAll() {
   if (!TF) return;
+  computeViolations(); // refresh abs-max badges for the displayed sample
   document.querySelectorAll('#stack canvas').forEach((cv) => drawLayer(cv, cv.dataset.layer));
 }
 function distToSeg(px, py, s) {
@@ -600,12 +618,52 @@ function onHover(ev, cv, L) {
         break;
       }
     }
-  if (best !== hoveredNet) {
+  // the WHOLE footprint of a programmable IC is a click target (its pads are tiny) — and so is a flagged
+  // component's badge. Fall back to a bbox hit-test when no trace/pad was under the cursor.
+  if (!bestRef)
+    for (const ref in COMP) {
+      if (!isProgrammable(ref)) continue;
+      const bb = compBBox(ref);
+      if (!bb || !bb.layers.includes(L)) continue;
+      const xa = TF.W(bb.x0), xb = TF.W(bb.x1), ya = TF.H(bb.y0), yb = TF.H(bb.y1);
+      if (px >= Math.min(xa, xb) - 2 && px <= Math.max(xa, xb) + 2 && py >= Math.min(ya, yb) - 2 && py <= Math.max(ya, yb) + 2) {
+        bestRef = ref;
+        break;
+      }
+    }
+  if (!(bestRef && violByRef[bestRef]))
+    for (const ref in violByRef) {
+      const bb = compBBox(ref);
+      if (bb && bb.layers.includes(L) && Math.hypot(px - TF.W(bb.cx), py - TF.H(bb.cy)) < 11) {
+        bestRef = ref;
+        break;
+      }
+    }
+  const refChanged = hoveredRef !== bestRef;
+  hoveredRef = bestRef;
+  if (best !== hoveredNet || refChanged) {
     hoveredNet = best;
     drawAll();
   }
   const tip = $('#tip');
-  if (best) {
+  const viol = bestRef && violByRef[bestRef];
+  if (viol) {
+    // the asterisk-in-triangle's popup: what abs-max the part is exceeding, in its own terms
+    tip.innerHTML =
+      `<b style="color:#f0b429">⚠ ${bestRef}</b> — absolute-maximum violation<br>` +
+      viol
+        .map(
+          (v) =>
+            `pin ${v.pin} (${v.net}) = <b>${v.v.toFixed(2)} V</b> ∉ [${v.lo}, ${v.hi}]<br><span style="color:#9aa3b2">${v.why}</span>`,
+        )
+        .join('<br>');
+    tip.style.whiteSpace = 'normal';
+    tip.style.maxWidth = '300px';
+    tip.style.borderColor = '#f0b429';
+    tip.style.display = 'block';
+    tip.style.left = ev.clientX + 12 + 'px';
+    tip.style.top = ev.clientY + 12 + 'px';
+  } else if (best) {
     let txt = best;
     if (bestRef && devClass(bestRef) === 'bad') txt = `${bestRef} (${refKind(bestRef)} — unsupported) · ${best}`;
     if (RES && RES.floating && RES.floating[best]) txt += '  (floating)';
@@ -617,7 +675,20 @@ function onHover(ev, cv, L) {
       const I = Math.abs(flowSeg[bestSeg.idx] || 0);
       txt += `  ·  ${I < 1e-7 ? '≈0 A' : fmtA(I)}`;
     }
+    if (bestRef && isProgrammable(bestRef)) txt += '  ·  click to program';
     tip.textContent = txt;
+    tip.style.whiteSpace = 'nowrap';
+    tip.style.maxWidth = 'none';
+    tip.style.borderColor = '';
+    tip.style.display = 'block';
+    tip.style.left = ev.clientX + 12 + 'px';
+    tip.style.top = ev.clientY + 12 + 'px';
+  } else if (bestRef && isProgrammable(bestRef)) {
+    // hovering the IC body (no net under the cursor): show the click-to-program affordance
+    tip.textContent = `⚙ ${bestRef} (${COMP[bestRef].lib.split(':').pop()}) · click to program`;
+    tip.style.whiteSpace = 'nowrap';
+    tip.style.maxWidth = 'none';
+    tip.style.borderColor = '#1f6feb';
     tip.style.display = 'block';
     tip.style.left = ev.clientX + 12 + 'px';
     tip.style.top = ev.clientY + 12 + 'px';
@@ -758,7 +829,158 @@ function buildEls() {
     else if (e.kind === 'switch') extra.push({ type: 'SW', a: e.a, b: e.b, closed: !!e.closed });
     else extra.push({ type: e.kind, a: e.a, b: e.b, value: parseVal(e.value) });
   }
-  return buildElements(NETLIST, { switchState, extra });
+  return buildElements(NETLIST, { switchState, extra, program });
+}
+
+// ---- safety invariants in the UI: ask every part's checkSafe across the captured window ----
+// Scanned over the whole window (like the reverse-bias status check) so a brief transient overstress —
+// e.g. the OUTP kick on a PTT make — latches the badge instead of flashing for one sample.
+function computeViolations() {
+  violByRef = {};
+  if (!RES || !RES.t.length) return;
+  const flo = RES.floating || {};
+  const len = RES.t.length;
+  const worst = {}; // "ref.pin" -> worst violation over the window
+  for (let k = 0; k < len; k++) {
+    const vn = {};
+    for (const n in RES.v) vn[n] = flo[n] ? NaN : RES.v[n][k]; // never judge a floating node
+    for (const ref in COMP)
+      for (const x of COMP[ref].checkSafe(vn)) {
+        const key = ref + '.' + x.pin,
+          exc = Math.max(x.lo - x.v, x.v - x.hi),
+          prev = worst[key];
+        if (!prev || exc > prev.exc) worst[key] = { ...x, exc };
+      }
+  }
+  for (const key in worst) (violByRef[worst[key].ref] ||= []).push(worst[key]);
+}
+
+const isProgrammable = (ref) => !!(COMP[ref] && COMP[ref].programSchema && COMP[ref].programSchema());
+
+// an "asterisk in a triangle" warning marker, drawn at an affected component's centroid.
+function drawWarnBadge(g, x, y) {
+  const r = 8;
+  g.save();
+  g.globalAlpha = 1;
+  g.beginPath();
+  g.moveTo(x, y - r);
+  g.lineTo(x + r * 0.92, y + r * 0.62);
+  g.lineTo(x - r * 0.92, y + r * 0.62);
+  g.closePath();
+  g.fillStyle = '#f0b429';
+  g.strokeStyle = '#1a1300';
+  g.lineWidth = 1.3;
+  g.fill();
+  g.stroke();
+  g.fillStyle = '#1a1300';
+  g.font = 'bold 12px monospace';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText('*', x, y + r * 0.28);
+  g.restore();
+}
+
+// footprint bounding box (board coords) from a component's pads — for click/hover over the whole body.
+const _bbox = {};
+function compBBox(ref) {
+  if (ref in _bbox) return _bbox[ref];
+  const ps = PCB ? PCB.pads.filter((p) => p.ref === ref) : [];
+  if (!ps.length) return (_bbox[ref] = null);
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const layers = new Set();
+  for (const p of ps) {
+    const hw = (p.w || 0) / 2 + 0.2, hh = (p.h || 0) / 2 + 0.2;
+    x0 = Math.min(x0, p.x - hw); x1 = Math.max(x1, p.x + hw);
+    y0 = Math.min(y0, p.y - hh); y1 = Math.max(y1, p.y + hh);
+    (p.layers || []).forEach((L) => layers.add(L));
+  }
+  return (_bbox[ref] = { x0, y0, x1, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, layers: [...layers] });
+}
+
+// a little gear, marking a footprint you can click to program the IC.
+function drawGearBadge(g, x, y, hot) {
+  const col = hot ? '#79c0ff' : '#1f6feb';
+  g.save();
+  g.translate(x, y);
+  g.strokeStyle = col;
+  g.lineWidth = 2.4;
+  g.lineCap = 'round';
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    g.beginPath();
+    g.moveTo(Math.cos(a) * 4.6, Math.sin(a) * 4.6);
+    g.lineTo(Math.cos(a) * 7.8, Math.sin(a) * 7.8);
+    g.stroke();
+  }
+  g.beginPath();
+  g.arc(0, 0, 5, 0, 7);
+  g.fillStyle = col;
+  g.fill();
+  g.beginPath();
+  g.arc(0, 0, 2, 0, 7);
+  g.fillStyle = '#0b1220';
+  g.fill();
+  g.restore();
+}
+
+let progPanel = null;
+function closeProgramPanel() {
+  if (progPanel) progPanel.remove();
+  progPanel = null;
+}
+// click a footprint -> a small panel to drive that IC; changes re-solve live (seeded).
+function openProgramPanel(ref, ev) {
+  closeProgramPanel();
+  const schema = COMP[ref].programSchema();
+  if (!schema) return;
+  const d = (progPanel = document.createElement('div'));
+  d.style.cssText =
+    'position:fixed;z-index:20;background:#161b22;border:1px solid #f0b429;border-radius:6px;' +
+    'padding:8px 10px;font-size:12px;color:#e6e9ef;box-shadow:0 6px 20px #000b;min-width:170px;';
+  d.style.left = Math.min(ev.clientX + 10, innerWidth - 230) + 'px';
+  d.style.top = Math.min(ev.clientY + 10, innerHeight - 170) + 'px';
+  let html = `<div style="font-weight:bold;margin-bottom:6px">⚙ Program ${ref}<span class="xp" style="float:right;cursor:pointer;color:#9aa3b2">✕</span></div>`;
+  if (schema.kind === 'esp') {
+    const cur = program[ref] || {};
+    html += `<div class="hint" style="margin-bottom:4px">drive actuator GPIOs</div>`;
+    html += schema.gpios
+      .map(
+        (g) =>
+          `<label style="display:block;margin:3px 0;cursor:pointer"><input type="checkbox" data-net="${g.net}"${cur[g.net] != null ? ' checked' : ''}> ${g.label} <span class="hint">${g.net}</span></label>`,
+      )
+      .join('');
+  } else if (schema.kind === 'codec') {
+    const out = program[ref] && program[ref].out;
+    const mode = out == null ? 'off' : typeof out === 'function' ? 'tone' : 'bias';
+    html += `<div class="hint" style="margin-bottom:4px">DAC output (OUTP)</div>`;
+    html += ['off', 'bias', 'tone']
+      .map(
+        (m) =>
+          `<label style="display:block;margin:3px 0;cursor:pointer"><input type="radio" name="dac" value="${m}"${mode === m ? ' checked' : ''}> ${m}${m === 'tone' ? ' (1 kHz)' : m === 'bias' ? ' (mid-rail)' : ''}</label>`,
+      )
+      .join('');
+  }
+  d.innerHTML = html;
+  document.body.appendChild(d);
+  d.querySelector('.xp').onclick = closeProgramPanel;
+  d.querySelectorAll('input[type=checkbox]').forEach(
+    (cb) =>
+      (cb.onchange = () => {
+        program[ref] = program[ref] || {};
+        if (cb.checked) program[ref][cb.dataset.net] = schema.high;
+        else delete program[ref][cb.dataset.net];
+        applyChange();
+      }),
+  );
+  d.querySelectorAll('input[name=dac]').forEach(
+    (rb) =>
+      (rb.onchange = () => {
+        if (rb.value === 'off') delete program[ref];
+        else if (rb.value === 'bias') program[ref] = { out: 1.65 };
+        else program[ref] = { out: (t) => 1.65 + 0.4 * Math.sin(2 * Math.PI * 1000 * t) };
+        applyChange();
+      }),
+  );
 }
 
 // (re)build the stepper for the current config; `seed` carries the physical state across the change
