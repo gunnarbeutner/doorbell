@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klingel V4 — Pre-Fab Blind Design Review</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e6e9ef; --mut:#9aa3b2;
+    --line:#2a2f3a; --accent:#6ea8fe;
+    --block:#ff5d5d; --warn:#f4b740; --ok:#46c98b; --info:#6ea8fe;
+    --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+  a{color:var(--accent)}
+  .wrap{max-width:1060px;margin:0 auto;padding:32px 22px 80px}
+  header.hd{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
+  .kicker{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+  h1{font-size:30px;margin:10px 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--mut);max-width:72ch}
+  .verdict{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:22px 0 4px;padding:16px 18px;
+    border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#1b1410,#171a21)}
+  .verdict .big{font:800 22px/1.1 -apple-system,sans-serif}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font:700 11px/1.6 var(--mono);
+    letter-spacing:.06em;text-transform:uppercase}
+  .pill.block{background:rgba(255,93,93,.16);color:#ff8c8c;border:1px solid rgba(255,93,93,.4)}
+  .pill.warn{background:rgba(244,183,64,.14);color:#f6c768;border:1px solid rgba(244,183,64,.4)}
+  .pill.ok{background:rgba(70,201,139,.14);color:#5ad6a0;border:1px solid rgba(70,201,139,.4)}
+  .pill.info{background:rgba(110,168,254,.14);color:#8fbcff;border:1px solid rgba(110,168,254,.4)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .stat .n{font:800 24px/1 -apple-system,sans-serif}
+  .stat .l{color:var(--mut);font-size:12.5px;margin-top:4px}
+  h2{font-size:19px;margin:38px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+  h2 .tag{font:700 11px/1 var(--mono);vertical-align:middle;margin-left:8px}
+  .sec-note{color:var(--mut);font-size:13.5px;margin:2px 0 16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+  .card.block{border-left:4px solid var(--block)}
+  .card.warn{border-left:4px solid var(--warn)}
+  .card h3{margin:0 0 4px;font-size:16.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .card h3 .id{font:700 12px/1.6 var(--mono);color:var(--mut)}
+  .card .meta{color:var(--mut);font-size:12.5px;margin-bottom:10px}
+  .card p{margin:9px 0}
+  .lbl{font:700 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);
+    display:block;margin:12px 0 2px}
+  .fix{background:var(--panel2);border:1px dashed var(--ok);border-radius:9px;padding:10px 13px;margin-top:6px}
+  .fix .lbl{color:var(--ok)}
+  code,.mono{font-family:var(--mono);font-size:13px}
+  code{background:#0c0e12;border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:#cdd6e6}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font:700 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+  tr:hover td{background:#161a22}
+  td .mono{color:#cdd6e6}
+  .v-ok{color:var(--ok);font-weight:700}
+  .v-warn{color:var(--warn);font-weight:700}
+  .v-block{color:var(--block);font-weight:700}
+  ul.tight{margin:6px 0;padding-left:20px}
+  ul.tight li{margin:4px 0}
+  .foot{margin-top:46px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px}
+  details{margin:8px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:0 14px}
+  details summary{cursor:pointer;padding:11px 0;font-weight:600}
+  details[open]{padding-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hd">
+  <div class="kicker">Pre-Fabrication Design Gate · Blind-Agent Protocol</div>
+  <h1>Klingel V4 — Pre-Fab Blind Design Review</h1>
+  <p class="sub">ESP32-C6 + ES8311 interface board for a TCS/STR TV20/S intercom bus.
+  Independent agents derived each subcircuit from <strong>primary sources only</strong> (exported
+  netlist, datasheets, measured bus envelope) — blind to the design's claims — then adversarial
+  refuters attacked every high-impact conclusion. Findings are compared to the held DESIGN.md /
+  REQUIREMENTS.md answer key.</p>
+</header>
+
+<div class="verdict">
+  <span class="pill block">No-Go for fab</span>
+  <span class="big">1 blocker — a single added resistor clears it</span>
+  <span style="color:var(--mut);flex-basis:100%;font-size:13.5px">
+    With <strong>B1</strong> fixed (one series R on the codec TX output), the board is
+    <strong>Go</strong>. All warnings are accept-or-bench-gate items, not respin-class.</span>
+</div>
+
+<div class="grid">
+  <div class="stat"><div class="n" style="color:var(--block)">1</div><div class="l">Blocker</div></div>
+  <div class="stat"><div class="n" style="color:var(--warn)">5</div><div class="l">Warnings</div></div>
+  <div class="stat"><div class="n" style="color:var(--ok)">11</div><div class="l">Corroborated blocks</div></div>
+  <div class="stat"><div class="n">22</div><div class="l">Blind + refuter agents</div></div>
+  <div class="stat"><div class="n" style="color:var(--ok)">0 / 0 / 49✓</div><div class="l">ERC err · DRC · sim</div></div>
+</div>
+
+<!-- ───────────────────────── BLOCKER ───────────────────────── -->
+<h2>Blockers <span class="tag pill block">fix before ordering</span></h2>
+<p class="sec-note">Divergences or abs-max/safety violations that would survive into the fabricated board.</p>
+
+<div class="card block">
+  <h3><span class="id">B1</span> Codec TX output (ES8311 OUTP) is driven past its abs-max on every push-to-talk — no series current-limit</h3>
+  <div class="meta">Found by: <span class="mono">absmax:ES8311</span> adversarial refuter (severity = blocker, high confidence) ·
+  Independently confirmed against the netlist · Touches DESIGN.md “Audio path” (TX front-end) + the <code>/ES_OUTP</code> net</div>
+
+  <span class="lbl">What the netlist actually does</span>
+  <p>The codec DAC output couples to the bus with no resistor in between:
+  <code>ES8311 OUTP (pin 12) → C14 (1 µF) → TALK_BRIDGE</code>. The dual talk-SSR <strong>K1</strong>
+  ties <code>TALK_BRIDGE</code> directly to the <strong>+12 V P2 standing rail</strong> (Ron ≈ 1 Ω) whenever
+  talk is engaged. The <code>/ES_OUTP</code> net contains only <code>U3.12</code> and <code>C14.1</code> — there is
+  <strong>no series resistance</strong> between the codec pin and the coupling cap.</p>
+
+  <span class="lbl">The failure</span>
+  <p>When K1 closes, <code>TALK_BRIDGE</code> steps from ~0 V to <strong>+9.4 … +12 V</strong>. C14 cannot change
+  instantly, so the OUTP pin is kicked to <strong>~+11 … +13.6 V</strong>. The ES8311's on-chip ESD clamp pins
+  OUTP at ≈ AVDD+0.7 V (~4 V) and must sink the C14 charge current — limited only by K1's Ron and the SSR's
+  optical turn-on rate (≈ tens–120 mA, ~10–12 µC per edge). That exceeds the ES8311 analog absolute-max
+  (<code>AGND−0.3 … AVDD+0.3 = −0.3 … +3.6 V</code>, datasheet rev 17 p.9) and repeats on <strong>every PTT make
+  <em>and</em> release</strong>. This is a normal-operation abs-max violation of a primary IC — a classic
+  latent ESD-diode wear / field-failure path.</p>
+
+  <span class="lbl">The tell (why the RX side is fine and TX is not)</span>
+  <p>The identical “12 V step through a coupling cap” on the <em>RX</em> side is harmless because
+  <code>R30/R31 (22 kΩ)</code> limit any clamp conduction to µA. The TX side simply lacks that series R — the
+  protection was mirrored on RX but omitted on TX.</p>
+
+  <div class="fix">
+    <span class="lbl">Fix — one part</span>
+    Insert a series resistor <strong>R<sub>otx</sub> ≈ 1.5–2.2 kΩ</strong> between OUTP (pin 12) and C14:
+    <code>OUTP → R<sub>otx</sub> → C14 → TALK_BRIDGE</code>. It caps the worst-case clamp current at
+    <code>(12−4)/2.2k ≈ 3.6 mA</code> and forms a ~72 Hz high-pass with C14 (harmless for voice ≥ 300 Hz).
+    This mirrors the RX <code>R30/R31</code> protection. Update DESIGN.md “Audio path” TX chain to match.
+  </div>
+
+  <span class="lbl">Calibration</span>
+  <p>The mechanism and the abs-max violation are certain; the <em>peak current</em> is moderated by the GAQ
+  SSR's gradual optical turn-on (tens of mA, not amps), so the codec might survive in practice. But for a
+  one-off where a respin costs weeks, a one-resistor fix is cheap insurance against a repeated-every-PTT
+  overstress — fix before ordering.</p>
+</div>
+
+<!-- ───────────────────────── WARNINGS ───────────────────────── -->
+<h2>Warnings <span class="tag pill warn">accept or bench-gate</span></h2>
+<p class="sec-note">Risks, thin margins, or items that need a bench measurement — none respin-class on their own.</p>
+
+<div class="card warn">
+  <h3><span class="id">W1</span> USB surge-clamp coordination: SMF5.0A clamp (~9.2 V) exceeds the TPD2S017 VCC tolerance</h3>
+  <div class="meta">Found by: <span class="mono">absmax:USB front-end</span> refuter · SAFE-1 / SAFE-7 · DESIGN “Power tree”</div>
+  <p>D10 (SMF5.0A) clamps <code>VBUS_F</code> to ~9.2 V at rated surge. The ESD device D5 (TPD2S017) takes its
+  <code>VCC</code> from <code>VBUS_F</code> and is recommended ≤ 5.5 V (its “6 V” is the V<sub>IO</sub> rating, not a VCC
+  abs-max). On a <em>sustained</em> VBUS over-voltage (bad charger / surge) D5's VCC reaches ~9.2 V and — because its
+  data-line clamps track VCC — pushes the USB lines toward ~10 V at the ESP USB pins (abs-max 3.6 V). For genuine
+  ESD (ns transients on D±) the part works as intended; the gap is a sustained VBUS fault, ultimately contained
+  by F1 (1 A) opening + the sacrificial-board policy (SAFE-7).</p>
+  <p><strong>Action:</strong> accept under SAFE-7, <em>or</em> fit a tighter VBUS clamp if you want the USB
+  front-end itself to survive a bad supply.</p>
+</div>
+
+<div class="card warn">
+  <h3><span class="id">W2</span> Bus TVS surge margin is modest</h3>
+  <div class="meta">Found by: <span class="mono">derive:bus TVS</span> refuter · SAFE-1 · DESIGN “SAFE-7 bus protection”</div>
+  <p>H24VND3BA: <code>VC = 50 V @ 6 A (8/20 µs)</code> is the last characterized point — only 10 V under the 60 V SSR
+  off-state. Linear extrapolation of the two datasheet points reaches 60 V at ~9.3 A (1.56× rated). The +24 V
+  standoff also sits only +7 V above the +17 V normal envelope. Fine for a low-energy 12 V bus, but little
+  headroom if a stiff surge hits.</p>
+  <p><strong>Action:</strong> accept for a one-off, or step to a higher-I<sub>PP</sub> / lower-clamp TVS for margin.</p>
+</div>
+
+<div class="card warn">
+  <h3><span class="id">W3</span> Shared opto emitter R3 erodes the simultaneous-ring detect margin</h3>
+  <div class="meta">Found by: <span class="mono">derive:ring detection</span> refuter · RING-2 / RING-4 · DESIGN “Bell/session sense front-end”</div>
+  <p>R3 (1 kΩ) is the shared emitter return for OC1 + OC2. In saturation each phototransistor sinks ~0.27 mA
+  (not “µA” as DESIGN states). With both bells active at once — a front-door ring overlapping an apartment tone
+  peak, which DESIGN confirms can happen — the shared node lifts to ~0.54 V, raising each output's LOW to
+  ~0.63–0.91 V. At the pessimistic V<sub>ce(sat)</sub> + 3V3 +5 % corner that touches/crosses the ESP
+  V<sub>IL</sub> (0.825 V), risking a missed/marginal detection.</p>
+  <p><strong>Fix (cheap):</strong> give each opto its own emitter resistor, or tie the emitters straight to GND
+  (R3 isn't required for the sense). The DESIGN claim “R_em carries only µA / immaterial” is inaccurate.</p>
+</div>
+
+<div class="card warn">
+  <h3><span class="id">W4</span> RX rising-edge abs-max margin is thin (safe), and the coupling caps are DC-bias-asymmetric</h3>
+  <div class="meta">Found by: <span class="mono">derive:RX front-end</span> refuter · AUDIO-6 / AUDIO-8 · DESIGN “Audio path” RX</div>
+  <p>DESIGN names the call-end <em>fall</em> as the worst MIC-pin case; the real worst is the <em>rising</em>
+  edge (power-up 0→12.1 V, or the call-end snap-back to +13.9 V), coupling to MIC1P ≈ 3.12–3.46 V — within the
+  +3.6 V abs-max but only 0.14–0.37 V margin (vs the ~1.95 V the design implies). It stays <strong>safe</strong>
+  because R30/R31 (22 kΩ) current-limit any clamp conduction to µA — so this is a margin/documentation note, not
+  a damage path. Separately, C16 sits at +12 V DC bias while C17 sits at 0 V; even as matched 50 V X5R parts the
+  DC-bias derating makes them slightly unequal, marginally degrading 50/100 Hz hum rejection — already on the
+  bench-gate list.</p>
+  <p><strong>Action:</strong> bench-verify hum/levels (already planned); optionally tighten the worst-case note in DESIGN.</p>
+</div>
+
+<div class="card warn">
+  <h3><span class="id">W5</span> Documentation / tooling drift (no board defect)</h3>
+  <div class="meta">Found by: <span class="mono">derive:TX</span> refuter + orchestrator checks · doc hygiene</div>
+  <ul class="tight">
+    <li>Schematic text annotation <code>doorbell.kicad_sch:15803</code> reads
+      “TALK (K1…) gates <strong>TALK_BRIDGE↔P4</strong>” — the netlist and K1's own Description correctly use
+      <strong>P2</strong>. The “P4” is stale and could mislead bring-up.</li>
+    <li><code>kicad/doorbell_design.py</code> REF/NOCONN tables still describe the pre-dual-K1 design
+      (K1 pins 2/5/6/7 as no-connect; dead <code>OC3 / SW5 / OK1 / R_op→R24</code> entries), making
+      <code>check_pcb.py</code>'s “every pad in a net” gate over-permissive for K1. Harmless today (all K1 pins
+      carry nets; DRC = 0 unconnected) but it weakens the check.</li>
+  </ul>
+  <p><strong>Action:</strong> fix the annotation + refresh the tooling tables for hygiene.</p>
+</div>
+
+<!-- ───────────────────────── CORROBORATED ───────────────────────── -->
+<h2>Corroborated <span class="tag pill ok">independently reproduced</span></h2>
+<p class="sec-note">Claims a blind agent rebuilt from primary sources alone and the refuter could not break.</p>
+
+<div class="card">
+  <ul class="tight">
+    <li><strong>Power tree:</strong> VBUS → SS14 → +5 V (~4.55 V) → SGM2212 → +3V3; the LDO holds regulation under
+      the ~350 mA Wi-Fi burst with ~0.6 V headroom even at 4.75 V cable sag; FB1 forms the AVDD LC filter.</li>
+    <li><strong>ESP32-C6 abs-max:</strong> no pin exceeds abs-max in normal operation <em>or</em> under any single
+      bus-line fault/miswire — every bus tap is buffered (opto LED / SSR LED / AC-coupled codec). Refuter found no path.</li>
+    <li><strong>ES8311 supplies + inputs</strong> within abs-max (with the B1 caveat); MIC pins self-protected by the 22 kΩ series Rs.</li>
+    <li><strong>USB:</strong> D+/D− not swapped end-to-end; TPD2S017 wired flow-through; CC = 5.1 kΩ Rd correct.</li>
+    <li><strong>TX idle isolation (BUS-1):</strong> line 3 is high-Z when K1 is open — structurally, via the K1
+      output gate (off-state coupling is only ~28 pF C<sub>out</sub> → ~1.6 mV on line 3).</li>
+    <li><strong>Ring detection:</strong> LED polarity (anode-on-line), ~1.3–1.9 mA drive, D8/D9 reverse clamps,
+      active-low GPIO crossing V<sub>IL</sub>/V<sub>IH</sub>, and front-vs-apartment discrimination all correct.</li>
+    <li><strong>Door break-before-make:</strong> K4 break leads K2 make by ~3–5 ms worst-case across the full
+      2N7002 V<sub>gs(th)</sub> spread — never inverts, always beats the ~6 ms latch drop; watchdog releases K2 in
+      ~2.4–9.4 s; D11 re-arm correct. (Refuter: no failing corner.)</li>
+    <li><strong>SAFE-6 boot:</strong> K1/K2 (NO) idle open, K3/K4 (NC) idle closed → door shut, gong rings, latch
+      seal-in intact; brownout safe. (Refuter: holds.)</li>
+    <li><strong>Bus TVS:</strong> bidirectional is correct; 24 V standoff clears the normal envelope; clamps under
+      60 V SSR at rated surge (margin caveat → W2).</li>
+    <li><strong>SSR LED drive:</strong> ~6–7 mA per LED (within the 5–30 mA window, ≫ operate, ≪ 50 mA max);
+      K1's dual-LED sums to ~14 mA, within the GPIO pad limit.</li>
+    <li><strong>Footprint / pinout:</strong> SGM2212, ES8311 (all 20 pins + EP), all four PhotoMOS (LED-vs-output
+      pairing + Form-A/B idle), TPD2S017, K5 (coil/contact), the C19/C21 anti-series electrolytics, and every
+      diode/Schottky/FET polarity — all <span class="v-ok">MATCH</span> datasheet.</li>
+    <li><strong>K5 = G6K-2F-Y (monostable) is the correct part:</strong> the “latch” is the electrical P2 seal-in
+      (coil held energized), not a bistable relay — a latching G6KU would actually break the session-end drop.
+      (Resolves the lone pinout anomaly — agent confusion over the word “latch”.)</li>
+  </ul>
+</div>
+
+<!-- ───────────────────────── BLOCK TABLE ───────────────────────── -->
+<h2>Per-block verdicts</h2>
+<p class="sec-note">Each block: an independent blind derivation, plus (for high-impact blocks) an adversarial refuter.</p>
+<table>
+  <thead><tr><th>Block</th><th>Blind derive</th><th>Refuter</th><th>Net result</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">power</td><td class="v-ok">OK</td><td>—</td><td>Corroborated</td></tr>
+    <tr><td class="mono">abs-max · ESP32-C6</td><td class="v-ok">OK</td><td class="v-ok">Holds</td><td>Corroborated</td></tr>
+    <tr><td class="mono">abs-max · ES8311</td><td class="v-ok">OK</td><td class="v-block">Partially refuted → blocker</td><td class="v-block">B1</td></tr>
+    <tr><td class="mono">abs-max · USB front-end</td><td class="v-ok">OK</td><td class="v-warn">Partially refuted → warning</td><td class="v-warn">W1</td></tr>
+    <tr><td class="mono">RX audio front-end</td><td class="v-ok">OK</td><td class="v-warn">Partially refuted → warning</td><td class="v-warn">W4</td></tr>
+    <tr><td class="mono">TX audio</td><td class="v-ok">OK</td><td class="v-warn">Partially refuted → warning</td><td class="v-warn">W5 (doc) — isolation holds</td></tr>
+    <tr><td class="mono">ring detection</td><td class="v-ok">OK</td><td class="v-warn">Partially refuted → warning</td><td class="v-warn">W3</td></tr>
+    <tr><td class="mono">door sequencing</td><td class="v-ok">OK</td><td class="v-ok">Holds</td><td>Corroborated</td></tr>
+    <tr><td class="mono">default-safe boot (SAFE-6)</td><td class="v-ok">OK</td><td class="v-ok">Holds</td><td>Corroborated</td></tr>
+    <tr><td class="mono">bus TVS protection</td><td class="v-ok">OK</td><td class="v-warn">Partially refuted → warning</td><td class="v-warn">W2</td></tr>
+    <tr><td class="mono">SSR LED drive</td><td class="v-ok">OK</td><td>—</td><td>Corroborated</td></tr>
+    <tr><td class="mono">footprint & pinout</td><td class="v-ok">OK</td><td class="v-ok">Holds</td><td>Corroborated</td></tr>
+  </tbody>
+</table>
+
+<!-- ───────────────────────── METHOD ───────────────────────── -->
+<h2>Method &amp; baseline</h2>
+<details>
+  <summary>The blind protocol</summary>
+  <p>Each blind agent received <strong>only</strong>: a claim-free slice of the exported KiCad netlist
+  (connectivity + values), the relevant datasheets, and the measured bus envelope from <code>osci/</code> — plus
+  one narrow, neutral question. None received DESIGN.md, REQUIREMENTS.md, the sim assertions, or any statement of
+  intended behaviour or expected answer. They derived what the circuit does from first principles; the
+  orchestrator held the claims and compared. Divergence = a candidate pre-fab bug. Every high-impact conclusion
+  was then handed to a second agent prompted to <em>refute</em> it — find the operating point, tolerance corner,
+  or fault where it fails. A claim is corroborated only if the refuter couldn't break it.</p>
+</details>
+<details>
+  <summary>Measured bus envelope used (claim-free, from osci/)</summary>
+  <p>P1 = common = GND. <strong>P2</strong> idles +12.1 V, sags to ~9.4 V under a call, dips to ~2.6 V at call-end,
+  peak +13.9 V (one +15.1 V glitch). <strong>P3</strong> idle ~0 V high-Z; door-open bridges P2↔P3 at ~7.1–7.7 V.
+  <strong>P4</strong> (Türruf) idle 0 V → ~9.25 V pedestal (onset overshoot ~+11.1 V) for the ~60 s call.
+  <strong>P5</strong> (Etagenruf) DC-free tone, +7.8 / −5 V (one −11 V glitch). Overall normal envelope ≈ −11 … +17 V.</p>
+</details>
+<details>
+  <summary>Automated gates (re-run during setup)</summary>
+  <p><strong>ERC</strong> 0 errors / 23 benign warnings (pin-type “Unspecified↔Power input”, TestPoint lib
+  mismatch). <strong>DRC</strong> 0 violations / 0 unconnected. <strong>Sim</strong> 49 / 49 pass. Firmware GPIO
+  map cross-checked against the schematic — consistent.</p>
+</details>
+
+<div class="foot">
+  Generated by an orchestrated blind-agent review (12 derive + 10 adversarial-refute subagents) against the
+  authoritative KiCad files at HEAD. Ground truth: <code>kicad/doorbell.kicad_sch</code> / <code>.kicad_pcb</code>.
+  No design files were modified. Recommendation: <strong>add R<sub>otx</sub> (B1), then Go for fab</strong>;
+  triage W1–W5 as accept / bench-gate.
+</div>
+
+</div>
+</body>
+</html>
