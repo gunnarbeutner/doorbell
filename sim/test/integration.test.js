@@ -198,12 +198,20 @@ test('Etagenruf is structurally non-suppressible: K3 energised mutes the Türruf
 // ── audio (transformer-less codec front-end). Exact gains are bench-gated; here we assert the path
 // couples (or doesn't), not its level. ──
 
-test('codec record (RX): a tone on line 2 reaches the ES8311 mic inputs (MICP/MICN)', () => {
-  // RX taps line 2 differentially: /P2 → C16 → MICP, GND → C17 → MICN
-  const tone = (t) => 1.0 * Math.sin(2 * Math.PI * 1000 * t); // 1 V on the line → 2 Vpp
+test('codec record (RX): line 2 reaches the mic inputs, attenuated ~-18 dB by the input divider', () => {
+  // RX path per leg: /P2 → C16 → R30 (22k) → MICP, with R33 (3.3k) shunting MICP to VMID (mirror on
+  // MICN: GND → C17 → R31 → MICN, R32 to VMID). The 22k/3.3k series+shunt is a divider that drops the
+  // bus before the codec (gong-safety): ratio = 3.3/(22+3.3) ≈ 0.130. Assert the ratio, not just that
+  // the path couples — so removing/shorting the divider (ratio → 1.0) fails here.
+  const tone = (t) => 1.0 * Math.sin(2 * Math.PI * 1000 * t); // 2 Vpp on the line
   const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': tone }, ...AC });
-  assert.ok(swingPP(RES, '/ES_MICP', '/ES_MICN') > 1.0,
-    `line-2 audio should reach the codec ADC, got ${swingPP(RES, '/ES_MICP', '/ES_MICN').toFixed(2)} Vpp`);
+  const mic = swingPP(RES, '/ES_MICP', '/ES_MICN');
+  const line = swingPP(RES, '/P2', '/P1');
+  assert.ok(mic > 0.1, `line-2 audio should still reach the codec ADC, got ${mic.toFixed(3)} Vpp`);
+  const ratio = mic / line;
+  assert.ok(near(ratio, 0.130, 0.03),
+    `RX divider should attenuate ~-18 dB (3.3k/25.3k = 0.130), got ${ratio.toFixed(3)} ` +
+    `(mic ${mic.toFixed(3)} Vpp / line ${line.toFixed(2)} Vpp)`);
 });
 
 test('codec talk (TX): the codec DAC (OUTP) reaches line 3 only while K1 is talking (gated)', () => {
