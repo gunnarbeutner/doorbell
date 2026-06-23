@@ -29,22 +29,14 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
 
 ## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
 
-Transformer-less codec path (Phase 5). Bus-side topology wired (TX: `OUTP→C14→TALK_BRIDGE`; RX:
-`P2→C16→MIC1P`, `P1→C17→MIC1N`; `P1↔GND` bonded). Component-level choices still open:
+Transformer-less codec path (Phase 5). Bus-side topology + the RX attenuator/bias are wired and
+committed (RX: `P2→C16→R30(22k)→MIC1P` with `R33(3.3k)→VMID`, symmetric on MIC1N via C17/R31/R32;
+TX: `OUTP→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C12 = 10 µF). Remaining open:
 
-- [ ] **RX: attenuating bias network (measured from our-ring-after-neighbour — mandatory, not just headroom).** our-ring-after-neighbour CH2
-      (= P2) shows the gong on line 2 peaks at **±8.8 V** (15.6 Vpp, 1.04 Vrms, on a ~9 V pedestal; P2
-      absolute swing −1.7…+16.1 V), and the gong is the loudest event. **±8.8 V exceeds the ES8311 mic
-      abs-max (~AVDD+0.3 = 3.6 V) by 2.4×**, so the bare `C16→MIC1P` tap AC-couples ±8.8 V into the codec
-      and dumps ~50 mA into its ESD clamps every ring — attenuation + a series R is *required*, not a
-      nicety. Add a divider+bias per side (R24–R27 are **gone** with the old transformer nets — these are
-      NEW parts), matched for CMRR: `P2→C16→Rs(22k)→MIC1P`, `MIC1P→Rb(3.3k)→ES_VMID`; symmetric
-      `GND→C17→Rs'(22k)→MIC1N→Rb'(3.3k)→VMID`. **−18 dB** (Rb/(Rs+Rb)) lands the 8.8 V peak at **~1.1 V**
-      (≈8 dB under the ~2.8 V FS-peak, inside abs-max), gong ~135 mVrms; the PGA (0…+30 dB) brings quieter
-      voice up. `Rs` doubles as the high-Z line-2 load (BUS-1) and current-limit (~0.4 mA on gong/fault);
-      `Rb` biases the pins to VMID — the codec has **no mic bias** (user guide §5.5). Bump **VMID
-      decoupling 1 µF → ~10 µF** (it now carries the bias-shunt AC). Tunable: Rb = 2.2k (−21 dB, more
-      protection margin) / 4.7k (−15 dB, more level); revisit only if a real voice level is ever captured.
+- [ ] **RX divider trim (bench).** 22k/3.3k (≈−18 dB) is committed and lands the ±8.8 V gong at ~1.1 V,
+      inside the ES8311 mic abs-max (~AVDD+0.3 = 3.6 V). Revisit Rb (2.2k → −21 dB more margin / 4.7k →
+      −15 dB more level) only if a captured real voice level demands it — bench-gated against the
+      measured ADC full-scale.
 - [ ] **TX level + OUTN handling.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do
       not overdrive the TV20/S amp); decide OUTP-only vs terminating OUTN; add a buffer/atten if needed.
       The drive level is firmware-soft (codec digital volume), so the only fab-burning unknowns are the
@@ -183,8 +175,9 @@ tether it to a mains-earthed PC. Pair with a DMM.
 
 ## Audio path — bench-verify (the routing is wired; confirm it on hardware)
 
-The codec taps the speech pair **transformer-less**: **RX** = a differential sense of line 2
-(`P2→C16→MIC1P`, `P1→C17→MIC1N`); **TX** = the codec DAC → C14 (DC-block) → R28 (2.2 kΩ) → line 3,
+The codec taps the speech pair **transformer-less**: **RX** = a differential sense of line 2 through the
+attenuating divider (`P2→C16→R30→MIC1P`, `P1→C17→R31→MIC1N`, each pin biased to VMID via R33/R32); **TX**
+= the codec DAC → C14 (DC-block) → R28 (2.2 kΩ) → line 3,
 with **K1** gating the talk handshake (`TALK_BRIDGE↔P4`). Independent of line 4 / K3, so RX/TX survive
 gong-suppress. **Gated on OC1** (session = Türruf held; OC1 stays high, no timer), direction by PTT.
 What remains is hardware confirmation:

@@ -73,11 +73,12 @@ from the rated coil voltage in the value string (`DC12`, `4.5V`).
   closed by default. **Relays are coil-driven** (energized when |V_coil| ≥ ~75 % of the rated coil
   voltage — drive the coil/gate to trigger; read-only state badge). **Switches & solder bridges** toggle
   manually. No configuration UI.
-- **ICs (ESP32, codec) — supply current only:** their I/O (GPIO, I2S, USB, codec) is **not** modeled, so
-  they still render **red** and signals through their pins aren't trusted; but their power draw *is* — each
-  is an equivalent resistive load (`Ic`) from its supply pin to GND at a representative active current
-  (ESP32 ~100 mA, ES8311 ~10 mA), which pulls through the LDO → +5V → Schottky → VBUS. Use **Extra
-  elements** for anything else you want to add by hand.
+- **ICs (ESP32, codec) — supply current (+ codec VMID):** their digital I/O (GPIO, I2S, USB) is **not**
+  modeled, so they still render **red** and signals through their pins aren't trusted; but their power draw
+  *is* — each is an equivalent resistive load (`Ic`) from its supply pin to GND at a representative active
+  current (ESP32 ~100 mA, ES8311 ~10 mA), which pulls through the LDO → +5V → Schottky → VBUS. The one
+  analog exception: the ES8311's **VMID reference** (≈ AVDD/2) is modeled, because the mic front-end's
+  divider/bias depends on it. Use **Extra elements** for anything else you want to add by hand.
 - **Floating vs 0 V:** nets with no DC-conductive path to ground or a source are flagged **floating**
   (dashed grey on the board, "(floating)" in the tooltip) — distinct from a real 0 V net.
 

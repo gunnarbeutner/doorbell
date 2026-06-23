@@ -89,7 +89,7 @@ audio_dac:
     id: es8311_codec
     address: 0x18          # CE → R20 (10k) → GND on U3 → I2C addr 0x18
     use_microphone: true   # enable the ADC path (analog MIC1P/MIC1N — RX = line 2 via C16/C17, diff vs P1)
-    mic_gain: 0DB          # the PGA cannot attenuate and the line carries speaker-level
+    mic_gain: 0DB          # the input divider (R30/R31 22k + R32/R33 3.3k→VMID, ~-18dB) already drops the bus; the PGA can't attenuate anyway
                            # audio (gong peaks > 2Vrms full-scale) — keep all the headroom
 
 speaker:

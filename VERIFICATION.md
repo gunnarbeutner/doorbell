@@ -163,8 +163,10 @@ toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO)
 - **2d chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
   closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
   regardless of mute.
-- **2e audio (partial):** RX — inject P2↔P1, confirm the codec ADC sees it; TX — assert talk, drive a
-  DAC tone, scope it on P3 through R28, confirm high-Z when talk is off.
+- **2e audio (partial):** RX — inject P2↔P1 and confirm the codec ADC sees it through the −18 dB divider,
+  that a gong-level drive stays inside the codec rail [0, AVDD] (abs-max), and the signal lands on MICP
+  with MICN held at VMID; TX — assert talk, drive a DAC tone, scope it on P3 through R28, confirm high-Z
+  when talk is off.
 
 **Stage 3 — protection, last and current-limited (SAFE-2):** with the limit still low, deliberately
 reverse P2/P1 (and a mis-order or two), confirm the per-tap clamps/TVS hold and the board survives and

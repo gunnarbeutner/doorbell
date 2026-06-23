@@ -129,6 +129,10 @@ shared party line across apartments.
 - **AUDIO-7 (MAY)** Privacy (optional, **firmware-gated**): the firmware MAY restrict bus-audio
   capture to active sessions / explicit user action and auto-time-out talk, so the board is not a
   silently-always-on mic on the shared bus. Not a hardware requirement.
+- **AUDIO-8 (MUST)** The RX tap MUST present the bus to the codec mic input within the ES8311's input
+  abs-max under the worst-case **normal** bus level — the line-2 Türruf gong (bench-measured ±8.8 V),
+  not only under fault transients (which are SAFE-1). *(Met by the 22 kΩ/3.3 kΩ series+shunt divider,
+  ~−18 dB, biasing MIC1P/N to VMID — see DESIGN "Audio path".)*
 
 ## DOOR — Door opener
 
