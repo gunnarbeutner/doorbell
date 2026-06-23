@@ -10,15 +10,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       (`kicad/jlcpcb_cpl.py`) now applies the +180 opto correction to OC1/OC2 — they were silently 0
       under the old dead `OK1-3` keys, so this is a 180° change worth eyeballing.
 
-## Audio refactor — SSR LED-drive resistors (`kicad/doorbell.kicad_sch`)
-
-- [ ] **Verify the SSR LED-drive resistors R4/R5/R6 (300 Ω).** 300 Ω gives ~7 mA from the 3.3 V
-      GPIO — confirmed adequate for **K3 / GAQY412EH** (recommended I_F 7 mA, operate ≤3 mA, per
-      `docs/GAQY412E_EH_datasheet.pdf`). **Not yet confirmed for K1/K2 / GAQY212GS:** we only have the
-      JLCPCB "30 mA" figure and don't know if that's the recommended forward
-      current or an absolute max. Pull the GAQY212GS datasheet; if it wants more than ~7 mA, lower
-      R4/R5 (or add a 2N7002 buffer per part). Pull-downs R7/R8/R9 (10 k, SAFE-6) are fine as-is.
-
 ## Audio — deferred SSR footprint save (`kicad/doorbell.kicad_sch`)
 
 - [ ] **(Deferred) K3+K4 → one dual-NC PhotoMOS (GAQW412S, C7435125).** Would save one footprint (both are

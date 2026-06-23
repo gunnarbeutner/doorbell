@@ -31,7 +31,7 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 30)' },
 
   // PhotoMOS / opto — form (NO/NC), Ron and LED operate current define switching behaviour
-  { kind: 'optocoupler', match: /GAQW212GS/i, note: 'dual 1-Form-A PhotoMOS (NO), Ron ~25 Ω/ch' },
+  { kind: 'optocoupler', match: /GAQW212GS/i, note: 'dual 1-Form-A PhotoMOS (NO), Ron ~0.8 Ω/ch (datasheet)' },
   { kind: 'optocoupler', match: /GAQY212GS/i, note: '1-Form-A PhotoMOS (NO), Ron ~0.24 Ω' },
   { kind: 'optocoupler', match: /GAQY412EH/i, note: '1-Form-B PhotoMOS (NC), Ron ~1 Ω' },
   { kind: 'optocoupler', match: /LTV-217|PC817/i, note: 'phototransistor optocoupler (Türruf/Etagenruf sense)' },

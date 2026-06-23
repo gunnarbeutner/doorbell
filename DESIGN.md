@@ -559,8 +559,9 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
 GPIO ── R4/R5/R6 (300Ω) ── SSR LED anode │ LED │ cathode ── GND
 GPIO ── R7/R8/R9 (10kΩ) ── GND   (pull-down: SSR off while the GPIO floats at boot)
 ```
-Each SSR "driver" is just its LED + a 300 Ω series R (~7 mA from the 3V3 GPIO — within the
-GAQY412EH's 5–30 mA range; confirm the GAQY212GS forward current, see TODO). The 10 kΩ
+Each SSR "driver" is just its LED + a 300 Ω series R (~7 mA from the 3V3 GPIO — within the **5–30 mA
+recommended range** shared by all three parts (GAQW212GS / GAQY212GS / GAQY412EH; datasheets in
+`docs/`), well above their ≤2–3 mA operate current and far under the 50 mA abs-max). The 10 kΩ
 pull-down holds each SSR **off** while the GPIO floats during boot — so the door opener can't
 pulse and the chime can't be silenced by a booting/dead board (SAFE-6). No coil ⇒ no flyback;
 the one surviving flyback (D1) is on the passive WF26 latch coil.
