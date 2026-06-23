@@ -243,6 +243,33 @@ test('RX gong-safety: a ±8.8 V line-2 gong keeps MIC1P/N inside [0, AVDD] (no c
   }
 });
 
+// Beyond magnitude (the ratio test above) and abs-max (the gong test above): confirm the tap delivers a
+// PROPER differential signal — the bus drive lands on MICP (the live leg) while MICN stays near its VMID
+// reference, and both pins DC-bias to VMID. swingPP needs a settled run (40 ms) so the VMID/C12 charge
+// ramp doesn't masquerade as signal. KNOWN GAP: true common-mode rejection (the other half of "proper")
+// is NOT tested — /P1 is merged into GND in the netlist, so there's no distinct reference node to apply a
+// common-mode to. Testing it would need P1 modelled as its own node bonded to GND through an impedance.
+test('RX differential: the live signal lands on MICP; MICN stays the quiet VMID reference', () => {
+  const tone = (t) => 8.8 * Math.sin(2 * Math.PI * 1000 * t); // strong drive so MICN's ~0.1 Vpp floor is subdominant
+  const { RES, V } = runDC(netlist, {
+    sources: { '+3V3': 3.3, '/P1': 0, '/P2': tone },
+    T: 40 / 1000, dt: 1 / (1000 * 64),
+  });
+  const span = (net) => {
+    const a = RES.v[net];
+    let lo = Infinity, hi = -Infinity;
+    for (let i = a.length >> 1; i < a.length; i++) { lo = Math.min(lo, a[i]); hi = Math.max(hi, a[i]); }
+    return { swing: hi - lo, dc: (lo + hi) / 2 };
+  };
+  const p = span('/ES_MICP'), n = span('/ES_MICN'), vmid = V['/ES_VMID'];
+  // the signal lands on MICP; MICN is the reference, a small fraction of MICP's swing
+  assert.ok(n.swing < 0.25 * p.swing,
+    `signal should be on MICP with MICN quiet, got MICP ${p.swing.toFixed(2)} / MICN ${n.swing.toFixed(2)} Vpp`);
+  // both inputs DC-bias to VMID (the ES8311 has no internal mic bias; R32/R33 set it)
+  assert.ok(near(p.dc, vmid, 0.2) && near(n.dc, vmid, 0.2),
+    `MICP/MICN should bias to VMID (${vmid?.toFixed(2)} V), got MICP ${p.dc.toFixed(2)} / MICN ${n.dc.toFixed(2)} V`);
+});
+
 test('codec talk (TX): the codec DAC (OUTP) reaches line 3 only while K1 is talking (gated)', () => {
   // K1-gated TX audio: ES_OUTP → C14 (DC-block) → /TALK_BRIDGE → R28 (2.2 k) → /TX_OUT → K1 ch2 → /P3.
   // K1 energised (PTT asserted) closes ch2 so the codec couples onto line 3; idle isolation is below.
