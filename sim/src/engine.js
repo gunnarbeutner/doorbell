@@ -143,6 +143,8 @@ function createStepper(els, sources, gnd, dt, seed) {
           c = idx(e.b);
         if (e.type === 'R') {
           gS(a, c, 1 / (e.value || 1e12));
+        } else if (e.type === 'FUSE') {
+          gS(a, c, e.blown ? 1e-12 : 1 / (e.ron || 1e-3)); // a near-short until it melts open, then ~open
         } else if (e.type === 'SW') {
           gS(a, c, e.closed ? SW_GON : 1e-15);
         } // open << Gmin so it can't leak source V onto a floating node
@@ -308,6 +310,14 @@ function createStepper(els, sources, gnd, dt, seed) {
         const Iled = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
         e.ledOn = e.ledOn ? Iled >= 0.5 * e.iop : Iled >= e.iop;
       }
+      if (e.type === 'FUSE') {
+        // melting-I²t fuse: integrate the over-rating current; once the melt energy is reached it latches
+        // open (the SAFE-7 fail-safe — a clamping TVS or a short blows it and disconnects the board).
+        const I = e.blown ? 0 : (Vof(e.a) - Vof(e.b)) / (e.ron || 1e-3);
+        e.icur = I;
+        e.melt = (e.melt || 0) + Math.max(0, I * I - e.irate * e.irate) * dt;
+        if (!e.blown && e.melt >= e.i2t) e.blown = true;
+      }
     }
   }
 
@@ -322,9 +332,15 @@ function createStepper(els, sources, gnd, dt, seed) {
       };
     for (const e of all) {
       if (e.type === 'R' || e.type === 'L') addE(e.a, e.b); // R, and L (a DC short), always conduct
-      else if (e.type === 'D') {
-        // forward-conducting by current, not a fixed Vf threshold (a Schottky at load drops < 0.4 V)
-        if (e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1) > 1e-6) addE(e.a, e.b);
+      else if (e.type === 'FUSE') {
+        if (!e.blown) addE(e.a, e.b); // an intact fuse conducts; once blown it is open (board fused off)
+      } else if (e.type === 'D') {
+        // conducting by current — forward (a Schottky at load drops < 0.4 V) OR reverse breakdown (a TVS /
+        // Zener clamping past vbr is a real path: it bleeds a charged node, so the node isn't "floating").
+        const vd = Vof(e.a) - Vof(e.b);
+        const fwd = e.Is * (Math.exp(Math.min(vd / (e.n * Vt), 40)) - 1);
+        const rev = e.vbr ? e.Is * (Math.exp(Math.min((-vd - e.vbr) / (e.n * Vt), 40)) - 1) : 0;
+        if (fwd > 1e-6 || rev > 1e-6) addE(e.a, e.b);
       }
       else if (e.type === 'SW' && e.closed) addE(e.a, e.b);
       else if (e.type === 'RC') {
@@ -393,6 +409,10 @@ function createStepper(els, sources, gnd, dt, seed) {
     for (const e of all) {
       if (e.type === 'R') {
         const I = (Vof(e.a) - Vof(e.b)) / (e.value || 1e12);
+        push(e.ref, e.pa, e.a, -I);
+        push(e.ref, e.pb, e.b, I);
+      } else if (e.type === 'FUSE') {
+        const I = e.blown ? 0 : (Vof(e.a) - Vof(e.b)) / (e.ron || 1e-3);
         push(e.ref, e.pa, e.a, -I);
         push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'SW' || e.type === 'RC') {

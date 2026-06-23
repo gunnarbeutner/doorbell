@@ -24,7 +24,10 @@ export default class Diode extends Component {
       // unidirectional TVS (SMF5.0A on VBUS) is oriented as a reverse clamp that never
       // forward-conducts in normal use, so it stays forward-only.
       if (/TVS[-_ ]?Bi|bidir/i.test(this.lib)) return { Is: 1e-12, n: 1, vbr: 30, bidir: true };
-      return { Is: 1e-12, n: 1 };
+      // Unidirectional TVS (SMF5.0A on VBUS): 5 V standoff, ~6.5 V breakdown. Oriented as a reverse clamp,
+      // so it stays off in normal use (≤5 V) but breaks down on a +VBUS surge — clamping VBUS_F to ~7-9 V
+      // (which then drives a huge current through F1 and blows it: the SAFE-7 fail-safe).
+      return { Is: 1e-12, n: 1, vbr: 6.5 };
     }
     return { Is: 1e-14, n: 1 }; // 1N4148 silicon (~0.6-0.7 V)
   }
@@ -48,5 +51,15 @@ export default class Diode extends Component {
     }
 
     return [{ type: 'D', a, b, value: null, Is: m.Is, n: m.n, vbr: m.vbr, ref: this.ref }];
+  }
+
+  // reverse-voltage abs-max. A TVS is meant to clamp (rate by energy, not Vr) — skip it here.
+  checkSafe(vn) {
+    if (/TVS/i.test(this.lib)) return [];
+    const Vrr = /schottky/i.test(this.lib) ? 40 : 75; // SS14 40 V ; 1N4148W 75 V
+    const out = [];
+    const vk = vn[this.pins['1']], va = vn[this.pins['2']]; // KiCad Device:D pin1 = cathode, pin2 = anode
+    this.chk(out, '1-2', `${this.pins['1']}↔${this.pins['2']}`, vk - va, -Infinity, Vrr, `diode reverse Vrr ${Vrr} V`);
+    return out;
   }
 }

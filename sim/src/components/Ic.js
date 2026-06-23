@@ -33,7 +33,7 @@ export default class Ic extends Component {
     return false; // only the supply current is modeled, not the I/O — keep the "signals not simulated" flag
   }
 
-  elements() {
+  elements(ctx) {
     const spec = LOADS.find((l) => l.re.test(this.lib));
     if (!spec) return [];
 
@@ -75,6 +75,93 @@ export default class Ic extends Component {
       }
     }
 
+    // --- programmable behavioural drivers (so a testbench injects only VBUS/GND/bus) ---
+    // A test sets ctx.program[ref] to drive this IC's outputs from INSIDE the model: the codec DAC and the
+    // ESP GPIOs are emitted here as a source behind the part's real output impedance (+ the codec's on-chip
+    // ESD clamps), so OUTP / the GPIO nets EMERGE rather than being pinned by an ideal source on an
+    // internal node. Each driver is a V-source + a bleed R (so reachFrom anchors the core node).
+    const prog = ctx && ctx.program && ctx.program[this.ref];
+    if (prog) {
+      const ROUT = 40, RGPIO = 30, BLEED = 1e5;
+      const asVf = (x) => (typeof x === 'function' ? x : () => x);
+
+      if (/es8311/i.test(this.lib) && prog.out != null) {
+        const ag = this.pins[pinByFn(/AGND/)] || this.pins[pinByFn(/GND/)];
+        const av = this.pins[pinByFn(/AVDD/)];
+        const o = prog.out; // scalar/vf -> both legs; { p, n } -> per-leg
+        const driveOut = (tag, pin, vf) => {
+          if (!pin || !ag) return;
+          const core = `${this.ref}~${tag}`;
+          els.push({ type: 'V', a: core, b: ag, vf, ref: `${this.ref}~${tag}_v` });
+          els.push({ type: 'R', a: core, b: ag, value: BLEED, ref: `${this.ref}~${tag}_bl` });
+          els.push({ type: 'R', a: core, b: pin, value: ROUT, ref: `${this.ref}~${tag}_r` });
+          if (av) els.push({ type: 'D', a: pin, b: av, Is: 1e-14, n: 1, ref: `${this.ref}~${tag}_ch` }); // ESD clamp -> AVDD
+          els.push({ type: 'D', a: ag, b: pin, Is: 1e-14, n: 1, ref: `${this.ref}~${tag}_cl` }); // ESD clamp -> AGND
+        };
+        driveOut('outp', this.pins[pinByFn(/OUTP/)], asVf(o && o.p != null ? o.p : o));
+        driveOut('outn', this.pins[pinByFn(/OUTN/)], asVf(o && o.n != null ? o.n : o));
+      }
+
+      if (/esp32/i.test(this.lib)) {
+        const g = this.pins[pinByFn(/^GND/)];
+        for (const net in prog) {
+          if (net[0] !== '/') continue; // a GPIO net to drive (e.g. '/PTT_DRV')
+          let pin = null;
+          for (const p in this.pins) if (this.pins[p] === net && /GPIO\d/.test(this.pinfn[p] || '')) pin = p;
+          if (!pin || !g) continue;
+          const core = `${this.ref}~g${pin}`;
+          els.push({ type: 'V', a: core, b: g, vf: asVf(prog[net]), ref: `${this.ref}~g${pin}_v` });
+          els.push({ type: 'R', a: core, b: g, value: BLEED, ref: `${this.ref}~g${pin}_bl` });
+          els.push({ type: 'R', a: core, b: this.pins[pin], value: RGPIO, ref: `${this.ref}~g${pin}_r` });
+        }
+      }
+    }
+
     return els;
+  }
+
+  // Absolute-maximum windows expressed against this IC's OWN supply/ground pins.
+  checkSafe(vn) {
+    const out = [];
+    const V = (p) => (p == null ? undefined : vn[this.pins[p]]);
+    const fnPin = (re) => { for (const p in this.pinfn) if (re.test(this.pinfn[p])) return p; return null; };
+
+    if (/es8311/i.test(this.lib)) {
+      const agnd = Number.isFinite(V(fnPin(/AGND/))) ? V(fnPin(/AGND/)) : 0;
+      const avdd = V(fnPin(/AVDD/));
+      if (Number.isFinite(avdd))
+        for (const p in this.pinfn)
+          if (/OUTP|OUTN|VMID|MIC1|DACVREF|ADCVREF/.test(this.pinfn[p]))
+            this.chk(out, this.pinfn[p], this.pins[p], V(p), agnd - 0.3, avdd + 0.3,
+              `ES8311 analog abs-max [AGND-0.3, AVDD+0.3] ≈ [${(agnd - 0.3).toFixed(2)}, ${(avdd + 0.3).toFixed(2)}] V`);
+      for (const p in this.pinfn)
+        if (/PVDD|DVDD|AVDD/.test(this.pinfn[p]))
+          this.chk(out, this.pinfn[p], this.pins[p], V(p), -0.3, 3.6, 'ES8311 supply abs-max 3.6 V');
+    } else if (/esp32/i.test(this.lib)) {
+      const gnd = Number.isFinite(V(fnPin(/^GND/))) ? V(fnPin(/^GND/)) : 0;
+      const vddP = fnPin(/3V3|VDD/), vdd = V(vddP);
+      if (Number.isFinite(vdd))
+        for (const p in this.pinfn)
+          if (/GPIO\d/.test(this.pinfn[p]))
+            this.chk(out, this.pinfn[p], this.pins[p], V(p), gnd - 0.3, vdd + 0.3,
+              `ESP GPIO abs-max [VSS-0.3, VDD+0.3] ≈ [${(gnd - 0.3).toFixed(2)}, ${(vdd + 0.3).toFixed(2)}] V`);
+      if (vddP) this.chk(out, this.pinfn[vddP], this.pins[vddP], vdd, -0.3, 3.6, 'ESP VDD33 abs-max 3.6 V');
+    }
+    return out;
+  }
+
+  // UI: click the footprint to drive this IC. ESP → toggle each actuator GPIO (the *_DRV nets) high/low;
+  // ES8311 → set the DAC output (off / mid-rail bias / a 1 kHz tone). buildElements turns these into the
+  // behavioural drivers above (ctx.program[ref]).
+  programSchema() {
+    if (/esp32/i.test(this.lib)) {
+      const gpios = [];
+      for (const p in this.pinfn)
+        if (/GPIO\d/.test(this.pinfn[p]) && /DRV/.test(this.pins[p] || ''))
+          gpios.push({ net: this.pins[p], label: this.pinfn[p].replace(/_\d+$/, '') });
+      return gpios.length ? { kind: 'esp', ref: this.ref, gpios, high: 3.3 } : null;
+    }
+    if (/es8311/i.test(this.lib)) return { kind: 'codec', ref: this.ref };
+    return null;
   }
 }

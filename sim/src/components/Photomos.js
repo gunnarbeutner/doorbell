@@ -77,4 +77,17 @@ export default class Photomos extends Component {
     if (P['1'] == null || P['2'] == null || P['3'] == null || P['4'] == null) return [];
     return [ch('1', '2', '3', '4')];
   }
+
+  // GAQ-series PhotoMOS abs-max: output contact off-state ±60 V (Voff), LED reverse 5 V (VR).
+  checkSafe(vn) {
+    const out = [];
+    const V = (p) => vn[this.pins[p]];
+    const VOFF = 60, VR = 5;
+    const groups = Photomos.isDual(this) ? [['1', '2', '7', '8'], ['3', '4', '5', '6']] : [['1', '2', '3', '4']];
+    for (const [la, lk, c, d] of groups) {
+      this.chk(out, `${c}-${d}`, `${this.pins[c]}↔${this.pins[d]}`, V(c) - V(d), -VOFF, VOFF, `PhotoMOS contact off-state ±${VOFF} V (Voff)`);
+      this.chk(out, `${la}-${lk}`, `${this.pins[la]}↔${this.pins[lk]}`, V(la) - V(lk), -VR, Infinity, `PhotoMOS LED reverse ${VR} V (VR)`);
+    }
+    return out;
+  }
 }

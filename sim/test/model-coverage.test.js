@@ -27,7 +27,7 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'diode', match: /1N4148/i, note: 'silicon switching (~0.7 V), Is 1e-14' },
   { kind: 'diode', match: /Schottky|SS14/i, note: 'SS14 Schottky, low Vf' },
   { kind: 'diode', match: /\bLED\b/i, note: 'indicator LED, high Vf (~1.8 V)' },
-  { kind: 'diode', match: /TVS-Uni,\s*SMF5\.0A|SMF5\.0A/i, note: 'unidirectional VBUS clamp; reverse-oriented, forward-only model' },
+  { kind: 'diode', match: /TVS-Uni,\s*SMF5\.0A|SMF5\.0A/i, note: 'unidirectional VBUS clamp; reverse-oriented, breaks down at vbr ~6.5 V to clamp a +VBUS surge' },
   { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 30)' },
 
   // PhotoMOS / opto — form (NO/NC), Ron and LED operate current define switching behaviour

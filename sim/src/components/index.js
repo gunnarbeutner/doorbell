@@ -65,12 +65,14 @@ export function defaultSwitchState(netlist) {
   return ss;
 }
 
-// every simulation element: each part's model + any hand-added extras
-export function buildElements(netlist, { switchState = {}, extra = [] } = {}) {
+// every simulation element: each part's model + any hand-added extras. `program` lets a test set the
+// behavioural state of the modelled ICs (e.g. { U1: { '/PTT_DRV': vf }, U3: { out: vf } }) so their
+// drivers are emitted from inside the part — the test then injects only the real rails (VBUS/GND/bus).
+export function buildElements(netlist, { switchState = {}, extra = [], program = {} } = {}) {
   const els = [];
 
   for (const c of allComponents(netlist)) {
-    for (const e of c.elements({ switchState })) els.push(e);
+    for (const e of c.elements({ switchState, program })) els.push(e);
   }
 
   for (const e of extra) els.push(e);

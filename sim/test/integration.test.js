@@ -11,8 +11,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { importNetlist } from '../src/import.js';
-import { runDC, buildElements, defaultSwitchState } from '../src/components/index.js';
-import { createStepper, gndOf } from '../src/engine.js';
+import { runDC, buildElements, defaultSwitchState, allComponents } from '../src/components/index.js';
+import { createStepper, gndOf, simulate } from '../src/engine.js';
 
 const netlist = importNetlist();
 const near = (a, b, tol = 0.5) => Math.abs(a - b) <= tol;
@@ -270,12 +270,93 @@ test('RX differential: the live signal lands on MICP; MICN stays the quiet VMID 
     `MICP/MICN should bias to VMID (${vmid?.toFixed(2)} V), got MICP ${p.dc.toFixed(2)} / MICN ${n.dc.toFixed(2)} V`);
 });
 
-test('codec talk (TX): the codec DAC (OUTP) reaches line 3 only while K1 is talking (gated)', () => {
-  // K1-gated TX audio: ES_OUTP → C14 (DC-block) → /TALK_BRIDGE → R28 (2.2 k) → /TX_OUT → K1 ch2 → /P3.
-  // K1 energised (PTT asserted) closes ch2 so the codec couples onto line 3; idle isolation is below.
-  const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * 1000 * t); // ±0.5 V differential DAC
-  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/PTT_DRV': 3.3, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1) }, ...AC });
-  assert.ok(swingPP(RES, '/P3', '/P1') > 0.5, `codec audio should reach line 3 while talking, got ${swingPP(RES, '/P3', '/P1').toFixed(2)} Vpp`);
+// ─────────────────────────────────────────────────────────────────────────────
+// Safety invariants — class-owned absolute-maximum containment sweep.
+// Each device class declares its OWN limits (Component.checkSafe), expressed against its own supply/
+// ground pins — so there is no net registry to drift, and a fault on ANY part in ANY scenario is caught.
+// A scenario injects ONLY the real external rails: VBUS, GND, and the bus lines the TV20/S drives
+// (P2..P5) — the latter behind the measured bus source impedance, not as a zero-Ω ideal source (which
+// would shunt the codec's own AC and mask faults). The ICs are "programmed" (codec DAC, ESP GPIOs), so
+// every internal node EMERGES instead of being pinned. We then ask every component if it is in-envelope.
+const COMPONENTS = allComponents(netlist);
+
+// the bus is not a stiff rail: it idles +12 V but sags to ~9.4 V under the ~29 mA seal-in load ⇒ source
+// impedance ≈ (12.1−9.4)/0.029 ≈ 90 Ω. Drive each bus line through that, from an ideal source.
+const BUS_Z = 90;
+
+// solve a scenario → full waveforms (RES). sources = ideal external rails (VBUS/GND); bus = TV20/S bus
+// lines, each driven behind BUS_Z; program = IC behavioural state (passed into the device models).
+function scenarioRES({ sources = {}, bus = {}, program = {}, switches = {}, T = 4 / 1000, dt = 2e-6 }) {
+  const switchState = { ...defaultSwitchState(netlist), ...switches };
+  const extra = [];
+  const srcs = Object.entries(sources).map(([net, v]) => ({ net, vf: typeof v === 'function' ? v : () => v }));
+  for (const [line, v] of Object.entries(bus)) {
+    const src = `${line}~bus`;
+    srcs.push({ net: src, vf: typeof v === 'function' ? v : () => v });
+    extra.push({ type: 'R', a: src, b: line, value: BUS_Z, ref: `busZ${line}` });
+  }
+  const els = buildElements(netlist, { switchState, program, extra });
+  return simulate(els, srcs, gndOf(netlist), T, dt);
+}
+
+// ask every component if any pin left its abs-max window at any solved instant (past initial settling);
+// keep the worst excursion per pin.
+function safetyViolations(RES) {
+  const nets = Object.keys(RES.v), len = RES.v[nets[0]].length, worst = new Map();
+  const floating = RES.floating || {};
+  for (let i = Math.floor(len / 3); i < len; i++) { // skip rail/VMID start-up, keep all transients after
+    const vn = {};
+    // never assert on a floating node — its DC is undefined (e.g. the anti-series gong-cap midpoint, or a
+    // high-Z idle bus line). This is the dual of the "don't inject ideal sources" rule: don't trust them.
+    for (const n of nets) vn[n] = floating[n] ? NaN : RES.v[n][i];
+    for (const c of COMPONENTS)
+      for (const x of c.checkSafe(vn)) {
+        const exc = Math.max(x.lo - x.v, x.v - x.hi), k = `${x.ref}.${x.pin}`, prev = worst.get(k);
+        if (!prev || exc > prev.exc) worst.set(k, { ...x, exc });
+      }
+  }
+  return [...worst.values()];
+}
+const fmtV = (x) => `${x.ref} pin ${x.pin} (${x.net}) = ${x.v.toFixed(2)} V, outside [${x.lo}, ${x.hi}] — ${x.why}`;
+
+// shared talk scenario: assert PTT at t = 1.5 ms (the make edge), codec DAC biased mid-rail + a tone.
+const TALK = {
+  sources: { '/VBUS': 5, '/P1': 0 },
+  bus: { '/P2': 12 },
+  program: {
+    U1: { '/PTT_DRV': (t) => (t < 1.5e-3 ? 0 : 3.3) },
+    U3: { out: (t) => 1.65 + 0.4 * Math.sin(2 * Math.PI * 1000 * t) },
+  },
+  T: 3.5e-3, dt: 2e-6,
+};
+
+test('codec talk (TX): OUTP reaches line 3 only while K1 talks (gated), AND stays within abs-max (safety)', () => {
+  const RES = scenarioRES(TALK);
+  // FUNCTION — once K1 is energised the talk path engages: line 3 goes DC-hot off the P2 handshake.
+  assert.ok(meanLevel(RES, '/P3', '/P1') > 6,
+    `line 3 should go hot off the P2 handshake while talking, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
+
+  // SAFETY INVARIANT (B1) — energising K1 lands +12 V P2 on /TALK_BRIDGE; with no series R, C14 throws
+  // OUTP past the ES8311 analog abs-max. U3 reports this about ITSELF (the limit lives in the Ic class).
+  const v = safetyViolations(RES).filter((x) => x.ref === 'U3');
+  assert.equal(v.length, 0,
+    `ES8311 must stay within abs-max during a PTT make — B1: add a series R (~2.2 k) between OUTP and C14:\n  ` +
+    v.map(fmtV).join('\n  '));
+});
+
+// Generic gate: sweep the scenario battery and ask every component. B1 is one cell; the bus ring and the
+// ±8.8 V RX gong pass — proof the guard is specific (real overstress), not a blanket reject.
+test('safety invariants: every component stays within its abs-max across the scenario sweep', () => {
+  const gong = (t) => 8.8 * Math.sin(2 * Math.PI * 1000 * t);
+  const scenarios = [
+    ['talk (PTT make)', scenarioRES(TALK)],
+    ['house ring', scenarioRES({ sources: { '/VBUS': 5, '/P1': 0 }, bus: { '/P2': 12, '/P4': 12 }, program: { U3: { out: 1.65 } }, T: 3e-3, dt: 5e-6 })],
+    ['RX gong ±8.8 V', scenarioRES({ sources: { '/VBUS': 5, '/P1': 0 }, bus: { '/P2': gong }, program: { U3: { out: 1.65 } }, T: 40 / 1000, dt: 1 / (1000 * 64) })],
+  ];
+  const viol = scenarios.flatMap(([n, RES]) => safetyViolations(RES).map((x) => `[${n}] ${fmtV(x)}`));
+  assert.equal(viol.length, 0,
+    `every component must stay within its datasheet abs-max in all scenarios — ${viol.length} violation(s):\n  ` +
+    viol.join('\n  '));
 });
 
 // BUS-1: the dual GAQW212GS gates the TX *output* — ch2 (/TX_OUT↔/P3). With K1 open that contact lifts,

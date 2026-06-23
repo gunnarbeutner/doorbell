@@ -36,7 +36,36 @@ export class Component {
   }
 
   elements(ctx) {
-    return []; // ctx = { switchState }
+    return []; // ctx = { switchState, program }
+  }
+
+  // Optional behavioural driver sources a part declares for itself (e.g. a codec DAC core, an ESP GPIO
+  // driver) — kept INSIDE the part so a testbench injects only the real external rails (VBUS/GND/bus).
+  // Default: none. (Most parts realise their drivers as V+bleed elements in elements() instead.)
+  sources(ctx) {
+    return [];
+  }
+
+  // ---- safety invariants ----
+  // Given solved node voltages `vn` (net -> volts), return any pin/terminal that is outside its datasheet
+  // absolute-maximum window: [{ ref, pin, net, v, lo, hi, why }]. Default: a part declares no limits.
+  // Limits live HERE (next to the part's electrical model) rather than in a net registry, so they are
+  // expressed relative to the part's OWN supply/ground pins and can't drift when the schematic is re-netted.
+  checkSafe(vn) {
+    return [];
+  }
+
+  // push a violation iff the finite value `v` falls outside [lo, hi] (small tolerance).
+  chk(out, pin, net, v, lo, hi, why) {
+    if (Number.isFinite(v) && (v < lo - 1e-6 || v > hi + 1e-6))
+      out.push({ ref: this.ref, pin, net, v, lo, hi, why });
+  }
+
+  // ---- programmability (UI) ----
+  // If this part can have its behaviour driven in a test/UI, return a schema describing the controls;
+  // null = not programmable. The driver itself is emitted by elements() from ctx.program[ref].
+  programSchema() {
+    return null;
   }
 
   // ---- helpers for subclasses ----
