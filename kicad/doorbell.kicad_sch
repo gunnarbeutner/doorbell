@@ -15576,6 +15576,12 @@
 		(uuid "6961541d-46eb-4cdd-8f3b-aed7afd5daa3")
 	)
 	(junction
+		(at 66.04 17.78)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6e100b41-1211-43d5-9865-5248a42e7c98")
+	)
+	(junction
 		(at 36.83 138.43)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -16608,6 +16614,16 @@
 			(type default)
 		)
 		(uuid "5c48198a-7963-45e2-af99-a9c03d962b01")
+	)
+	(wire
+		(pts
+			(xy 59.69 17.78) (xy 66.04 17.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5c8d49b7-ec93-4c20-81ea-d9ce0addcdd4")
 	)
 	(wire
 		(pts
@@ -30997,6 +31013,109 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_JLCPCB-Capacitors:0603,100nF")
+		(at 59.69 21.59 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "bb00ba25-ab68-4ea1-b250-68726157c6dd")
+		(property "Reference" "C22"
+			(at 61.47 20.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 61.47 22.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:C_0603"
+			(at 59.69 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf"
+			(at 59.69 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "TPD2S017 VCC bias bypass"
+			(at 59.69 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 59.69 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 59.69 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a0a86c20-a04a-4ca4-b363-e35b56173393")
+		)
+		(pin "2"
+			(uuid "5d89d059-1c97-487a-b763-79ec308fd965")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "C22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
 		(at 78.74 46.99 0)
 		(unit 1)
@@ -31971,6 +32090,80 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "K3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 59.69 25.4 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c838ee58-e536-4b43-96bc-9c9b4ce94876")
+		(property "Reference" "#PWR053"
+			(at 59.69 25.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 59.69 29.9 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 59.69 25.4 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 59.69 25.4 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 59.69 25.4 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "beb6f192-1951-4e41-882e-49059b26a92c")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR053")
 					(unit 1)
 				)
 			)
