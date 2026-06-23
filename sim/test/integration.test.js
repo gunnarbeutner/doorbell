@@ -214,6 +214,34 @@ test('codec record (RX): line 2 reaches the mic inputs, attenuated ~-18 dB by th
     `(mic ${mic.toFixed(3)} Vpp / line ${line.toFixed(2)} Vpp)`);
 });
 
+// The reason the RX divider + VMID bias exist (review blocker): the bench-measured ±8.8 V Türruf gong
+// on line 2 is 2.4× the ES8311 mic abs-max (AVDD+0.3). With the VMID reference modelled, assert the
+// safety property directly — the divider drops the gong and the VMID bias centres it, so the absolute
+// mic-pin voltage stays inside the analog rail [0, AVDD] and the input ESD clamps never conduct.
+// Longer run (40 ms) so VMID settles against C12 before the measured second half.
+test('RX gong-safety: a ±8.8 V line-2 gong keeps MIC1P/N inside [0, AVDD] (no clamp conduction)', () => {
+  const gong = (t) => 8.8 * Math.sin(2 * Math.PI * 1000 * t);
+  const { RES, V, floating } = runDC(netlist, {
+    sources: { '/AVDD': 3.3, '/P1': 0, '/P2': gong },
+    T: 40 / 1000, dt: 1 / (1000 * 64),
+  });
+  const avdd = V['/AVDD'];
+  assert.ok(!floating['/ES_VMID'] && near(V['/ES_VMID'], avdd / 2, 0.2),
+    `VMID should be biased to ~AVDD/2, got ${V['/ES_VMID']?.toFixed(3)} V (AVDD ${avdd?.toFixed(2)})`);
+  const range = (net) => {
+    const a = RES.v[net];
+    let lo = Infinity, hi = -Infinity;
+    for (let i = a.length >> 1; i < a.length; i++) { lo = Math.min(lo, a[i]); hi = Math.max(hi, a[i]); }
+    return [lo, hi];
+  };
+  for (const net of ['/ES_MICP', '/ES_MICN']) {
+    const [lo, hi] = range(net);
+    assert.ok(lo > 0 && hi < avdd,
+      `${net} must stay within the codec rail [0, ${avdd.toFixed(2)}] under the gong (abs-max), ` +
+      `got [${lo.toFixed(2)}, ${hi.toFixed(2)}] V`);
+  }
+});
+
 test('codec talk (TX): the codec DAC (OUTP) reaches line 3 only while K1 is talking (gated)', () => {
   // K1-gated TX audio: ES_OUTP → C14 (DC-block) → /TALK_BRIDGE → R28 (2.2 k) → /TX_OUT → K1 ch2 → /P3.
   // K1 energised (PTT asserted) closes ch2 so the codec couples onto line 3; idle isolation is below.
