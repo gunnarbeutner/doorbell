@@ -12,6 +12,7 @@ import Ldo from './Ldo.js';
 import Ic from './Ic.js';
 import Mosfet from './Mosfet.js';
 import Diode from './Diode.js';
+import FerriteBead from './FerriteBead.js';
 import Inductor from './Inductor.js';
 import Capacitor from './Capacitor.js';
 import Speaker from './Speaker.js';
@@ -34,6 +35,7 @@ export const REGISTRY = [
   Ic,
   Mosfet,
   Diode,
+  FerriteBead,
   Inductor,
   Capacitor,
   Speaker,

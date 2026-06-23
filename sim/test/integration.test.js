@@ -221,8 +221,9 @@ test('codec record (RX): line 2 reaches the mic inputs, attenuated ~-18 dB by th
 // Longer run (40 ms) so VMID settles against C12 before the measured second half.
 test('RX gong-safety: a ±8.8 V line-2 gong keeps MIC1P/N inside [0, AVDD] (no clamp conduction)', () => {
   const gong = (t) => 8.8 * Math.sin(2 * Math.PI * 1000 * t);
+  // feed the real +3V3 rail; AVDD comes up through FB1 (now modelled as a DC short)
   const { RES, V, floating } = runDC(netlist, {
-    sources: { '/AVDD': 3.3, '/P1': 0, '/P2': gong },
+    sources: { '+3V3': 3.3, '/P1': 0, '/P2': gong },
     T: 40 / 1000, dt: 1 / (1000 * 64),
   });
   const avdd = V['/AVDD'];

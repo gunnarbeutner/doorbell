@@ -68,3 +68,34 @@ test('model coverage: every active part matches a reviewed model entry (no silen
       `component model (src/components/) actually handles this specific part correctly.`,
   );
 });
+
+// Second gate: nothing may land on the Unmodeled catch-all silently. A part that matches NO model class
+// emits no sim elements at all — it's electrically invisible. That's only safe when it's deliberate. When
+// it isn't, the part fails open and unnoticed: FB1 (a ferrite bead = a DC short on the AVDD rail) fell
+// here because its matcher missed, silently opening the rail and floating AVDD. So a truly new /
+// unrecognised part must be given a model (preferred) or explicitly acknowledged here — never ignored.
+const KNOWN_UNMODELED_PARTS = [
+  // Parts intentionally left electrically inert. Add { match, note } only after confirming the part
+  // genuinely has no electrical role in the sim (e.g. a mechanical-only or fiducial part).
+  //   { match: /SomeMechanicalPart/i, note: 'no electrical role' },
+];
+
+test('model coverage: no part silently falls to the Unmodeled fallback', () => {
+  const netlist = importNetlist();
+  const offenders = [];
+
+  for (const c of allComponents(netlist)) {
+    if (c.kind !== 'unknown') continue; // 'unknown' is the Unmodeled catch-all class, nothing else
+    const known = KNOWN_UNMODELED_PARTS.some((e) => e.match.test(`${c.lib} ${c.value}`));
+    if (!known) offenders.push(`${c.ref} [${c.kind}]  ${c.lib}  "${c.value}"`);
+  }
+
+  assert.equal(
+    offenders.length,
+    0,
+    `Part(s) that match no model class — silently inert (emit no sim elements):\n  ${offenders.join('\n  ')}\n\n` +
+      `An unmodelled part fails open and invisibly (e.g. a ferrite/jumper that should short a rail). Give\n` +
+      `it a model in src/components/ (preferred), or — only if it genuinely has no electrical role — add\n` +
+      `an explicit { match, note } to KNOWN_UNMODELED_PARTS in this file.`,
+  );
+});
