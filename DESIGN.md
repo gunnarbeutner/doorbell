@@ -656,9 +656,10 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
 codec, transformer-less** — P1 is bonded to board GND, so the codec senses/drives line 2/3 relative to
 that shared common (the SAFE-3 trade; see "Bus↔logic coupling"):
 
-- **RX (listen):** a **differential sense of line 2** — `P2 → C16 (1 µF) → MIC1P`, `P1/GND → C17 →
-  MIC1N` — AC-coupled and high-Z (no DC bus load, BUS-1); the differential tap rejects hum and the
-  ~0.5 V common-mode.
+- **RX (listen):** a **differential sense of line 2** — `P2 → C16 → R30 → MIC1P`, `P1/GND → C17 → R31
+  → MIC1N`, each codec pin biased to VMID through a 3.3 kΩ shunt (see RX front-end below). AC-coupled
+  and high-Z (no DC bus load, BUS-1); the differential tap rejects hum and the ~0.5 V common-mode, and
+  the series-R/VMID divider keeps the loud line-2 gong inside the codec's input range.
 - **TX (talk):** the codec DAC drives line 3 — `OUTP → C14 (DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) →
   TX_OUT → P3` — the same 2.2 kΩ line-3 strap the handset's S2 asserts. The **dual K1** gates both:
   ch1 sources the **DC handshake from the always-on P2** (`P2 ↔ TALK_BRIDGE`) and ch2 gates the output
@@ -688,7 +689,7 @@ debounce). Audio is gated on the session, direction by K1:
 
 ⇒ "can I send right now?" = **OC1 high AND K1 closed.**
 
-**Codec + front-end (committed to the netlist; analog values provisional):**
+**Codec + front-end (committed to the netlist; analog values bench-gated for final trim):**
 
 - **U3 = ES8311** (mono codec, WQFN-20 3×3, 0.4 mm pitch; LCSC C962342) — mono fits half-duplex.
   Pinout per datasheet: CCLK=1, MCLK=2, PVDD/DVDD=3/4, DGND=5, SCLK=6, ASDOUT=7, LRCK=8, DSDIN=9,
@@ -698,12 +699,21 @@ debounce). Audio is gated on the session, direction by K1:
   **dual K1** sourcing the handshake from **P2** (`P2 ↔ TALK_BRIDGE`) and gating the output
   (`TX_OUT ↔ P3`). The DAC drives **single-ended** off OUTP; OUTN → C15 → /OUTN is parked (terminating
   OUTN vs OUTP-only is a bench decision).
-- **RX front-end:** `P2 → C16 (1 µF) → MIC1P`, `GND → C17 → MIC1N` — fed **differentially** to the
-  ADC. The freed **SEC_A/SEC_B divider resistors** (R24 was reused for K1's ch2 LED) are to be
-  **repurposed** as the MIC-bias network (bias MIC1P/N to VMID) and any TX attenuation — values per
-  the ES8311 line-in reference design (bench-gated).
-- **Support net:** PVDD/DVDD/AVDD → +3V3 with decoupling; DACVREF/ADCVREF/VMID reservoir caps;
-  CE/DGND/AGND/EP → GND. Symbols/footprints imported with `easyeda2kicad` into `kicad/lib_audio/`.
+- **RX front-end:** a balanced attenuating tap fed **differentially** to the ADC —
+  `P2 → C16 (1 µF) → R30 (22 kΩ) → MIC1P` and `GND → C17 (1 µF) → R31 (22 kΩ) → MIC1N`, with
+  **R33 / R32 (3.3 kΩ)** shunting MIC1P / MIC1N to **VMID**. Each leg is a 22 k/3.3 k divider (≈ −18 dB):
+  it drops the bench-measured ±8.8 V line-2 Türruf gong to ~1.1 V — inside the ES8311 mic abs-max
+  (AVDD + 0.3 ≈ 3.6 V), so the input ESD clamps never conduct on a ring — while the 22 kΩ also
+  current-limits any clamp conduction and is the BUS-1 high-Z line-2 load. The 3.3 kΩ shunts double as
+  the **MIC bias** (the ES8311 has no internal mic bias), pinning both inputs to VMID; **C12 = 10 µF**
+  holds VMID as a stiff AC ground against the two shunts. Symmetric legs preserve the differential
+  balance. Final divider trim is bench-gated against the measured ADC full-scale.
+- **Support net:** PVDD/DVDD → +3V3 directly with decoupling; **AVDD → +3V3 through FB1** (Sunlord
+  GZ1608D601TF, 600 Ω @ 100 MHz, 0603; LCSC C1002) so the analog rail is isolated from the
+  Wi-Fi/SMPS noise on the shared +3V3 plane — FB1 plus the AVDD bypass/bulk (C9/C10) form an LC
+  filter. PVDD (the output driver, signal-dependent transient current) and DVDD (digital) stay on the
+  plane deliberately. DACVREF/ADCVREF/VMID reservoir caps; CE/DGND/AGND/EP → GND. Symbols/footprints
+  imported with `easyeda2kicad` into `kicad/lib_audio/`.
 - **EP grounding (no vias):** the QFN-20 centre EP carries no thermal vias — paste over open vias
   wicks solder away, and the codec dissipates milliwatts. EP (and pin 10/AGND, tied to it) bonds to
   GND through adjacent copper.
@@ -719,8 +729,10 @@ high-Z is now structural, not discipline.
 **Bench-gated / open (analog front-end):**
 - **RX — direct ES8311 differential input vs an external in-amp.** Confirm the mic input is high-Z /
   differential enough to tap P2↔P1 directly; add a buffer/in-amp if not.
-- **MIC bias + TX level.** Bias MIC1P/N to VMID (repurpose R24–R27); set the codec digital volume to
-  the handset's mic-through-2.2 kΩ level, don't overdrive the TV20/S amp (AUDIO-6).
+- **RX trim + TX level.** The MIC1P/N attenuating divider and VMID bias are committed (R30/R31 22 kΩ
+  series, R32/R33 3.3 kΩ to VMID, C12 = 10 µF); trim the 22 k/3.3 k against the measured ADC full-scale.
+  Set the codec digital volume to the handset's mic-through-2.2 kΩ level, don't overdrive the TV20/S amp
+  (AUDIO-6).
 - **SAFE-7 bus protection** — per-line **bidirectional TVS** (each P-line→P1, at the connector). The
   front-end already tolerates the measured working envelope (`osci/`: **≈ −11 V to +17 V**; SSRs at
   60 V Voff, optos current-limited + reverse-clamped, codec taps AC-coupled ≥ 50 V), so the TVS is
