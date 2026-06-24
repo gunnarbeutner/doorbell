@@ -22,8 +22,9 @@ express and exports the fab outputs:
 | `jlcpcb_cpl.py` | KiCad bundled python (pcbnew) | JLCPCB CPL (pad-centroid positions) |
 | `jlcpcb_files.py` | `.venv/bin/python` (kiutils) | JLCPCB BOM (from the schematic) |
 
-`doorbell_design.py` is the reference-data module the checks and BOM/CPL export import
-(refdes map, edge constraints, LCSC numbers). The board is hand-routed **in KiCad**;
+`doorbell_design.py` holds the placement constants `check_pcb.py` verifies — connector edge
+fit/overhang and the mounting-hole MLCC keep-out; the KiCad files are authoritative for the rest.
+The board is hand-routed **in KiCad**;
 `route.py` fails the build on any unrouted connection or any copper-thieving float island
 over the sliver limit (≥ 2 mm² or ≥ 10 mm) — fix those in KiCad, never with a tool.
 

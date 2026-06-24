@@ -7,11 +7,11 @@ When the design changes in a way that affects behaviour, update REQUIREMENTS.md 
 edited directly in KiCad. `./build.sh all-route` verifies them — the checks KiCad's own DRC/ERC
 can't express (connectivity + the copper-thieving sliver limit in `route.py`, placement in
 `check_pcb.py`) — and exports the fab outputs; it does not generate the board.
-`kicad/doorbell_design.py` is the reference-data module the checks and BOM/CPL export import.
-V4 firmware: `firmware/doorbell-v4.yaml`. LCSC part numbers: `kicad/doorbell_design.py` (`LCSC` dict for
-parts whose symbol carries none or a stand-in's; the JLCPCB library symbols supply the rest) —
-embedded in the schematic as hidden `LCSC`/`Description`/`MPN`/`Datasheet` fields and reused by
-`kicad/jlcpcb_files.py` for the BOM.
+`kicad/doorbell_design.py` holds the placement constants `check_pcb.py` verifies (connector edge
+fit, mounting-hole MLCC keep-out); the KiCad files are authoritative for everything else.
+V4 firmware: `firmware/doorbell-v4.yaml`. LCSC part numbers live in the schematic symbols as hidden
+`LCSC`/`Description`/`MPN`/`Datasheet` fields (the JLCPCB library symbols carry most; the rest are
+set by hand) and `kicad/jlcpcb_files.py` reads them from the schematic for the BOM.
 Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
 Intercom system reference: `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`;
 central-unit photo: `reference/tv20s-board.jpg`.

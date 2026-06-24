@@ -67,21 +67,20 @@ for ref, fp in fps.items():
 check("all footprints inside the board outline", not outside,
       ("outside: " + ", ".join(outside)) if outside else f"board {BR-BL:.1f}x{BB-BT:.1f} mm")
 
-# 3. every pad is either in a net or explicitly No-Connect. Catches a pin omitted from the
-#    netlist (e.g. a module GND pin left floating) -- which DRC's "unconnected pads" count does
-#    NOT flag, because a pad with NO net assigned generates no ratsnest.
-from doorbell_design import NOCONN, REF
-_nc = {(REF.get(k, k), str(p)) for k, p in NOCONN}   # NOCONN uses internal keys; map to refdes
+# 3. every copper pad carries a net. Catches a pin omitted from the netlist (e.g. a module
+#    GND pin left floating) -- which DRC's "unconnected pads" count does NOT flag, because a
+#    pad with NO net assigned generates no ratsnest. Intended no-connects are NOT exempted by
+#    a hand-maintained list: KiCad gives an NC-flagged pin an `unconnected-(...)` net (non-empty),
+#    so only a pad with a truly *empty* net -- a dropped pin -- trips this. The schematic's NC
+#    flags stay the single source of no-connect intent.
 # fiducials (and any FP_EXCLUDE_FROM_POS_FILES footprint) are bare copper with a netless pad by
-# design -- not a floating signal pin, so they're exempt from the "every pad in a net" check.
-# Paste/mechanical apertures (e.g. a QFN EPAD's F.Paste-only thermal cells) carry no copper and
-# no number -- they can't hold a net, so they're not floating signal pins either.
+# design -- not a floating signal pin, so they're exempt. Paste/mechanical apertures (e.g. a QFN
+# EPAD's F.Paste-only thermal cells) carry no copper and no number -- they can't hold a net either.
 floating = sorted({f"{ref}.{p.GetNumber()}" for ref, fp in fps.items()
                    if not (fp.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_POS_FILES)
                    for p in fp.Pads()
-                   if p.GetNetname() == "" and p.IsOnCopperLayer()
-                   and (ref, p.GetNumber()) not in _nc})
-check("every pad in a net or marked No-Connect", not floating,
+                   if p.GetNetname() == "" and p.IsOnCopperLayer()})
+check("every copper pad carries a net", not floating,
       ("floating: " + ", ".join(floating)) if floating else "all pads accounted for")
 
 # 4. ceramic caps clear of mounting-hole flex stress (MLCC crack avoidance).
