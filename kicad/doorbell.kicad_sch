@@ -16254,7 +16254,7 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 224.79) (xy 203.2 228.6)
+			(xy 203.2 236.22) (xy 203.2 240.03)
 		)
 		(stroke
 			(width 0)
@@ -18014,6 +18014,16 @@
 	)
 	(wire
 		(pts
+			(xy 203.2 224.79) (xy 203.2 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c0636796-273c-492d-a129-027e4af45b23")
+	)
+	(wire
+		(pts
 			(xy 246.38 29.21) (xy 251.46 29.21)
 		)
 		(stroke
@@ -18721,6 +18731,16 @@
 		)
 		(uuid "1597e68a-c4fd-48c4-a1b8-bca1aab74321")
 	)
+	(label "ES_OUTP_AC"
+		(at 203.2 226.06 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify left bottom)
+		)
+		(uuid "163f6844-5644-4267-946b-ae1067c58731")
+	)
 	(label "PTT_DRV"
 		(at 285.75 29.21 180)
 		(effects
@@ -19274,13 +19294,13 @@
 		)
 		(uuid "7520b8bc-e6ae-4bcb-9452-064899461f91")
 	)
-	(label "OUTN"
-		(at 215.9 224.79 180)
+	(label "ES_OUTN_AC"
+		(at 215.9 226.06 0)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 1 1)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
 	)
@@ -19468,7 +19488,7 @@
 		(uuid "959fcd91-d5d4-4b70-8543-77805f21672c")
 	)
 	(label "TALK_BRIDGE"
-		(at 203.2 228.6 180)
+		(at 203.2 240.03 180)
 		(effects
 			(font
 				(size 1 1)
@@ -24682,7 +24702,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,1uF")
-		(at 203.2 220.98 0)
+		(at 203.2 232.41 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -24692,7 +24712,7 @@
 		(dnp no)
 		(uuid "50212151-7c28-4705-b21c-3592c034b045")
 		(property "Reference" "C14"
-			(at 204.98 219.71 0)
+			(at 204.98 231.14 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24703,7 +24723,7 @@
 			)
 		)
 		(property "Value" "1uF"
-			(at 204.98 222.25 0)
+			(at 204.98 233.68 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24714,7 +24734,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:C_0603"
-			(at 203.2 220.98 0)
+			(at 203.2 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24725,7 +24745,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
-			(at 203.2 220.98 0)
+			(at 203.2 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24736,7 +24756,7 @@
 			)
 		)
 		(property "Description" "Codec DAC OUTP AC-coupling (codec TX) onto the talk node TALK_BRIDGE; reaches line 3 via R28 (2.2k) when K1 is energized; transformer-less"
-			(at 203.2 220.98 0)
+			(at 203.2 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24747,7 +24767,7 @@
 			)
 		)
 		(property "LCSC" "C15849"
-			(at 203.2 220.98 0)
+			(at 203.2 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24758,7 +24778,7 @@
 			)
 		)
 		(property "MPN" "CL10A105KB8NNNC"
-			(at 203.2 220.98 0)
+			(at 203.2 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29181,7 +29201,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ")
-		(at 215.9 232.41 0)
+		(at 215.9 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -29192,7 +29212,7 @@
 		(fields_autoplaced yes)
 		(uuid "8f1b7cd4-7d87-4140-9e87-179d2ab1b333")
 		(property "Reference" "R16"
-			(at 218.44 232.4099 0)
+			(at 218.44 220.9799 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29203,7 +29223,7 @@
 			)
 		)
 		(property "Value" "2.2k"
-			(at 215.9 232.41 90)
+			(at 215.9 220.98 90)
 			(show_name no)
 			(do_not_autoplace yes)
 			(effects
@@ -29213,7 +29233,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 214.122 232.41 90)
+			(at 214.122 220.98 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29224,7 +29244,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29235,7 +29255,7 @@
 			)
 		)
 		(property "Description" "Codec DAC OUTN parked termination to GND (TX is single-ended off OUTP)"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29246,7 +29266,7 @@
 			)
 		)
 		(property "LCSC" "C4190"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29257,7 +29277,7 @@
 			)
 		)
 		(property "Stock" "3259603"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29268,7 +29288,7 @@
 			)
 		)
 		(property "Price" "0.004USD"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29279,7 +29299,7 @@
 			)
 		)
 		(property "Process" "SMT"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29290,7 +29310,7 @@
 			)
 		)
 		(property "Minimum Qty" "20"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29301,7 +29321,7 @@
 			)
 		)
 		(property "Attrition Qty" "10"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29312,7 +29332,7 @@
 			)
 		)
 		(property "Class" "Basic Component"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29323,7 +29343,7 @@
 			)
 		)
 		(property "Category" "Resistors,Chip Resistor - Surface Mount"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29334,7 +29354,7 @@
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29345,7 +29365,7 @@
 			)
 		)
 		(property "Part" "0603WAF2201T5E"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29356,7 +29376,7 @@
 			)
 		)
 		(property "Resistance" "2.2kΩ"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29367,7 +29387,7 @@
 			)
 		)
 		(property "Power(Watts)" "100mW"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29378,7 +29398,7 @@
 			)
 		)
 		(property "Type" "Thick Film Resistors"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29389,7 +29409,7 @@
 			)
 		)
 		(property "Overload Voltage (Max)" "75V"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29400,7 +29420,7 @@
 			)
 		)
 		(property "Operating Temperature Range" "-55°C~+155°C"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29411,7 +29431,7 @@
 			)
 		)
 		(property "Tolerance" "±1%"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29422,7 +29442,7 @@
 			)
 		)
 		(property "Temperature Coefficient" "±100ppm/°C"
-			(at 215.9 232.41 0)
+			(at 215.9 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29715,7 +29735,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,1uF")
-		(at 215.9 220.98 0)
+		(at 215.9 232.41 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -29725,7 +29745,7 @@
 		(dnp no)
 		(uuid "94048026-d79f-4ec5-a98b-3e1da966763d")
 		(property "Reference" "C15"
-			(at 217.68 219.71 0)
+			(at 217.68 231.14 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29736,7 +29756,7 @@
 			)
 		)
 		(property "Value" "1uF"
-			(at 217.68 222.25 0)
+			(at 217.68 233.68 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29747,7 +29767,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:C_0603"
-			(at 215.9 220.98 0)
+			(at 215.9 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29758,7 +29778,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
-			(at 215.9 220.98 0)
+			(at 215.9 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29769,7 +29789,7 @@
 			)
 		)
 		(property "Description" "DAC OUTN AC-coupling to its parked termination (R16 2.2k to GND); TX is single-ended off OUTP; transformer-less"
-			(at 215.9 220.98 0)
+			(at 215.9 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29780,7 +29800,7 @@
 			)
 		)
 		(property "LCSC" "C15849"
-			(at 215.9 220.98 0)
+			(at 215.9 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29791,7 +29811,7 @@
 			)
 		)
 		(property "MPN" "CL10A105KB8NNNC"
-			(at 215.9 220.98 0)
+			(at 215.9 232.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -34952,6 +34972,274 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "R22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ")
+		(at 203.2 220.98 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f052cd3e-d707-40d4-8269-0db0405a3ea0")
+		(property "Reference" "R26"
+			(at 205.74 220.9799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2.2k"
+			(at 203.2 220.98 90)
+			(show_name no)
+			(do_not_autoplace yes)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:R_0603"
+			(at 201.422 220.98 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Codec TX series-R / OUTP abs-max protection (2.2k): OUTP -> R26 -> C14 -> TALK_BRIDGE. Series R at the codec output pin limits the ES8311 OUTP ESD-clamp current when K1's make steps +12V (P2) onto TALK_BRIDGE and C14 couples that edge back to OUTP - keeps OUTP inside the analog abs-max [AGND-0.3, AVDD+0.3] (sim invariant B1). Also isolates the DAC output from the C14 load; TX level is gain-recoverable (codec digital volume)."
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C4190"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Stock" "3259603"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Price" "0.004USD"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Process" "SMT"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Minimum Qty" "20"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Attrition Qty" "10"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Class" "Basic Component"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Category" "Resistors,Chip Resistor - Surface Mount"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Part" "0603WAF2201T5E"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Resistance" "2.2kΩ"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Power(Watts)" "100mW"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Type" "Thick Film Resistors"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Overload Voltage (Max)" "75V"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Operating Temperature Range" "-55°C~+155°C"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Tolerance" "±1%"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Temperature Coefficient" "±100ppm/°C"
+			(at 203.2 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f8c761bf-00e6-44a6-9a6d-7cbbed362af2")
+		)
+		(pin "2"
+			(uuid "38f392b8-d7cd-41d4-ac16-b4393bc7fad7")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "R26")
 					(unit 1)
 				)
 			)

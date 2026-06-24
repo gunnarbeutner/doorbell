@@ -68,7 +68,7 @@ because chime-suppress no longer breaks line 4 (it opens C1; see "Relays" / "Aud
 |------|-------------|---------------------|
 | **P1** (= board GND) | Common reference (all bell/speech ref to line 1) | Bonded to board GND; opto LED returns (each via 5.1 kΩ to P1); the codec RX/TX reference |
 | **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in. **Idles at +12 V vs P1** — a continuous standing bus rail (`osci/`: 12.06–12.11 V at rest), sagging to ~9.4 V under the seal-in load during a session and momentarily to ~2.6 V at session-end before snapping back |
-| **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (codec DAC → C14 → R28 2.2 kΩ → P3); WF26 talk/door switches |
+| **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (codec DAC → R26 2.2 kΩ → C14 → R28 2.2 kΩ → P3); WF26 talk/door switches |
 | **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K3** chime-mute (P4↔C1); K5 coil + flyback **D1**; R29 |
 | **P5** | Etagenruf — apartment/floor call (tone) | **OC2** sense; **LS1** speaker (P5↔GND); C19 (the gong cap, P4↔P5) |
 
@@ -422,7 +422,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers |
 | Layers | **4-layer** | the USB Type-C single-row escape needs the extra layers + a solid plane reference; see "PCB — layout constraints & rationale" |
 | Power | **USB-C 5 V** → SS14 reverse-protection Schottky → **SGM2212-3.3** low-dropout LDO (C3294699) | The ~0.45 V Schottky drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
-| Audio | **Transformer-less half-duplex**: ES8311 mono codec on the bus speech pair — **RX** a differential sense of line 2 (P2→C16→ADC, P1→C17→ADC), **TX** the codec DAC → C14 (DC-block) → R28 (2.2 kΩ) → TX_OUT → line 3, the **dual K1** (GAQW212GS) gating both the P2-sourced handshake and the TX output onto line 3 (high-Z at idle, BUS-1). Needs the **hard P1↔GND bond**; analog values bench-gated | Half-duplex by design (single LS1 transducer) ⇒ no echo cancellation. The TV20/S speech path is AC-coupled and P1 sits ~0.5 V from earth, so bonding P1↔GND is benign and lets active AC-coupled front-ends replace the transformer (smaller, fixes the talk-handshake load, no core saturation). Trade: SAFE-3 isolation → *not met*; containment is per-tap protection + F1 (SAFE-7) |
+| Audio | **Transformer-less half-duplex**: ES8311 mono codec on the bus speech pair — **RX** a differential sense of line 2 (P2→C16→ADC, P1→C17→ADC), **TX** the codec DAC → R26 (2.2 kΩ) → C14 (DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) → TX_OUT → line 3, the **dual K1** (GAQW212GS) gating both the P2-sourced handshake and the TX output onto line 3 (high-Z at idle, BUS-1). Needs the **hard P1↔GND bond**; analog values bench-gated | Half-duplex by design (single LS1 transducer) ⇒ no echo cancellation. The TV20/S speech path is AC-coupled and P1 sits ~0.5 V from earth, so bonding P1↔GND is benign and lets active AC-coupled front-ends replace the transformer (smaller, fixes the talk-handshake load, no core saturation). Trade: SAFE-3 isolation → *not met*; containment is per-tap protection + F1 (SAFE-7) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
 ### ESP32-C6 GPIO map
@@ -482,7 +482,7 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
   shared 1 kΩ R_em is immaterial at these currents.
 - **Cross-talk masking** (`firmware/doorbell-v4.yaml`, lambda filters ahead of the debounce):
   - **House Doorbell (OC1)** is masked while PTT is engaged, as a **precaution**: K1 closed
-    ties P4↔P3 via R28 (2.2 kΩ), so P3's resting bias (and the codec's AC drive through C14)
+    ties P4↔P3 via R28 (2.2 kΩ), so P3's resting bias (and the codec's AC drive through R26→C14)
     could couple onto line 4 and report a phantom ring — which can pulse the door buzzer via
     auto-open. **Bench-unconfirmed, and possibly negligible:** the K5 coil (~1.3 kΩ across
     P4↔P1) clamps P4 toward common (P4 ≈ 0.32·V_P3 through the R28/coil divider — needs P3 idling
@@ -525,7 +525,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   K1/K2 are **1-Form-A (NO)** = open at idle; K3/K4 are **1-Form-B (NC)** = closed at idle. Off-state
   default is fail-safe: K1/K2 open ⇒ no talk/door at boot (the passive core's S2/S1 cover those
   unpowered); K3 closed ⇒ the gong rings at boot/unpowered (GONG-3/SAFE-6).
-- **K1 — talk handshake + TX gate (BUS-1).** The codec TX path is `DAC → C14 (DC-block) → TALK_BRIDGE
+- **K1 — talk handshake + TX gate (BUS-1).** The codec TX path is `DAC → R26 (2.2 kΩ) → C14 (DC-block) → TALK_BRIDGE
   → R28 (2.2 kΩ) → TX_OUT → line 3` — the same 2.2 kΩ line-3 strap the handset's S2 asserts, i.e. how
   the TV20/S is told "talk". The dual K1 closes both halves on **PTT_DRV**: ch1 ties **P2 ↔
   TALK_BRIDGE** (sourcing the handshake DC) and ch2 ties **TX_OUT ↔ line 3** (the output gate). At idle
@@ -683,7 +683,7 @@ that shared common (the SAFE-3 trade; see "Bus↔logic coupling"):
   → MIC1N`, each codec pin biased to VMID through a 3.3 kΩ shunt (see RX front-end below). AC-coupled
   and high-Z (no DC bus load, BUS-1); the differential tap rejects hum and the ~0.5 V common-mode, and
   the series-R/VMID divider keeps the loud line-2 gong inside the codec's input range.
-- **TX (talk):** the codec DAC drives line 3 — `OUTP → C14 (DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) →
+- **TX (talk):** the codec DAC drives line 3 — `OUTP → R26 (2.2 kΩ) → C14 (DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) →
   TX_OUT → P3` — the same 2.2 kΩ line-3 strap the handset's S2 asserts. The **dual K1** gates both:
   ch1 sources the **DC handshake from the always-on P2** (`P2 ↔ TALK_BRIDGE`) and ch2 gates the output
   (`TX_OUT ↔ P3`) so line 3 is high-Z at idle (BUS-1). ⚠ Whether the TV20/S forwards line-3 audio to
@@ -718,10 +718,16 @@ debounce). Audio is gated on the session, direction by K1:
   Pinout per datasheet: CCLK=1, MCLK=2, PVDD/DVDD=3/4, DGND=5, SCLK=6, ASDOUT=7, LRCK=8, DSDIN=9,
   AGND=10, AVDD=11, OUTP/N=12/13, DACVREF/ADCVREF/VMID=14/15/16, MIC1N/P=17/18, CDATA=19, CE=20
   (pull-down → addr 0x18), EP=GND.
-- **TX front-end:** `OUTP → C14 (1 µF DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) → TX_OUT → P3`, with the
-  **dual K1** sourcing the handshake from **P2** (`P2 ↔ TALK_BRIDGE`) and gating the output
-  (`TX_OUT ↔ P3`). The DAC drives **single-ended** off OUTP; OUTN → C15 → /OUTN is parked (terminating
-  OUTN vs OUTP-only is a bench decision).
+- **TX front-end:** `OUTP → R26 (2.2 kΩ) → C14 (1 µF DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) → TX_OUT → P3`,
+  with the **dual K1** sourcing the handshake from **P2** (`P2 ↔ TALK_BRIDGE`) and gating the output
+  (`TX_OUT ↔ P3`). The DAC drives **single-ended** off OUTP; OUTN is parked through its own
+  `R16 (2.2 kΩ) → C15 → GND` termination. **R26 is the OUTP abs-max guard** (the sim's **B1**
+  invariant): when K1 makes, ch1 steps the +12 V P2 supply onto TALK_BRIDGE and C14 couples that edge
+  back toward OUTP — R26 limits the codec's output ESD-clamp current so OUTP stays inside the ES8311
+  analog abs-max [AGND−0.3, AVDD+0.3]. The order is **series R at the pin, cap toward the source** —
+  the convention every codec analog leg follows (OUTP/R26, OUTN/R16, MIC1P/R30, MIC1N/R31) — and it
+  also isolates the DAC output from the C14 load. R26's series drop on the TX level is gain-recoverable
+  (codec digital volume); the resulting ~4.4 kΩ (R26 + R28) source impedance into line 3 is not.
 - **RX front-end:** a balanced attenuating tap fed **differentially** to the ADC —
   `P2 → C16 (1 µF) → R30 (22 kΩ) → MIC1P` and `GND → C17 (1 µF) → R31 (22 kΩ) → MIC1N`, with
   **R33 / R32 (3.3 kΩ)** shunting MIC1P / MIC1N to **VMID**. Each leg is a 22 k/3.3 k divider (≈ −18 dB):
@@ -743,7 +749,7 @@ debounce). Audio is gated on the session, direction by K1:
 
 **BUS-1 (line 3 high-Z at idle) — met by the dual K1.** The transformer-less plan gated the TX audio
 with K1 so line 3 is high-Z when not talking; the dual GAQW212GS does exactly that. The codec sits on
-the permanently-wired `OUTP → C14 → TALK_BRIDGE → R28 → TX_OUT` path, but **ch2 (`TX_OUT ↔ P3`) is the
+the permanently-wired `OUTP → R26 → C14 → TALK_BRIDGE → R28 → TX_OUT` path, but **ch2 (`TX_OUT ↔ P3`) is the
 output gate**: at idle it lifts line 3 off TX_OUT, so the codec never reaches the shared talk line; only
 with K1 energised does the codec (and the P2 handshake) reach line 3. Confirmed in the sim — the
 `TX idle isolation (BUS-1)` and `talk handshake` tests. Firmware still mutes the DAC off-PTT, but the

@@ -41,17 +41,20 @@ bare-board model"), reusing the real switches across prints (no glue — pop the
 
 Transformer-less codec path (Phase 5). Bus-side topology + the RX attenuator/bias are wired and
 committed (RX: `P2→C16→R30(22k)→MIC1P` with `R33(3.3k)→VMID`, symmetric on MIC1N via C17/R31/R32;
-TX: `OUTP→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C12 = 10 µF). Remaining open:
+TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C12 = 10 µF). Remaining open:
 
 - [ ] **RX divider trim (bench).** 22k/3.3k (≈−18 dB) is committed and lands the ±8.8 V gong at ~1.1 V,
       inside the ES8311 mic abs-max (~AVDD+0.3 = 3.6 V). Revisit Rb (2.2k → −21 dB more margin / 4.7k →
       −15 dB more level) only if a captured real voice level demands it — bench-gated against the
       measured ADC full-scale.
-- [ ] **TX level + OUTN handling.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do
-      not overdrive the TV20/S amp); decide OUTP-only vs terminating OUTN; add a buffer/atten if needed.
-      The drive level is firmware-soft (codec digital volume), so the only fab-burning unknowns are the
-      analog topology (R28 value, buffer-vs-none, OUTN) — capture the WF26's own line-3 talk level first
-      (see "Record a real test call") for the target, and lay R28/buffer/OUTN out as reworkable.
+- [ ] **TX level.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do not overdrive the
+      TV20/S amp); add a buffer/atten only if needed. **OUTN is parked/terminated** (`R16→C15→GND`,
+      single-ended off OUTP) and **R26 (2.2 kΩ) now sits in series at OUTP** for abs-max protection
+      (sim B1), so the codec sees R26 + R28 ≈ 4.4 kΩ of source resistance into line 3 — fold that into
+      the level target (drive level is firmware-soft via codec digital volume; the source-Z rise is
+      not). Remaining fab-burning unknowns: the analog topology (R26/R28 values, buffer-vs-none) —
+      capture the WF26's own line-3 talk level first (see "Record a real test call") for the target,
+      and lay R26/R28/buffer out as reworkable.
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
@@ -187,7 +190,7 @@ tether it to a mains-earthed PC. Pair with a DMM.
 
 The codec taps the speech pair **transformer-less**: **RX** = a differential sense of line 2 through the
 attenuating divider (`P2→C16→R30→MIC1P`, `P1→C17→R31→MIC1N`, each pin biased to VMID via R33/R32); **TX**
-= the codec DAC → C14 (DC-block) → R28 (2.2 kΩ) → line 3,
+= the codec DAC → R26 (2.2 kΩ) → C14 (DC-block) → R28 (2.2 kΩ) → line 3,
 with **K1** gating the talk handshake (`TALK_BRIDGE↔P4`). Independent of line 4 / K3, so RX/TX survive
 gong-suppress. **Gated on OC1** (session = Türruf held; OC1 stays high, no timer), direction by PTT.
 What remains is hardware confirmation:
@@ -203,7 +206,7 @@ What remains is hardware confirmation:
       *(DESIGN.md: "TX-out reach")*
 - [ ] **Incoming (RX) — confirm the line-2 tap level/impedance.** RX is on **line 2** (ref line 1),
       independent of line 4 / K3. Bench-check the received level and source impedance on line 2↔P1
-      during a call, and that the R26/R27 divider lands the codec input in range.
+      during a call, and that the R30/R33 (and R31/R32) divider lands the codec input in range.
       *(DESIGN.md: "TX-out reach")*
 - [ ] **Validate the handset mic (LS1) never bleeds into the RX/TX path by accident.** LS1-as-mic
       must reach the line *only* when intended (deliberate handset talk via S2) — never leak into the
