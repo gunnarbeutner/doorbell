@@ -16095,12 +16095,6 @@
 		(uuid "e33038e6-9c62-410c-9321-3d39e8786aae")
 	)
 	(junction
-		(at 152.4 184.15)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f0cb1f32-01d2-4ffb-911b-b3704f31c9c5")
-	)
-	(junction
 		(at 87.63 247.65)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -16201,16 +16195,6 @@
 			(type default)
 		)
 		(uuid "087d8fca-354c-49eb-bbd9-1ee790c00966")
-	)
-	(wire
-		(pts
-			(xy 152.4 133.35) (xy 152.4 184.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "08c3c6bb-a806-440f-8b25-23dfcf39b5d6")
 	)
 	(wire
 		(pts
@@ -16444,7 +16428,7 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 184.15) (xy 152.4 184.15)
+			(xy 129.54 184.15) (xy 143.51 184.15)
 		)
 		(stroke
 			(width 0)
@@ -16701,6 +16685,16 @@
 			(type default)
 		)
 		(uuid "3a2db18f-8471-4b51-8566-51038004f327")
+	)
+	(wire
+		(pts
+			(xy 129.54 133.35) (xy 143.51 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3b421a84-646b-456f-bb41-63014b3edf47")
 	)
 	(wire
 		(pts
@@ -16961,6 +16955,16 @@
 			(type default)
 		)
 		(uuid "56f858f1-1089-4876-a4f3-ac719b9d96ed")
+	)
+	(wire
+		(pts
+			(xy 143.51 133.35) (xy 143.51 137.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5784b262-3b6f-4a14-9c1b-ab6e5d413bc0")
 	)
 	(wire
 		(pts
@@ -17464,16 +17468,6 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 133.35) (xy 152.4 133.35)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "89cf2956-c2b5-4a95-b326-14586d0f7d48")
-	)
-	(wire
-		(pts
 			(xy 119.38 240.03) (xy 119.38 233.68)
 		)
 		(stroke
@@ -17634,7 +17628,7 @@
 	)
 	(wire
 		(pts
-			(xy 152.4 184.15) (xy 152.4 187.96)
+			(xy 143.51 184.15) (xy 143.51 187.96)
 		)
 		(stroke
 			(width 0)
@@ -19313,6 +19307,16 @@
 		)
 		(uuid "7d6895c8-971d-4384-b5f3-71ac3282d2e9")
 	)
+	(label "OC2_EMIT"
+		(at 134.62 184.15 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify bottom)
+		)
+		(uuid "7d93fd03-dd8f-4e58-a19d-8c9c95c0025f")
+	)
 	(label "+3V3"
 		(at 186.69 185.42 0)
 		(effects
@@ -19427,16 +19431,6 @@
 			(justify right bottom)
 		)
 		(uuid "915c551f-950b-4066-9725-5004ea748e4e")
-	)
-	(label "OC_EMIT"
-		(at 152.4 154.94 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "93e3a1d3-d1e3-4518-b965-3b72456a6068")
 	)
 	(label "OC2_CATH"
 		(at 114.3 194.31 0)
@@ -19851,6 +19845,16 @@
 			)
 		)
 		(uuid "e7c41bbf-d745-4b68-92e1-f6c4c2615f64")
+	)
+	(label "OC1_EMIT"
+		(at 134.62 133.35 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify bottom)
+		)
+		(uuid "f9cdd5a6-3bac-44d8-b672-0b7cb2d1474d")
 	)
 	(label "OC1_CATH"
 		(at 114.3 142.24 0)
@@ -25121,6 +25125,81 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR47")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 143.51 137.16 0)
+		(mirror y)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5688846c-7dbe-4e38-9b29-53dcc6f99fc0")
+		(property "Reference" "#PWR056"
+			(at 143.51 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 143.51 141.66 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 143.51 137.16 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 143.51 137.16 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 143.51 137.16 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5f0fea86-cf97-4f3b-85d7-73d013070675")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR056")
 					(unit 1)
 				)
 			)
@@ -32209,7 +32288,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 152.4 195.58 0)
+		(at 143.51 187.96 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -32219,7 +32298,7 @@
 		(dnp no)
 		(uuid "c039356d-3e75-4143-aff3-8650467fbe71")
 		(property "Reference" "#PWR34"
-			(at 152.4 195.58 0)
+			(at 143.51 187.96 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32230,7 +32309,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 152.4 200.08 0)
+			(at 143.51 192.46 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -32240,7 +32319,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 152.4 195.58 0)
+			(at 143.51 187.96 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -32250,7 +32329,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 152.4 195.58 0)
+			(at 143.51 187.96 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -32260,7 +32339,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 152.4 195.58 0)
+			(at 143.51 187.96 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34338,109 +34417,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,1kΩ")
-		(at 152.4 191.77 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "dec53da5-1d74-4791-9b2f-326941870174")
-		(property "Reference" "R3"
-			(at 149.86 190.5 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "1k"
-			(at 149.86 193.04 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 152.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
-			(at 152.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Shared opto emitter resistor to GND (uA only)"
-			(at 152.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C21190"
-			(at 152.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF1001T5E"
-			(at 152.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "b243110c-2943-4d22-a1fd-bb33bf9840b5")
-		)
-		(pin "2"
-			(uuid "1278f1a8-ef99-4b3c-a03f-986ae5d0cb1f")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R3")
 					(unit 1)
 				)
 			)
