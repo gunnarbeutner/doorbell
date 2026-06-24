@@ -644,9 +644,31 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   holes** (NPTH 1.152 mm, asymmetric) for the assembly order.
 - **3D / fit-test model:** `./build.sh step` exports `kicad/fab/doorbell.step` (also run by
   `all-route`). Footprints carrying a truthy custom field **`STEP_Exclude`** are omitted from the
-  model — flag SW3/SW4 (set the field in KiCad's Footprint Properties) so the bare board can be
-  fit-tested against the real panel switches. `kicad-cli`'s `--component-filter` is include-only, so
-  `kicad/step_exclude.py` emits the complement.
+  model — flag SW3/SW4 (set the field in KiCad's Footprint Properties) so the real panel switches
+  can be fit-tested against the print. `kicad-cli`'s `--component-filter` is include-only, so
+  `kicad/step_exclude.py` emits the complement. The *same* flag drives `kicad/step_fit_holes.py`,
+  which enlarges those parts' THT drills (+0.5 mm) on a throwaway copy so the real switch drops into
+  the printed hole — committed board and every fab output keep the as-fab drills. For 3D printing,
+  `kicad/step_solder.py` then injects
+  small **'fake solder' anchor blocks** at every SMD pad (authored directly as AP214 box solids in
+  the board's global frame and spliced into the top assembly representation — no CAD kernel needed),
+  bridging the board's top face up into each part's leads so components like the K5 relay don't snap
+  off the thin printed leads.
+- **Printable bare-board model:** `./build.sh step-board` exports `kicad/fab/doorbell-board.step` —
+  the substrate only (no component bodies), with the mounting/tooling holes and THT pad drills cut
+  through (`--board-only --no-extra-pad-thickness`). The 80 routing vias (all 0.3 mm, sub-printable
+  on a 0.4 mm nozzle) are deliberately *not* cut — they aren't needed for the SW3/SW4 fit-test, and
+  the switch + mounting holes are THT pad drills that `--board-only` keeps regardless. It's meant to
+  be 3D-printed
+  (0.4 mm-nozzle FDM) and the real switches pushed into it to check fit, so the shared
+  `kicad/step_fit_holes.py` enlarges the **`STEP_Exclude`**-flagged footprints' THT drills by
+  +0.5 mm (SW3/SW4: 0.9→1.4 mm signal, 1.35→1.85 mm peg) on a throwaway copy to compensate for FDM
+  undersizing — the committed board and every fab output keep the as-fab holes. Standalone; not part
+  of `all-route`. The board's **top face
+  is flat**; its bottom carries a ~0.035 mm copper annular ring around every plated hole/via (the
+  bare board's real copper — board-only has no flag to omit it). For a clean first layer, **print the
+  top face down** (holes are through, so flipping doesn't affect the fit-test) or sink the model
+  ~0.05 mm into the build plate.
 
 ---
 

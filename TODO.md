@@ -10,6 +10,25 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       (`kicad/jlcpcb_cpl.py`) now applies the +180 opto correction to OC1/OC2 — they were silently 0
       under the old dead `OK1-3` keys, so this is a 180° change worth eyeballing.
 
+## Front-panel buttons (SW3/SW4) — enclosure fit + actuation
+
+The Sprechen/Hören talk buttons (`SW-TH_SPPJ322300`) sit behind the **opaque** front panel; the
+panel button's plastic tab must land **dead-centre on the switch actuator** and press it far enough
+to switch. Validate against a 3D-printed bare board (`./build.sh step-board` →
+`kicad/fab/doorbell-board.step`; SW3/SW4 drills enlarged for FDM — see DESIGN.md "Printable
+bare-board model"), reusing the real switches across prints (no glue — pop them out clean).
+
+- [ ] **Fit — does the panel tab hit the actuator dead-centre?** Can't be eyeballed through the opaque
+      enclosure, so witness the contact. Seat the real SW3/SW4 *firmly* in the printed board first — the
+      print holes are oversized (~0.4–0.5 mm slop) which would swamp the reading, so press-fit the pegs
+      or pack putty round the bosses. Then close the enclosure and read where the tab lands: a soft blob
+      (plasticine/Blu-Tack) on the actuator captures **centring + squareness + travel** in one
+      impression, or ink/dye on the tab tip transfers a dot to measure offset from the actuator centre.
+- [ ] **Function — does pressing the panel button actually switch?** Centred isn't enough — confirm the
+      tab travel actually closes the switch through the full assembled stack (panel + enclosure + board).
+      Wire the switch terminals to a DMM on continuity (or watch the live net on the assembled board) and
+      press the panel button. Catches a tab that's aligned but too short to reach actuation.
+
 ## Audio — deferred SSR footprint save (`kicad/doorbell.kicad_sch`)
 
 - [ ] **(Deferred) K3+K4 → one dual-NC PhotoMOS (GAQW412S, C7435125).** Would save one footprint (both are
