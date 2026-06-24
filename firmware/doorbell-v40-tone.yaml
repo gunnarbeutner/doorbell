@@ -1,0 +1,133 @@
+# Klingel V4.0 — AVDD NOISE-FLOOR TONE firmware (proto1 board, derived from doorbell-v40-test.yaml)
+# =============================================================================================
+# PURPOSE. Emit ONE continuous, phase-continuous reference tone out of the ES8311 DAC and nothing
+# else, so the codec's analog output (OUTP/OUTN) noise floor + spurs can be scoped with the WiFi/BT
+# radio and every periodic firmware activity removed. This is the "radio OFF" half of the A/B that
+# isolates the AVDD supply-coupling warning from the pre-fab review: WiFi-TX load-step droop on the
+# shared +3V3 couples ~1:1 through FB1 (an RF-only bead, ~0 dB in-band) onto AVDD and modulates the
+# codec full-scale reference. Capture the floor / sidebands around the tone here, then run
+# doorbell-v40-test.yaml (WiFi joined, TX active) and compare — the delta IS the WiFi-TX→AVDD coupling.
+#
+# DISABLED vs the bench-test config (everything that loads or modulates +3V3 / AVDD):
+#   - wifi radio HELD OFF (enable_on_boot: false) + api / captive_portal / web_server removed
+#                                                     -> the radio never associates/transmits (no TX)
+#   - microphone (ES8311 ADC) + mic level sensors     -> ADC idle; DAC-only
+#   - uptime / wifi_signal / internal_temp / debug-heap / wifi_info / version sensors
+#                                                     -> no periodic polling current bumps
+#   - K1/K2/K3 relay outputs + OC1/2/3 sense optos    -> no GPIO / contact / opto activity
+#   - logger left at INFO over USB-Serial-JTAG: prints at boot, then quiet (no steady-state USB
+#     traffic during the capture). The codec ACK at 0x18 is still logged once.
+# Residual self-noise: the tone-feed interval re-tops the I2S ring buffer every 50 ms — a small,
+# CONSTANT bump, identical in both A/B runs (orders of magnitude below a 382 mA WiFi-TX burst), so it
+# cancels in the delta.
+#
+# BOARD. Pin map is the proto1 board's, identical to doorbell-v40-test.yaml — NOT HEAD's
+# (firmware/doorbell-v4.yaml uses different audio pins). Flash this ONLY onto the proto1 board.
+# CAVEAT: doorbell-v40-test.yaml records that proto1's ES8311 *analog* output is the dead path (the
+# AVDD / bias-network gap) — on the as-ORDERED proto1 there may be no signal at OUTP/OUTN to scope
+# until that network is reworked. If your proto1 is un-reworked, this tone clocks out over I2S but you
+# will see no analog; the AVDD/bias rework is the very thing under test, so do it first.
+#
+# Flash + logs over USB-C:        esphome run firmware/doorbell-v40-tone.yaml
+# RESTORE afterwards (MANUAL):    esphome run firmware/doorbell-v40-test.yaml   (or the deploy config)
+
+substitutions:
+  tone_hz: "1000"        # desired OUTPUT tone frequency (Hz).
+  tone_amp: "0.5"        # digital amplitude as a fraction of full scale (0.5 = -6 dBFS). Headroom so
+                         # the DAC path never clips the reference; raise toward 0.8 for more tone-to-
+                         # floor visibility if the codec applies no extra digital gain.
+  sr: "48000"            # rate REQUESTED of the codec + I2S. On this ESP32-C6 the I2S actually clocks
+                         # at ~16.1 kHz regardless (a C6/ESPHome I2S quirk; use_apll is no help — the
+                         # C6 has no APLL and a clean 3x error is not a jitter problem).
+  gen_fs: "16113"        # MEASURED actual playback rate; the generator is calibrated to THIS (not sr),
+                         # so a tone_hz-cycle sine plays back at exactly tone_hz. 335.693 Hz observed for
+                         # a 1 kHz-at-48 kHz sine => actual fs = 335.693 x 48 = 16113 Hz. Re-measure with
+                         # FFT peak search and adjust if the codec ever clocks differently.
+
+esphome:
+  name: doorbell-v40-tone
+  friendly_name: Doorbell V4.0 AVDD tone
+
+esp32:
+  board: esp32-c6-devkitc-1     # generic ESP32-C6 board def — matches proto1 U1 (ESP32-C6-WROOM-1)
+  framework:
+    type: esp-idf
+
+# Logs over the native USB-Serial-JTAG (no UART pins broken out). INFO: boot + i2c scan + codec init,
+# then idle — so there is no steady-state USB traffic coupling onto the rail during the measurement.
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+  level: INFO
+
+# WiFi is configured but HELD OFF: enable_on_boot:false means the radio is never started, so there
+# are ZERO WiFi-TX bursts during the measurement (that is the whole point — WiFi-TX droop on +3V3 is
+# the AVDD aggressor under test). It is never re-enabled (no api / captive_portal / web_server / no
+# wifi.enable action), so the device does NOT join the network after this firmware boots. WiFi + ota
+# are present ONLY so this binary is OTA-pushable from the currently-running (wifi-up) test firmware;
+# the esphome OTA platform requires a network stack to exist. No ota password -> matches the test fw.
+# After this boots the device is offline (radio off); restore over USB (see header).
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  enable_on_boot: false        # <-- radio stays OFF: no association, no beacons, no TX. Clean AVDD.
+
+ota:
+  - platform: esphome
+
+i2c:
+  sda: GPIO18                # I2C_SDA — ES8311 (U3) control bus   (proto1 pin)
+  scl: GPIO19                # I2C_SCL — ES8311 (U3) control bus   (proto1 pin)
+  scan: true                 # one-time at boot: expect "Found i2c device at address 0x18"
+
+i2s_audio:
+  - id: i2s_bus
+    i2s_lrclk_pin: GPIO0     # I2S_WS / LRCK    (proto1 pin)
+    i2s_bclk_pin: GPIO11     # I2S_BCLK / SCLK  (proto1 pin)
+    i2s_mclk_pin: GPIO6      # I2S_MCLK         (proto1 pin)
+
+audio_dac:
+  - platform: es8311
+    id: es8311_codec
+    address: 0x18
+    sample_rate: ${sr}
+    use_microphone: false    # DAC-only: keep the ADC idle so there is no analog RX activity
+
+speaker:
+  - platform: i2s_audio
+    id: intercom_speaker
+    i2s_audio_id: i2s_bus
+    dac_type: external
+    audio_dac: es8311_codec
+    sample_rate: ${sr}
+    channel: mono            # ES8311 is a mono codec (OUTP/OUTN differential) — feed mono 16-bit
+    timeout: never           # keep the I2S running continuously (no auto-stop / start-stop pops)
+    i2s_dout_pin: GPIO7      # I2S_DOUT / DSDIN (ESP->codec, playback)  (proto1 pin)
+
+# Continuous, phase-continuous sine generator. Every 50 ms we top the speaker's 500 ms I2S ring
+# buffer back up to full with freshly generated samples, advancing a PERSISTENT phase by only the
+# samples the buffer actually accepted (play() returns bytes written). That keeps the sine seamless
+# across re-queues — no boundary clicks that would smear the noise floor we are trying to measure.
+interval:
+  - interval: 50ms
+    then:
+      - lambda: |-
+          static double phase = 0.0;
+          const double fs = ${gen_fs};          // calibrated to the MEASURED playback rate, not sr
+          const double tone_hz = ${tone_hz};
+          const double amp = ${tone_amp};
+          const double TWO_PI = 6.283185307179586;
+          const double dphase = TWO_PI * tone_hz / fs;
+          int16_t block[512];
+          while (true) {
+            double ph = phase;
+            for (int i = 0; i < 512; i++) {
+              double v = amp * 32767.0 * sin(ph);
+              block[i] = (int16_t) (v >= 0.0 ? v + 0.5 : v - 0.5);   // round to nearest
+              ph += dphase;
+            }
+            size_t wrote = id(intercom_speaker).play((const uint8_t *) block, sizeof(block));
+            size_t accepted = wrote / 2;                  // bytes -> int16 samples actually queued
+            phase += dphase * (double) accepted;          // advance only by what was accepted
+            while (phase >= TWO_PI) phase -= TWO_PI;
+            if (accepted < 512) break;                    // ring buffer full -> resume next tick
+          }
