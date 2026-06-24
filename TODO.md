@@ -9,6 +9,22 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
 - [ ] **Verify OC1/OC2 in JLCPCB's placement preview before ordering.** The per-footprint `ROT_FIX`
       (`kicad/jlcpcb_cpl.py`) now applies the +180 opto correction to OC1/OC2 — they were silently 0
       under the old dead `OK1-3` keys, so this is a 180° change worth eyeballing.
+- [ ] **Add an external Schottky clamp at codec OUTP (ES8311 pin 12).** `prefab-blind-verify` flagged
+      OUTP as the worst-margin IC pin (warning): on *every* K1/PTT make the +12 V (up to +17 V) P2 step
+      couples through C14 back into OUTP and momentarily nicks past the +3.6 V analog abs-max — R26 (2.2k)
+      limits it to ~3.9–6.2 mA for a ~2.2 ms transient (`τ=R26·C14`), so it leans on the codec's *internal*
+      ESD clamp on every talk-start. Single-fault **C14-short** (MLCC mode) is the one with teeth: +12 V DC
+      through R26 alone → sustained ~3.9 mA DC into that clamp for the whole session, and the ES8311
+      datasheet publishes no clamp DC rating. **Fix:** BAT54S (dual-series Schottky, SOT-23) at `ES_OUTP` —
+      **pin 3 (midpoint) → ES_OUTP, pin 1 → GND, pin 2 → +3V3** — clamps OUTP to ~[−0.3, +3.6 V]. R26 still
+      sets the current, so the external Schottky (200 mA rated) absorbs both the per-make transient *and*
+      the C14-short DC instead of the codec diode; no audio penalty (normal OUTP swing is [0, AVDD], clamp
+      idles). Part: **C19726** (BAT54SLT1G, onsemi, 307k stock; Extended → one-time ~$3 setup, noise at
+      qty 1). BAT54S is **not** obsolete on LCSC — Digikey flags one MPN; dozens are stocked. Minimal-
+      footprint alt: a single Schottky to +3V3 covers the C14-short (positive-only) but forgoes the
+      symmetric clamp on the K1-release negative edge. OUTN is parked to GND (no bus exposure) so it needs
+      nothing. Update the DESIGN.md TX front-end note when added. *(see `prefab-report.html`; DESIGN.md
+      "TX front-end" / R26 abs-max guard)*
 
 ## Front-panel buttons (SW3/SW4) — enclosure fit + actuation
 

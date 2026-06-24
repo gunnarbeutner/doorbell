@@ -450,7 +450,7 @@ Two identical channels (OC1 = house bell on P4↔P1, OC2 = apartment bell on P5�
 ```
 bus line (active, +) ──► opto LED anode ── LED ── cathode ──┬── R_lim (5.1k) ── P1 (common)
                           ▲ 1N4148W clamp, ANTI-parallel ───┘
-opto collector ──► GPIO (internal pull-up)   opto emitters ──┬── R_em (1k, shared) ──► GND
+opto collector ──► GPIO (internal pull-up)   opto emitter ──► GND  (per channel, direct)
 ```
 
 - **Fixed polarity (no switch):** the bus is taken to drive active lines **positive** w.r.t.
@@ -472,14 +472,16 @@ opto collector ──► GPIO (internal pull-up)   opto emitters ──┬──
 - **Per-opto limiters (R_lim1–2, 5.1 kΩ):** one per channel; a shared limiter lets a ringing
   channel lift the common node and reverse-bias the idle LED — **field-confirmed: this killed V3's
   Etagenruf opto** (see "V3"). With per-opto limiters each idle cathode sits at ~0 V, so there is no
-  shared node to lift. R_em (1 kΩ emitter, shared) carries only µA and is not part of any reverse path.
+  shared node to lift. Each opto emitter returns **directly to GND** (per channel): the emitter
+  current is only µA, so no series resistor is needed, and a per-channel return leaves no shared
+  emitter node to couple one channel into another.
 - Bell present → LED conducts → phototransistor pulls the GPIO low → ESPHome
   `inverted: true` ⇒ "on". GPIO LOW level ≈ 0.12–0.27 V.
 - **Sense margin (by analysis):** at IF ≈ 1.7–2.1 mA (10–12 V line) the collector sits at
   ≈ 0.14 V — far below the ESP32 V_IL (~0.825 V) — and stays there across CTR 0.5→2.6,
   because the weak ~45 kΩ internal pull-up demands only ~56 µA while the opto can sink
-  ~0.85 mA even at abused-low CTR. Result is insensitive to opto part variation; the
-  shared 1 kΩ R_em is immaterial at these currents.
+  ~0.85 mA even at abused-low CTR. Result is insensitive to opto part variation; with each
+  emitter tied straight to GND the GPIO LOW is just V_CE(sat) ≈ 0.1 V.
 - **Cross-talk masking** (`firmware/doorbell-v4.yaml`, lambda filters ahead of the debounce):
   - **House Doorbell (OC1)** is masked while PTT is engaged, as a **precaution**: K1 closed
     ties P4↔P3 via R28 (2.2 kΩ), so P3's resting bias (and the codec's AC drive through R26→C14)
