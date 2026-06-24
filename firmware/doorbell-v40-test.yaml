@@ -18,7 +18,7 @@
 # board would drive the wrong pads.
 #
 # WHAT THIS CONFIG TESTS — the device-level subsystems that DO carry forward to the latest design:
-#   1. MCU bring-up: native USB-Serial-JTAG flashing + logs, boot, strapping, WiFi/API/web UI.
+#   1. MCU bring-up: native USB-Serial-JTAG flashing + logs, boot, strapping, WiFi/API.
 #      (Same ESP32-C6 chip + native-USB approach as the MINI-1U next spin — de-risks it directly.)
 #   2. Power tree: USB-C 5V -> SS14 -> 3.3V LDO. If WiFi-TX runs without brown-out, the rail holds.
 #   3. ES8311 codec: I2C enumeration @0x18 + codec register init. The codec, its power/decoupling,
@@ -39,7 +39,7 @@
 #
 # Flash + logs over USB-C:  esphome run firmware/doorbell-v40-test.yaml
 # Needs firmware/secrets.yaml with wifi_ssid / wifi_password (same as the other configs); if WiFi
-# is unavailable it falls back to its own AP + captive portal so the web UI is still reachable.
+# is unavailable it falls back to its own AP + captive portal so it stays reachable for re-provisioning.
 
 esphome:
   name: doorbell-v40-test
@@ -61,7 +61,7 @@ api:
 ota:
   - platform: esphome
 
-# STA from secrets, with an AP + captive-portal fallback so the web UI is always reachable on the
+# STA from secrets, with an AP + captive-portal fallback so the device stays reachable for config on the
 # bench even without the home WiFi. Joining WiFi here is also the power-tree stress test (WiFi-TX is
 # the brown-out risk on the USB 5V -> LDO rail).
 wifi:
@@ -74,11 +74,9 @@ wifi:
 
 captive_portal:
 
-# Browser control panel: every switch/button/sensor below shows up here for manual testing.
-web_server:
-  port: 80
-  local: true
-  ota: false
+# Controls appear in Home Assistant / the ESPHome dashboard via the API. No web_server: on the
+# PSRAM-less C6 it competes for heap with the media_player speaker buffer (a source of the TX
+# allocation failures) and is not needed for OTA/API/logs.
 
 # Heap watch — surfaces free heap + largest free block so you can see fragmentation across plays.
 debug:
@@ -106,75 +104,48 @@ audio_dac:
   - platform: es8311
     id: es8311_codec
     address: 0x18
-    sample_rate: 48000     # 48k (was 16k): better sigma-delta noise-shaping pushes more
+    sample_rate: 16000     # 48k (was 16k): better sigma-delta noise-shaping pushes more
                            # quantization noise out of band — tests how much of the white-noise
                            # floor is quantization vs AVDD-supply coupling
-    use_microphone: true
-    mic_gain: 24DB         # boosted from 0DB to reveal the floating-transformer pickup (hum/EMI)
+    use_microphone: false  # RX/mic capture removed (DAC/TX-only here); frees the I2S RX path + heap
 
 # I2S audio.  TX: a media_player streams audio from Home Assistant -> es8311 DAC over I2S
 # (DSDIN / GPIO7) — play TTS or a clip from HA.  ESPHome 2026.5.x only ships the `speaker` media
 # player (the old i2s_audio one was removed), so it feeds an i2s_audio `speaker`; buffer_size is cut
 # far below the 1 MB default because the C6 has no PSRAM (decoding is RAM-tight — keep clips short).
-# RX: enable "Mic capture (I2S RX)" and the on_data handler tracks peak/RMS of the captured stream.
 # NOTE: this proto's ES8311 *analog* output is the dead path (the AVDD/bias-network gap), so audio
 # clocks out over I2S but produces no analog until that's reworked — the media_player still validates
 # the HA -> board -> codec digital path and is the right setup for the next (fixed) spin.
-globals:
-  - id: mic_peak_window
-    type: int
-    initial_value: '0'
-  - id: mic_sumsq
-    type: double
-    initial_value: '0'
-  - id: mic_count
-    type: int
-    initial_value: '0'
-
 speaker:
   - platform: i2s_audio
     id: intercom_speaker
     i2s_audio_id: i2s_bus
     dac_type: external
     audio_dac: es8311_codec
-    sample_rate: 48000      # match the codec (48k) so the I2S clock and DAC agree
+    sample_rate: 48000      # match the codec (48k); the speaker re-rates per stream (16 kHz WAV here)
     i2s_dout_pin: GPIO7     # I2S_DOUT / DSDIN (ESP->codec, playback)
 
 media_player:
   - platform: speaker
     id: intercom_media
     name: "Intercom DAC (media player)"
-    buffer_size: 32768      # well below the 1 MB default — the C6 has no PSRAM, and this big read
-                            # buffer otherwise starves the speaker task's buffer + I2S DMA on repeat
-                            # plays (heap fragmentation -> "Speaker task setup failed"). 32 KB leaves
-                            # room; drop further (or remove web_server) if it still fragments.
+    buffer_size: 32768      # 32 KB read buffer for the WAV/PCM stream from HA (no on-device decode).
     # Single pipeline (no `mixer`, to save RAM): HA TTS/announcements and play-media both use it.
+    # format: WAV makes HA transcode to PCM (ffmpeg) so the device NEVER decodes FLAC — that decoder
+    # was the heap hog that collapsed the heap to ~3 KB and crashed playback. 16 kHz mono is plenty for
+    # voice/chimes, keeps buffers small, and is trivial WiFi bandwidth. Raise sample_rate / num_channels
+    # if you ever need fuller-range audio (still no on-device decode).
     announcement_pipeline:
       speaker: intercom_speaker
-
-microphone:
-  - platform: i2s_audio
-    id: intercom_mic
-    i2s_audio_id: i2s_bus
-    adc_type: external
-    i2s_din_pin: GPIO10     # I2S_DIN / ASDOUT (codec->ESP, capture)
-    on_data:
-      - lambda: |-
-          int16_t peak = 0;
-          for (size_t i = 0; i + 1 < x.size(); i += 2) {
-            int16_t s = (int16_t) (x[i] | (x[i + 1] << 8));
-            int16_t a = s < 0 ? (int16_t) -s : s;
-            if (a > peak) peak = a;
-            id(mic_sumsq) = id(mic_sumsq) + (double) s * (double) s;
-            id(mic_count) = id(mic_count) + 1;
-          }
-          if (peak > id(mic_peak_window)) id(mic_peak_window) = peak;
+      format: WAV
+      sample_rate: 16000
+      num_channels: 1
 
 # -----------------------------------------------------------------------------------------------
 # (5) SENSE INPUTS — raw opto readout (no production masking).  Each opto pulls its pin LOW when
 # active; external 10k to +3V3 (R21/R22/R23) holds it HIGH at idle, so inverted:true => "on" when
 # the LED conducts.  Test by ringing the bell / injecting current on the bus line and watching the
-# state flip in the web UI or log.  Front-end topology changed since this board — judge the digital
+# state flip in HA / the ESPHome dashboard or the log.  Front-end topology changed since this board — judge the digital
 # edge, not the analog network.
 # -----------------------------------------------------------------------------------------------
 binary_sensor:
@@ -251,16 +222,6 @@ switch:
     id: k3_mute
     output: k3_mute_out
     restore_mode: ALWAYS_OFF
-  # I2S RX: start/stop the codec ADC capture so the "Mic level (peak)" sensor goes live.
-  - platform: template
-    name: "Mic capture (I2S RX)"
-    id: mic_capture
-    optimistic: true
-    restore_mode: ALWAYS_OFF
-    turn_on_action:
-      - microphone.capture:
-    turn_off_action:
-      - microphone.stop_capture:
 
 button:
   - platform: output
@@ -286,27 +247,6 @@ sensor:
       name: "Heap free"
     block:
       name: "Heap largest free block"
-  # I2S RX level: windowed peak of the captured samples (0..32767). Enable "Mic capture" first.
-  - platform: template
-    name: "Mic level (peak)"
-    id: mic_peak
-    update_interval: 250ms
-    accuracy_decimals: 0
-    lambda: |-
-      int v = id(mic_peak_window);
-      id(mic_peak_window) = 0;
-      return v;
-  - platform: template
-    name: "Mic level (RMS)"
-    id: mic_rms
-    update_interval: 250ms
-    accuracy_decimals: 1
-    lambda: |-
-      if (id(mic_count) <= 0) return 0.0;
-      double r = sqrt(id(mic_sumsq) / (double) id(mic_count));
-      id(mic_sumsq) = 0;
-      id(mic_count) = 0;
-      return (float) r;
 
 text_sensor:
   - platform: wifi_info
