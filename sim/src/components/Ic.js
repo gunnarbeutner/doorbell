@@ -129,7 +129,9 @@ export default class Ic extends Component {
     if (/es8311/i.test(this.lib)) {
       const agnd = Number.isFinite(V(fnPin(/AGND/))) ? V(fnPin(/AGND/)) : 0;
       const avdd = V(fnPin(/AVDD/));
-      if (Number.isFinite(avdd))
+      // only judge the analog pins once the codec is actually powered — an unsettled/absent AVDD makes the
+      // [AGND-0.3, AVDD+0.3] window meaningless (and would false-flag during cold-start rail settling).
+      if (Number.isFinite(avdd) && avdd >= 2)
         for (const p in this.pinfn)
           if (/OUTP|OUTN|VMID|MIC1|DACVREF|ADCVREF/.test(this.pinfn[p]))
             this.chk(out, this.pinfn[p], this.pins[p], V(p), agnd - 0.3, avdd + 0.3,
@@ -140,7 +142,7 @@ export default class Ic extends Component {
     } else if (/esp32/i.test(this.lib)) {
       const gnd = Number.isFinite(V(fnPin(/^GND/))) ? V(fnPin(/^GND/)) : 0;
       const vddP = fnPin(/3V3|VDD/), vdd = V(vddP);
-      if (Number.isFinite(vdd))
+      if (Number.isFinite(vdd) && vdd >= 2) // only judge GPIOs once the MCU rail is up (see ES8311 note)
         for (const p in this.pinfn)
           if (/GPIO\d/.test(this.pinfn[p]))
             this.chk(out, this.pinfn[p], this.pins[p], V(p), gnd - 0.3, vdd + 0.3,

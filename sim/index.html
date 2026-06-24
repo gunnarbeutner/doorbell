@@ -34,6 +34,10 @@
   .layerpanel .lab{padding:3px 8px;color:var(--dim);background:#0d1117;font-size:11px;position:sticky;top:0;}
   .layerpanel canvas{display:block;width:100%;}
   #tip{position:fixed;pointer-events:none;background:#161b22;border:1px solid var(--acc);border-radius:4px;padding:4px 7px;font-size:11px;display:none;z-index:9;white-space:nowrap;}
+  #events{max-height:230px;overflow-y:auto;margin-bottom:6px;}
+  .evrow{border:1px solid var(--line);border-left-width:3px;border-radius:4px;padding:3px 6px;margin:3px 0;cursor:pointer;font-size:11px;}
+  .evrow:hover{border-color:var(--acc);background:#0d1117;}
+  .evrow.ongoing{border-left-color:#f0b429;}
   .scopebox{border:1px solid var(--line);border-radius:5px;margin-bottom:8px;}
   .scopebox .sh{display:flex;justify-content:space-between;padding:2px 6px;font-size:11px;}
   .scopebox canvas{display:block;width:100%;height:120px;}
@@ -53,7 +57,8 @@
     <div class="row"><label>window <input type="number" id="dur" value="200">ms</label>
       <label>dt <input type="number" id="dt" value="200">µs</label>
       <button class="primary" id="play">▶ Start</button><button id="reset">⟲ Reset</button></div>
-    <div class="row"><label>gnd <select id="gnd"></select></label></div>
+    <div class="row"><label>gnd <select id="gnd"></select></label>
+      <label class="lt" title="auto-pause the instant a new abs-max / fuse fault occurs"><input type="checkbox" id="brk"> break on fault</label></div>
 
     <h2>Time cursor <span class="hint">(scrub when paused)</span></h2>
     <div class="row"><input type="range" id="tcur" min="0" max="0" value="0" style="flex:1"><span id="tcurv" class="hint">—</span></div>
@@ -84,6 +89,9 @@
   </div>
 
   <div id="right">
+    <h2>Events <button id="clrEv" style="float:right;font-size:10px;padding:1px 5px">clear</button></h2>
+    <div class="hint">abs-max &amp; fuse faults, newest first — click to seek the cursor to the peak</div>
+    <div id="events"><div class="hint">no faults — run the sim</div></div>
     <h2>Scopes <span class="hint">(click traces to add)</span></h2>
     <div id="scopes"><div class="hint">no nets selected</div></div>
   </div>

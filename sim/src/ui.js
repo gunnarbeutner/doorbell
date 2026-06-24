@@ -58,7 +58,14 @@ let selectedNets = new Set(),
   hoveredNet = null,
   hoveredRef = null,
   program = {}, // per-IC behavioural state set by clicking a footprint -> buildElements({ program })
-  violByRef = {}; // ref -> [abs-max violations] at the displayed sample (from each part's checkSafe)
+  violByRef = {}, // ref -> [events active at the cursor] (drives the bright badges)
+  stickyRefs = new Set(), // refs flagged at any point this run (drives the dimmed "was-flagged" badges)
+  eventLog = [], // persistent fault record (survives the rolling window): each checkSafe onset->resolution
+  activeEv = new Map(), // "ref.pin" -> the ongoing event for that pin
+  breakOnFault = false, // trigger: auto-pause the instant a NEW fault opens
+  pendingBreak = null, // the event that tripped the trigger (seek here after pausing)
+  evId = 0,
+  lastEvCount = -1; // so the events panel only re-renders when the log changes
 const hideLayers = new Set(NETLIST.config?.hideLayers || []); // default-off layers, per the board's .sim
 const visLayers = new Set((PCB ? PCB.layers : []).filter((L) => !hideLayers.has(L)));
 $('#srcname').textContent = NETLIST.source;
@@ -561,10 +568,16 @@ function drawLayer(cv, L) {
     const bb = compBBox(ref);
     if (bb && bb.layers.includes(L)) drawGearBadge(g, TF.W(bb.cx), TF.H(bb.cy), hoveredRef === ref);
   }
-  for (const ref in violByRef) {
+  const drawFault = (ref, dim) => {
     const bb = compBBox(ref);
-    if (bb && bb.layers.includes(L)) drawWarnBadge(g, TF.W(bb.cx), TF.H(bb.cy) - (isProgrammable(ref) ? 14 : 0));
-  }
+    if (!bb || !bb.layers.includes(L)) return;
+    const bx = TF.W(bb.cx),
+      by = TF.H(bb.cy) - (isProgrammable(ref) ? 14 : 0);
+    if (COMP[ref] && COMP[ref].kind === 'fuse') drawBlownFuseBadge(g, bx, by, dim);
+    else drawWarnBadge(g, bx, by, dim);
+  };
+  for (const ref of stickyRefs) if (!violByRef[ref]) drawFault(ref, true); // dimmed: flagged earlier this run
+  for (const ref in violByRef) drawFault(ref, false); // bright: a fault active at the cursor
 }
 function drawAll() {
   if (!TF) return;
@@ -648,18 +661,23 @@ function onHover(ev, cv, L) {
   const tip = $('#tip');
   const viol = bestRef && violByRef[bestRef];
   if (viol) {
-    // the asterisk-in-triangle's popup: what abs-max the part is exceeding, in its own terms
+    // the badge's popup. A blown fuse is a fail-safe disconnect, not an abs-max overstress — say so.
+    const isFuse = COMP[bestRef] && COMP[bestRef].kind === 'fuse';
+    const col = isFuse ? '#f85149' : '#f0b429';
+    const head = isFuse ? `${bestRef} — fuse blown / open` : `⚠ ${bestRef} — absolute-maximum violation`;
     tip.innerHTML =
-      `<b style="color:#f0b429">⚠ ${bestRef}</b> — absolute-maximum violation<br>` +
+      `<b style="color:${col}">${head}</b><br>` +
       viol
         .map(
           (v) =>
-            `pin ${v.pin} (${v.net}) = <b>${v.v.toFixed(2)} V</b> ∉ [${v.lo}, ${v.hi}]<br><span style="color:#9aa3b2">${v.why}</span>`,
+            isFuse
+              ? `<span style="color:#9aa3b2">${v.why}</span>`
+              : `pin ${v.pin} (${v.net}) peaked <b>${v.peak.toFixed(2)} V</b> ∉ [${v.lo}, ${v.hi}] @ ${(v.peakT * 1e3).toFixed(2)} ms<br><span style="color:#9aa3b2">${v.why}</span>`,
         )
         .join('<br>');
     tip.style.whiteSpace = 'normal';
     tip.style.maxWidth = '300px';
-    tip.style.borderColor = '#f0b429';
+    tip.style.borderColor = col;
     tip.style.display = 'block';
     tip.style.left = ev.clientX + 12 + 'px';
     tip.style.top = ev.clientY + 12 + 'px';
@@ -769,6 +787,37 @@ function drawScope(cv, net) {
     g.font = '9px monospace';
     g.fillText(fmtV(hi - ((hi - lo) * i) / 4), 2, y + 3);
   }
+  // abs-max band + peak-hold for a net that has faulted: shade the danger zones, dash the limits, and
+  // mark the worst excursion — so the spike reads against its limit even after it leaves the live window.
+  const nevs = eventLog.filter((e) => e.net === net);
+  if (nevs.length) {
+    const elo = Math.max(...nevs.map((e) => e.lo)),
+      ehi = Math.min(...nevs.map((e) => e.hi));
+    const pk = nevs.reduce((m, e) => (Math.abs(e.peak) > Math.abs(m.peak) ? e : m));
+    const cY = (v) => Math.max(8, Math.min(H - 16, Y(v)));
+    g.fillStyle = 'rgba(248,81,73,0.10)';
+    if (isFinite(ehi)) g.fillRect(40, 8, W - 50, cY(ehi) - 8); // above the upper limit
+    if (isFinite(elo)) g.fillRect(40, cY(elo), W - 50, H - 16 - cY(elo)); // below the lower limit
+    g.strokeStyle = 'rgba(248,81,73,0.55)';
+    g.setLineDash([3, 3]);
+    g.lineWidth = 1;
+    for (const lim of [elo, ehi])
+      if (isFinite(lim)) {
+        g.beginPath();
+        g.moveTo(40, Y(lim));
+        g.lineTo(W - 10, Y(lim));
+        g.stroke();
+      }
+    g.setLineDash([]);
+    const yp = cY(pk.peak); // peak-hold marker
+    g.strokeStyle = '#f85149';
+    g.beginPath();
+    g.moveTo(40, yp);
+    g.lineTo(W - 10, yp);
+    g.stroke();
+    g.fillStyle = '#f85149';
+    g.fillText('peak ' + pk.peak.toFixed(2) + 'V', W - 82, yp - 2);
+  }
   g.strokeStyle = RES.floating && RES.floating[net] ? '#475569' : netColor(net);
   g.lineWidth = 1.3;
   g.beginPath();
@@ -832,36 +881,99 @@ function buildEls() {
   return buildElements(NETLIST, { switchState, extra, program });
 }
 
-// ---- safety invariants in the UI: ask every part's checkSafe across the captured window ----
-// Scanned over the whole window (like the reverse-bias status check) so a brief transient overstress —
-// e.g. the OUTP kick on a PTT make — latches the badge instead of flashing for one sample.
+// ---- safety-invariant events: per-step edge detection into a persistent log ----
+// Run on EVERY simulation step (from pushSample), so a sub-frame transient is never missed. checkSafe is
+// the event source: a violation that begins opens an event (onset time), its peak is tracked while it
+// persists, and it closes when it clears. The log survives the rolling sample window.
+function trackViolations(t) {
+  if (!stepper) return;
+  const flo = RES.floating || {};
+  const vn = {};
+  for (const net in stepper.ni) vn[net] = flo[net] ? NaN : stepper.vn[stepper.ni[net]]; // skip floating nodes
+  const seen = new Set();
+  for (const ref in COMP) {
+    const fuse = COMP[ref].kind === 'fuse';
+    for (const x of COMP[ref].checkSafe(vn)) {
+      const key = ref + '.' + x.pin;
+      seen.add(key);
+      const exc = Math.max(x.lo - x.v, x.v - x.hi);
+      let ev = activeEv.get(key);
+      if (!ev) {
+        // rising edge -> a new fault
+        ev = { id: ++evId, ref: x.ref, pin: x.pin, net: x.net, kind: fuse ? 'fuse' : 'absmax',
+               lo: x.lo, hi: x.hi, why: x.why, t0: t, peak: x.v, peakT: t, peakExc: exc, end: null };
+        activeEv.set(key, ev);
+        eventLog.push(ev);
+        stickyRefs.add(x.ref);
+        if (breakOnFault && !pendingBreak) pendingBreak = ev; // trip the trigger
+      } else if (exc > ev.peakExc) {
+        ev.peakExc = exc; ev.peak = x.v; ev.peakT = t; // track the worst excursion
+      }
+    }
+  }
+  for (const [key, ev] of activeEv) if (!seen.has(key)) { ev.end = t; activeEv.delete(key); } // falling edge
+}
+
+// badges reflect the cursor: bright = a fault active at the displayed time (from the log); the dimmed
+// "was-flagged" badges come from stickyRefs. Cheap — just a scan of the event list at the cursor time.
 function computeViolations() {
   violByRef = {};
   if (!RES || !RES.t.length) return;
-  const flo = RES.floating || {};
-  const len = RES.t.length;
-  const worst = {}; // "ref.pin" -> worst violation over the window
-  for (let k = 0; k < len; k++) {
-    const vn = {};
-    for (const n in RES.v) vn[n] = flo[n] ? NaN : RES.v[n][k]; // never judge a floating node
-    for (const ref in COMP)
-      for (const x of COMP[ref].checkSafe(vn)) {
-        const key = ref + '.' + x.pin,
-          exc = Math.max(x.lo - x.v, x.v - x.hi),
-          prev = worst[key];
-        if (!prev || exc > prev.exc) worst[key] = { ...x, exc };
-      }
+  const tc = RES.t[Math.min(tIndex, RES.t.length - 1)];
+  for (const ev of eventLog)
+    if (ev.t0 <= tc && tc <= (ev.end ?? Infinity)) (violByRef[ev.ref] ||= []).push(ev);
+}
+
+// the events side panel — newest first; click a row to scrub the cursor to that fault's peak.
+function buildEventLog() {
+  const box = $('#events');
+  if (!box) return;
+  if (!eventLog.length) {
+    box.innerHTML = '<div class="hint">no faults — run the sim</div>';
+    return;
   }
-  for (const key in worst) (violByRef[worst[key].ref] ||= []).push(worst[key]);
+  box.innerHTML = '';
+  for (const ev of eventLog.slice(-200).reverse()) {
+    const icon = ev.kind === 'fuse' ? '⌁' : '⚠';
+    const col = ev.kind === 'fuse' ? '#f85149' : '#f0b429';
+    const dur = ev.end == null ? 'ongoing' : `${((ev.end - ev.t0) * 1e3).toFixed(2)} ms`;
+    const d = document.createElement('div');
+    d.className = 'evrow' + (ev.end == null ? ' ongoing' : '');
+    d.style.borderLeftColor = col;
+    d.innerHTML =
+      `<span style="color:${col}">${icon} ${ev.ref}</span> ${ev.pin} · <b>${ev.peak.toFixed(2)} V</b> ` +
+      `· @ ${(ev.peakT * 1e3).toFixed(2)} ms · ${dur}<br><span class="hint">${ev.why}</span>`;
+    d.onclick = () => seekToEvent(ev);
+    box.appendChild(d);
+  }
+}
+
+// scrub the cursor to a fault's peak (pausing first), select its net, and light its badge.
+function seekToEvent(ev) {
+  if (running) pause();
+  if (!RES.t.length) return;
+  let best = 0, bd = Infinity;
+  for (let i = 0; i < RES.t.length; i++) {
+    const dd = Math.abs(RES.t[i] - ev.peakT);
+    if (dd < bd) { bd = dd; best = i; }
+  }
+  tIndex = best;
+  $('#tcur').value = best;
+  updTcur();
+  selectedNets.add(ev.net);
+  buildScopes();
+  drawAll();
+  const off = ev.peakT < (RES.t[0] || 0) ? ' (scrolled out of the window)' : '';
+  $('#status').textContent = `↳ ${ev.ref} ${ev.pin} peaked ${ev.peak.toFixed(2)} V @ ${(ev.peakT * 1e3).toFixed(2)} ms${off}`;
 }
 
 const isProgrammable = (ref) => !!(COMP[ref] && COMP[ref].programSchema && COMP[ref].programSchema());
 
 // an "asterisk in a triangle" warning marker, drawn at an affected component's centroid.
-function drawWarnBadge(g, x, y) {
+function drawWarnBadge(g, x, y, dim) {
   const r = 8;
   g.save();
-  g.globalAlpha = 1;
+  g.globalAlpha = dim ? 0.32 : 1;
   g.beginPath();
   g.moveTo(x, y - r);
   g.lineTo(x + r * 0.92, y + r * 0.62);
@@ -920,6 +1032,39 @@ function drawGearBadge(g, x, y, hot) {
   g.arc(0, 0, 2, 0, 7);
   g.fillStyle = '#0b1220';
   g.fill();
+  g.restore();
+}
+
+// a blown fuse: a red holder with a melted (broken) filament — distinct from the abs-max ⚠, because the
+// protection *worked* (a fail-safe disconnect), it isn't a part being overstressed.
+function drawBlownFuseBadge(g, x, y, dim) {
+  const w = 17, h = 10, r = 3.5;
+  g.save();
+  g.globalAlpha = dim ? 0.32 : 1;
+  g.translate(x, y);
+  g.beginPath();
+  g.moveTo(-w / 2 + r, -h / 2);
+  g.arcTo(w / 2, -h / 2, w / 2, 0, r);
+  g.arcTo(w / 2, h / 2, 0, h / 2, r);
+  g.arcTo(-w / 2, h / 2, -w / 2, 0, r);
+  g.arcTo(-w / 2, -h / 2, 0, -h / 2, r);
+  g.closePath();
+  g.fillStyle = '#2a1010';
+  g.strokeStyle = '#f85149';
+  g.lineWidth = 1.4;
+  g.fill();
+  g.stroke();
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(-w / 2 + 2.5, 0); // filament from the left lead...
+  g.lineTo(-2.5, 0);
+  g.moveTo(2.5, 0); // ...and from the right, with a melted gap between
+  g.lineTo(w / 2 - 2.5, 0);
+  g.moveTo(-2.5, 0); // two singed stubs angled away from the break
+  g.lineTo(-1, -2.2);
+  g.moveTo(2.5, 0);
+  g.lineTo(1, 2.2);
+  g.stroke();
   g.restore();
 }
 
@@ -1004,6 +1149,7 @@ function pushSample() {
   RES.t.push(simT);
   for (const n of stepper.nodes) (RES.v[n] = RES.v[n] || []).push(stepper.vn[stepper.ni[n]]);
   (RES.v[stepper.gnd] = RES.v[stepper.gnd] || []).push(0);
+  trackViolations(simT); // per-step fault edge detection (before the window trim drops old samples)
   const drop = RES.t.length - winLen();
   if (drop > 0) {
     RES.t.splice(0, drop);
@@ -1042,6 +1188,10 @@ function redraw() {
   updTcur();
   drawAll();
   updateRelayStates();
+  if (eventLog.length !== lastEvCount || activeEv.size) {
+    lastEvCount = eventLog.length; // refresh the events panel on a new/closed fault (or live peak/duration)
+    buildEventLog();
+  }
   document.querySelectorAll('#scopes canvas').forEach((cv, i) => drawScope(cv, [...selectedNets][i]));
 }
 
@@ -1070,17 +1220,28 @@ function frame(ts) {
   lastWall = ts;
   const want = Math.max(1, Math.round(realEl / dt)); // steps needed to stay at wall-clock speed
   const n = Math.min(want, MAXSTEPS); // cap → slow-mo instead of a frozen UI when it can't keep up
+  let stepped = 0;
   for (let i = 0; i < n; i++) {
     simT += dt;
     stepper.step(simT);
-    pushSample();
+    pushSample(); // may trip pendingBreak (a new fault) inside trackViolations
+    stepped++;
+    if (pendingBreak) break; // break-on-fault: stop at the fault, not n steps later
   }
   tIndex = RES.t.length - 1;
-  ratio = (n * dt) / Math.max(realEl, 1e-6);
+  ratio = (stepped * dt) / Math.max(realEl, 1e-6);
   RES.floating = stepper.floatingMap();
+  if (pendingBreak) {
+    const ev = pendingBreak;
+    pendingBreak = null;
+    pause();
+    seekToEvent(ev);
+    $('#status').textContent = `⏸ broke on ${ev.kind === 'fuse' ? 'fuse' : 'fault'}: ${ev.ref} ${ev.pin} ${ev.peak.toFixed(2)} V @ ${(ev.peakT * 1e3).toFixed(2)} ms`;
+    return;
+  }
   if (ts - lastDraw > 32) {
     redraw(); // throttle the redraw to ~30 Hz; keep stepping on every animation frame
-    status(n);
+    status(stepped);
     lastDraw = ts;
   }
   rafId = requestAnimationFrame(frame);
@@ -1113,6 +1274,12 @@ function reset() {
   cancelAnimationFrame(rafId);
   simT = 0;
   RES = { t: [], v: {}, floating: {} };
+  eventLog = []; // fresh run -> clear the fault log, sticky badges, and the trigger
+  activeEv.clear();
+  stickyRefs.clear();
+  pendingBreak = null;
+  evId = 0;
+  lastEvCount = -1;
   rebuildStepper(null);
   stepper.step(0); // show the t = 0 operating point
   pushSample();
@@ -1152,6 +1319,16 @@ $('#cmode').onchange = drawAll;
 $('#vmax').oninput = drawAll; // re-color on scale change (no re-sim needed)
 $('#flow').onchange = drawAll; // show/hide the current-flow animation
 $('#silk').onchange = drawAll; // show/hide the silkscreen underlay
+$('#brk').onchange = (e) => (breakOnFault = e.target.checked); // auto-pause on the next new fault
+$('#clrEv').onclick = () => {
+  eventLog = [];
+  activeEv.clear();
+  stickyRefs.clear();
+  pendingBreak = null;
+  lastEvCount = -1;
+  buildEventLog();
+  drawAll();
+};
 window.addEventListener('resize', () => buildStack());
 
 // init: seed the default sources from the board's .sim config, then show the operating point (paused)
