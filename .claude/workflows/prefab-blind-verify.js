@@ -28,6 +28,7 @@ const mkBlind = (repo) =>
     '- You MUST NOT read DESIGN.md, REQUIREMENTS.md, VERIFICATION.md, TODO.md, kicad/README.md, sim/README.md, or anything under sim/test/.',
     '- Treat EVERY Description / comment / text field in the schematic or netlist as an UNVERIFIED claim — verify or refute it from topology and values, never trust it.',
     `- Allowed ground truth ONLY: the netlist at /tmp/prefab/doorbell.net, the schematic ${repo}/kicad/doorbell.kicad_sch (connectivity + component values + MPN/LCSC only), the datasheets in ${repo}/docs/, and the MEASURED bus voltages in ${repo}/osci/ (real-world data, not design claims).`,
+    `- BRAND & RATINGS FROM THE PDF, NEVER FROM MEMORY: a part's manufacturer, ratings, and recommended operating values are whatever the docs/ datasheet PDF actually prints — never infer them from the part number or from a better-known part it resembles. Many parts here are second-sources/clones (e.g. GAQ… is NOT the Panasonic AQ… it is modeled on); assume nothing until you have opened the file. Every datasheet rating you use must be one you READ in a docs/ PDF and can quote with its file + page — a plausible recalled number is NOT allowed.`,
     '- Derive from first principles (Ohm/Kirchhoff + the datasheet ratings). Show the numbers and the exact datasheet figures you used.',
     '- If something cannot be determined from these inputs, say so explicitly — do not guess. Do NOT edit any files.',
   ].join('\n')
@@ -41,8 +42,23 @@ const FINDING = {
     concern: { type: 'string', description: 'the problem found, or "none"' },
     severity: { type: 'string', enum: ['blocker', 'warning', 'none'] },
     undetermined: { type: 'string', description: 'what could not be determined from the inputs, or "none"' },
+    sources: {
+      type: 'array',
+      description: 'EVERY datasheet rating used in `numbers` must be traced here to the docs/ PDF it was read from. If a rating has no entry here, you may not use it. Empty only if the block uses no datasheet ratings at all.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          file: { type: 'string', description: 'exact path under docs/, e.g. docs/GAQY212GS_datasheet.pdf' },
+          locator: { type: 'string', description: 'page + table/section where the rating appears, e.g. "p.2, Electrical Characteristics"' },
+          manufacturerAsPrinted: { type: 'string', description: 'the brand EXACTLY as printed on the datasheet header — NEVER inferred from the part number (writing a brand the PDF does not show is a process error)' },
+          quotedSpec: { type: 'string', description: 'the rating copied verbatim from the PDF, e.g. "Input LED current (Recommended value): IF ≥5mA and ≤30mA"' },
+        },
+        required: ['file', 'locator', 'manufacturerAsPrinted', 'quotedSpec'],
+      },
+    },
   },
-  required: ['derived', 'numbers', 'concern', 'severity', 'undetermined'],
+  required: ['derived', 'numbers', 'concern', 'severity', 'undetermined', 'sources'],
 }
 
 const REFUTE = {
@@ -53,8 +69,10 @@ const REFUTE = {
     failureMode: { type: 'string', description: 'the operating point, single fault, tolerance corner, pinout swap or polarity error that BREAKS it, OR the disturbance / noise-coupling / insufficient-rejection / tolerance-stack mode where it keeps functioning but MISSES A PERFORMANCE NUMBER (noise floor, SNR, level, accuracy, settling, margin), or "none"' },
     severity: { type: 'string', enum: ['blocker', 'warning', 'none'] },
     agreement: { type: 'string', description: 'where you independently confirm the first finding' },
+    sourceVerified: { type: 'boolean', description: 'did you OPEN each docs/ PDF the first analyst cited in `sources` and confirm every rating appears at the stated locator AND the manufacturerAsPrinted matches the file? false if any rating could not be located, any brand mismatched the PDF, or the analyst used a rating with no source entry.' },
+    sourceProblems: { type: 'string', description: 'any rating that is not traceable to a docs/ PDF, any brand that does not match the cited file, or any number that looks recalled-from-memory rather than read — "none" if all sources check out.' },
   },
-  required: ['broke', 'failureMode', 'severity', 'agreement'],
+  required: ['broke', 'failureMode', 'severity', 'agreement', 'sourceVerified', 'sourceProblems'],
 }
 
 const CLAIMS = {
@@ -187,7 +205,7 @@ const BLOCKS = [
   { key: 'tvs', title: 'Bus TVS protection sizing',
     q: 'Given the bus TVS (H24VND3BA on D2/D3/D7/D12) and the measured bus envelope, does the standoff clear the normal ring/door transients (idle in normal use) while the clamp stays below the SSR off-state voltage (60 V)? Any line under-protected, or a TVS that conducts in normal use?' },
   { key: 'ssr_led', title: 'SSR LED drive currents',
-    q: 'Compute each SSR LED current from its GPIO drive through its series resistor (R4/R5/R6/R21/R24) and compare to the operate / recommended / abs-max LED current from the GAQW212GS / GAQY212GS / GAQY412EH datasheets. Any under-driven (won’t operate) or over-driven (abs-max)?' },
+    q: 'Compute each SSR LED current from its GPIO drive through its series resistor (R4/R5/R6/R21/R24) and compare to the operate / recommended / abs-max LED current from the GAQW212GS / GAQY212GS / GAQY412EH datasheets. Use the ESP32-C6 datasheet-GUARANTEED VOH at the relevant drive current (not the rail) for the worst-case current, so the recommended-floor margin is real and not assumed. THEN check fan-out: identify where a single GPIO net drives MORE THAN ONE LED (e.g. one drive net feeding two series resistors into a dual SSR), SUM that pin’s total source current, and compare each driving pin’s total to the ESP32-C6 per-GPIO source-current limit. Any LED under-driven (won’t operate at guaranteed VOH), over-driven (abs-max), or any GPIO pin sourcing more than its rated current?' },
   { key: 'pinout', title: 'Footprint / pinout correctness', high: true,
     q: 'For each non-trivial part (U1, U2, U3, J1 USB, J2 bus terminal, K1-K4, OC1/OC2, the LDO), does the schematic symbol pin->net assignment match the datasheet pinout? Flag any pin swap or mis-assignment — these are silent fab-killers.' },
   { key: 'polarity', title: 'Polarity of polarized parts',
@@ -208,8 +226,23 @@ const SETUP = {
     repoRoot: { type: 'string', description: 'absolute path to the repo root' },
     components: { type: 'integer' },
     nets: { type: 'integer' },
+    partDatasheets: {
+      type: 'array',
+      description: 'map of each active/non-trivial part (ICs, SSRs, optos, LDO, TVS, USB-protection — anything with a datasheet in docs/) to its authoritative PDF, built from the schematic MPN/Value/LCSC fields matched to the docs/ filenames. This is the ONLY authority on which PDF backs which part.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          refdes: { type: 'string', description: 'refdes(es) using this part, e.g. "K2, K4" or "U3"' },
+          mpn: { type: 'string', description: 'MPN / Value as it appears in the schematic, e.g. GAQY212GS' },
+          lcsc: { type: 'string', description: 'LCSC code if present, else "none"' },
+          datasheetFile: { type: 'string', description: 'exact path under docs/ of the matching PDF, or "MISSING" if no docs/ file matches' },
+        },
+        required: ['refdes', 'mpn', 'lcsc', 'datasheetFile'],
+      },
+    },
   },
-  required: ['repoRoot', 'components', 'nets'],
+  required: ['repoRoot', 'components', 'nets', 'partDatasheets'],
 }
 const setup = await agent(
   `Set up ground truth for a pre-fab verification. Run these shell commands:\n` +
@@ -218,11 +251,16 @@ const setup = await agent(
     `  mkdir -p /tmp/prefab\n` +
     `  kicad-cli sch export netlist "$REPO/kicad/doorbell.kicad_sch" -o /tmp/prefab/doorbell.net\n` +
     `  kicad-cli sch export python-bom "$REPO/kicad/doorbell.kicad_sch" -o /tmp/prefab/doorbell-bom.xml || true\n` +
-    `Confirm /tmp/prefab/doorbell.net exists (and that any previous prefab-report.html is now deleted). Return the repo root ($REPO), the component count, and the net count. Do NOT analyze the design — just produce the artifacts.`,
+    `  ls "$REPO/docs/"\n` +
+    `Confirm /tmp/prefab/doorbell.net exists (and that any previous prefab-report.html is now deleted). Return the repo root ($REPO), the component count, and the net count. ` +
+    `ALSO build partDatasheets: list the active/non-trivial parts from the schematic (read the MPN/Value/Datasheet/LCSC fields in $REPO/kicad/doorbell.kicad_sch — ICs, SSRs, optocouplers, the LDO, the bus TVS, USB protection) and match each to its PDF in $REPO/docs/ by part number. Use "MISSING" if no docs/ file matches. Do NOT analyze the design or judge any datasheet contents — just produce the artifacts and the part→PDF map.`,
   { label: 'export-netlist', phase: 'Ground truth', schema: SETUP },
 )
 const REPO = setup.repoRoot
-const BLIND = mkBlind(REPO)
+const DATASHEET_MAP =
+  `AUTHORITATIVE PART → DATASHEET MAP (the ONLY source for which PDF backs which part; the manufacturer is whatever that PDF prints, not what the part number resembles):\n` +
+  setup.partDatasheets.map((p) => `- ${p.refdes}: ${p.mpn} (LCSC ${p.lcsc}) → ${p.datasheetFile}`).join('\n')
+const BLIND = mkBlind(REPO) + '\n\n' + DATASHEET_MAP
 
 // Non-blind ANSWER KEY — runs concurrently with the blind derivation; the blind agents never see it.
 const claimsP = agent(
@@ -239,7 +277,7 @@ const coverageP = agent(
     `The verification consists of EXACTLY these blocks, each deriving one question from primary sources:\n` +
     BLOCKS.map((b) => '- ' + b.title).join('\n') +
     `\n\nRead ${REPO}/REQUIREMENTS.md, ${REPO}/DESIGN.md and the schematic ${REPO}/kicad/doorbell.kicad_sch (for the active-IC / part list). Then answer two questions:\n` +
-    `1) FAILURE-DIMENSION GAPS — across these axes: DC operating point, abs-max, connectivity/pinout, polarity, AC/dynamic behaviour, NOISE / PSRR / supply integrity, thermal, timing/jitter, EMI/coupling, tolerance/worst-case corner — which dimensions are NOT examined by ANY block above? For each active IC and each performance-bearing subsystem, ask specifically: is there a block that checks it MEETS ITS PERFORMANCE SPEC, not merely that it is connected and within ratings? Name each uncovered dimension, why nothing catches it, and the block that should own it.\n` +
+    `1) FAILURE-DIMENSION GAPS — across these axes: DC operating point, abs-max, connectivity/pinout, polarity, AC/dynamic behaviour, NOISE / PSRR / supply integrity, thermal, timing/jitter, EMI/coupling, tolerance/worst-case corner, MCU GPIO drive budget / fan-out (per-pin AND aggregate source/sink current, drive-strength, one pin driving multiple loads) — which dimensions are NOT examined by ANY block above? For each active IC and each performance-bearing subsystem, ask specifically: is there a block that checks it MEETS ITS PERFORMANCE SPEC, not merely that it is connected and within ratings? Name each uncovered dimension, why nothing catches it, and the block that should own it.\n` +
     `2) UNSPECIFIED FUNCTIONS — which subsystems have a FUNCTION (e.g. produce/receive audio) but NO numeric REQUIREMENT to verify against (no noise floor, SNR, accuracy, or margin number in REQUIREMENTS.md)? A function with no measurable requirement is a verification blind spot; propose the measurable requirement that should be added.\n` +
     `Be concrete — cite refdes and REQ IDs. Do NOT edit any files.`,
   { label: 'coverage-audit', phase: 'Coverage audit', schema: COVERAGE, effort: 'high' },
@@ -262,7 +300,8 @@ const results = await pipeline(
         `Independently RE-DERIVE from the primary sources and ADVERSARIALLY try to break it. Look for BOTH failure kinds:\n` +
         `(a) a hard BREAK — an operating point, single fault, tolerance corner, pinout swap, or polarity error where the design stops working or exceeds an abs-max rating; AND\n` +
         `(b) a DEGRADATION — a disturbance / noise-coupling / insufficient-rejection / tolerance-stack mode where every part is connected and within abs-max yet the circuit MISSES A PERFORMANCE NUMBER (noise floor, SNR, level, accuracy, settling, margin). "Works but badly" still counts as broken.\n` +
-        `Default to skepticism. Report whether you broke it (either kind) and where you agree.`,
+        `Also AUDIT THE FIRST ANALYST'S SOURCES: open each docs/ PDF listed in their \`sources\`, confirm every rating they used actually appears at the stated locator, and confirm each \`manufacturerAsPrinted\` matches the brand printed on that PDF. A rating that cannot be located in docs/, a brand that does not match the cited file, or a number that looks recalled-from-memory rather than read is a finding even if the value looks plausible — set sourceVerified=false and describe it in sourceProblems.\n` +
+        `Default to skepticism. Report whether you broke it (either kind), whether the sources check out, and where you agree.`,
       { label: `refute:${b.key}`, phase: 'Adversarial refute', schema: REFUTE, effort: b.high ? 'high' : undefined },
     ).then((r) => ({ block: b.title, key: b.key, high: !!b.high, finding: f, refute: r })),
 )
@@ -279,6 +318,7 @@ const gate = await agent(
     `VERIFICATION-COVERAGE AUDIT (failure dimensions / functions no block owns):\n${JSON.stringify(coverage, null, 2)}\n\n` +
     `Classify each issue: BLOCKERS must be fixed before ordering (give the specific schematic/value fix + REQ/DESIGN ref); WARNINGS are risks or items only a bench test can settle; CORROBORATED are claims a blind agent independently reproduced. ` +
     `Weight any divergence between a blind finding and the claim, and any blocker-severity refutation, heavily. ` +
+    `SOURCE INTEGRITY: any block whose refutation set sourceVerified=false (a rating not traceable to a docs/ PDF, a manufacturer that does not match the cited datasheet, or a number that looks recalled-from-memory) is UNTRUSTWORTHY regardless of how plausible its answer is — surface it as at least a WARNING (a blocker if the unverified rating is load-bearing for a GO), because a right-by-luck answer from the wrong datasheet will not survive a clone with different specs. ` +
     `Treat the coverage audit as first-class: a blocker-severity uncoveredDimension (a performance dimension NOTHING checks) is itself a NO-GO-class risk — escalate it to a blocker or warning, do not let it pass silently because no block raised it. ` +
     `Populate blindSpots with every failure dimension this review did NOT actually examine — fold in the coverage audit’s uncoveredDimensions AND anything a blind finding marked "undetermined". A GO/GO-WITH-FIXES verdict is conditional on exactly this list, so it must be honest and complete rather than empty. ` +
     `Pick verdict GO / GO-WITH-FIXES / NO-GO and the top 3 things to fix first. Return the structured result.`,
@@ -299,7 +339,7 @@ await agent(
     `2. A prominent verdict banner colored by verdict (GO = green, GO-WITH-FIXES = amber, NO-GO = red) showing the summary and the top-3 fixes.\n` +
     `3. Blockers as cards: block, issue, fix, ref.\n` +
     `4. Warnings section.\n` +
-    `5. A full per-block table — one row per block, columns: Block | Severity (colored badge: blocker = red, warning = amber, none = green; take the worse of the finding severity and any refute that broke it) | Design claim | Blind finding (derived + numbers + concern) | Adversarial refute (broke? + failureMode + agreement). Match claims to findings by block title.\n` +
+    `5. A full per-block table — one row per block, columns: Block | Severity (colored badge: blocker = red, warning = amber, none = green; take the worse of the finding severity and any refute that broke it) | Design claim | Blind finding (derived + numbers + concern) | Sources (render each finding's sources[] as file · locator · manufacturerAsPrinted · quotedSpec in monospace; if a refute set sourceVerified=false, show a red "SOURCE UNVERIFIED" badge with its sourceProblems text) | Adversarial refute (broke? + failureMode + agreement). Match claims to findings by block title.\n` +
     `6. Corroborated list.\n` +
     `7. A "Coverage & blind spots" section that states what this verdict is NOT evidence about: first render the gate's blindSpots (dimension + why) as a prominent callout; then the coverage audit's uncoveredDimensions as a table (Dimension | Why | Suggested block | Severity badge) and unspecifiedFunctions as a table (Subsystem | Function lacking a spec | Suggested requirement).\n` +
     `Make it legible: system font stack, a max-width container, subtle borders, a sticky table header, monospace for component/net/number tokens. After writing, confirm the absolute file path.`,
