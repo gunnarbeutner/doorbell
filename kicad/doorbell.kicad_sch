@@ -15800,7 +15800,7 @@
 		)
 		(uuid "a2992d15-2815-4656-b195-3a0c72f0684b")
 	)
-	(text "TALK (K1, NO SSR)\ngates TALK_BRIDGE<->P2;\ncodec TX -> R28 -> line 3"
+	(text "TALK (K1, NO SSR)\ngates TALK_BRIDGE<->P4;\ncodec TX -> R28 -> line 3"
 		(exclude_from_sim no)
 		(at 357.378 31.75 0)
 		(effects
