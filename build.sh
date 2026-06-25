@@ -35,11 +35,13 @@ check() {
   "$KPY" kicad/check_pcb.py 2>&1 | q
 }
 report_unrouted() {
-  # Pinpoint route.py's "unrouted connection(s)" by pad/position, via the DRC
-  # engine's unconnected-items report. kicad-cli does NOT refill zones, so this
-  # assumes the committed board has zones filled+saved (the normal workflow — see
-  # route.py); if it doesn't, plane pads read as unrouted and the count balloons,
-  # which we detect and flag rather than dumping the whole GND net.
+  # Supplement route.py's island localizer for unrouted copper that ISN'T a zone
+  # island (loose pads/tracks): pinpoint those by pad/position via the DRC engine's
+  # unconnected-items report. kicad-cli does NOT refill zones, so this assumes the
+  # committed board has zones filled+saved (the normal workflow — see route.py); if it
+  # doesn't, plane pads read as unrouted and the count balloons, which we detect and
+  # skip. Self-referential zone items (a zone's anchor corner ↔ itself) are dropped —
+  # route.py already localizes those to the island + stranded pad.
   kicad-cli pcb drc --format json --exit-code-violations "$PCB" \
     -o /tmp/doorbell_drc.json >/dev/null 2>&1 || true
   python3 - "$1" <<'PY' || true
@@ -54,14 +56,18 @@ if expected and len(items) > expected + 2:
     print(f"    ({len(items)} unconnected items vs {expected} expected — fill + save "
           "zones in KiCad, then re-run to pinpoint)")
     items = []
-if not items:
-    print("    (could not pinpoint; inspect the ratsnest in KiCad)")
+lines = []
 for v in items:
     legs = []
     for it in v.get("items", []):
         p = it.get("pos", {})
         legs.append(f"{it.get('description','?')} @ ({p.get('x',0):.2f}, {p.get('y',0):.2f}) mm")
-    print("    ✗ " + "  ↔  ".join(legs))
+    if len(set(legs)) <= 1:
+        continue  # zone-anchor self-loop (just the corner) — route.py localizes these
+    lines.append("    ✗ " + "  ↔  ".join(legs))
+if lines:
+    print("  non-zone unrouted endpoint(s):")
+    print("\n".join(lines))
 PY
   rm -f /tmp/doorbell_drc.json
 }
@@ -74,7 +80,6 @@ route() {
     if grep -q "unrouted connection" /tmp/doorbell_route.txt; then
       local n
       n=$(grep -oE "ERROR: [0-9]+ unrouted" /tmp/doorbell_route.txt | grep -oE "[0-9]+" | head -1)
-      echo "  unrouted connection location(s):"
       report_unrouted "${n:-0}"
     fi
     exit "$rc"

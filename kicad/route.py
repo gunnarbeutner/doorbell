@@ -4,6 +4,8 @@
 A **read-only** checker for the rules KiCad's own DRC can't express. It:
   * refills existing zones in memory (never writes the board, creates no copper),
   * fails if any connection is left unrouted (after the plane/zone fill),
+    pinpointing each isolated zone island (location + the pad it strands) so the
+    GND stitch site is obvious rather than just naming the board corner,
   * fails if a floating copper-thieving island is BOTH over the sliver limit
     (area >= 2 mm^2, or longest side >= 10 mm) AND wide enough to host a GND
     stitching via — pockets too narrow to take a via are unavoidable and pass,
@@ -40,18 +42,53 @@ except TypeError:                       # older API: no aVisibleOnly argument
 if _unrouted == 0:
     print("0 unrouted connections -- board is fully routed")
 else:
-    _names = set()
-    try:
-        _conn = board.GetConnectivity()
-        for _nc in range(1, board.GetNetCount()):
-            _rn = _conn.GetRatsnestForNet(_nc)
-            if _rn is not None and _rn.GetEdges():
-                _names.add(board.FindNet(_nc).GetNetname())
-    except Exception:
-        pass
-    sys.exit(f"ERROR: {_unrouted} unrouted connection(s)"
-             + (f" on net(s): {', '.join(sorted(_names))}" if _names else "")
-             + "\nRoute the missing connection(s) in KiCad.")
+    # Localize the unrouted copper so the fix site is obvious. KiCad's own locators
+    # are no help from this Python binding: ratsnest GetEdges() returns an untyped
+    # swig object, FillIsolatedIslandsMap() wants a std::map passed by reference
+    # (not constructible here), and kicad-cli's DRC reports a zone's anchor CORNER,
+    # not the offending island. So find it geometrically. The netted zones are GND
+    # pours stitched to the inner planes by vias, so a filled island reaches the
+    # plane system only if it holds a via on its net (vias bridge layers) or a
+    # through-hole pad of its net. An island with neither floats -- together with
+    # any SMD pad sitting on it -- and needs a hand-placed stitching via.
+    def _contains(_outline, _pt):
+        _ps = pcbnew.SHAPE_POLY_SET(); _ps.AddOutline(_outline); return _ps.Contains(_pt)
+    _vias = [(t.GetPosition(), t.GetNetname()) for t in board.GetTracks()
+             if t.Type() == pcbnew.PCB_VIA_T]
+    _pads = [(p.GetPosition(), p.GetNetname(), p.GetAttribute(),
+              f"{fp.GetReference()}.{p.GetPadName()}")
+             for fp in board.GetFootprints() for p in fp.Pads()]
+    _stranded = []
+    for _z in board.Zones():
+        if _z.GetIsRuleArea() or not _z.GetNetname():
+            continue
+        _net, _lid = _z.GetNetname(), _z.GetLayer()
+        _polys = _z.GetFilledPolysList(_lid)
+        for _i in range(_polys.OutlineCount()):
+            _o = _polys.Outline(_i)
+            if any(_n == _net and _contains(_o, _p) for _p, _n in _vias):
+                continue                       # a net via bridges this island to the planes
+            if any(_n == _net and _a == pcbnew.PAD_ATTRIB_PTH and _contains(_o, _p)
+                   for _p, _n, _a, _d in _pads):
+                continue                       # a through-hole net pad bridges layers
+            _smd = [_d for _p, _n, _a, _d in _pads if _n == _net and _contains(_o, _p)]
+            _bb = _o.BBox(); _c = _bb.GetCenter()
+            _area = abs(_o.Area()) / pcbnew.FromMM(1) ** 2
+            _stranded.append(
+                f"{_z.GetZoneName() or 'zone'} [{_net}] island on {board.GetLayerName(_lid)}: "
+                f"{_area:.1f} mm² ({pcbnew.ToMM(_bb.GetWidth()):.1f}×{pcbnew.ToMM(_bb.GetHeight()):.1f} mm) "
+                f"at ({pcbnew.ToMM(_c.x):.2f}, {pcbnew.ToMM(_c.y):.2f}) mm"
+                + (f", strands pad(s) {', '.join(_smd)}" if _smd else "")
+                + f" -- stitch to {_net} with a via here")
+    _msg = f"ERROR: {_unrouted} unrouted connection(s)"
+    if _stranded:
+        _msg += " -- isolated zone island(s):\n  " + "\n  ".join(_stranded)
+        if len(_stranded) != _unrouted:
+            _msg += (f"\n  (localized {len(_stranded)} island(s); {_unrouted} unrouted total -- "
+                     "any remainder is non-zone copper, inspect the ratsnest in KiCad)")
+    else:
+        _msg += " (not in a zone island -- inspect the ratsnest in KiCad)"
+    sys.exit(_msg + "\nRoute the missing connection(s) in KiCad.")
 
 # --- copper density report ---
 _IU2 = pcbnew.FromMM(1) ** 2
