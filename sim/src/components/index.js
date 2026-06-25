@@ -11,6 +11,7 @@ import Optocoupler from './Optocoupler.js';
 import Ldo from './Ldo.js';
 import Ic from './Ic.js';
 import Mosfet from './Mosfet.js';
+import DiodeArray from './DiodeArray.js';
 import Diode from './Diode.js';
 import FerriteBead from './FerriteBead.js';
 import Inductor from './Inductor.js';
@@ -34,6 +35,7 @@ export const REGISTRY = [
   Ldo,
   Ic,
   Mosfet,
+  DiodeArray,
   Diode,
   FerriteBead,
   Inductor,

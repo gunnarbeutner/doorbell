@@ -133,6 +133,11 @@ shared party line across apartments.
   abs-max under the worst-case **normal** bus level — the line-2 Türruf gong (bench-measured ±8.8 V),
   not only under fault transients (which are SAFE-1). *(Met by the 22 kΩ/3.3 kΩ series+shunt divider,
   ~−18 dB, biasing MIC1P/N to VMID — see DESIGN "Audio path".)*
+- **AUDIO-9 (MUST)** The TX inject path MUST keep the codec **output** (OUTP) within the ES8311's
+  output abs-max — both under the **normal** K1-make transient (the +12 V P2 step coupling back through
+  C14 on every talk-start) and under a **single-fault C14-short** (sustained +12 V DC through R26). The
+  TX counterpart to AUDIO-8. *(Met by R26 (2.2 kΩ) limiting the current into D13 — a BAT54S dual-series
+  Schottky clamping OUTP to [AGND−0.3, AVDD+0.3] — see DESIGN "Audio path" / TX front-end.)*
 
 ## DOOR — Door opener
 

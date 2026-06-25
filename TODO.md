@@ -6,25 +6,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
 
 ## V4 main board — schematic / layout changes (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
-- [ ] **Verify OC1/OC2 in JLCPCB's placement preview before ordering.** The per-footprint `ROT_FIX`
-      (`kicad/jlcpcb_cpl.py`) now applies the +180 opto correction to OC1/OC2 — they were silently 0
-      under the old dead `OK1-3` keys, so this is a 180° change worth eyeballing.
-- [ ] **Add an external Schottky clamp at codec OUTP (ES8311 pin 12).** `prefab-blind-verify` flagged
-      OUTP as the worst-margin IC pin (warning): on *every* K1/PTT make the +12 V (up to +17 V) P2 step
-      couples through C14 back into OUTP and momentarily nicks past the +3.6 V analog abs-max — R26 (2.2k)
-      limits it to ~3.9–6.2 mA for a ~2.2 ms transient (`τ=R26·C14`), so it leans on the codec's *internal*
-      ESD clamp on every talk-start. Single-fault **C14-short** (MLCC mode) is the one with teeth: +12 V DC
-      through R26 alone → sustained ~3.9 mA DC into that clamp for the whole session, and the ES8311
-      datasheet publishes no clamp DC rating. **Fix:** BAT54S (dual-series Schottky, SOT-23) at `ES_OUTP` —
-      **pin 3 (midpoint) → ES_OUTP, pin 1 → GND, pin 2 → +3V3** — clamps OUTP to ~[−0.3, +3.6 V]. R26 still
-      sets the current, so the external Schottky (200 mA rated) absorbs both the per-make transient *and*
-      the C14-short DC instead of the codec diode; no audio penalty (normal OUTP swing is [0, AVDD], clamp
-      idles). Part: **C19726** (BAT54SLT1G, onsemi, 307k stock; Extended → one-time ~$3 setup, noise at
-      qty 1). BAT54S is **not** obsolete on LCSC — Digikey flags one MPN; dozens are stocked. Minimal-
-      footprint alt: a single Schottky to +3V3 covers the C14-short (positive-only) but forgoes the
-      symmetric clamp on the K1-release negative edge. OUTN is parked to GND (no bus exposure) so it needs
-      nothing. Update the DESIGN.md TX front-end note when added. *(see `prefab-report.html`; DESIGN.md
-      "TX front-end" / R26 abs-max guard)*
 - [ ] **Isolate the two VBUS power sources (J1 USB-C + J3 wall feed) — deferred, no board room.**
       J1 (USB-C, bench/flash) and J3 (the SH wall-feed, `J3.1`) both drive the raw **`VBUS`** net in
       parallel with **no isolation**: if both are powered at once — e.g. opening the cover to flash via J1
@@ -48,33 +29,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       Both keep both connectors behind the front-end protection (F1 fuse, D10 TVS, D5 ESD). *(DESIGN.md
       "Power tree")*
 
-## Front-panel buttons (SW3/SW4) — enclosure fit + actuation
-
-The Sprechen/Hören talk buttons (`SW-TH_SPPJ322300`) sit behind the **opaque** front panel; the
-panel button's plastic tab must land **dead-centre on the switch actuator** and press it far enough
-to switch. Validate against a 3D-printed bare board (`./build.sh step-board` →
-`kicad/fab/doorbell-board.step`; SW3/SW4 drills enlarged for FDM — see DESIGN.md "Printable
-bare-board model"), reusing the real switches across prints (no glue — pop them out clean).
-
-- [ ] **Fit — does the panel tab hit the actuator dead-centre?** Can't be eyeballed through the opaque
-      enclosure, so witness the contact. Seat the real SW3/SW4 *firmly* in the printed board first — the
-      print holes are oversized (~0.4–0.5 mm slop) which would swamp the reading, so press-fit the pegs
-      or pack putty round the bosses. Then close the enclosure and read where the tab lands: a soft blob
-      (plasticine/Blu-Tack) on the actuator captures **centring + squareness + travel** in one
-      impression, or ink/dye on the tab tip transfers a dot to measure offset from the actuator centre.
-- [ ] **Function — does pressing the panel button actually switch?** Centred isn't enough — confirm the
-      tab travel actually closes the switch through the full assembled stack (panel + enclosure + board).
-      Wire the switch terminals to a DMM on continuity (or watch the live net on the assembled board) and
-      press the panel button. Catches a tab that's aligned but too short to reach actuation.
-
-## Audio — deferred SSR footprint save (`kicad/doorbell.kicad_sch`)
-
-- [ ] **(Deferred) K3+K4 → one dual-NC PhotoMOS (GAQW412S, C7435125).** Would save one footprint (both are
-      1-Form-B NC on independent gates — ch1 MUTE_DRV, ch2 DOOR_DRV). **Not adopted:** only ~23 in stock
-      (niche, single-source) and these are the *fail-safe* NC switches — not worth tying bring-up to a thin
-      line for a pure footprint save. Keep **2× GAQY412EH** (well-stocked, already in the design); the dual
-      is a drop-in if stock ever justifies it.
-
 ## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
 
 Transformer-less codec path (Phase 5). Bus-side topology + the RX attenuator/bias are wired and
@@ -97,62 +51,12 @@ TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
 
-- [ ] **Investigate P1↔GND bond options — it's currently a hard net merge.** `/P1` isn't a net; it's
-      *merged* into GND (same copper), so the bond is irreversible without a respin. The bond is
-      required for TX (the codec drives line 3 relative to P1) but is a SAFE-3 deviation justified by
-      one install's ~0.5 V P1↔earth measurement. Options: a **default-closed solder jumper / 0 Ω**
-      between separate `/P1` and `GND` nets (bonded by default; breakable on the bench, for a different
-      install, or to run RX-only) plus a soft **~1 MΩ** bleed so `/P1` doesn't float when open; vs the
-      RX-preferred soft-tie-only (no hard bond — but then TX needs another return). A hard merge blocks
-      the hum A/B (bench 6), can't measure the P1↔earth offset in-circuit, and puts the bus common on
-      the USB ground **unfused** (F1 is on VBUS, not GND). **Decided: kept the hard merge** (simplest,
-      lowest-impedance TX return); the breakable option is a respin-free swap if the bench hum A/B (bench 6)
-      ever needs it — a default-closed **0 Ω** (`C17888`) between separate `/P1` and `GND` nets plus a soft
-      **1 MΩ** bleed (`C17927`) so `/P1` doesn't float when the 0 Ω is removed.
-- [ ] **Bus-interface transient/ESD protection (whole 5-way bus) — per-line bidirectional TVS to P1
-      at the connector.** Today's only bus-side clamps are small-signal 1N4148W (D1 coil flyback,
-      D8/D9 opto reverse) — **no primary TVS**; SAFE-1 (MUST) wants surge/ESD tolerance on the terminals.
-      **Measured envelope** (`osci/`, all captures, true volts): **≈ −11 V to +17 V.** P2 +12.1 V DC with
-      **+16–17 V ring/door switching transients** (4 captures, few-sample); P4 0→+11 V pedestal (+15.5 V
-      onset), −8.5 V; P3 +10.5 / −4.8 V; P5 ±8 V (−11 V 1-sample). Nothing > +18 V, no sustained DC > +12.1 V.
-      The front-end already tolerates this (SSRs 60 V, optos R_lim + clamp, codec taps AC-coupled ≥ 50 V),
-      so the TVS is **fault-only**: **~20 V standoff** (clears the +17 V transients so it's idle in normal
-      use — a DC-only ~15–16 V pick would clip them), bidirectional (bus swings to −11 V + miswire/ESD),
-      clamp ~32 V ≪ 60 V SSR. Low-speed bus ⇒ capacitance is a non-issue. **Discrete candidates** (all
-      20 V / ~32 V clamp): **SMF20CA** (SOD-123FL, matches D10) `C2990488`; SMAJ20CA (SMA); SMBJ20CA (SMB).
-      For **cramped J2**: shrink to **SOD-323** discretes and/or place them a short trace inboard (slow bus
-      ⇒ lead inductance is irrelevant). **Array option:** no single 4-channel part fits — 4-ch arrays
-      (e.g. TPD4E02B04) are 3.6–5 V data-line ESD, useless here. The only surge-rated multi-line part at
-      this voltage is a 2-line CAN/RS-485 array: **2× SM24CANB-02HTG** `C151237` (24 V, IEC 61000-4-5,
-      SOT-23, common pin → P1) covers the 4 lines in 2 small packages — trade-off is a ~50 V max clamp
-      (still < 60 V SSR) and 2× Extended.
-      **SAFE-2 (survive miswire, need not function):** the bidirectional TVS + bidirectional front-end
-      already tolerate any line ordering; the one fix is **C19 → non-polar** (single NP electrolytic SMD is
-      scarce on JLCPCB → use an **anti-series pair, 2× 47 µF/50 V** `C3349`/`C97806` ≈ 22 µF NP, or a THT NP
-      can). **J2 keying is N/A** — J2 is a *fixed* PCB-mount screw terminal (DIBO DB125-3.5-5P,
-      `C3646874`), not a pluggable block: there's no plug to key and no plug to insert reversed. Bare
-      wires clamp directly into the soldered block, so the only miswire mode is a per-conductor scramble,
-      which no connector feature can prevent. SAFE-2 rests entirely on the silkscreen labels (an installer
-      aid, already present) + the survive-miswire topology above (bidirectional TVS/front-end + non-polar C19).
-      **Chosen + imported:** TVS = **H24VND3BA** (`C20615815`, SOD-323, 24 V/31 V/50 V bidirectional,
-      Preferred/free) → `kicad/lib_protection/h24vnd3ba` (+ sym/fp tables); C19 → non-polar **anti-series
-      pair, 2× RVT1H470M0607** (`C3349`, Honor Elec, 47 µF/50 V — Economy-PCBA eligible; `C72523`/ROQANG is
-      the identical part with higher stock but not Economy-eligible) → `kicad/lib_audio/rvt1h470m0607`. (TVS also exists
-      in the installed `PCM_JLCPCB-Diodes` PCM lib if a repo-local copy isn't wanted.)
-      **Placed & routed:** 4× H24VND3BA (D2/D3/D7/D12, P2–P5 → P1/GND) and the C19/C21 anti-series
-      non-polar pair are in the schematic; board re-routed, DRC clean (0 errors). **Still open:** (1) a
-      **higher-bandwidth capture** of a ring/door onset (25–50 kSa/s
-      undersamples fast spikes — confirm the true transient stays below the ~31 V breakdown knee, else step the
-      standoff up); (2) align the imported 3D models (min-z = 0) + clear KiCad's 3D cache. Subsumes the
-      "SAFE-7 protection on the P2/P3 taps" item above.
-
-## D5 refdes — `D` prefix on a powered IC (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
-
-- [ ] **Reconsider D5's `D` reference designator.** D5 is a **TPD2S017** — a powered (VCC), 6-pin
-      USB ESD-protection IC (CH1/CH2 in/out + VCC + GND), not a 2-terminal diode. By convention a
-      powered multi-pin IC is **`U`**, not `D`; the `D` prefix makes refdes-keyed tooling (BOM class,
-      the sim's component classifier) treat it as a plain diode. Re-annotate to `U` in its own number
-      band if agreed; keep ERC/DRC clean and update any DESIGN.md / ORDERING.md references.
+- [ ] **Bus TVS — confirm the surge transient stays under the clamp; align the 3D models.** The per-line
+      bidirectional TVS (H24VND3BA on D2/D3/D7/D12, P2–P5 → P1/GND) and the non-polar C19/C21 anti-series
+      pair are placed and routed (DRC clean). Still open: (1) a **higher-bandwidth capture** of a ring/door
+      onset — the 25–50 kSa/s captures undersample the fast switching edges, so confirm the true transient
+      peak stays below the ~31 V breakdown knee (else step the standoff up); the prefab gate also flags this
+      surge margin as unmeasured. (2) Align the imported 3D models (min-z = 0) + clear KiCad’s 3D cache.
 
 ## Bench measurements (settle the remaining open questions)
 
@@ -204,8 +108,6 @@ tether it to a mains-earthed PC. Pair with a DMM.
 - [ ] **Bench — confirm the door lead.** On the real board: a door-open drops K5 (session ends),
       and K2's make lands after the latch drop (no 12 V-DC/gong blip on line 3). Tune C18/R17 if the
       ~20 ms lead doesn't clear the actual latch-drop time.
-- [ ] **C1 polarity** — set **+ toward P4** (the Türruf +12 V DC side; + toward P5 would reverse-bias
-      it through the held session). Schematic now reflects this; bench-confirm against the genuine unit.
 - [ ] **(Nice-to-have) confirm the audio model** end-to-end: Etagenruf direct on line 5; gong
       DC→coil / AC→C1→speaker (expect **no** cone offset); talk mic→C1→P4→R1→line 3; listen
       line 2→relay→P4→C1→speaker.
@@ -260,16 +162,3 @@ What remains is hardware confirmation:
 - [ ] **Re-check the DESIGN.md "TV20/S audio behaviour" section** — confirm the talk/listen/
       Etagenruf/Türruf routing it describes is still correct against the current model + bench
       findings (some of it predates the recent corrections). *(DESIGN.md: "TV20/S audio behaviour")*
-
-## Bell / session-sense simplifications (optional)
-
-- [ ] **Drop D8 (Türruf clamp); KEEP D9 (Etagenruf clamp).** **D8 (OC1 / line 4, DC)** is one
-      polarity with nothing to clamp — droppable. **D9 (OC2 / line 5) stays:** line 5's Etagenruf is
-      an AC tone that reverse-biases the LED to ~−5 V, and the deployed **V3 board's Etagenruf opto
-      died of reverse stress** (`osci/floor-call-p5`) — so this LED avalanches below ~11 V
-      and reverse-bias is its fatal mode, putting the ~5 V self-reverse too close to risk. D9 is one
-      1N4148W of insurance. *(DESIGN.md: "Bell / session sense front-end", "V3")*
-- [ ] **(Future) fold session-sense into the K5 latch, drop OC1.** Make K5 a **12 V DPDT,
-      coil on P4↔P1**, with a spare pole = 3V3→GPIO + pull-down for a galvanically-isolated
-      session/ring signal — replaces OC1 (+ its limiter, D8). **Not adopted** — OC1 works; keep it for
-      now. *(DESIGN.md: "On-board passive WF26 core")*

@@ -468,10 +468,11 @@ opto collector ──► GPIO (internal pull-up)   opto emitter ──► GND  (
   the reverse half-wave and limits the LED's reverse voltage to ~0.7 V (< its 6 V VR).
   **Lib convention: 1N4148W pin 1 = cathode, pin 2 = anode** (CDFER JLCPCB lib, same as the
   K5 coil flyback D1 and Schottky D4 — pin 1 toward +5V there).
-  **D8 (OC1 / line 4, DC) is droppable** (one polarity, nothing to clamp). **D9 (OC2 / line 5) is
-  kept** — line 5's Etagenruf reverse-biases the LED to ~−5 V, and the deployed V3 board's Etagenruf
-  opto **died of reverse stress** (shared-limiter cross-channel reverse-bias; see "V3"), so this LED
-  avalanches low and reverse-bias is its fatal mode — D9 is cheap insurance.
+  **Both D8 and D9 are kept** — line 4 is *not* pure DC: the Türruf gong's 3-Klang tone (and the
+  session-end snap-back) swings P4 to **~−8.5 V** in the measured envelope, reverse-biasing the OC1 LED;
+  line 5's Etagenruf reverse-biases the OC2 LED to ~−5 V. The deployed V3 board's Etagenruf opto **died
+  of reverse stress** (shared-limiter cross-channel reverse-bias; see "V3"), so this LED avalanches low
+  and reverse-bias is its fatal mode — each clamp is cheap insurance against its line's negative swing.
 - **Per-opto limiters (R_lim1–2, 5.1 kΩ):** one per channel; a shared limiter lets a ringing
   channel lift the common node and reverse-bias the idle LED — **field-confirmed: this killed V3's
   Etagenruf opto** (see "V3"). With per-opto limiters each idle cathode sits at ~0 V, so there is no
@@ -727,13 +728,19 @@ debounce). Audio is gated on the session, direction by K1:
 - **TX front-end:** `OUTP → R26 (2.2 kΩ) → C14 (1 µF DC-block) → TALK_BRIDGE → R28 (2.2 kΩ) → TX_OUT → P3`,
   with the **dual K1** sourcing the handshake from **P2** (`P2 ↔ TALK_BRIDGE`) and gating the output
   (`TX_OUT ↔ P3`). The DAC drives **single-ended** off OUTP; OUTN is parked through its own
-  `R16 (2.2 kΩ) → C15 → GND` termination. **R26 is the OUTP abs-max guard** (the sim's **B1**
-  invariant): when K1 makes, ch1 steps the +12 V P2 supply onto TALK_BRIDGE and C14 couples that edge
-  back toward OUTP — R26 limits the codec's output ESD-clamp current so OUTP stays inside the ES8311
-  analog abs-max [AGND−0.3, AVDD+0.3]. The order is **series R at the pin, cap toward the source** —
-  the convention every codec analog leg follows (OUTP/R26, OUTN/R16, MIC1P/R30, MIC1N/R31) — and it
-  also isolates the DAC output from the C14 load. R26's series drop on the TX level is gain-recoverable
-  (codec digital volume); the resulting ~4.4 kΩ (R26 + R28) source impedance into line 3 is not.
+  `R16 (2.2 kΩ) → C15 → GND` termination (OUTN sees no bus path, so it needs no clamp).
+  **R26 + D13 form the OUTP abs-max guard** (the sim's **B1** invariant): when K1 makes, ch1 steps the
+  +12 V P2 supply onto TALK_BRIDGE and C14 couples that edge back toward OUTP. **D13 (BAT54S, dual-series
+  Schottky — COM → OUTP, anode → GND, cathode → +3V3)** clamps OUTP into the ES8311 analog abs-max
+  [AGND−0.3, AVDD+0.3], and **R26 limits the current** into the clamp. The clamp idles in normal use
+  (OUTP swings [0, AVDD]); it gives OUTP a **rated** (200 mA) external path instead of leaning on the
+  codec's *internal* output ESD diode, which has no published DC rating. The case with teeth is the
+  **single-fault C14-short** (MLCC short mode): +12 V DC then pushes a sustained ~3.9 mA through R26 into
+  OUTP — D13 sinks it to +3V3 rather than the codec's internal clamp. The order is **series R at the pin,
+  cap toward the source** — the convention every codec analog leg follows (OUTP/R26, OUTN/R16, MIC1P/R30,
+  MIC1N/R31) — and R26 also isolates the DAC output from the C14 load. R26's series drop on the TX level
+  is gain-recoverable (codec digital volume); the resulting ~4.4 kΩ (R26 + R28) source impedance into
+  line 3 is not.
 - **RX front-end:** a balanced attenuating tap fed **differentially** to the ADC —
   `P2 → C16 (1 µF) → R30 (22 kΩ) → MIC1P` and `GND → C17 (1 µF) → R31 (22 kΩ) → MIC1N`, with
   **R33 / R32 (3.3 kΩ)** shunting MIC1P / MIC1N to **VMID**. Each leg is a 22 k/3.3 k divider (≈ −18 dB):

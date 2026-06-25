@@ -29,6 +29,7 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'diode', match: /\bLED\b/i, note: 'indicator LED, high Vf (~1.8 V)' },
   { kind: 'diode', match: /TVS-Uni,\s*SMF5\.0A|SMF5\.0A/i, note: 'unidirectional VBUS clamp; reverse-oriented, breaks down at vbr ~6.5 V to clamp a +VBUS surge' },
   { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 30)' },
+  { kind: 'diode', match: /BAT54/i, note: 'BAT54S series dual Schottky as codec-OUTP rail clamp (A→GND, K→+3V3, COM=ES_OUTP); idles within [0,AVDD], clamps OUTP to ~[−0.3, +3.6] V on the C14-coupled transient / C14-short fault (modelled by DiodeArray)' },
 
   // PhotoMOS / opto — form (NO/NC), Ron and LED operate current define switching behaviour
   { kind: 'optocoupler', match: /GAQW212GS/i, note: 'dual 1-Form-A PhotoMOS (NO), Ron ~0.8 Ω/ch (datasheet)' },
