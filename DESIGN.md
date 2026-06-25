@@ -574,9 +574,10 @@ the one surviving flyback (D1) is on the passive WF26 latch coil.
 ### Power tree
 
 ```
-USB-C VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ── SGM2212-3.3 ── +3V3 ── ESP32-S3 + codec + SSR LEDs
-CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3: 10µF (C_out) + 10µF + 100nF decoupling
-USB D±  ── IO19/IO20 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)
+USB-C VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ─┬─ SGM2212-3.3 ── +3V3 ── ESP32-S3 + ES8311 DVDD/PVDD + SSR LEDs
+                                                                            └─ LP5907-3.3 (U4) ── AU_3V3 ── FB1 600Ω ── AVDD (ES8311 analog)
+CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3:    10µF + 10µF + 100nF decoupling      AU_3V3: 1µF out (C24)
+USB D±  ── IO19/IO20 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)   U4: 1µF in (C23); EN→+3V3 (seq.)
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from fused VBUS; VBUS_F TVS: SMF5.0A (D10)
 VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all protection — a clamping D10 blows it (fail-safe)
 ```
@@ -742,12 +743,18 @@ debounce). Audio is gated on the session, direction by K1:
   the **MIC bias** (the ES8311 has no internal mic bias), pinning both inputs to VMID; **C12 = 10 µF**
   holds VMID as a stiff AC ground against the two shunts. Symmetric legs preserve the differential
   balance. Final divider trim is bench-gated against the measured ADC full-scale.
-- **Support net:** PVDD/DVDD → +3V3 directly with decoupling; **AVDD → +3V3 through FB1** (Sunlord
-  GZ1608D601TF, 600 Ω @ 100 MHz, 0603; LCSC C1002) so the analog rail is isolated from the
-  Wi-Fi/SMPS noise on the shared +3V3 plane — FB1 plus the AVDD bypass/bulk (C9/C10) form an LC
-  filter. PVDD (the output driver, signal-dependent transient current) and DVDD (digital) stay on the
-  plane deliberately. DACVREF/ADCVREF/VMID reservoir caps; CE/DGND/AGND/EP → GND. Symbols/footprints
-  imported with `easyeda2kicad` into `kicad/lib_audio/`.
+- **Support net:** AVDD runs off a **dedicated low-noise LDO** — **U4 = LP5907MFX-3.3** (TI, SOT-23-5,
+  10 µVrms / 82 dB PSRR @ 1 kHz; LCSC C80670) fed from **+5V**, generating a clean **AU_3V3** rail (C23
+  1 µF in / C24 1 µF out) that the shared Wi-Fi/SMPS-noisy +3V3 plane can't offer. Its **EN ties to
+  +3V3** so AU_3V3 sequences up after the digital rail (digital-before-analog). AU_3V3 then reaches the
+  AVDD pin through **FB1** (Sunlord GZ1608D601TF, 600 Ω @ 100 MHz, 0603; LCSC C1002) + the AVDD
+  bypass/bulk (C9/C10) — a second LC pole on an already-clean rail. **PVDD and DVDD stay on +3V3
+  deliberately:** only AVDD feeds the ES8311 analog/reference section (ADC, DAC, VMID/ADCVREF/DACVREF,
+  mic bias), so it is the only supply whose noise reaches the signal path; PVDD (digital-I/O driver) and
+  DVDD (digital core) are switching-noise *sources*, and putting them on the analog LDO would re-inject
+  that hash into the rail AVDD shares — each instead keeps a local 100 nF on the plane. DACVREF/ADCVREF/
+  VMID reservoir caps; CE/DGND/AGND/EP → GND. Symbols/footprints imported with `easyeda2kicad` into
+  `kicad/lib_audio/` (the LP5907 uses the stock `Regulator_Linear` symbol).
 - **EP grounding (no vias):** the QFN-20 centre EP carries no thermal vias — paste over open vias
   wicks solder away, and the codec dissipates milliwatts. EP (and pin 10/AGND, tied to it) bonds to
   GND through adjacent copper.
