@@ -34104,7 +34104,7 @@
 				(justify left)
 			)
 		)
-		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/ds11005.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1810301516_onsemi-BAT54SLT1G_C19726.pdf"
 			(at 183.642 212.09 0)
 			(hide yes)
 			(show_name no)
@@ -34115,7 +34115,7 @@
 				)
 			)
 		)
-		(property "Description" "Vr 30V, If 200mA, Dual schottky barrier diode, in series, SOT-323"
+		(property "Description" "BAT54S dual-series Schottky (30 V / 200 mA, SOT-23) — codec OUTP abs-max clamp: COM→ES_OUTP, A→GND, K→+3V3"
 			(at 186.69 212.09 0)
 			(hide yes)
 			(show_name no)
@@ -34126,6 +34126,15 @@
 				)
 			)
 		)
+    (property "LCSC" "C19726" (at 186.69 212.09 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "MPN" "BAT54SLT1G" (at 186.69 212.09 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Manufacturer" "onsemi" (at 186.69 212.09 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
 		(pin "1"
 			(uuid "488ed73e-ddc7-4793-a5e1-a66508453e55")
 		)

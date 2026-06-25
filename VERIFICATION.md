@@ -201,8 +201,8 @@ anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. Use an **isolat
 
 ## 7. Datasheet sources to consult
 
-Local copies live in `docs/` so the references don't rot: the ESP32-S3-MINI-1/1U module (pad map +
-strapping), ES8311 codec, SGM2212 LDO, TPD2S017 USB ESD, Omron G6K relay, Panasonic GAQY412E/EH and
+Local copies live in `docs/` so the references don't rot: the ESP32-S3-WROOM-1U-N16R8 module (pad map +
+strapping), ES8311 codec, SGM2212 LDO, TPD2S017 USB ESD, Omron G6K relay, SUPSiC GAQY412E/EH and
 GAQW/GAQY212GS PhotoMOS, the PC817-family opto convention (proxy for the LTV-217), and the STR
 TV20/S Verdrahtungsplan + Fehlersuchhilfe. SS14, SMF5.0A, 1N4148W and the USB-C jack are reasoned
 from standard pin conventions, cross-checked against the project's JLCPCB symbol pads.

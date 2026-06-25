@@ -1,6 +1,6 @@
 # ESP32-S3 module-board best practices — reference checklist
 
-A generic design checklist for a custom **ESP32-S3-MINI** module board, compiled from Espressif's
+A generic design checklist for a custom **ESP32-S3-WROOM-1U** module board, compiled from Espressif's
 hardware-design guidelines and the usual beginner guides. This is **reference only** — how V4
 actually implements each item is in `../DESIGN.md` (power tree, GPIO map, SSR LED drive, USB
 front-end, PCB layout) and is confirmed by the gates in `../VERIFICATION.md`. Don't restate the
@@ -11,7 +11,7 @@ advice — GPIO0/GPIO12 strapping, CAP1/CAP2 LDO caps — that does **not** appl
 
 ## We use a *module*, not a bare chip
 
-V4 uses the **ESP32-S3-MINI-1U module** (u.FL external antenna; N8 = 8 MB flash, no PSRAM). The
+V4 uses the **ESP32-S3-WROOM-1U-N16R8 module** (u.FL external antenna; N16R8 = 16 MB flash + 8 MB octal PSRAM). The
 module already integrates the 40 MHz crystal, RF matching, the SPI flash, and the chip's closest-in
 decoupling — so a large slice of "first ESP32 board" advice is about things **sealed inside the
 module** and is simply N/A:
@@ -52,8 +52,9 @@ states, GPIO/boot hygiene, the USB front-end, and general layout/ground-plane pr
   unless you respect the boot state.
 
 ### 4. GPIO / flash pin hygiene
-- The module hides the SPI-flash pins; don't route to them. On the **N8** (flash-only) part the
-  pins used for octal PSRAM on `-N*R*` variants are free, but check the exact module variant.
+- The module hides the SPI-flash pins; don't route to them. The **N16R8** integrates **octal PSRAM**, so the
+  module's **GPIO33–37** carry the octal SPI/PSRAM lines and are **not available** for I/O —
+  confirm the GPIO map avoids them.
 - Give every output a **defined power-on state** (e.g. a gate pull-down) so a glitch can't fire a
   load at boot.
 

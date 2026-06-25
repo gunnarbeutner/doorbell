@@ -5,7 +5,7 @@ Goal: get **one assembled board** via JLCPCB **Economic PCBA**. The board is ~64
 (USB-C) has THT shell stakes — both **assembled by JLCPCB** (THT assembly — nothing is
 hand-soldered). Economic PCBA batch-panels small boards for us, so we don't supply a panel — but
 the edge connectors (J1 USB-C, shell protrudes; J2 screw terminal) sit flush on the outline, so
-confirm JLCPCB's panel/depanel clears them (see the gates below). U1 is an **ESP32-S3-MINI-1U** —
+confirm JLCPCB's panel/depanel clears them (see the gates below). U1 is an **ESP32-S3-WROOM-1U-N16R8** —
 a **u.FL external antenna** module, so there is no PCB-antenna edge keepout to protect (route the
 antenna lead out of the enclosure instead).
 
@@ -96,7 +96,7 @@ scrutinise:
 | Class | Why it matters | If wrong |
 |------|-------|----------|
 | **Opto reverse-clamps** (1N4148W anti-parallel across the bell-sense opto LEDs) | band must point to the LED-anode / bus-line net | **both bell-sense channels dead** — a silent failure until bench test; **scrutinise hardest** |
-| **MCU** (ESP32-S3-MINI-1U) | pin 1 / rotation | dead board |
+| **MCU** (ESP32-S3-WROOM-1U-N16R8) | pin 1 / rotation | dead board |
 | **LDO** (SGM2212, SOT-223) | orientation | no 3V3, or damage |
 | **Codec** (ES8311, QFN-20, 0.4 mm pitch) | pin-1 dot | codec dead / damage |
 | **USB ESD** (TPD2S017) | pin-1 — channels are in series with D± | USB dead / wrong clamp |
