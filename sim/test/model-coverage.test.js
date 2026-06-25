@@ -44,7 +44,7 @@ const KNOWN_ACTIVE_PARTS = [
 
   // ICs
   { kind: 'ic', match: /SGM2212/i, note: 'LDO 3.3 V regulator (modelled)' },
-  { kind: 'ic', match: /ESP32-C6/i, note: 'MCU — not electrically modelled; driven by test scenarios' },
+  { kind: 'ic', match: /ESP32-S3/i, note: 'MCU — not electrically modelled; driven by test scenarios' },
   { kind: 'ic', match: /ES8311/i, note: 'audio codec — supply-current load + VMID reference (AVDD/2) modelled; digital function (I2S/DAC/ADC) not, driven by test scenarios' },
 ];
 

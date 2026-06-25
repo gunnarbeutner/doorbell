@@ -141,10 +141,10 @@ test('Etagenruf detection: a hot line 5 pulls OC2_OUT low; D9 blocks a reverse-p
 // ── actuators (PhotoMOS SSRs, energised via /PTT_DRV /DOOR_DRV /MUTE_DRV through the 300 Ω LED resistor) ──
 
 test('K2 door opener: DOOR_DRV = 3.3 V bridges P2 onto P3; idle does not', () => {
-  const on = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/DOOR_DRV': 3.3 } }).V;
+  const on = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/DOOR_DRV': 3.3 } } }).V;
   assert.ok(near(on['/P3'], 12), `energised K2 should tie P3 to P2 (12 V), got ${on['/P3']?.toFixed(3)}`);
 
-  const off = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/DOOR_DRV': 0 } }).V;
+  const off = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/DOOR_DRV': 0 } } }).V;
   assert.ok(!near(off['/P3'], 12), `idle K2 should not tie P3 to 12 V, got ${off['/P3']?.toFixed(3)}`);
 });
 
@@ -166,7 +166,7 @@ test('chime suppress: K3 idle passes the gong to the speaker AND OC1 still detec
 });
 
 test('chime suppress: K3 energised silences the speaker but OC1 keeps detecting', () => {
-  const { V, RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': gong, '/MUTE_DRV': 3.3 }, ...AC }); // K3 opened
+  const { V, RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': gong }, program: { U1: { '/MUTE_DRV': 3.3 } }, ...AC }); // K3 opened
   assert.ok(swingPP(RES, SPEAKER[0], SPEAKER[1]) < 0.5,
     `K3 energised should silence the chime at LS1, got ${swingPP(RES, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
   assert.ok(V['/OC1_OUT'] < 1.0, `detection must survive suppression (OC1 on line 4, ahead of K3), got ${V['/OC1_OUT']?.toFixed(2)} V`);
@@ -186,11 +186,11 @@ test('Etagenruf is structurally non-suppressible: K3 energised mutes the Türruf
   const tone = (t) => 2 * Math.sin(2 * Math.PI * 1000 * t);
   const ring = (t) => 12 + 1.5 * Math.sin(2 * Math.PI * 1000 * t);
   // in the suppressing state, the Türruf gong on line 4 is muted ...
-  const turruf = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': ring, '/MUTE_DRV': 3.3 }, ...AC }).RES;
+  const turruf = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': ring }, program: { U1: { '/MUTE_DRV': 3.3 } }, ...AC }).RES;
   assert.ok(swingPP(turruf, SPEAKER[0], SPEAKER[1]) < 0.5,
     `K3 energised should mute the Türruf, got ${swingPP(turruf, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
   // ... yet the Etagenruf on line 5 stays audible in that same state
-  const etagen = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P5': tone, '/MUTE_DRV': 3.3 }, ...AC }).RES;
+  const etagen = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P5': tone }, program: { U1: { '/MUTE_DRV': 3.3 } }, ...AC }).RES;
   assert.ok(swingPP(etagen, SPEAKER[0], SPEAKER[1]) > 3.0,
     `the Etagenruf must stay audible while K3 suppresses, got ${swingPP(etagen, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
 });
@@ -364,7 +364,7 @@ test('safety invariants: every component stays within its abs-max across the sce
 // high-Z at idle. This is the whole point of the dual gate.
 test('TX idle isolation: codec audio must not reach line 3 when K1 is open (BUS-1)', () => {
   const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * 1000 * t);
-  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/PTT_DRV': 0, '/ES_OUTP': codecOut(1), '/ES_OUTN': codecOut(-1) }, ...AC });
+  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 }, program: { U1: { '/PTT_DRV': 0 }, U3: { out: { p: codecOut(1), n: codecOut(-1) } } }, ...AC });
   assert.ok(swingPP(RES, '/P3', '/P1') < 0.1, `K1 open should keep codec audio off line 3, got ${swingPP(RES, '/P3', '/P1').toFixed(2)} Vpp`);
 });
 
@@ -372,10 +372,10 @@ test('talk handshake (K1): energised bridges the P2 supply onto line 3 through R
   // K1 closes both halves: ch1 (/P2↔/TALK_BRIDGE) sources the handshake from the always-on P2 supply and
   // ch2 (/TX_OUT↔/P3) gates the output. P2 → TALK_BRIDGE → R28 (2.2 k) → TX_OUT → P3 — the DC talk
   // handshake to the station (mirrors the WF26's 2.2 k talk R). Idle: both contacts open, line 3 lifts.
-  const talk = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/PTT_DRV': 3.3 } }).V;
+  const talk = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 3.3 } } }).V;
   assert.ok(talk['/P3'] > 6, `K1 in talk should bring line 3 DC-hot off the P2 supply, got ${talk['/P3']?.toFixed(2)} V`);
 
-  const idle = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/PTT_DRV': 0 } }).V;
+  const idle = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 0 } } }).V;
   assert.ok(!(idle['/P3'] > 6), `K1 idle should lift line 3 off the handshake, got ${idle['/P3']?.toFixed(2)} V`);
 });
 
@@ -384,7 +384,7 @@ test('talk handshake (K1): energised bridges the P2 supply onto line 3 through R
 // energised at all times — not from line 4, so K1 energised drives line 3 with line 4 cold. Policy for
 // *when* to talk lives in firmware, not this hardware gate.
 test('TX is session-independent: K1 energised drives line 3 from P2 with line 4 cold (no Türruf)', () => {
-  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0, '/PTT_DRV': 3.3 } });
+  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 }, program: { U1: { '/PTT_DRV': 3.3 } } });
   assert.ok(V['/P3'] > 6, `P2-sourced handshake should reach line 3 with no session, got ${V['/P3']?.toFixed(2)} V`);
 });
 
@@ -464,7 +464,9 @@ test('DOOR-4: a board door-open (DOOR_DRV) releases K5 like S1', () => {
   assert.ok(latched.relays.K5, 'a Türruf should pull K5 in');
   const held = latchSettle(els, [['/P2', 12], ['/P1', 0]], 0.01, latched);
   assert.ok(held.relays.K5, 'dropping line 4 must not release the latch (P2 seal-in)');
-  const opened = latchSettle(els, [['/P2', 12], ['/P1', 0], ['/VBUS', 5], ['/DOOR_DRV', 3.3]], 0.12, held);
+  // the board asserts the door GPIO — drive /DOOR_DRV through the ESP (program), not as an ideal source
+  const elsOpen = buildElements(netlist, { switchState: defaultSwitchState(netlist), program: { U1: { '/DOOR_DRV': 3.3 } } });
+  const opened = latchSettle(elsOpen, [['/P2', 12], ['/P1', 0], ['/VBUS', 5]], 0.12, held);
   assert.ok(!opened.relays.K5, 'DOOR-4: a board door-open must release the latch (K4 breaks the seal-in)');
   assert.ok(near(opened.vn['/P3'], 12), `door-open must fire the opener (P2→P3), got ${opened.vn['/P3']?.toFixed(2)} V`);
 });
@@ -478,19 +480,20 @@ test('DOOR-4: a board door-open (DOOR_DRV) releases K5 like S1', () => {
 
 test('door watchdog: an armed /WD_GATE drops the K2 bridge even with /DOOR_DRV held high', () => {
   // drive /WD_GATE high directly to stand in for the charged RC — tests the mechanism, not the timing
-  const armed = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/DOOR_DRV': 3.3, '/WD_GATE': 3.3 } }).V;
+  const armed = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/WD_GATE': 3.3 }, program: { U1: { '/DOOR_DRV': 3.3 } } }).V;
   assert.ok(!near(armed['/P3'], 12, 2.0), `an armed watchdog must drop the door bridge, got P3=${armed['/P3']?.toFixed(2)} V`);
 
   // with /WD_GATE held low (RC not yet charged) the same drive keeps the door open
-  const open = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/DOOR_DRV': 3.3, '/WD_GATE': 0 } }).V;
+  const open = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/WD_GATE': 0 }, program: { U1: { '/DOOR_DRV': 3.3 } } }).V;
   assert.ok(near(open['/P3'], 12), `un-armed, the door must stay open, got P3=${open['/P3']?.toFixed(2)} V`);
 });
 
 test('door watchdog timing: /DOOR_DRV stuck high opens the door, then self-releases after the RC timeout', () => {
-  const els = buildElements(netlist, { switchState: defaultSwitchState(netlist) });
+  // /DOOR_DRV is the ESP holding the door GPIO high — inject it through the ESP model (program)
+  const els = buildElements(netlist, { switchState: defaultSwitchState(netlist), program: { U1: { '/DOOR_DRV': 3.3 } } });
   const dt = 2e-3;
   const sim = createStepper(els,
-    [['/VBUS', 5], ['/P1', 0], ['/P2', 12], ['/DOOR_DRV', 3.3]].map(([net, v]) => ({ net, vf: () => v })),
+    [['/VBUS', 5], ['/P1', 0], ['/P2', 12]].map(([net, v]) => ({ net, vf: () => v })),
     gndOf(netlist), dt);
   // door fires and is still bridged at 1 s (the RC is nowhere near threshold). This also guards the
   // R25 value: a 1000× too-small R would time out in milliseconds and fail right here.

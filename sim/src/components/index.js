@@ -81,11 +81,12 @@ export function buildElements(netlist, { switchState = {}, extra = [], program =
 }
 
 // high-level scenario for tests: drive `sources` ({net: volts | vf(t)}), set `switches`
-// ({ref: pressed?}), inject any hand-built `extra` elements (e.g. a surge through a series resistor);
-// returns the final node voltages + floating flags.
-export function runDC(netlist, { sources = {}, switches = {}, extra = [], gnd, T = 0.04, dt = 20e-6 } = {}) {
+// ({ref: pressed?}), set IC behavioural state via `program` ({ref: {...}}, e.g. an ESP GPIO driven
+// through its real output impedance rather than pinned as an ideal source), inject any hand-built
+// `extra` elements (e.g. a surge through a series resistor); returns the final node voltages + floating flags.
+export function runDC(netlist, { sources = {}, switches = {}, extra = [], program = {}, gnd, T = 0.04, dt = 20e-6 } = {}) {
   const switchState = { ...defaultSwitchState(netlist), ...switches };
-  const els = buildElements(netlist, { switchState, extra });
+  const els = buildElements(netlist, { switchState, extra, program });
 
   const srcs = Object.entries(sources).map(([net, v]) => ({
     net,

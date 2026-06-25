@@ -438,11 +438,14 @@ this purely a placement choice: any function routes to any pad.
 - **SSR gates idle off through boot (SAFE-6).** The three DRV pins are plain GPIO that power up as
   floating inputs; the 10 k pull-downs keep the SSR LEDs dark until firmware drives them. DOOR_DRV
   sits on a pin with no boot-time drive, so the opener can't pulse on reset.
-- **Strapping pins parked safe:** IO8 is held high by R12 (selects SPI boot; net `IO8_STRAP`), IO9 is
-  the boot strap (10 k pull-up + SW1 to GND), IO15 (JTAG-source) is left unconnected, and the two
-  I²S lines that land on MTMS/MTDI only affect the unused SDIO boot path. EN has the 10 k + 1 µF RC +
-  SW2 (Espressif EN-RC spec).
-- **No USB-UART bridge:** flashing + logs run over the native USB-Serial-JTAG (IO12/IO13 → D5 → J1).
+- **Strapping pins parked safe:** the S3 straps on IO0/IO3/IO45/IO46. Only **IO0** is wired — it is the
+  boot strap, held high by R11 (10 k to +3V3) for normal SPI-flash boot, with SW1 pulling it to GND for
+  download mode. IO3 (JTAG-source), IO45 (VDD_SPI) and IO46 (ROM-log) are left unconnected at their
+  module defaults (the WROOM sets its own internal-flash voltage, so IO45/IO46 must float). The I²C/I²S
+  bus deliberately lands SCL/MCLK/BCLK/DIN on IO39–42 = the MTCK/MTDO/MTDI/MTMS JTAG group — none of
+  those are S3 strapping pins, so it only forgoes pin-JTAG (debug runs over USB-Serial-JTAG) with no
+  boot-time effect. EN has the 10 k (R10) + 1 µF (C5) RC + SW2 (Espressif EN-RC spec).
+- **No USB-UART bridge:** flashing + logs run over the native USB-Serial-JTAG (IO19/IO20 → D5 → J1).
 ### Bell / session sense front-end
 
 Two identical channels (OC1 = house bell on P4↔P1, OC2 = apartment bell on P5↔P1):
@@ -573,7 +576,7 @@ the one surviving flyback (D1) is on the passive WF26 latch coil.
 ```
 USB-C VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ── SGM2212-3.3 ── +3V3 ── ESP32-S3 + codec + SSR LEDs
 CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3: 10µF (C_out) + 10µF + 100nF decoupling
-USB D±  ── IO12/IO13 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)
+USB D±  ── IO19/IO20 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from fused VBUS; VBUS_F TVS: SMF5.0A (D10)
 VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all protection — a clamping D10 blows it (fail-safe)
 ```

@@ -12,7 +12,7 @@ import { netV } from '../engine.js';
 // operating point. The digital codec function (I2S, DAC/ADC, registers, gain) stays unmodeled.
 //
 // Representative active-mode currents (adjust here for a different operating point):
-//   ESP32-S3-MINI-1  ~100 mA  dual-core 240 MHz, Wi-Fi connected/listening (TX bursts run much higher)
+//   ESP32-S3-WROOM-1U  ~100 mA  dual-core 240 MHz, Wi-Fi connected/listening (TX bursts run much higher)
 //   ES8311 codec     ~10 mA  playback DAC + record ADC active
 const LOADS = [
   { re: /esp32/i, mA: 100 },
@@ -107,7 +107,9 @@ export default class Ic extends Component {
         for (const net in prog) {
           if (net[0] !== '/') continue; // a GPIO net to drive (e.g. '/PTT_DRV')
           let pin = null;
-          for (const p in this.pins) if (this.pins[p] === net && /GPIO\d/.test(this.pinfn[p] || '')) pin = p;
+          // S3 symbols name GPIO pins "IOnn" (e.g. IO9_17); /IO\d/ matches those and the older
+          // "GPIOnn" naming too (which contains "IOnn"). The net→pin map carries the connection.
+          for (const p in this.pins) if (this.pins[p] === net && /IO\d/.test(this.pinfn[p] || '')) pin = p;
           if (!pin || !g) continue;
           const core = `${this.ref}~g${pin}`;
           els.push({ type: 'V', a: core, b: g, vf: asVf(prog[net]), ref: `${this.ref}~g${pin}_v` });
@@ -144,7 +146,7 @@ export default class Ic extends Component {
       const vddP = fnPin(/3V3|VDD/), vdd = V(vddP);
       if (Number.isFinite(vdd) && vdd >= 2) // only judge GPIOs once the MCU rail is up (see ES8311 note)
         for (const p in this.pinfn)
-          if (/GPIO\d/.test(this.pinfn[p]))
+          if (/IO\d/.test(this.pinfn[p]))
             this.chk(out, this.pinfn[p], this.pins[p], V(p), gnd - 0.3, vdd + 0.3,
               `ESP GPIO abs-max [VSS-0.3, VDD+0.3] ≈ [${(gnd - 0.3).toFixed(2)}, ${(vdd + 0.3).toFixed(2)}] V`);
       if (vddP) this.chk(out, this.pinfn[vddP], this.pins[vddP], vdd, -0.3, 3.6, 'ESP VDD33 abs-max 3.6 V');
@@ -159,7 +161,7 @@ export default class Ic extends Component {
     if (/esp32/i.test(this.lib)) {
       const gpios = [];
       for (const p in this.pinfn)
-        if (/GPIO\d/.test(this.pinfn[p]) && /DRV/.test(this.pins[p] || ''))
+        if (/IO\d/.test(this.pinfn[p]) && /DRV/.test(this.pins[p] || ''))
           gpios.push({ net: this.pins[p], label: this.pinfn[p].replace(/_\d+$/, '') });
       return gpios.length ? { kind: 'esp', ref: this.ref, gpios, high: 3.3 } : null;
     }
