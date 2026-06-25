@@ -847,6 +847,261 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Connector_Generic_MountingPin:Conn_01x04_MountingPin"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x04_MountingPin"
+				(at 1.27 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic connectable mounting pin connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??-1MP*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x04_MountingPin_1_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 1.27 -6.35)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -4.953)
+					(end 0 -5.207)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.016 -7.112) (xy 1.016 -7.112)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(text "Mounting"
+					(at 0 -6.731 0)
+					(effects
+						(font
+							(size 0.381 0.381)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -5.08 0)
+					(length 3.81)
+					(name "Pin_4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -10.16 90)
+					(length 3.048)
+					(name "MountPin"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "MP"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:C_Polarized"
 			(pin_numbers
 				(hide yes)
@@ -15919,6 +16174,12 @@
 		(uuid "30d97146-cfdc-4bef-9a6a-08d5823aaf53")
 	)
 	(junction
+		(at 88.9 73.66)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "341ba607-8aba-416c-85bd-af28fffac075")
+	)
+	(junction
 		(at 101.6 161.29)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -16638,6 +16899,16 @@
 	)
 	(wire
 		(pts
+			(xy 83.82 73.66) (xy 88.9 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "30cdc327-bba9-4513-a19e-36d4fb346e35")
+	)
+	(wire
+		(pts
 			(xy 120.65 247.65) (xy 120.65 260.35)
 		)
 		(stroke
@@ -16685,6 +16956,16 @@
 			(type default)
 		)
 		(uuid "363a4878-5aa1-4087-92b9-53dc60dc43bd")
+	)
+	(wire
+		(pts
+			(xy 88.9 72.39) (xy 88.9 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3705f193-dc5d-4e6a-ab3f-8fc8ccec583c")
 	)
 	(wire
 		(pts
@@ -17195,6 +17476,16 @@
 			(type default)
 		)
 		(uuid "6888ed53-5948-47f2-884f-a69b6299c95c")
+	)
+	(wire
+		(pts
+			(xy 83.82 67.31) (xy 83.82 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "697c0b24-0cd2-4d6c-97a0-320c8dd36c11")
 	)
 	(wire
 		(pts
@@ -18088,6 +18379,16 @@
 	)
 	(wire
 		(pts
+			(xy 78.74 62.23) (xy 83.82 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c4dbe7d3-497c-4892-8d47-a309f2a0e7d3")
+	)
+	(wire
+		(pts
 			(xy 49.53 135.89) (xy 49.53 138.43)
 		)
 		(stroke
@@ -18188,6 +18489,16 @@
 	)
 	(wire
 		(pts
+			(xy 88.9 73.66) (xy 88.9 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ca8f5da6-486d-479d-8a94-0c12a6e33970")
+	)
+	(wire
+		(pts
 			(xy 285.75 180.34) (xy 297.18 180.34)
 		)
 		(stroke
@@ -18285,6 +18596,16 @@
 			(type default)
 		)
 		(uuid "d2c8633c-8359-4e99-bab1-08c5dbd945ea")
+	)
+	(wire
+		(pts
+			(xy 78.74 64.77) (xy 83.82 64.77)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d4fafa04-6255-4737-89bd-853d4c371701")
 	)
 	(wire
 		(pts
@@ -18465,6 +18786,16 @@
 			(type default)
 		)
 		(uuid "e49e2a5e-0f75-4c1a-9b08-6e48a11c2663")
+	)
+	(wire
+		(pts
+			(xy 78.74 59.69) (xy 83.82 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e6d71fd7-1d1f-4371-9468-31d770192583")
 	)
 	(wire
 		(pts
@@ -19348,6 +19679,16 @@
 		)
 		(uuid "740232bd-5cbf-4055-a92e-5417027323c3")
 	)
+	(label "VBUS"
+		(at 78.74 59.69 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify bottom)
+		)
+		(uuid "7419558d-85ed-4044-8e0c-258dcd55fc89")
+	)
 	(label "I2S_DOUT"
 		(at 123.19 34.29 180)
 		(effects
@@ -19415,6 +19756,16 @@
 			(justify left bottom)
 		)
 		(uuid "800c8760-0e65-4bc5-8d6a-970da230f497")
+	)
+	(label "USB_DN"
+		(at 78.74 62.23 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify bottom)
+		)
+		(uuid "8384cb7d-a784-4911-b51c-8e92d5082844")
 	)
 	(label "USB_DN"
 		(at 68.58 48.26 0)
@@ -19570,6 +19921,16 @@
 			(justify right bottom)
 		)
 		(uuid "96ab3603-fab2-45eb-b6a2-2309b5126fde")
+	)
+	(label "USB_DP"
+		(at 78.74 64.77 0)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify bottom)
+		)
+		(uuid "9d87cc3f-1c24-47f8-afca-61596dedaa36")
 	)
 	(label "P2"
 		(at 365.76 97.79 0)
@@ -22294,6 +22655,105 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic_MountingPin:Conn_01x04_MountingPin")
+		(at 88.9 62.23 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "2540f29f-b562-4b18-9806-27d59d23284b")
+		(property "Reference" "J3"
+			(at 91.44 62.5855 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "USB"
+			(at 91.186 65.024 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal"
+			(at 88.9 62.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_JST-SM04B-SRSS-TB-LF-SN_C160404.pdf"
+			(at 88.9 62.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Wall-feed power + native-USB connector (JST SH 4-pin, side-entry; SM04B-SRSS-TB). VBUS/D−/D+/GND landed from the de-capped USB-A wall cable; mounting tabs (MP) → GND for strain anchoring. Shares VBUS with J1 — source isolation deferred (see TODO.md)."
+			(at 88.9 62.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+    (property "LCSC" "C160404" (at 88.9 62.23 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "MPN" "SM04B-SRSS-TB(LF)(SN)" (at 88.9 62.23 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+    (property "Manufacturer" "JST" (at 88.9 62.23 0)
+      (effects (font (size 1.27 1.27)) (hide yes))
+    )
+		(pin "1"
+			(uuid "a37fffb9-0fdf-428f-af73-5a5c623059a1")
+		)
+		(pin "3"
+			(uuid "1e60b81f-d800-4de2-8a83-6e2294c1655d")
+		)
+		(pin "4"
+			(uuid "3ac3562c-53f5-4a32-9960-b78ebf87225c")
+		)
+		(pin "2"
+			(uuid "e5232da6-72b3-4896-9806-6332ba03f354")
+		)
+		(pin "MP"
+			(uuid "708adfc8-2c20-4352-8aa0-cdd5724d82fe")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "J3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 288.29 110.49 0)
 		(mirror y)
@@ -24977,6 +25437,84 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 88.9 74.93 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "54758eff-bccc-460e-b24a-ece09abc6520")
+		(property "Reference" "#PWR057"
+			(at 88.9 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 88.9 80.01 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 88.9 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 88.9 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 88.9 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4a7fa342-60fd-4c5b-8e86-ec64d7fd64cb")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR057")
 					(unit 1)
 				)
 			)
@@ -29972,7 +30510,7 @@
 				)
 			)
 		)
-		(property "Description" "ES8311 AVDD ferrite (600Ω@100MHz, 0603) — isolates codec analog supply from the Wi-Fi-noisy +3V3; forms an LC filter with C9/C10"
+		(property "Description" "ES8311 AVDD ferrite (600Ω@100MHz, 0603): AU_3V3 (LP5907 audio-LDO output) → FB1 → AVDD — a second LC filter pole (with C9/C10) on the already-clean analog rail."
 			(at 210.82 149.86 0)
 			(hide yes)
 			(show_name no)
@@ -30671,15 +31209,39 @@
 				)
 			)
 		)
-    (property "LCSC" "C80670" (at 241.3 156.21 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (property "MPN" "LP5907MFX-3.3/NOPB" (at 241.3 156.21 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (property "Manufacturer" "Texas Instruments" (at 241.3 156.21 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
+		(property "LCSC" "C80670"
+			(at 241.3 156.21 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LP5907MFX-3.3/NOPB"
+			(at 241.3 156.21 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 241.3 156.21 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "2"
 			(uuid "e027a53a-3800-4275-a028-f5fe55a0f723")
 		)

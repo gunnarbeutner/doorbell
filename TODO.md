@@ -25,6 +25,28 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       symmetric clamp on the K1-release negative edge. OUTN is parked to GND (no bus exposure) so it needs
       nothing. Update the DESIGN.md TX front-end note when added. *(see `prefab-report.html`; DESIGN.md
       "TX front-end" / R26 abs-max guard)*
+- [ ] **Isolate the two VBUS power sources (J1 USB-C + J3 wall feed) — deferred, no board room.**
+      J1 (USB-C, bench/flash) and J3 (the SH wall-feed, `J3.1`) both drive the raw **`VBUS`** net in
+      parallel with **no isolation**: if both are powered at once — e.g. opening the cover to flash via J1
+      while the wall charger feeds J3 — the two 5 V sources back-feed each other (chief risk: the laptop's
+      USB port driven by the charger). **Current mitigation = usage rule:** only one power source connected
+      at a time (unplug the wall feed before flashing via J1, or flash in-place via J3's far end). USB
+      **D±** is already fine — J1/J3 share D5's flow-through ESD clamp; this is the **VBUS power side only**.
+      **Deferred because the clean fix doesn't fit** — ~7 new parts with nowhere to place them. Options when
+      revisited:
+      1. **TPS2116 power-mux** (LCSC **C3235557**, sym `Power_Management:TPS2116DRL`, fp
+         `Package_TO_SOT_SMD:SOT-583-8`, both stock) — best: ~0 V drop (42 mΩ), reverse-current blocking,
+         auto priority; leaves F1/D10/D5/D4 untouched downstream. Hookup (VIN1 = J1 priority):
+         **MODE→VIN1**, **PR1** = divider `VIN1→300k→PR1→100k→GND` (VREF 1.0 V ⇒ ~4 V switchover),
+         **VIN2 = J3** (fallback — not threshold-gated, so its cable sag can't false-switch),
+         **VOUT (pins 2,7) → VBUS**, **ST (8)** NC, **CIN1 = CIN2 = COUT = 1 µF**. Add a **TVS on VIN2**
+         (SMF5.0A) since the mux now sits ahead of D10 and is only ~±2 kV HBM. ≈ mux + 2 R + 3 C + TVS = 7.
+      2. **Two-diode front OR** — a series Schottky in each of J1/J3 merging at VBUS (keeps F1/D10/D5
+         downstream protecting both); the two OR diodes make **D4 redundant → remove D4**. Net **+1 part**,
+         single Schottky drop. Fewer parts than the mux but a ~0.45 V drop. One diode alone won't do it:
+         protecting a laptop on J1 from a charger on J3 needs a diode in **J1's** branch too.
+      Both keep both connectors behind the front-end protection (F1 fuse, D10 TVS, D5 ESD). *(DESIGN.md
+      "Power tree")*
 
 ## Front-panel buttons (SW3/SW4) — enclosure fit + actuation
 

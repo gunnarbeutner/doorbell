@@ -43,7 +43,8 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'protection', match: /TPD2S017/i, note: 'USB D± ESD array, ~6 V rail clamp' },
 
   // ICs
-  { kind: 'ic', match: /SGM2212/i, note: 'LDO 3.3 V regulator (modelled)' },
+  { kind: 'ic', match: /SGM2212/i, note: 'main +3V3 LDO regulator (modelled); VIN abs-max 22 V' },
+  { kind: 'ic', match: /LP5907/i, note: 'audio AVDD LDO 3.3 V (LP5907, bare IN/OUT/GND pins); modelled as LDO, VIN abs-max 6 V' },
   { kind: 'ic', match: /ESP32-S3/i, note: 'MCU — not electrically modelled; driven by test scenarios' },
   { kind: 'ic', match: /ES8311/i, note: 'audio codec — supply-current load + VMID reference (AVDD/2) modelled; digital function (I2S/DAC/ADC) not, driven by test scenarios' },
 ];
