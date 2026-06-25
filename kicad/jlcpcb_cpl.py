@@ -28,6 +28,7 @@ ROT_FIX = {
     "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm":  180,   # LTV-217 SOP-4 optos (OC1/OC2): JLCPCB pin 1 is 180° off KiCad
     "Relay_SMD:Relay_DPDT_Omron_G6K-2F-Y": -90,   # G6K-2F-Y relay: KiCad-std footprint sits 90° CW off JLCPCB lib
     "Package_TO_SOT_SMD:SOT-23":           180,   # Q3/Q4 N-FETs: KiCad-std SOT-23 pin 1 is 180° off JLCPCB lib
+    "Package_TO_SOT_SMD:SOT-23-5":         180,   # U4 LP5907 LDO: KiCad-std SOT-23-5 pin 1 is 180° off JLCPCB lib
 }
 
 
