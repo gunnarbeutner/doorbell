@@ -3480,7 +3480,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1810301516_onsemi-BAT54SLT1G_C19726.pdf"
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2310171613_hongjiacheng-BAT54S_C7420333.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3514,7 +3514,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C19726"
+		(property "LCSC" "C7420333"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3527,7 +3527,7 @@
 				)
 			)
 		)
-		(property "MPN" "BAT54SLT1G"
+		(property "MPN" "BAT54S"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3540,7 +3540,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "onsemi"
+		(property "Manufacturer" "hongjiacheng"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7925,7 +7925,7 @@
 				)
 			)
 		)
-		(property "Value" "22k"
+		(property "Value" "47k"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "7d8a58a3-a6e5-4da2-ad05-91703d0bd4a7")
@@ -7936,7 +7936,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010030_UNI-ROYAL-Uniroyal-Elec-0603WAF2202T5E_C31850.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF4702T5E_C25819.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7949,7 +7949,7 @@
 				)
 			)
 		)
-		(property "Description" "Door-lead make-delay RC (with C18): delays K2 make ~20ms behind K4 break (break-before-make)"
+		(property "Description" "Door-lead make-delay RC (with C18): delays K2 make ~31 ms behind K4 break (break-before-make)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7962,7 +7962,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C31850"
+		(property "LCSC" "C25819"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7975,7 +7975,7 @@
 				)
 			)
 		)
-		(property "Stock" "1601895"
+		(property "Stock" "5267324"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7988,7 +7988,7 @@
 				)
 			)
 		)
-		(property "Price" "0.004USD"
+		(property "Price" "0.001USD"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8079,7 +8079,7 @@
 				)
 			)
 		)
-		(property "Part" "0603WAF2202T5E"
+		(property "Part" "0603WAF4702T5E"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8092,7 +8092,7 @@
 				)
 			)
 		)
-		(property "Resistance" "22kΩ"
+		(property "Resistance" "47kΩ"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13820,7 +13820,7 @@
 				)
 			)
 		)
-		(property "Value" "USB"
+		(property "Value" "USB-JST"
 			(at 0 3.98 0)
 			(layer "F.Fab")
 			(uuid "9656cb56-e878-4752-a143-ae4f18b2877f")

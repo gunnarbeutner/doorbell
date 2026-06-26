@@ -164,8 +164,8 @@ shared party line across apartments.
 - **DOOR-5 (SHOULD)** A board door-open SHOULD **self-terminate in bounded time even if the firmware
   hangs** with the drive asserted: a stuck-high door line MUST NOT hold the opener indefinitely (the
   TV20/S is passive — it does not time-limit the bridge). *(Met: a hardware **max-on-time watchdog** —
-  an RC one-shot, R25 (5.1 MΩ) · C20 (2.2 µF) ≈ 11 s, whose FET (**Q4**) gates the K2 drive off
-  ~11 s after assertion (fast corner ~2.6 s, clear of the 1.75 s pulse — DOOR-6) regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
+  an RC one-shot, R25 (5.1 MΩ) · C20 (2.2 µF) (τ ≈ 11 s), whose FET (**Q4**) gates the K2 drive off
+  ~7.4 s typ after assertion (fast corner ~2.6 s, clear of the 1.75 s pulse — DOOR-6) regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
   line drops. Reset/brownout already drops the opener via the gate pull-downs (DOOR-3 / SAFE-6), and the
   ESPHome task watchdog reboots a hang — so this is defense-in-depth. See DESIGN.md "Door-open
   max-on-time watchdog". Verified in `sim/test`.)*
@@ -173,7 +173,7 @@ shared party line across apartments.
   the 2N7002 Vgs(th) (1.0–2.5 V) × R/C tolerance × MLCC bias/temperature derating, its release time MUST
   stay **above the firmware door pulse + margin** at the fast corner (so a legitimate open is never
   truncated) and **below a stated upper bound** at the slow corner (so a hung drive is bounded).
-  *(Met by R25 (5.1 MΩ) · C20 (2.2 µF): fast corner ~2.6 s > the 1.75 s pulse; ~11 s nominal; ~18 s slow
+  *(Met by R25 (5.1 MΩ) · C20 (2.2 µF): fast corner ~2.6 s > the 1.75 s pulse; ~7.4 s typ; ~18 s slow
   corner — see DESIGN.md "Door-open max-on-time watchdog".)*
 
 ## FW — Firmware host & control

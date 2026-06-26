@@ -25,12 +25,12 @@ export default class Optocoupler extends Component {
     return [{ type: 'OPTO', a: P['1'], b: P['2'], c: P['4'], e: P['3'], Is: 1e-13, n: 1.9, ctr: 1.0, ref: this.ref }];
   }
 
-  // PC817/LTV-217 abs-max: LED reverse 6 V (VR); collector-emitter ~35 V (BVceo).
+  // PC817/LTV-217 abs-max: LED reverse 6 V (VR); collector-emitter 70 V (VCEO; BVCEO >=80 V).
   checkSafe(vn) {
     const out = [];
     const V = (p) => vn[this.pins[p]];
     this.chk(out, '1-2', `${this.pins['1']}↔${this.pins['2']}`, V('1') - V('2'), -6, Infinity, 'opto LED reverse 6 V (VR)');
-    this.chk(out, '4-3', `${this.pins['4']}↔${this.pins['3']}`, V('4') - V('3'), -7, 35, 'opto collector-emitter ~35 V (BVceo)');
+    this.chk(out, '4-3', `${this.pins['4']}↔${this.pins['3']}`, V('4') - V('3'), -7, 70, 'opto collector-emitter 70 V (VCEO)');
     return out;
   }
 }

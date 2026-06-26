@@ -28,7 +28,7 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'diode', match: /Schottky|SS14/i, note: 'SS14 Schottky, low Vf' },
   { kind: 'diode', match: /\bLED\b/i, note: 'indicator LED, high Vf (~1.8 V)' },
   { kind: 'diode', match: /TVS-Uni,\s*SMF5\.0A|SMF5\.0A/i, note: 'unidirectional VBUS clamp; reverse-oriented, breaks down at vbr ~6.5 V to clamp a +VBUS surge' },
-  { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 30)' },
+  { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 31)' },
   { kind: 'diode', match: /BAT54/i, note: 'BAT54S series dual Schottky as codec-OUTP rail clamp (A→GND, K→+3V3, COM=ES_OUTP); idles within [0,AVDD], clamps OUTP to ~[−0.3, +3.6] V on the C14-coupled transient / C14-short fault (modelled by DiodeArray)' },
 
   // PhotoMOS / opto — form (NO/NC), Ron and LED operate current define switching behaviour
@@ -38,7 +38,7 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'optocoupler', match: /LTV-217|PC817/i, note: 'phototransistor optocoupler (Türruf/Etagenruf sense)' },
 
   // MOSFET — Vgs(th) / Rds(on)
-  { kind: 'mosfet', match: /2N7002/i, note: 'NMOS (incl. 2N7002DW dual), Vth ~2.1 V, Ron ~5 Ω' },
+  { kind: 'mosfet', match: /2N7002/i, note: 'NMOS (incl. 2N7002DW dual), Vth typ 1.6 V (1.0-2.5 V), Ron ~5 Ω' },
 
   // protection IC — internal clamp voltages
   { kind: 'protection', match: /TPD2S017/i, note: 'USB D± ESD array, ~6 V rail clamp' },

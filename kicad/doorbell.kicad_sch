@@ -16512,7 +16512,7 @@
 		(uuid "30d97146-cfdc-4bef-9a6a-08d5823aaf53")
 	)
 	(junction
-		(at 88.9 73.66)
+		(at 85.09 74.93)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "341ba607-8aba-416c-85bd-af28fffac075")
@@ -17253,7 +17253,7 @@
 	)
 	(wire
 		(pts
-			(xy 83.82 73.66) (xy 88.9 73.66)
+			(xy 80.01 74.93) (xy 85.09 74.93)
 		)
 		(stroke
 			(width 0)
@@ -17313,7 +17313,7 @@
 	)
 	(wire
 		(pts
-			(xy 88.9 72.39) (xy 88.9 73.66)
+			(xy 85.09 73.66) (xy 85.09 74.93)
 		)
 		(stroke
 			(width 0)
@@ -17843,7 +17843,7 @@
 	)
 	(wire
 		(pts
-			(xy 83.82 67.31) (xy 83.82 73.66)
+			(xy 80.01 68.58) (xy 80.01 74.93)
 		)
 		(stroke
 			(width 0)
@@ -18753,7 +18753,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 62.23) (xy 83.82 62.23)
+			(xy 74.93 63.5) (xy 80.01 63.5)
 		)
 		(stroke
 			(width 0)
@@ -18863,7 +18863,7 @@
 	)
 	(wire
 		(pts
-			(xy 88.9 73.66) (xy 88.9 74.93)
+			(xy 85.09 74.93) (xy 85.09 76.2)
 		)
 		(stroke
 			(width 0)
@@ -18973,7 +18973,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 64.77) (xy 83.82 64.77)
+			(xy 74.93 66.04) (xy 80.01 66.04)
 		)
 		(stroke
 			(width 0)
@@ -19163,7 +19163,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 59.69) (xy 83.82 59.69)
+			(xy 74.93 60.96) (xy 80.01 60.96)
 		)
 		(stroke
 			(width 0)
@@ -20064,7 +20064,7 @@
 		(uuid "740232bd-5cbf-4055-a92e-5417027323c3")
 	)
 	(label "VBUS"
-		(at 78.74 59.69 0)
+		(at 74.93 60.96 0)
 		(effects
 			(font
 				(size 1 1)
@@ -20142,7 +20142,7 @@
 		(uuid "800c8760-0e65-4bc5-8d6a-970da230f497")
 	)
 	(label "USB_DN"
-		(at 78.74 62.23 0)
+		(at 74.93 63.5 0)
 		(effects
 			(font
 				(size 1 1)
@@ -20307,7 +20307,7 @@
 		(uuid "96ab3603-fab2-45eb-b6a2-2309b5126fde")
 	)
 	(label "USB_DP"
-		(at 78.74 64.77 0)
+		(at 74.93 66.04 0)
 		(effects
 			(font
 				(size 1 1)
@@ -23040,7 +23040,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic_MountingPin:Conn_01x04_MountingPin")
-		(at 88.9 62.23 0)
+		(at 85.09 63.5 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -23050,7 +23050,7 @@
 		(dnp no)
 		(uuid "2540f29f-b562-4b18-9806-27d59d23284b")
 		(property "Reference" "J3"
-			(at 91.44 62.5855 0)
+			(at 87.63 63.8555 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23060,8 +23060,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "USB"
-			(at 91.186 65.024 0)
+		(property "Value" "USB-JST"
+			(at 87.376 66.294 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23072,7 +23072,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal"
-			(at 88.9 62.23 0)
+			(at 85.09 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23083,7 +23083,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_JST-SM04B-SRSS-TB-LF-SN_C160404.pdf"
-			(at 88.9 62.23 0)
+			(at 85.09 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23094,7 +23094,7 @@
 			)
 		)
 		(property "Description" "Wall-feed power + native-USB connector (JST SH 4-pin, side-entry; SM04B-SRSS-TB). VBUS/D−/D+/GND landed from the de-capped USB-A wall cable; mounting tabs (MP) → GND for strain anchoring. Shares VBUS with J1 — source isolation deferred (see TODO.md)."
-			(at 88.9 62.23 0)
+			(at 85.09 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23105,7 +23105,7 @@
 			)
 		)
 		(property "LCSC" "C160404"
-			(at 88.9 62.23 0)
+			(at 85.09 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23116,7 +23116,7 @@
 			)
 		)
 		(property "MPN" "SM04B-SRSS-TB(LF)(SN)"
-			(at 88.9 62.23 0)
+			(at 85.09 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23127,7 +23127,7 @@
 			)
 		)
 		(property "Manufacturer" "JST"
-			(at 88.9 62.23 0)
+			(at 85.09 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25852,7 +25852,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 88.9 74.93 0)
+		(at 85.09 76.2 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -25863,7 +25863,7 @@
 		(fields_autoplaced yes)
 		(uuid "54758eff-bccc-460e-b24a-ece09abc6520")
 		(property "Reference" "#PWR057"
-			(at 88.9 81.28 0)
+			(at 85.09 82.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25874,7 +25874,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 88.9 80.01 0)
+			(at 85.09 81.28 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25884,7 +25884,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 74.93 0)
+			(at 85.09 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25895,7 +25895,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 74.93 0)
+			(at 85.09 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25906,7 +25906,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 88.9 74.93 0)
+			(at 85.09 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -34104,7 +34104,7 @@
 				(justify left)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1810301516_onsemi-BAT54SLT1G_C19726.pdf"
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2310171613_hongjiacheng-BAT54S_C7420333.pdf"
 			(at 183.642 212.09 0)
 			(hide yes)
 			(show_name no)
@@ -34126,15 +34126,39 @@
 				)
 			)
 		)
-    (property "LCSC" "C19726" (at 186.69 212.09 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (property "MPN" "BAT54SLT1G" (at 186.69 212.09 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (property "Manufacturer" "onsemi" (at 186.69 212.09 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
+		(property "LCSC" "C7420333"
+			(at 186.69 212.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "BAT54S"
+			(at 186.69 212.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "hongjiacheng"
+			(at 186.69 212.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "488ed73e-ddc7-4793-a5e1-a66508453e55")
 		)

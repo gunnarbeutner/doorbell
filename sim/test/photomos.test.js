@@ -26,7 +26,7 @@ function ssr({ form = 'NO', ron = form === 'NC' ? 1 : 0.24, ref = 'K1' } = {}) {
   return {
     type: 'SSR', a: 'LEDA', b: 'LEDK', c: 'OUT', d: 'ORET',
     pa: '1', pb: '2', pc: '3', pd: '4',
-    closedWhenOn: form !== 'NC', ron, iop: 3e-3, Is: 1e-13, n: 1.9, ref,
+    closedWhenOn: form !== 'NC', ron, iop: 2e-3, Is: 1e-13, n: 1.9, ref,
   };
 }
 const R = (a, b, value, ref) => ({ type: 'R', a, b, value, ref, pa: '1', pb: '2' });
@@ -120,22 +120,22 @@ test('Ron is ~1 Ω (NC at rest)', () => {
   assert.ok(near(ron, 1, 0.05), `recovered Ron should be ~1 Ω, got ${ron.toFixed(3)} Ω`);
 });
 
-// ── operate threshold: just below ~3 mA the LED stays "off"; above it switches ──
+// ── operate threshold: just below ~2 mA the LED stays "off"; above it switches ──
 
-test('operate threshold: LED current below ~3 mA does not switch the NO output', () => {
+test('operate threshold: LED current below ~2 mA does not switch the NO output', () => {
   const els = [ssr(), ...ledDrive(2200), ...outLoad()]; // (3.3 - ~1.1)/2200 ~ 1 mA, sub-threshold
   const { sim, V, driven } = settle(els, { VDR: 3.3, VOUT: 5, GND: 0 });
   const Iled = -Iat(sim, 'K1', '1'); // pin 1 injects -Iled into LEDA
-  assert.ok(Iled < 3e-3, `LED current should be sub-threshold here, got ${(Iled * 1e3).toFixed(2)} mA`);
+  assert.ok(Iled < 2e-3, `LED current should be sub-threshold here, got ${(Iled * 1e3).toFixed(2)} mA`);
   assert.ok(near(V('OUT'), 5, 0.02), `sub-threshold LED must leave the NO output open, got ${V('OUT').toFixed(4)} V`);
   assertBalanced(sim, driven);
 });
 
-test('operate threshold: LED current above ~3 mA switches the NO output closed', () => {
+test('operate threshold: LED current above ~2 mA switches the NO output closed', () => {
   const els = [ssr(), ...ledDrive(330), ...outLoad()]; // (3.3 - ~1.1)/330 ~ 6.7 mA, above threshold
   const { sim, V } = settle(els, { VDR: 3.3, VOUT: 5, GND: 0 });
   const Iled = -Iat(sim, 'K1', '1');
-  assert.ok(Iled > 3e-3, `LED current should be above threshold here, got ${(Iled * 1e3).toFixed(2)} mA`);
+  assert.ok(Iled > 2e-3, `LED current should be above threshold here, got ${(Iled * 1e3).toFixed(2)} mA`);
   assert.ok(V('OUT') < 0.05, `above-threshold LED must close the NO output, got ${V('OUT').toFixed(4)} V`);
 });
 

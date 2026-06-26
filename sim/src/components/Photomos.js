@@ -11,7 +11,7 @@ import { Component } from './Component.js';
 //   GAQW212GS — dual 1-Form-A (normally OPEN): each LED energized -> its own output closed.
 //
 // The output is modeled as a plain bidirectional resistance (Ron when conducting, ~open otherwise);
-// the LED is a diode whose forward current sets the energized state (operate threshold ~3 mA).
+// the LED is a diode whose forward current sets the energized state (operate ~2 mA NO / ~3 mA NC).
 export default class Photomos extends Component {
   static kind = 'optocoupler';
 
@@ -45,13 +45,13 @@ export default class Photomos extends Component {
 
     // GAQW212GS: dual 1-Form-A (normally open). Ron ~0.8 Ω/ch (datasheet typ; max 2 Ω) — immaterial in the
     // talk path vs the 2.2 k series R28 anyway; operate ≤2 mA (each LED is driven at ~7 mA from a 300 Ω R).
-    if (Photomos.isDual(this)) return { form: 'NO', ron: 0.8, iop: 3e-3, dual: true };
+    if (Photomos.isDual(this)) return { form: 'NO', ron: 0.8, iop: 2e-3, dual: true };
 
     // GAQY412EH: 1-Form-B (normally closed), Ron ~1 Ω, operate ~3 mA (footprint SMD-4 ...-W6.4-...-LS9.6)
     if (/gaqy412/.test(tag) || /smd-4_l[\d.]+-w6\.4-p2\.54-ls9\.6/.test(tag)) return { form: 'NC', ron: 1, iop: 3e-3 };
 
     // GAQY212GS: 1-Form-A (normally open), Ron ~0.24 Ω (datasheet typ), operate ≤2 mA
-    return { form: 'NO', ron: 0.24, iop: 3e-3 };
+    return { form: 'NO', ron: 0.24, iop: 2e-3 };
   }
 
   elements() {
