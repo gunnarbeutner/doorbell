@@ -164,11 +164,17 @@ shared party line across apartments.
 - **DOOR-5 (SHOULD)** A board door-open SHOULD **self-terminate in bounded time even if the firmware
   hangs** with the drive asserted: a stuck-high door line MUST NOT hold the opener indefinitely (the
   TV20/S is passive — it does not time-limit the bridge). *(Met: a hardware **max-on-time watchdog** —
-  an RC one-shot, R25 (3 MΩ) · C20 (2.2 µF) ≈ 6.6 s, whose FET (**Q4**) gates the K2 drive off
-  ~6.7 s after assertion regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
+  an RC one-shot, R25 (5.1 MΩ) · C20 (2.2 µF) ≈ 11 s, whose FET (**Q4**) gates the K2 drive off
+  ~11 s after assertion (fast corner ~2.6 s, clear of the 1.75 s pulse — DOOR-6) regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
   line drops. Reset/brownout already drops the opener via the gate pull-downs (DOOR-3 / SAFE-6), and the
   ESPHome task watchdog reboots a hang — so this is defense-in-depth. See DESIGN.md "Door-open
   max-on-time watchdog". Verified in `sim/test`.)*
+- **DOOR-6 (MUST)** The DOOR-5 watchdog window MUST be **corner-validated**, not nominal-only: across
+  the 2N7002 Vgs(th) (1.0–2.5 V) × R/C tolerance × MLCC bias/temperature derating, its release time MUST
+  stay **above the firmware door pulse + margin** at the fast corner (so a legitimate open is never
+  truncated) and **below a stated upper bound** at the slow corner (so a hung drive is bounded).
+  *(Met by R25 (5.1 MΩ) · C20 (2.2 µF): fast corner ~2.6 s > the 1.75 s pulse; ~11 s nominal; ~18 s slow
+  corner — see DESIGN.md "Door-open max-on-time watchdog".)*
 
 ## FW — Firmware host & control
 
@@ -186,6 +192,13 @@ provides them.
   explicit firmware command**, never autonomously on the board.
 - **FW-2 (MUST)** Provide a programming/recovery interface: native USB for flashing + logs, and
   BOOT/EN for recovery if an OTA update fails (OTA itself is firmware; this is the hardware hook).
+- **FW-3 (MUST)** Drive every SSR/opto input LED at its operate current. Per-pin GPIO source is
+  ≤~11 mA (PTT_DRV/IO9 drives both K1 LEDs; DOOR_DRV/IO10 drives the K2 + K4 LEDs) and the simultaneous
+  aggregate is ~27 mA — both well within the ESP32-S3 per-pad (40 mA) and total-I/O budget. The firmware
+  MUST keep the LED-driver pads **IO9 / IO10 at the ≥20 mA pad drive strength** (the ESPHome default),
+  never the 5/10 mA settings, which would droop VOH and starve the LEDs; at 20 mA the worst corner holds
+  K1 at ~4.9 mA (~2.5× its ~2 mA must-operate; ~5.9 mA typ). *(Met by the default — a don't-reduce
+  constraint; 40 mA is optional margin. See DESIGN.md "Switches K1–K4".)*
 
 ## SAFE — Safety & robustness
 

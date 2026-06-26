@@ -3480,7 +3480,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/ds11005.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1810301516_onsemi-BAT54SLT1G_C19726.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3491,7 +3491,7 @@
 				)
 			)
 		)
-		(property "Description" "Vr 30V, If 200mA, Dual schottky barrier diode, in series, SOT-323"
+		(property "Description" "BAT54S dual-series Schottky (30 V / 200 mA, SOT-23) — codec OUTP abs-max clamp: COM→ES_OUTP, A→GND, K→+3V3"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3507,6 +3507,45 @@
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "3a62aeb5-ad8f-4c9e-be60-cd37d0bfe130")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C19726"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b7f0be95-10ce-45ae-a811-e0991a26c0cb")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b31ed61b-c4bc-4559-8d31-9cb37b59804d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "onsemi"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3568d998-69b1-461f-8f33-13788a5024b7")
 			(effects
 				(font
 					(size 1 1)
@@ -22864,7 +22903,7 @@
 				)
 			)
 		)
-		(property "Value" "3M"
+		(property "Value" "5.1M"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "e3594761-4e13-4f39-a837-34ab61bb9de1")
@@ -22875,7 +22914,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF3004T5E_C23156.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010216_UNI-ROYAL-Uniroyal-Elec-0603WAF5104T5E_C13320.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -22901,7 +22940,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C23156"
+		(property "LCSC" "C13320"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -22914,7 +22953,7 @@
 				)
 			)
 		)
-		(property "Stock" "317736"
+		(property "Stock" "16079"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -22927,7 +22966,7 @@
 				)
 			)
 		)
-		(property "Price" "0.001USD"
+		(property "Price" "0.0015USD"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23018,7 +23057,7 @@
 				)
 			)
 		)
-		(property "Part" "0603WAF3004T5E"
+		(property "Part" "0603WAF5104T5E"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23031,7 +23070,7 @@
 				)
 			)
 		)
-		(property "Resistance" "3MΩ"
+		(property "Resistance" "5.1MΩ"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")

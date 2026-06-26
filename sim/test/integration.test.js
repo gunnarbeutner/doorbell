@@ -141,7 +141,8 @@ test('Etagenruf detection: a hot line 5 pulls OC2_OUT low; D9 blocks a reverse-p
 // ── actuators (PhotoMOS SSRs, energised via /PTT_DRV /DOOR_DRV /MUTE_DRV through the 300 Ω LED resistor) ──
 
 test('K2 door opener: DOOR_DRV = 3.3 V bridges P2 onto P3; idle does not', () => {
-  const on = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/DOOR_DRV': 3.3 } } }).V;
+  // R17·C18 makes K2 ~47 ms after DOOR_DRV in the sim — run past the make-delay (default T is 40 ms)
+  const on = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/DOOR_DRV': 3.3 } }, T: 0.1 }).V;
   assert.ok(near(on['/P3'], 12), `energised K2 should tie P3 to P2 (12 V), got ${on['/P3']?.toFixed(3)}`);
 
   const off = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/DOOR_DRV': 0 } } }).V;
@@ -475,9 +476,10 @@ test('DOOR-4: a board door-open (DOOR_DRV) releases K5 like S1', () => {
 // ── Door-open max-on-time watchdog (Q3 unit 2 + R25/C20/D11) ─────────────────────────────────────
 // The door opener is the K2 bridge (P2↔P3). If the ESP hangs with /DOOR_DRV latched high the door
 // would stay "pressed", so a hardware one-shot limits it: /DOOR_DRV charges /WD_GATE through R25
-// (3 M) · C20 (2.2 µF) ≈ 6.6 s; once /WD_GATE passes the FET threshold, Q3 unit 2 pulls /DELAY_GATE
+// (5.1 M) · C20 (2.2 µF) ≈ 11 s; once /WD_GATE passes the FET threshold, Q3 unit 2 pulls /DELAY_GATE
 // low, turning off Q3 unit 1 (K2's break-before-make low-side switch) → K2 opens → the bridge drops.
-// The normal 1.75 s firmware pulse ends long before the timeout, so a real open is never cut short.
+// R25 is sized so even the worst (cold / min-Vth / cap-derated) corner trips well after the 1.75 s
+// firmware pulse, so a real door-open is never cut short (DOOR-5).
 
 test('door watchdog: an armed /WD_GATE drops the K2 bridge even with /DOOR_DRV held high', () => {
   // drive /WD_GATE high directly to stand in for the charged RC — tests the mechanism, not the timing
@@ -485,7 +487,7 @@ test('door watchdog: an armed /WD_GATE drops the K2 bridge even with /DOOR_DRV h
   assert.ok(!near(armed['/P3'], 12, 2.0), `an armed watchdog must drop the door bridge, got P3=${armed['/P3']?.toFixed(2)} V`);
 
   // with /WD_GATE held low (RC not yet charged) the same drive keeps the door open
-  const open = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/WD_GATE': 0 }, program: { U1: { '/DOOR_DRV': 3.3 } } }).V;
+  const open = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/WD_GATE': 0 }, program: { U1: { '/DOOR_DRV': 3.3 } }, T: 0.1 }).V;
   assert.ok(near(open['/P3'], 12), `un-armed, the door must stay open, got P3=${open['/P3']?.toFixed(2)} V`);
 });
 
@@ -496,15 +498,15 @@ test('door watchdog timing: /DOOR_DRV stuck high opens the door, then self-relea
   const sim = createStepper(els,
     [['/VBUS', 5], ['/P1', 0], ['/P2', 12]].map(([net, v]) => ({ net, vf: () => v })),
     gndOf(netlist), dt);
-  // door fires and is still bridged at 1 s (the RC is nowhere near threshold). This also guards the
-  // R25 value: a 1000× too-small R would time out in milliseconds and fail right here.
-  for (let t = 0; t < 1.0; t += dt) sim.step(t);
+  // door fires and is still bridged at the end of the full 1.75 s firmware pulse (the RC is nowhere
+  // near threshold). This guards the R25 value: too small an R times out early and truncates the pulse.
+  for (let t = 0; t < 1.75; t += dt) sim.step(t);
   const open = sim.extractState();
-  assert.ok(near(open.vn['/P3'], 12), `door should be open at 1 s, got P3=${open.vn['/P3']?.toFixed(2)} V`);
-  // run past the ~6.6 s timeout: the watchdog must drop the bridge though /DOOR_DRV is still asserted
-  for (let t = 1.0; t < 10.0; t += dt) sim.step(t);
+  assert.ok(near(open.vn['/P3'], 12), `door must still be bridged at the end of the 1.75 s pulse (not truncated), got P3=${open.vn['/P3']?.toFixed(2)} V`);
+  // run past the ~11 s timeout: the watchdog must drop the bridge though /DOOR_DRV is still asserted
+  for (let t = 1.75; t < 16.0; t += dt) sim.step(t);
   const released = sim.extractState();
-  assert.ok(!near(released.vn['/P3'], 12, 2.0), `watchdog should release the door by 10 s, got P3=${released.vn['/P3']?.toFixed(2)} V`);
+  assert.ok(!near(released.vn['/P3'], 12, 2.0), `watchdog should release the door by 16 s, got P3=${released.vn['/P3']?.toFixed(2)} V`);
 });
 
 // ── power & protection front-end ──
