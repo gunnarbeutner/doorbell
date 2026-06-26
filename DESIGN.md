@@ -732,7 +732,7 @@ debounce). Audio is gated on the session, direction by K1:
   cap toward the source** — the convention every codec analog leg follows (OUTP/R26, OUTN/R16, MIC1P/R30,
   MIC1N/R31) — and R26 also isolates the DAC output from the C14 load. R26's series drop on the TX level
   is gain-recoverable (codec digital volume); the resulting ~4.4 kΩ (R26 + R28) source impedance into
-  line 3 is not.
+  line 3 is not — but **neither matters for level**: the WF26's own talk is a **passive 16 Ω transducer-as-mic** (mV-class), and the codec's ~0.9 Vrms full-scale **overpowers it by ~40–50 dB** (the door station's high-gain speech amp is built for that tiny mic signal). So the codec runs *low* on its digital volume to match and the source-Z divider loss vanishes against that headroom — **no buffer/op-amp needed**; a passive analog divider would only spare DAC bits if the digital cut runs very deep. **R28 (2.2 kΩ) doubles as the K1 talk-handshake bridge** (P2↔P3 via R28), held at 2.2 kΩ = the WF26's R29/R1 so the handshake reads as *talk*, not the near-short that fires the door — it must NOT drop below ~2.2 kΩ, so R26 is the only TX series-R free to change. *(V3 bench: an accidental P4→P3 bridge — the effect the K4/Q3 break-before-make now prevents — audibly drove the door-station speaker, confirming the door end responds at bus-bridge levels.)*
 - **RX front-end:** a balanced attenuating tap fed **differentially** to the ADC —
   `P2 → C16 (1 µF) → R30 (22 kΩ) → MIC1P` and `GND → C17 (1 µF) → R31 (22 kΩ) → MIC1N`, with
   **R33 / R32 (3.3 kΩ)** shunting MIC1P / MIC1N to **VMID**. Each leg is a 22 k/3.3 k divider (≈ −18 dB):
@@ -741,7 +741,7 @@ debounce). Audio is gated on the session, direction by K1:
   current-limits any clamp conduction and is the BUS-1 high-Z line-2 load. The 3.3 kΩ shunts double as
   the **MIC bias** (the ES8311 has no internal mic bias), pinning both inputs to VMID; **C12 = 10 µF**
   holds VMID as a stiff AC ground against the two shunts. Symmetric legs preserve the differential
-  balance. Final divider trim is bench-gated against the measured ADC full-scale.
+  balance. Final divider trim is bench-gated against the measured ADC full-scale. **The level ceiling is bounded by the gong, not unknown:** the Türruf gong couples line 4 onto line 2 (captured at ±8.8 V on P2) and ≈ the loudest audio line 2 ever carries — so the −18 dB divider sized for *its* abs-max also bounds normal speech, which the codec mic PGA + the ADC's ~90 dB SNR lift back to a usable code level. *(V3: the gong level is the expected maximum for line-2 audio.)*
 - **Support net:** AVDD runs off a **dedicated low-noise LDO** — **U4 = LP5907MFX-3.3** (TI, SOT-23-5,
   10 µVrms / 82 dB PSRR @ 1 kHz; LCSC C80670) fed from **+5V**, generating a clean **AU_3V3** rail (C23
   1 µF in / C24 1 µF out) that the shared Wi-Fi/SMPS-noisy +3V3 plane can't offer. Its **EN ties to

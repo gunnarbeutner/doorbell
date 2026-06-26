@@ -35,18 +35,19 @@ Transformer-less codec path (Phase 5). Bus-side topology + the RX attenuator/bia
 committed (RX: `P2→C16→R30(22k)→MIC1P` with `R33(3.3k)→VMID`, symmetric on MIC1N via C17/R31/R32;
 TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C12 = 10 µF). Remaining open:
 
-- [ ] **RX divider trim (bench).** 22k/3.3k (≈−18 dB) is committed and lands the ±8.8 V gong at ~1.1 V,
-      inside the ES8311 mic abs-max (~AVDD+0.3 = 3.6 V). Revisit Rb (2.2k → −21 dB more margin / 4.7k →
-      −15 dB more level) only if a captured real voice level demands it — bench-gated against the
-      measured ADC full-scale.
-- [ ] **TX level.** Match the WF26 mic-through-2.2 k drive (codec digital volume; do not overdrive the
-      TV20/S amp); add a buffer/atten only if needed. **OUTN is parked/terminated** (`R16→C15→GND`,
-      single-ended off OUTP) and **R26 (2.2 kΩ) now sits in series at OUTP** for abs-max protection
-      (sim B1), so the codec sees R26 + R28 ≈ 4.4 kΩ of source resistance into line 3 — fold that into
-      the level target (drive level is firmware-soft via codec digital volume; the source-Z rise is
-      not). Remaining fab-burning unknowns: the analog topology (R26/R28 values, buffer-vs-none) —
-      capture the WF26's own line-3 talk level first (see "Record a real test call") for the target,
-      and lay R26/R28/buffer out as reworkable.
+- [ ] **RX divider trim (bench-confirm).** 22k/3.3k (≈−18 dB) is committed and lands the ±8.8 V gong at
+      ~1.1 V, inside the ES8311 mic abs-max (~AVDD+0.3 = 3.6 V). The gong ≈ the loudest line-2 audio (V3),
+      so −18 dB also bounds speech and the codec mic PGA + ~90 dB ADC SNR lift it to a usable level — the
+      divider is sound; the bench just confirms the delivered ADC level and sets the PGA. Revisit Rb
+      (2.2k → −21 dB / 4.7k → −15 dB) only if that confirm shows it.
+- [ ] **TX level (firmware turn-down / bench-confirm).** `OUTP → R26 (2.2 kΩ) → C14 → TALK_BRIDGE → R28
+      (2.2 kΩ) → TX_OUT`; **OUTN parked** (`R16→C15→GND`, single-ended); R26 + D13 are the OUTP abs-max
+      guard (sim B1). **No board change:** the WF26's talk is a passive 16 Ω transducer-mic (mV-class), so
+      the codec's ~0.9 Vrms full-scale **overpowers it ~40-50 dB** — TX level is a firmware **turn-down**
+      (set the codec digital volume so the TV20/S amp isn't overdriven), not a drive/buffer problem.
+      R26/R28 stay 2.2 kΩ (R28 = the K1 handshake bridge, must match the WF26's R29/R1). Bench: set the
+      codec volume to a handset-level talk (the real-test-call capture gives the target); *only if* the
+      cut is so deep it costs DAC resolution, add a passive OUTP attenuator — still no op-amp.
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
