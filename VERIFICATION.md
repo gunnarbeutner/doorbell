@@ -30,7 +30,7 @@ own ERC/DRC can't express and exports the fab outputs from the authoritative fil
   with `wifi_ssid`/`wifi_password` alongside). Confirm the GPIO assignments in the YAML match the
   schematic.
 
-Green gates verify the files; the `kicad/fab/` outputs are exported from them and may lag the
+Green gates verify the files; the `fab/` outputs are exported from them and may lag the
 schematic — **re-export (`./build.sh all-route`) before ordering** so the BOM/CPL match.
 
 ## 2. Independent schematic review (do it blind)
@@ -42,7 +42,7 @@ from:
 - the netlist exported from the schematic (`kicad-cli sch export netlist`),
 - the manufacturer datasheets (see §6),
 - the reverse-engineered handset (`wf26/wf26.kicad_sch` + `wf26/wf26-schematic.md`),
-- the STR TV20/S service plan (`docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`).
+- the STR TV20/S service plan (`docs/design/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`).
 
 Derive what each net *should* be, then compare to the schematic. Reconcile any disagreement with
 DESIGN.md only **after** forming the independent view. Every active and polarity-sensitive part
@@ -105,7 +105,7 @@ additive on top). Confirm against `wf26/wf26.kicad_sch`.
 - **Intercom logic vs the TV20/S plan** — Türruf ≈ 12 VDC across terminals 4 & 1; ÖT bridges
   terminals 2 & 3; Etagenruf series-interrupts line 5; door ring = 3-chime gong, floor call =
   continuous tone. The session is held from P2 and ends via a P2 transition (door-open transfer or
-  the ~60 s timeout) — cross-check against the `osci/` bench captures.
+  the ~60 s timeout) — cross-check against the `captures/runs/` bench captures.
 - **Datasheet pinouts** — for any part whose pinout is image-only or sourced by proxy (e.g. an opto
   confirmed by PC817-family convention rather than its own sheet), confirm against the actual
   manufacturer datasheet before fab; an emitter/collector or pin-1 swap is a silent dead-channel.
@@ -183,7 +183,7 @@ the timeout P2-sink and shared-bus interactions) carry over to §6.
 Some claims can only be settled on hardware. Probe via the commissioning test points (TP1 = GND
 anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. Use an **isolated** scope
 (grounds on P1 only; don't tether a mains-earthed PC) — see `TODO.md` "Bench measurements" and the
-`osci/` capture procedure.
+`captures/runs/` capture procedure.
 
 - **Per-channel opto polarity** — ring each real bell and confirm detection (or the ~10.7 V drop
   across R_lim). A wrong guess is a silent non-detect, not damage; swap the LED's two bus

@@ -402,7 +402,7 @@ test('session latch: a Türruf pulls in K5 (its contact closes K1_COM onto line 
     `idle line 4 should leave the latch open, got ${idle['/K5_COM']?.toFixed(2)} V (floating=${floating['/K5_COM']})`);
 });
 
-// The session is a P2 seal-in (bench: osci/our-ring-door-open.md, pending a dedicated handset
+// The session is a P2 seal-in (bench: captures/runs/our-ring-door-open/notes.md, pending a dedicated handset
 // confirmation — see TODO). A Türruf *pulse* on line 4 pulls K5 in; because P2 is *always*
 // energised it then seals the coil in (`P2 → S1 NC → K1_COM → the closed NO contact → line 4 → coil`)
 // and self-holds. **Dropping line 4 does NOT release it** — P2 holds it. The session ends via P2: the

@@ -9,26 +9,26 @@ express and exports the fab outputs:
 ```
 ./build.sh            # verify + fab (full run; = all-route)
 ./build.sh sch        # schematic ERC + PDF export
-./build.sh check      # PCB placement constraints (check_pcb.py)
-./build.sh route      # verify planes/thieving/connectivity (route.py) + DRC
-./build.sh fab        # Gerbers + drill + position + BOM -> kicad/fab/
+./build.sh check      # PCB placement constraints (tools/check_pcb.py)
+./build.sh route      # verify planes/thieving/connectivity (tools/route.py) + DRC
+./build.sh fab        # Gerbers + drill + position + BOM -> fab/
 ./build.sh all-route  # sch + check + route + fab (full run)
 ```
 
 | Script | Interpreter | Role |
 |--------|-------------|------|
-| `check_pcb.py` | KiCad bundled python (pcbnew) | verify placement (edge flush/overhang, parts inside outline) |
-| `route.py` | KiCad bundled python (pcbnew) | refill zones + verify connectivity + copper-thieving sliver limit |
-| `jlcpcb_cpl.py` | KiCad bundled python (pcbnew) | JLCPCB CPL (pad-centroid positions) |
-| `jlcpcb_files.py` | `.venv/bin/python` (kiutils) | JLCPCB BOM (from the schematic) |
+| `tools/check_pcb.py` | KiCad bundled python (pcbnew) | verify placement (edge flush/overhang, parts inside outline) |
+| `tools/route.py` | KiCad bundled python (pcbnew) | refill zones + verify connectivity + copper-thieving sliver limit |
+| `tools/jlcpcb_cpl.py` | KiCad bundled python (pcbnew) | JLCPCB CPL (pad-centroid positions) |
+| `tools/jlcpcb_files.py` | `.venv/bin/python` (kiutils) | JLCPCB BOM (from the schematic) |
 
-`doorbell_design.py` holds the placement constants `check_pcb.py` verifies — connector edge
+`tools/doorbell_design.py` holds the placement constants `check_pcb.py` verifies — connector edge
 fit/overhang and the mounting-hole MLCC keep-out; the KiCad files are authoritative for the rest.
 The board is hand-routed **in KiCad**;
 `route.py` fails the build on any unrouted connection or any copper-thieving float island
 over the sliver limit (≥ 2 mm² or ≥ 10 mm) — fix those in KiCad, never with a tool.
 
-> 4-layer, ~64 × 59 mm; `check_pcb.py` gates placement (the edge connectors J1/J2/J3 and U1
+> 4-layer, ~64 × 59 mm; `tools/check_pcb.py` gates placement (the edge connectors J1/J2/J3 and U1
 > sit flush on their board edges).
 
 ## Where the rest lives (deliberately not duplicated here)

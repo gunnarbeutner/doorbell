@@ -16,14 +16,15 @@ fab outputs; it does not author or regenerate the board.
 | `DESIGN.md` | *How* it's built — architecture, GPIO map, relays/SSRs, audio path, V3→V4 rationale. |
 | `VERIFICATION.md` | How to verify the board before fab — the checks to run and what to look for. |
 | `ORDERING.md` | JLCPCB ordering notes (Economic PCBA workflow + the review gates). |
-| `kicad/` | Authoritative KiCad project + the verify/export scripts and `fab/` outputs. See `kicad/README.md`. |
+| `kicad/` | Authoritative KiCad project (`doorbell.kicad_sch` / `.kicad_pcb`). See `kicad/README.md`. |
+| `tools/` | Build/inspection Python scripts (placement check, routing verify, STEP/BOM/CPL export). |
 | `firmware/` | ESPHome configs — `doorbell-v4.yaml` (current), `doorbell-v3.yaml` (legacy/deployed). |
 | `sim/` | Node circuit simulator + PCB viewer used to sanity-check the design (`cd sim`; `npm test`). |
 | `wf26/` | Reverse-engineered WF26 handset (`wf26.kicad_sch`). |
-| `osci/` | Bench scope captures of the real TV20/S (ring, door-open, timeout) + web viewer. |
-| `docs/` | Datasheets and reference docs (TV20/S service manual, `KlingelV4.fzz` Fritzing source). |
-| `reference/` | Raw teardown/prototype photos and the one-off Fritzing netlist extractor. |
-| `fab-orders/` | Shipped fabrication order artifacts. |
+| `captures/` | Bench scope captures of the real TV20/S (ring, door-open, timeout) + web viewer. |
+| `docs/` | Datasheets and reference docs, split into `datasheets/`, `design/`, `ordering/`, `attic/`. |
+| `fab/` | Generated fab outputs (Gerbers, drill, BOM, CPL, STEP) — produced by `./build.sh fab`. |
+| `orders/` | Shipped fabrication order archives. |
 
 ## Build
 

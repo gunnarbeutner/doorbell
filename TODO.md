@@ -66,10 +66,10 @@ ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-c
 tether it to a mains-earthed PC. Pair with a DMM.
 
 - [ ] **Record a real test call (full speech session) — do this before trusting the sim's talk /
-      RX-TX model.** The existing captures cover the ring + door-open (`osci/our-ring-door-open.md`)
+      RX-TX model.** The existing captures cover the ring + door-open (`captures/runs/our-ring-door-open/notes.md`)
       but not a **call with audio**. Drive the genuine sequence: **pulse line 4 (P4) to initiate**,
       with **P2 held at +12 V for the whole call (at least)**, then talk/listen. Capture via
-      `osci/capture.py` (DHO804 isolated, grounds on **P1**, 3 ch — P4, P2, P3) and write the
+      `captures/capture.py` (DHO804 isolated, grounds on **P1**, 3 ch — P4, P2, P3) and write the
       usual `*.md` timeline. **Talk through the WF26 handset during the capture** — every existing P3
       trace is idle or a door-open bridge, so there is *no* TX-direction (voice-on-line-3) data yet.
       Use it to ground-truth (a) the real line levels during a call (P2 held at

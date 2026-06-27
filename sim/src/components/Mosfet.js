@@ -37,7 +37,7 @@ export default class Mosfet extends Component {
   }
 
   model() {
-    // 2N7002 (CJ, docs/2n7002_datasheet.pdf): Vgs(th) typ 1.6 V (1.0-2.5 V); Rds(on) ~5 Ω at Vgs = 10 V
+    // 2N7002 (CJ, docs/datasheets/2n7002_datasheet.pdf): Vgs(th) typ 1.6 V (1.0-2.5 V); Rds(on) ~5 Ω at Vgs = 10 V
     if (/2N7002/i.test(this.lib)) return { vth: 1.6, ron: 5 };
 
     return { vth: 2, ron: 1 };

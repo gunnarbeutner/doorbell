@@ -5681,7 +5681,7 @@
 			(uuid "0094181d-1b56-4a3f-8683-28b9e72db149")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_switches/gaqy212gs.3dshapes/SOP-4_L4.3-W4.4-P2.54-LS6.8-TR.step"
+		(model "${KIPRJMOD}/libraries/switches/gaqy212gs.3dshapes/SOP-4_L4.3-W4.4-P2.54-LS6.8-TR.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -8800,7 +8800,7 @@
 			(uuid "ed053011-e53a-4e6a-9567-46cc7b8814d9")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_audio/ES8311.3dshapes/WQFN-20_L3.0-W3.0-H0.8-P0.40-TL-EP1.7.step"
+		(model "${KIPRJMOD}/libraries/audio/ES8311.3dshapes/WQFN-20_L3.0-W3.0-H0.8-P0.40-TL-EP1.7.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -10350,7 +10350,7 @@
 			(uuid "1386e3c8-3709-4c89-9083-2cd80241bf2a")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_mcu/ESP32-S3-WROOM-1U.3dshapes/ESP32-S3-WROOM-1U.step"
+		(model "${KIPRJMOD}/libraries/mcu/ESP32-S3-WROOM-1U.3dshapes/ESP32-S3-WROOM-1U.step"
 			(offset
 				(xyz -9 -9.6 0)
 			)
@@ -16527,7 +16527,7 @@
 			(uuid "8bcf6958-6b2e-4870-87ec-ab632a6a28bc")
 		)
 		(embedded_fonts no)
-		(model "/Users/gunnar/doorbell/kicad/lib_terminal/db125_5p.3dshapes/CONN-TH_5P-P3.50_DORABO_DB125-3.5-5P-GN-S.wrl"
+		(model "${KIPRJMOD}/libraries/terminal/db125_5p.3dshapes/CONN-TH_5P-P3.50_DORABO_DB125-3.5-5P-GN-S.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -18826,7 +18826,7 @@
 			(uuid "f263458e-9c7b-4806-acc7-e62999179b26")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_switches/sppj322300.3dshapes/SW-TH_SPPJ322300.step"
+		(model "${KIPRJMOD}/libraries/switches/sppj322300.3dshapes/SW-TH_SPPJ322300.step"
 			(offset
 				(xyz 0 0 0.925)
 			)
@@ -20202,7 +20202,7 @@
 			(uuid "80d57070-eda9-4863-9c23-f3a66caf4b6a")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_audio/rvt1h470m0607.3dshapes/CAP-SMD_BD6.3-L6.6-W6.6-H7.7.wrl"
+		(model "${KIPRJMOD}/libraries/audio/rvt1h470m0607.3dshapes/CAP-SMD_BD6.3-L6.6-W6.6-H7.7.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -23126,7 +23126,7 @@
 			(uuid "3801b741-ccb9-45dc-9140-ad1b24ceaca7")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_switches/gaqw212gs.3dshapes/SOP-8_L9.4-W4.4-H2.1-LS6.8-P2.54.step"
+		(model "${KIPRJMOD}/libraries/switches/gaqw212gs.3dshapes/SOP-8_L9.4-W4.4-H2.1-LS6.8-P2.54.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -24397,7 +24397,7 @@
 			(uuid "31712542-009b-42c6-aba8-087536b28e0b")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_switches/sppj322300.3dshapes/SW-TH_SPPJ322300.step"
+		(model "${KIPRJMOD}/libraries/switches/sppj322300.3dshapes/SW-TH_SPPJ322300.step"
 			(offset
 				(xyz 0 0 0.925)
 			)
@@ -26410,7 +26410,7 @@
 			(uuid "f6910c1d-eeb5-40c2-8ba7-178fc73d8533")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_switches/gaqy412eh.3dshapes/SMD-4_L4.8-W6.4-P2.54-LS9.6-BL.step"
+		(model "${KIPRJMOD}/libraries/switches/gaqy412eh.3dshapes/SMD-4_L4.8-W6.4-P2.54-LS9.6-BL.step"
 			(offset
 				(xyz 0 0 -2.875)
 			)
@@ -27635,7 +27635,7 @@
 			(uuid "ca7ce7d8-c440-4bce-bb5c-c227224f80fb")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_switches/gaqy412eh.3dshapes/SMD-4_L4.8-W6.4-P2.54-LS9.6-BL.step"
+		(model "${KIPRJMOD}/libraries/switches/gaqy412eh.3dshapes/SMD-4_L4.8-W6.4-P2.54-LS9.6-BL.step"
 			(offset
 				(xyz 0 0 -2.875)
 			)
@@ -28288,7 +28288,7 @@
 			(uuid "cec96bba-b61c-44be-acd1-6452e19e73d7")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/lib_audio/rvt1h470m0607.3dshapes/CAP-SMD_BD6.3-L6.6-W6.6-H7.7.wrl"
+		(model "${KIPRJMOD}/libraries/audio/rvt1h470m0607.3dshapes/CAP-SMD_BD6.3-L6.6-W6.6-H7.7.wrl"
 			(offset
 				(xyz 0 0 0)
 			)

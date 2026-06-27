@@ -7,18 +7,17 @@ When the design changes in a way that affects behaviour, update REQUIREMENTS.md 
 edited directly in KiCad. `./build.sh all-route` verifies them — the checks KiCad's own DRC/ERC
 can't express (connectivity + the copper-thieving sliver limit in `route.py`, placement in
 `check_pcb.py`) — and exports the fab outputs; it does not generate the board.
-`kicad/doorbell_design.py` holds the placement constants `check_pcb.py` verifies (connector edge
+`tools/doorbell_design.py` holds the placement constants `check_pcb.py` verifies (connector edge
 fit, mounting-hole MLCC keep-out); the KiCad files are authoritative for everything else.
 V4 firmware: `firmware/doorbell-v4.yaml`. LCSC part numbers live in the schematic symbols as hidden
 `LCSC`/`Description`/`MPN`/`Datasheet` fields (the JLCPCB library symbols carry most; the rest are
-set by hand) and `kicad/jlcpcb_files.py` reads them from the schematic for the BOM.
+set by hand) and `tools/jlcpcb_files.py` reads them from the schematic for the BOM.
 Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
-Intercom system reference: `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`;
-central-unit photo: `reference/tv20s-board.jpg`.
+Intercom system reference: `docs/design/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`;
+central-unit photo: `docs/design/tv20s-board.jpg`.
 
 V3 — the board currently deployed in the wall — is documented in its own section below
-(sources: `docs/KlingelV4.fzz` Fritzing schematic, `firmware/doorbell-v3.yaml`, netlist via
-`reference/extract_netlist.py` → `reference/netlist.txt`).
+(sources: `docs/design/KlingelV4.fzz` Fritzing schematic, `firmware/doorbell-v3.yaml`).
 
 ---
 
@@ -67,7 +66,7 @@ because chime-suppress no longer breaks line 4 (it opens C1; see "Relays" / "Aud
 | Line | TV20/S role | Role in our circuit |
 |------|-------------|---------------------|
 | **P1** (= board GND) | Common reference (all bell/speech ref to line 1) | Bonded to board GND; opto LED returns (each via 5.1 kΩ to P1); the codec RX/TX reference |
-| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in. **Idles at +12 V vs P1** — a continuous standing bus rail (`osci/`: 12.06–12.11 V at rest), sagging to ~9.4 V under the seal-in load during a session and momentarily to ~2.6 V at session-end before snapping back |
+| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in. **Idles at +12 V vs P1** — a continuous standing bus rail (`captures/runs/`: 12.06–12.11 V at rest), sagging to ~9.4 V under the seal-in load during a session and momentarily to ~2.6 V at session-end before snapping back |
 | **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (codec DAC → R26 2.2 kΩ → C14 → R28 2.2 kΩ → P3); WF26 talk/door switches |
 | **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K3** chime-mute (P4↔C1); K5 coil + flyback **D1**; R29 |
 | **P5** | Etagenruf — apartment/floor call (tone) | **OC2** sense; **LS1** speaker (P5↔GND); C19 (the gong cap, P4↔P5) |
@@ -85,9 +84,9 @@ session exactly as the handset button does: drop the K5 latch. The handset's **S
 latch drops as the opener fires and the live Türruf on line 4 never reaches line 3. K2 alone (a plain
 P2↔P3 short) can't do that — it would leave the latch sealed and bridge `P4 → K5 → P2 → K2 → P3`,
 injecting the ring (12 V DC + gong AC) onto the talk line. **Bus-confirmed both ways:** a *handset*
-door-open ends the call within ~1.5 s (`osci/neighbour-ring-door-open`), whereas a bare P2↔P3 relay
+door-open ends the call within ~1.5 s (`captures/runs/neighbour-ring-door-open`), whereas a bare P2↔P3 relay
 short (the V3 controller, API-triggered during a live session) leaves the latch **sealed for ~51 s**
-(`osci/door-open-call-held`) — exactly the "K2-alone leaves it sealed" case this transfer exists to avoid.
+(`captures/runs/door-open-call-held`) — exactly the "K2-alone leaves it sealed" case this transfer exists to avoid.
 So the board reproduces S1's transfer with
 two extra parts, both on the **DOOR_DRV** gate:
 
@@ -139,12 +138,12 @@ over the ESPHome task watchdog (which also reboots a hung MCU). Q3 (break-before
 
 ## TV20/S reference facts (confirmed from the STR PDF)
 
-From `docs/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehlersuchhilfe*):
+From `docs/design/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* + *Fehlersuchhilfe*):
 
 - **Power:** NTR201 transformer, 230 V~ → **12 VAC**; feeds the TV20/S control unit.
 - **Door opener (Türöffner Tö):** **8–12 VAC, 1 A max** (~5–15 Ω), switched by the TV20/S
   on its terminals **8/9** — our board never carries this current. The central unit
-  (`reference/tv20s-board.jpg`, a discrete relay/analog board) carries a **1–12 + earth +
+  (`docs/design/tv20s-board.jpg`, a discrete relay/analog board) carries a **1–12 + earth +
   `8V~`** screw-terminal strip; the opener is fed from a **separate ~8 V/1 A bell transformer
   (Klingeltrafo)** wired to that `8V~` terminal — a third AC domain, distinct from the
   NTR201 12 VAC that supplies the bus and bell-sense voltages, and one the board never taps.
@@ -226,7 +225,7 @@ the session (see "Audio path").
 
 ### TV20/S central unit — from the board photo
 
-`reference/tv20s-board.jpg` (component side) shows the speech path built on dedicated audio power
+`docs/design/tv20s-board.jpg` (component side) shows the speech path built on dedicated audio power
 amplifiers — an **LM380N** (2.5 W) and a **TAA861A** — plausibly one per direction (half-duplex) —
 alongside several **V23100 / V23154** signal relays and small-signal transistors. The amp types
 are read directly from the parts; the points below are inferred from them, not traced from a netlist:
@@ -250,7 +249,7 @@ The apartment handset (Sprechstelle **WF26/G**, PCB silk "…WF26") has **no MCU
 (1970s THT): a single transducer, one signal relay, an RC pair and two DPDT switches. The full
 internals are captured in **`wf26/wf26.kicad_sch`** (standalone, ERC-clean; neutral connectivity
 readout in `wf26/wf26-schematic.md`; teardown photos `IMG_5082.jpg` /
-`reference/intercom-teardown-collage.png`). Parts: LS1 (16 Ω speaker/mic),
+`docs/design/intercom-teardown-collage.png`). Parts: LS1 (16 Ω speaker/mic),
 **S1 (Türöffner / door release, DPDT)**, **S2 (Sprechen/Hören / talk, DPDT)**, R1 (2.2 kΩ,
 colour bands red-red-red-gold), C1 (22 µF/50 V), K5 (6-pin DIL SPDT signal relay,
 HJR-4102-N-12V), J1 (5-way bus = P1–P5).
@@ -366,7 +365,7 @@ over.
 | 26 | `front_door_buzzer_bin` — output, inverted | Output | Relay K2 (ÖT bridge) | GPIO10 |
 | 25 | `suppress_doorbell_sound_bin` — output, inverted | Output | Relay K3 (chime suppress) | GPIO11 |
 
-V3 netlist verified against `reference/netlist.txt` (nets `WF26-P4`/`WF26-P5`, `N9`–`N12`;
+V3 netlist verified against `docs/design/KlingelV4.fzz` (nets `WF26-P4`/`WF26-P5`, `N9`–`N12`;
 V3's `WF26-IN-P4` mapped to what was V4's `IN_P4` — now merged into the single `P4` net, since V4's
 chime-suppress moved off line 4 onto C1).
 
@@ -383,7 +382,7 @@ its 6 V V_R — and that reverse current returns through line 5's 16 Ω speaker,
 session, on the *frequent* house ring). That cooked the Etagenruf opto's LED; the Türruf opto,
 seeing only the milder/brief AC self-reverse, survived. **V4 fixes this with per-opto limiters**
 (each idle cathode sits at ~0 V — no shared node to lift, no reverse path to cook), and D9 is
-retained. Bench evidence: `osci/floor-call-p5`.
+retained. Bench evidence: `captures/runs/floor-call-p5`.
 
 ---
 
@@ -595,7 +594,7 @@ hum/ground-loops, not shock.)
 
 Part values/footprints/LCSC numbers are maintained **directly in the authoritative KiCad files**
 (`kicad/doorbell.kicad_sch` / `.kicad_pcb` — the generator scripts are gone). `./build.sh all-route`
-**exports** the order files from them (`kicad/fab/doorbell-bom-jlcpcb.csv` + `doorbell-cpl.csv`). See
+**exports** the order files from them (`fab/doorbell-bom-jlcpcb.csv` + `doorbell-cpl.csv`). See
 `ORDERING.md` for the stock/eligibility checks at order time.
 
 > J1/J2 are through-hole but **assembled by JLCPCB** (THT assembly), not hand-soldered.
@@ -641,26 +640,26 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   scope anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. The board has
   **H1/H2 mounting holes** (NPTH 3.2 mm) on the enclosure bosses, plus **H3–H5 JLCPCB tooling
   holes** (NPTH 1.152 mm, asymmetric) for the assembly order.
-- **3D / fit-test model:** `./build.sh step` exports `kicad/fab/doorbell.step` (also run by
+- **3D / fit-test model:** `./build.sh step` exports `fab/doorbell.step` (also run by
   `all-route`). Footprints carrying a truthy custom field **`STEP_Exclude`** are omitted from the
   model — flag SW3/SW4 (set the field in KiCad's Footprint Properties) so the real panel switches
   can be fit-tested against the print. `kicad-cli`'s `--component-filter` is include-only, so
-  `kicad/step_exclude.py` emits the complement. The *same* flag drives `kicad/step_fit_holes.py`,
+  `tools/step_exclude.py` emits the complement. The *same* flag drives `tools/step_fit_holes.py`,
   which enlarges those parts' THT drills (+0.5 mm) on a throwaway copy so the real switch drops into
   the printed hole — committed board and every fab output keep the as-fab drills. For 3D printing,
-  `kicad/step_solder.py` then injects
+  `tools/step_solder.py` then injects
   small **'fake solder' anchor blocks** at every SMD pad (authored directly as AP214 box solids in
   the board's global frame and spliced into the top assembly representation — no CAD kernel needed),
   bridging the board's top face up into each part's leads so components like the K5 relay don't snap
   off the thin printed leads.
-- **Printable bare-board model:** `./build.sh step-board` exports `kicad/fab/doorbell-board.step` —
+- **Printable bare-board model:** `./build.sh step-board` exports `fab/doorbell-board.step` —
   the substrate only (no component bodies), with the mounting/tooling holes and THT pad drills cut
   through (`--board-only --no-extra-pad-thickness`). The 80 routing vias (all 0.3 mm, sub-printable
   on a 0.4 mm nozzle) are deliberately *not* cut — they aren't needed for the SW3/SW4 fit-test, and
   the switch + mounting holes are THT pad drills that `--board-only` keeps regardless. It's meant to
   be 3D-printed
   (0.4 mm-nozzle FDM) and the real switches pushed into it to check fit, so the shared
-  `kicad/step_fit_holes.py` enlarges the **`STEP_Exclude`**-flagged footprints' THT drills by
+  `tools/step_fit_holes.py` enlarges the **`STEP_Exclude`**-flagged footprints' THT drills by
   +0.5 mm (SW3/SW4: 0.9→1.4 mm signal, 1.35→1.85 mm peg) on a throwaway copy to compensate for FDM
   undersizing — the committed board and every fab output keep the as-fab holes. Standalone; not part
   of `all-route`. The board's **top face
@@ -753,7 +752,7 @@ debounce). Audio is gated on the session, direction by K1:
   DVDD (digital core) are switching-noise *sources*, and putting them on the analog LDO would re-inject
   that hash into the rail AVDD shares — each instead keeps a local 100 nF on the plane. DACVREF/ADCVREF/
   VMID reservoir caps; CE/DGND/AGND/EP → GND. Symbols/footprints imported with `easyeda2kicad` into
-  `kicad/lib_audio/` (the LP5907 uses the stock `Regulator_Linear` symbol).
+  `kicad/libraries/audio/` (the LP5907 uses the stock `Regulator_Linear` symbol).
 - **EP grounding (no vias):** the QFN-20 centre EP carries no thermal vias — paste over open vias
   wicks solder away, and the codec dissipates milliwatts. EP (and pin 10/AGND, tied to it) bonds to
   GND through adjacent copper.
@@ -774,7 +773,7 @@ high-Z is now structural, not discipline.
   Set the codec digital volume to the handset's mic-through-2.2 kΩ level, don't overdrive the TV20/S amp
   (AUDIO-6).
 - **SAFE-7 bus protection** — per-line **bidirectional TVS** (each P-line→P1, at the connector). The
-  front-end already tolerates the measured working envelope (`osci/`: **≈ −11 V to +17 V**; SSRs at
+  front-end already tolerates the measured working envelope (`captures/runs/`: **≈ −11 V to +17 V**; SSRs at
   60 V Voff, optos current-limited + reverse-clamped, codec taps AC-coupled ≥ 50 V), so the TVS is
   **fault-only** (H24VND3BA): **24 V standoff** — above the +16–17 V ring/door switching transients, so it
   stays idle in normal use — clamping over-envelope surge/ESD/miswire to ~50 V, under the 60 V SSRs.
@@ -874,7 +873,7 @@ not a tweak of the current board:
 
 Automated gates (run by `./build.sh all-route`): **ERC 0 errors, DRC 0/0, routes
 0 unrouted, `check_pcb.py` PASS** — these verify the authoritative KiCad files; the
-gerbers/BOM/CPL in `kicad/fab/` are exported from them. The firmware config passes `esphome config firmware/doorbell-v4.yaml`
+gerbers/BOM/CPL in `fab/` are exported from them. The firmware config passes `esphome config firmware/doorbell-v4.yaml`
 (ESPHome 2026.5.3; needs a `secrets.yaml` with `wifi_ssid`/`wifi_password` alongside).
 
 `VERIFICATION.md` is the **procedure** for confirming the board before fab — the automated gates,

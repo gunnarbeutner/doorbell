@@ -9,14 +9,14 @@ confirm JLCPCB's panel/depanel clears them (see the gates below). U1 is an **ESP
 a **u.FL external antenna** module, so there is no PCB-antenna edge keepout to protect (route the
 antenna lead out of the enclosure instead).
 
-> Run `./build.sh all-route` first to (re)export the fab files in `kicad/fab/` — the committed
+> Run `./build.sh all-route` first to (re)export the fab files in `fab/` — the committed
 > gerbers/BOM/CPL are build outputs and may lag the schematic.
 
 ## Pre-fab mechanical fit test (3D-print the board)
 
 Do this **before ordering** — a board that doesn't seat in the WF26 housing or whose buttons don't
 line up is a respin, and it's the one failure class no gerber/DRC/sim gate can catch (MECH-1 /
-MECH-1a). `./build.sh all-route` (or `./build.sh step`) exports `kicad/fab/doorbell.step` — the PCB
+MECH-1a). `./build.sh all-route` (or `./build.sh step`) exports `fab/doorbell.step` — the PCB
 plus all component bodies as a solid. Print it (FDM is fine; the test is dimensional, not cosmetic)
 and check it against the **original WF26 enclosure** and its buttons:
 
@@ -26,7 +26,7 @@ and check it against the **original WF26 enclosure** and its buttons:
 - **Connector access.** J1 (USB-C, shell protrudes past the edge) reaches its wall aperture, and
   J2's wire mouths are reachable to land the 5 bus wires once installed.
 - **Switches fit + actuate (MECH-1a) — the point of the test.** The STEP model **deliberately omits
-  SW3/SW4** (the `STEP_Exclude` field; see `kicad/step_exclude.py`) — the door-release and talk
+  SW3/SW4** (the `STEP_Exclude` field; see `tools/step_exclude.py`) — the door-release and talk
   front-panel buttons (`SPPJ322300`) — so you fit-test the printed board against the **real**
   switches and the housing's button apertures. Confirm each plunger tip lands under its aperture and
   that pressing the housing button fully actuates the switch (this is also what makes the manual
@@ -41,9 +41,9 @@ board face).
 
 | Step | File |
 |------|------|
-| Gerbers | `kicad/fab/doorbell-jlcpcb.zip` (incl. the IPC-356 netlist for the E-test) |
-| BOM | `kicad/fab/doorbell-bom-jlcpcb.csv` |
-| Placement (CPL) | `kicad/fab/doorbell-cpl.csv` |
+| Gerbers | `fab/doorbell-jlcpcb.zip` (incl. the IPC-356 netlist for the E-test) |
+| BOM | `fab/doorbell-bom-jlcpcb.csv` |
+| Placement (CPL) | `fab/doorbell-cpl.csv` |
 
 ## The selections
 
@@ -61,7 +61,7 @@ board face).
     If a line forces Standard PCBA ($25/side), decide then whether to proceed or substitute.
   - **Stock check:** confirm LCSC stock on the less-common Extended lines (the RF module, codec,
     LDO, SSRs, latch relay, USB-C jack, screw terminal, door switches) against the current
-    `kicad/fab/doorbell-bom-jlcpcb.csv` — `JLCPCB-BASIC-PARTS.md` flags the low-stock ones.
+    `fab/doorbell-bom-jlcpcb.csv` — `JLCPCB-BASIC-PARTS.md` flags the low-stock ones.
   - **Through-hole parts:** J2 (and J1's shell stakes) are assembled by JLCPCB; confirm THT
     assembly is included when JLCPCB reviews/quotes the order.
   - **Assembly Qty:** `2` — assemble one + a spare. The setup/part fees are already paid, so

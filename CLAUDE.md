@@ -13,10 +13,13 @@ ring detection, gong suppression, two-way audio, and door-opener control to Home
 - **`kicad/`** — the actual schematic + PCB (`doorbell.kicad_sch` / `.kicad_pcb`); these are the
   source of truth for the board itself, edited directly in KiCad. `./build.sh all-route` verifies
   and exports fab outputs.
+- **`tools/`** — build/inspection Python scripts (placement check, routing verify, STEP/BOM/CPL export).
 - **`firmware/`** — ESPHome config (`doorbell-v4.yaml`).
 - **`sim/`** — Node-based circuit simulator + PCB viewer used to sanity-check the design
   (`cd sim`; `npm test`; dev server `node server.js`).
-- **`wf26/`** — reverse-engineered handset; **`docs/`** — TV20/S reference PDFs.
+- **`captures/`** — bench scope captures of the real TV20/S bus + web viewer (`cd captures/viewer; npm start`).
+- **`wf26/`** — reverse-engineered handset; **`docs/`** — datasheets and reference PDFs
+  (`datasheets/`, `design/`, `ordering/`, `attic/`).
 
 ## Working with the docs
 

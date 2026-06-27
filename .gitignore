@@ -8,5 +8,12 @@
 *.sw[a-p]
 *~
 
-# JLCPCB Tools plugin working dir (project.db, gerber/, production_files/) — regenerable
-kicad/jlcpcb/
+# Python bytecode caches
+__pycache__/
+*.pyc
+
+# Captures viewer on-disk binary cache (regenerable)
+captures/viewer/.cache/
+
+# Captures venv (regenerable)
+captures/.venv/
