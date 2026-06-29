@@ -566,8 +566,8 @@ the one surviving flyback (D1) is on the passive WF26 latch coil.
 ### Power tree
 
 ```
-USB-C VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ─┬─ SGM2212-3.3 ── +3V3 ── ESP32-S3 + ES8311 DVDD/PVDD + SSR LEDs
-                                                                            └─ LP5907-3.3 (U4) ── AU_3V3 ── FB1 600Ω ── AVDD (ES8311 analog)
+USB VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ─┬─ SGM2212-3.3 ── +3V3 ── ESP32-S3 + ES8311 DVDD/PVDD + SSR LEDs
+                                                                          └─ LP5907-3.3 (U4) ── AU_3V3 ── FB1 600Ω ── AVDD (ES8311 analog)
 CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3:    10µF + 10µF + 100nF decoupling      AU_3V3: 1µF out (C24)
 USB D±  ── IO19/IO20 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)   U4: 1µF in (C23); EN→+3V3 (seq.)
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from fused VBUS; VBUS_F TVS: SMF5.0A (D10)
@@ -589,6 +589,16 @@ ground**. Fault containment (SAFE-7) therefore rests on **per-tap protection** (
 DC-block caps) and the board being **sacrificial** behind **F1**, which fuses it off the USB supply
 before a fault can back-feed. (Voltages are low — 12 V bus — so this is fault-energy containment and
 hum/ground-loops, not shock.)
+
+**Supply-earthing assumption.** The "P1 ≈ earth, so the bond is benign" justification holds only while
+nothing *else* ties board GND to earth — it assumes the 5 V feed is a galvanically-isolated,
+**floating-output Class II (2-prong) USB supply**, as a normal wall-wart is. The board adds no
+isolation of its own, so an **earthed** source (a 3-prong PD brick, or a laptop's earthed PSU while
+flashing) pulls bus common (P1) off its natural float to mains earth and closes a ground loop.
+**Deploy on a Class II adapter.** The loop is low-energy at 12 V (sub-mA-class, set by the
+bus-common-to-earth impedance) and contained the usual way — but note **F1 sits in VBUS, not GND**, so
+an attached host shares the *unfused* common; prefer a battery-powered flashing host (see "Build /
+test notes").
 
 ### BOM
 
@@ -633,8 +643,16 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
 
 - **Antenna:** U1 (WROOM-1U) has a **u.FL connector** for an external antenna — route the lead out of
   the housing; there is no PCB-antenna keepout to honour (unlike the old WROOM-1).
-- **Programming/bring-up:** flash + view logs over USB-C (native USB-Serial-JTAG); BOOT +
-  EN buttons fitted for recovery.
+- **Programming/bring-up:** flash + view logs over the native USB-Serial-JTAG; BOOT + EN buttons
+  fitted for recovery. Two USB entries share the same D±/VBUS: **J1 (USB-C)** is a bench-only
+  convenience for initial bring-up (board off the bus), and **J3 (the JST wall feed)** is both the
+  deployed power inlet and the in-field flash port. **Field re-flash (OTA failed):** pull the
+  wall-wart plug off J3's far-end cable and plug *that same cable* into a laptop — one cable, so only
+  one VBUS source is ever live (J1/J3 parallel VBUS with no OR-ing — see TODO.md; the rule is never
+  power both at once). The smart layer reboots, but the doorbell keeps working throughout — the
+  passive WF26 core is bus-powered, not USB-powered (MODE-1) — so only HA/notifications drop for the
+  minute it takes. **Flash with the laptop on battery** so the host doesn't earth board GND
+  (= P1 = bus common); see "Bus↔logic coupling".
 - **Bench validation against the real TV20/S** (door pulse, chime suppress, session sense,
   PTT) before it goes in the wall. Probe via the commissioning test points (TP1 = GND
   scope anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. The board has

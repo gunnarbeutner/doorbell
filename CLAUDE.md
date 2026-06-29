@@ -1,15 +1,16 @@
 # Doorbell controller (Klingel V4)
 
-An ESP32 (ESPHome) interface board for a **TCS / STR TV20/S** apartment intercom bus. It replaces a
-**WF26** handset — or, with J3/J4 open, runs in parallel alongside an existing WF26 — and adds
-ring detection, gong suppression, two-way audio, and door-opener control to Home Assistant.
+An ESP32 (ESPHome) interface board for a **TCS / STR TV20/S** apartment intercom bus. It **replaces** a
+**WF26** apartment handset — carrying its own hardwired passive WF26 core, so it still rings the gong,
+listens and opens the door with the board unpowered — and adds ring detection, gong suppression,
+two-way audio, and door-opener control to Home Assistant.
 
 ## Where things live
 
 - **[REQUIREMENTS.md](REQUIREMENTS.md)** — *what* the board must do (functional + safety
   requirements). The requirements source of truth; start here for intent.
 - **[DESIGN.md](DESIGN.md)** — *how* it's built (architecture, pin map, relays, sense front-end,
-  audio path, power, dual-mode, isolation). Authoritative for the circuit's rationale.
+  audio path, power, passive fallback, isolation). Authoritative for the circuit's rationale.
 - **`kicad/`** — the actual schematic + PCB (`doorbell.kicad_sch` / `.kicad_pcb`); these are the
   source of truth for the board itself, edited directly in KiCad. `./build.sh all-route` verifies
   and exports fab outputs.

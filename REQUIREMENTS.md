@@ -211,7 +211,8 @@ provides them.
 - **SAFE-3 (SHOULD)** Galvanically isolate the smart layer (ESP/codec/GND) from the TV20/S bus. The
   current design **does *not* meet this** — a deliberate, measurement-justified deviation: the
   transformer-less audio bonds **P1 to board GND** (the bench measured P1 ~0.5 V from earth, so it's
-  benign). The sense optos and the SSRs still give LED barriers on the detection and actuator paths,
+  benign — assuming a floating-output Class II USB supply; an earthed feed re-references P1 to earth,
+  see DESIGN "Bus↔logic coupling"). The sense optos and the SSRs still give LED barriers on the detection and actuator paths,
   but the codec RX/TX taps and the P1↔GND bond couple the bus to logic ground. Bus-side fault
   containment therefore rests on **SAFE-7** (per-tap protection + the sacrificial board behind F1),
   not a galvanic barrier.
