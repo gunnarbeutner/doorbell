@@ -17,3 +17,6 @@ captures/viewer/.cache/
 
 # Captures venv (regenerable)
 captures/.venv/
+
+# Fab build outputs (regenerable by ./build.sh; finished runs archived to orders/)
+fab/
