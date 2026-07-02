@@ -29,7 +29,7 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'diode', match: /\bLED\b/i, note: 'indicator LED, high Vf (~1.8 V)' },
   { kind: 'diode', match: /TVS-Uni,\s*SMF5\.0A|SMF5\.0A/i, note: 'unidirectional VBUS clamp; reverse-oriented, breaks down at vbr ~6.5 V to clamp a +VBUS surge' },
   { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 31)' },
-  { kind: 'diode', match: /BAT54/i, note: 'BAT54S series dual Schottky as codec-OUTP rail clamp (A→GND, K→+3V3, COM=ES_OUTP); idles within [0,AVDD], clamps OUTP to ~[−0.3, +3.6] V on the C14-coupled transient / C14-short fault (modelled by DiodeArray)' },
+  { kind: 'diode', match: /BAT54/i, note: 'BAT54S/BAT54SW series dual Schottky rail clamps — D13 on codec OUTP (COM=ES_OUTP) and D14 on the mic input (COM=ES_MICP, guards the unpowered abs-max window); both A→GND, K→+3V3, clamp to ~[−0.3, +3.6] V (modelled by DiodeArray)' },
 
   // PhotoMOS / opto — form (NO/NC), Ron and LED operate current define switching behaviour
   { kind: 'optocoupler', match: /GAQW212GS/i, note: 'dual 1-Form-A PhotoMOS (NO), Ron ~0.8 Ω/ch (datasheet)' },
@@ -39,6 +39,7 @@ const KNOWN_ACTIVE_PARTS = [
 
   // MOSFET — Vgs(th) / Rds(on)
   { kind: 'mosfet', match: /2N7002/i, note: 'NMOS (incl. 2N7002DW dual), Vth typ 1.6 V (1.0-2.5 V), Ron ~5 Ω' },
+  { kind: 'mosfet', match: /AO3400/i, note: 'AO3400A logic-level NMOS (Q3 door-lead delay, Q4 watchdog), Vth typ 1.05 V (0.65-1.45 V), Ron ~48 mΩ @ Vgs 2.5 V' },
 
   // protection IC — internal clamp voltages
   { kind: 'protection', match: /TPD2S017/i, note: 'USB D± ESD array, ~6 V rail clamp' },

@@ -94,8 +94,8 @@ two extra parts, both on the **DOOR_DRV** gate:
   `P2 → K1_COM` path). Energised it **opens** → the seal-in breaks → K5 drops. At rest it's closed,
   so the passive/unpowered latch is untouched (MODE-1 / SAFE-4).
 - **The break leads the make.** K4's LED is driven straight off DOOR_DRV (opens immediately), while K2's
-  LED returns to ground through **Q3** (a **2N7002** N-FET) whose gate (DELAY_GATE) ramps on
-  **R17 (47 kΩ) · C18 (1 µF) ≈ 31 ms** — so K2 closes ~31 ms *after* K4 (≥~13 ms at the fast Vgs(th)/cap corner), well past the ~6 ms latch drop.
+  LED returns to ground through **Q3** (an **AO3400A** logic-level N-FET) whose gate (DELAY_GATE) ramps on
+  **R17 (100 kΩ) · C18 (1 µF) ≈ 38 ms** — so K2 closes ~38 ms *after* K4 (≥~14 ms at the fast Vgs(th)/cap corner), well past the ~6 ms latch drop.
   One gate (DOOR_DRV), hardware-timed break-before-make; the firmware just pulses the door line.
 
 With the seal-in broken before P2↔P3 closes, the held Türruf is never bridged onto line 3 — so this
@@ -106,11 +106,13 @@ is now the deliberate way to end it early).
 
 **Door-open max-on-time watchdog (DOOR-5) — Q4 + R25 · C20 · D11.** A firmware hang that left
 DOOR_DRV latched high would hold the opener "pressed" indefinitely — the TV20/S is passive and does not
-time-limit it. A hardware one-shot bounds it: DOOR_DRV charges **C20 (2.2 µF)** through **R25 (5.1 MΩ)** (τ ≈ 11 s), and once that node (WD_GATE) crosses the FET threshold **Q4** pulls DELAY_GATE low — turning off Q3, so **K2 opens and the P2↔P3 bridge releases** even with DOOR_DRV still asserted (**~7.4 s** typ; ~4–16 s across the 2N7002's Vgs(th) 1.0–2.5 V spread). R25 is set to **5.1 MΩ** so the **worst corner** — min Vgs(th) 1.0 V, R -1 %, and the 16 V X5R cap derated to ~1.45 µF by tolerance + temperature — still trips at **~2.6 s**, comfortably past the 1.75 s firmware pulse; at 3 MΩ that corner fell to ~1.55 s and could truncate a legitimate open. The value stays leakage-safe — the 2N7002's ±80 nA IGSS is specified at 20 V and is far smaller at the ≤2.5 V gate here. Only the lower bound matters for a backstop, so the wide upper bound is fine; a 74LVC1G17 Schmitt + C0G is the route to a *tight* window if one is ever wanted. **D11 (1N4148W)** dumps C20 the instant DOOR_DRV drops, re-arming for the next pulse. The 1.75 s firmware pulse ends long before the timeout, so a real open is never cut. It
+time-limit it. A hardware one-shot bounds it: DOOR_DRV charges **C20 (2.2 µF)** through **R25 (10 MΩ)** (τ ≈ 22 s), and once that node (WD_GATE) crosses the FET threshold **Q4** pulls DELAY_GATE low — turning off Q3, so **K2 opens and the P2↔P3 bridge releases** even with DOOR_DRV still asserted (**~8.4 s** typ; ~5–18 s across the AO3400A's Vgs(th) 0.65–1.45 V spread). R25 is set to **10 MΩ** so the **worst-fast corner** — min Vgs(th) 0.65 V, R -1 %, and the 16 V X5R cap derated to ~1.45 µF by tolerance + temperature — still trips at **~3.1 s**, comfortably past the 1.75 s firmware pulse. The logic-level FET also makes the watchdog **provable at the guaranteed-slow corner**: even holding the AO3400A's full ±100 nA IGSS (a 12 V spec, far smaller at ≤3.3 V) across the 10 MΩ costs 1.0 V of plateau, and the remaining ~1.6 V at the worst-case GPIO VOH floor still clears Vth,max 1.45 V — the 2N7002's 2.5 V Vth,max could not make that claim. Only the lower bound matters for a backstop, so the wide upper bound is fine; a 74LVC1G17 Schmitt + C0G is the route to a *tight* window if one is ever wanted. **D11 (1N4148W)** dumps C20 the instant DOOR_DRV drops, re-arming for the next pulse. The 1.75 s firmware pulse ends long before the timeout, so a real open is never cut. It
 releases **K2 only**: K4 stays energised in the fault (it merely holds the seal-in broken, harmless),
 and a reset/brownout still drops everything through the gate pull-downs — so this is defense-in-depth
 over the ESPHome task watchdog (which also reboots a hung MCU). Q3 (break-before-make) and Q4
-(this watchdog) are separate **2N7002** SOT-23 N-FETs. Verified in `sim/test` (still bridged at the 1.75 s pulse; releases within the timeout).
+(this watchdog) are separate **AO3400A** SOT-23 logic-level N-FETs — chosen (over the 2N7002) so the
+worst-case GPIO plateau clears Vth,max with margin; the R17/R25 RCs are sized for its 0.65–1.45 V
+Vgs(th) window. Verified in `sim/test` (still bridged at the 1.75 s pulse; releases within the timeout).
 
 > **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
 > it is the junction of C1, R1, the K5 coil and its NO contact: the ring's **DC energises the
@@ -406,8 +408,8 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | MCU | **ESP32-S3-WROOM-1U-N16R8** (u.FL external antenna; **16 MB** flash + **8 MB PSRAM**) | ESPHome-supported (esp-idf), **native USB-Serial-JTAG** so flashing + logs need no USB-UART bridge or auto-program circuit, and ample GPIO for the audio path (I²S + I²C + 3 SSR gates + 2 opto inputs). **Dual-core LX7 + PSRAM** give the headroom sustained audio-over-WiFi needs: audio buffers live in PSRAM (off the 512 KB internal SRAM) and the WiFi/TLS stack and the audio pipeline run on separate cores — a single-core, no-PSRAM part starves its WiFi RX under audio load and stalls the stream. The GPIO matrix lets any function land on any pad, so the codec bus and the USB escape are placed for clean fan-out (see the GPIO map). Central placement forces the u.FL external antenna (no clean board edge for a PCB antenna). The S3 is **Wi-Fi 4 + BLE 5** (no Wi-Fi 6 / Thread / Zigbee) — irrelevant for a WiFi/ESPHome doorbell |
 | Connectivity | **Wi-Fi only** | No Ethernet; matches deployment |
 | Assembly | **Full JLCPCB assembly** (SMT + THT), Economic PCBA where eligible | J2 is through-hole (as are J1's shell stakes) but assembled by JLCPCB — nothing hand-soldered. Part eligibility/stock checks at order time: see `ORDERING.md` |
-| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: two **2N7002** SOT-23 N-FETs — **Q3** (delay) + R17 (47 kΩ) · C18 (1 µF), **Q4** (watchdog) + R25 (5.1 MΩ) · C20 (2.2 µF) · D11 | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q3 · R17·C18** RC delays K2's make ~31 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"); a second one-shot (**Q4 + R25·C20·D11**) releases K2 ~7.4 s typ after assertion, so a hung DOOR_DRV cannot hold the opener (DOOR-5). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
-| SSR LED drive | **GPIO → 10 k pull-down → 300 Ω → SSR LED** (no transistor, no flyback) | Each SSR "driver" is just its LED + a series R: ~7 mA from the 3V3 GPIO through R4/R5/R6 (300 Ω); R7/R8/R9 (10 k) pull-downs ⇒ SSRs default **off** at boot (SAFE-6). No coil ⇒ no flyback; the one surviving flyback (D1) is on the passive WF26 latch coil. (Retired the old per-channel relay-driver sheet.) |
+| Switches K1–K4 + door lead | **PhotoMOS SSRs** — K1 = **GAQW212GS** (dual 1-Form-A NO, SOP-8, 60 V; LCSC C7435123) — talk handshake + TX gate; K2 = **GAQY212GS** (1-Form-A NO, AC/DC, 0.24 Ω Ron, 60 V; C7435107); K3/K4 = **GAQY412EH** (1-Form-B **NC**, AC/DC, ~1 Ω Ron, 60 V; C7435135). Door lead: two **AO3400A** SOT-23 logic-level N-FETs (LCSC C20917) — **Q3** (delay) + R17 (100 kΩ) · C18 (1 µF), **Q4** (watchdog) + R25 (10 MΩ) · C20 (2.2 µF) · D11 | All switch only ≤12 V mA-class bus signals → PhotoMOS territory: no coil power/heat, no acoustic click, no bounce/wear, an optical GPIO↔bus barrier. K1 (talk) and K2 (door) idle **open** (1-Form-A; unpowered talk/door covered by the passive core's S2/S1); K3 (chime-mute) and **K4 (seal-in break)** idle **closed** (1-Form-B NC), so an unpowered/booting board still rings the gong (GONG-3) and keeps the latch sealed (DOOR-4 fail-safe). **K4** sits in the `P2→K1_COM` seal-in and drops the latch on a door-open; the **Q3 · R17·C18** RC delays K2's make ~38 ms behind K4's break, so the board mirrors S1's **break-before-make** (DOOR-4 / MODE-3 — see "Door-open mirrors S1"); a second one-shot (**Q4 + R25·C20·D11**) releases K2 ~8.4 s typ after assertion, so a hung DOOR_DRV cannot hold the opener (DOOR-5). Ron is swamped by series R (K1: R28 2.2 kΩ) or negligible vs the 16 Ω speaker (K3: ~−0.5 dB). The passive WF26 latch stays electromechanical — bus-self-latched, must work board-dead |
+| SSR LED drive | **GPIO → 10 k pull-down → 220 Ω → SSR LED** (no transistor, no flyback) | Each SSR "driver" is just its LED + a series R: ~9.5 mA from the 3V3 GPIO through R4/R5/R6 (220 Ω — sized so the guaranteed-VOH corner still clears the 5 mA recommended floor); R7/R8/R9 (10 k) pull-downs ⇒ SSRs default **off** at boot (SAFE-6). No coil ⇒ no flyback; the one surviving flyback (D1) is on the passive WF26 latch coil. (Retired the old per-channel relay-driver sheet.) |
 | Opto polarity | **Fixed: LED anode → bus line, cathode → R_lim → P1** + **anti-parallel 1N4148W clamp** across each LED | Bus is taken to drive active lines **positive w.r.t. common (P1)**, so polarity is hardwired (no switch) — bench-confirm per channel by ringing each bell. The clamp limits reverse V to ~0.7 V (< the LED's 6 V VR) on the AC tone content |
 | WF26 connector | **DB125-3.5-5P screw terminal — J2, 5-way (P1–P5 = pins 1–5)** (LCSC C3646874) | See "WF26 connector". 5-way (not 6): line 4 is one net now — chime-suppress moved off line 4 onto C1, so the IN_P4/P4 split is gone |
 | USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers |
@@ -514,7 +516,7 @@ K1 (talk+TX gate,  GAQW212GS 2×NO): ch1 P2↔TALK_BRIDGE, ch2 TX_OUT↔P3  — 
 K2 (door opener,   GAQY212GS NO): P2 ↔ P3                  — energise to bridge P2↔P3 (the ÖT direct short)
 K3 (chime mute,    GAQY412EH NC): P4 ↔ CHIME_C1            — at rest CLOSED (gong → C1 → speaker); energise to OPEN = mute
 K4 (seal-in break, GAQY412EH NC): SW3.6 ↔ K5.3    — in the P2→K1_COM seal-in; energise to OPEN = drop the latch
-LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21→K4 LED (each Rn = 300 Ω)
+LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21→K4 LED (each Rn = 220 Ω)
 ```
 
 - **PhotoMOS, bidirectional.** K2/K3/K4 are single-pole (pins 3/4 the AC/DC contact of back-to-back
@@ -543,7 +545,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4).
 - **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`SW3.6 ↔
   K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
-  (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~20 ms (Q3 · R17·C18) the
+  (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~38 ms (Q3 · R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
 - K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
   door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. Whether the TV20/S
@@ -553,12 +555,15 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
 ### SSR LED drive (per channel)
 
 ```
-GPIO ── R4/R5/R6 (300Ω) ── SSR LED anode │ LED │ cathode ── GND
+GPIO ── R4/R5/R6 (220Ω) ── SSR LED anode │ LED │ cathode ── GND
 GPIO ── R7/R8/R9 (10kΩ) ── GND   (pull-down: SSR off while the GPIO floats at boot)
 ```
-Each SSR "driver" is just its LED + a 300 Ω series R (~7 mA from the 3V3 GPIO — within the **5–30 mA
+Each SSR "driver" is just its LED + a 220 Ω series R (~9.5 mA from the 3V3 GPIO — within the **5–30 mA
 recommended range** shared by all three parts (GAQW212GS / GAQY212GS / GAQY412EH; datasheets in
-`docs/`), well above their ≤2–3 mA operate current and far under the 50 mA abs-max). The two **dual-load pins** (IO9/PTT_DRV → both K1 LEDs; IO10/DOOR_DRV → K2 + K4) each source ~11 mA, drooping VOH so those LEDs run ~5.4–5.9 mA — still well above operate, but only with the pad **drive strength left at its ≥20 mA default** (the 5/10 mA settings would starve them; FW-3); per-pad ≤11 mA of 40 mA and the ~27 mA all-asserted aggregate stay within the ESP32-S3 I/O budget. The 10 kΩ
+`docs/`), well above their ≤2–3 mA operate current and far under the 50 mA abs-max). 220 Ω (not 300 Ω)
+so that even at the **guaranteed VOH floor** (0.8·VDD with a worst-case rail, VF at max) every LED still
+draws ≥~5.6 mA — at or above the 5 mA the SUPSiC datasheets attach to "proper device operation and
+resetting". The two **dual-load pins** (IO9/PTT_DRV → both K1 LEDs; IO10/DOOR_DRV → K2 + K4) each source ~17 mA, drooping VOH so those LEDs run ~8–9 mA — still comfortably above the floor, but only with the pad **drive strength left at its ≥20 mA default** (the 5/10 mA settings would starve them; FW-3); per-pad ≤~18 mA of 40 mA and the ~37 mA all-asserted aggregate stay within the ESP32-S3 I/O budget. The 10 kΩ
 pull-down holds each SSR **off** while the GPIO floats during boot — so the door opener can't
 pulse and the chime can't be silenced by a booting/dead board (SAFE-6). No coil ⇒ no flyback;
 the one surviving flyback (D1) is on the passive WF26 latch coil.
@@ -755,7 +760,16 @@ debounce). Audio is gated on the session, direction by K1:
   **R33 / R32 (3.3 kΩ)** shunting MIC1P / MIC1N to **VMID**. Each leg is a 22 k/3.3 k divider (≈ −18 dB):
   it drops the bench-measured ±8.8 V line-2 Türruf gong to ~1.1 V — inside the ES8311 mic abs-max
   (AVDD + 0.3 ≈ 3.6 V), so the input ESD clamps never conduct on a ring — while the 22 kΩ also
-  current-limits any clamp conduction and is the BUS-1 high-Z line-2 load. The 3.3 kΩ shunts double as
+  current-limits any clamp conduction and is the BUS-1 high-Z line-2 load. **R30 + D14 are the mic-side
+  twin of the R26/D13 guard:** with the board *unpowered* (AVDD = 0, so the abs-max window collapses to
+  ±0.3 V) every bus step still couples through C16/R30 into MIC1P — the board's one non-isolated bus
+  path in its headline passive-fallback mode. **D14 (BAT54SW, dual-series Schottky, SOT-323 — COM →
+  MIC1P/ES_MICP, anode → GND, cathode → +3V3)** gives that sub-mA injection a **rated** (200 mA)
+  external path into the rail capacitance instead of the codec's unrated input ESD structure. Powered
+  it idles (MIC1P stays within [0, AVDD]). It clamps to **+3V3** (the In1 plane, a via at the part)
+  rather than AVDD: unpowered, both rails are equivalent capacitive sinks, and the ~5 pF of
+  reverse-biased clamp capacitance couples < −80 dB of rail ripple into the ~3 kΩ mic node — below the
+  codec's own noise floor either way, so plane access wins. The 3.3 kΩ shunts double as
   the **MIC bias** (the ES8311 has no internal mic bias), pinning both inputs to VMID; **C12 = 10 µF**
   holds VMID as a stiff AC ground against the two shunts. Symmetric legs preserve the differential
   balance. Final divider trim is bench-gated against the measured ADC full-scale. **The level ceiling is bounded by the gong, not unknown:** the Türruf gong couples line 4 onto line 2 (captured at ±8.8 V on P2) and ≈ the loudest audio line 2 ever carries — so the −18 dB divider sized for *its* abs-max also bounds normal speech, which the codec mic PGA + the ADC's ~90 dB SNR lift back to a usable code level. *(V3: the gong level is the expected maximum for line-2 audio.)*

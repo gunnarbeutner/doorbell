@@ -37,6 +37,9 @@ export default class Mosfet extends Component {
   }
 
   model() {
+    // AO3400A (AOS, LCSC C20917 datasheet): Vgs(th) typ 1.05 V (0.65-1.45 V); Rds(on) ~48 mΩ at Vgs = 2.5 V
+    if (/AO3400/i.test(this.lib)) return { vth: 1.05, ron: 0.05 };
+
     // 2N7002 (CJ, docs/datasheets/2n7002_datasheet.pdf): Vgs(th) typ 1.6 V (1.0-2.5 V); Rds(on) ~5 Ω at Vgs = 10 V
     if (/2N7002/i.test(this.lib)) return { vth: 1.6, ron: 5 };
 

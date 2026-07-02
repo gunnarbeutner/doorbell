@@ -131,8 +131,11 @@ shared party line across apartments.
   silently-always-on mic on the shared bus. Not a hardware requirement.
 - **AUDIO-8 (MUST)** The RX tap MUST present the bus to the codec mic input within the ES8311's input
   abs-max under the worst-case **normal** bus level — the line-2 Türruf gong (bench-measured ±8.8 V),
-  not only under fault transients (which are SAFE-1). *(Met by the 22 kΩ/3.3 kΩ series+shunt divider,
-  ~−18 dB, biasing MIC1P/N to VMID — see DESIGN "Audio path".)*
+  not only under fault transients (which are SAFE-1) — **including with the board unpowered** (the
+  permanently-wired tap sees every bus event in passive-fallback mode, when the abs-max window
+  collapses to ±0.3 V). *(Met by the 22 kΩ/3.3 kΩ series+shunt divider, ~−18 dB, biasing MIC1P/N to
+  VMID, plus **D14** — a BAT54SW dual-series Schottky clamping MIC1P for the unpowered case, the
+  RX twin of AUDIO-9's D13 — see DESIGN "Audio path".)*
 - **AUDIO-9 (MUST)** The TX inject path MUST keep the codec **output** (OUTP) within the ES8311's
   output abs-max — both under the **normal** K1-make transient (the +12 V P2 step coupling back through
   C14 on every talk-start) and under a **single-fault C14-short** (sustained +12 V DC through R26). The
@@ -158,23 +161,24 @@ shared party line across apartments.
   timeout, so the board still reads "session active" (line 4 hot, OC1 high) after the door is already
   open; and **(b)** the held latch **bridges the live line 4 onto line 3** (P4→K1_COM→line 2→line 3).
   Mirroring S1's transfer removes both. *(Met: **K4** — an NC SSR in series in the seal-in — drops the
-  latch on a door-open, and **Q3** (a 2N7002 N-FET) **+ R17·C18 RC** delays K2's make
-  ~20 ms behind K4's break for a hardware break-before-make; see DESIGN.md "Door-open mirrors S1".
+  latch on a door-open, and **Q3** (an AO3400A logic-level N-FET) **+ R17·C18 RC** delays K2's make
+  ~38 ms behind K4's break for a hardware break-before-make; see DESIGN.md "Door-open mirrors S1".
   Verified in `sim/test`.)*
 - **DOOR-5 (SHOULD)** A board door-open SHOULD **self-terminate in bounded time even if the firmware
   hangs** with the drive asserted: a stuck-high door line MUST NOT hold the opener indefinitely (the
   TV20/S is passive — it does not time-limit the bridge). *(Met: a hardware **max-on-time watchdog** —
-  an RC one-shot, R25 (5.1 MΩ) · C20 (2.2 µF) (τ ≈ 11 s), whose FET (**Q4**) gates the K2 drive off
-  ~7.4 s typ after assertion (fast corner ~2.6 s, clear of the 1.75 s pulse — DOOR-6) regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
+  an RC one-shot, R25 (10 MΩ) · C20 (2.2 µF) (τ ≈ 22 s), whose FET (**Q4**) gates the K2 drive off
+  ~8.4 s typ after assertion (fast corner ~3.1 s, clear of the 1.75 s pulse — DOOR-6) regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
   line drops. Reset/brownout already drops the opener via the gate pull-downs (DOOR-3 / SAFE-6), and the
   ESPHome task watchdog reboots a hang — so this is defense-in-depth. See DESIGN.md "Door-open
   max-on-time watchdog". Verified in `sim/test`.)*
 - **DOOR-6 (MUST)** The DOOR-5 watchdog window MUST be **corner-validated**, not nominal-only: across
-  the 2N7002 Vgs(th) (1.0–2.5 V) × R/C tolerance × MLCC bias/temperature derating, its release time MUST
+  the AO3400A Vgs(th) (0.65–1.45 V) × R/C tolerance × MLCC bias/temperature derating, its release time MUST
   stay **above the firmware door pulse + margin** at the fast corner (so a legitimate open is never
   truncated) and **below a stated upper bound** at the slow corner (so a hung drive is bounded).
-  *(Met by R25 (5.1 MΩ) · C20 (2.2 µF): fast corner ~2.6 s > the 1.75 s pulse; ~7.4 s typ; ~18 s slow
-  corner — see DESIGN.md "Door-open max-on-time watchdog".)*
+  *(Met by R25 (10 MΩ) · C20 (2.2 µF): fast corner ~3.1 s > the 1.75 s pulse; ~8.4 s typ; ~18 s slow
+  corner — and the logic-level Vgs(th) keeps the watchdog provable even at the worst-case VOH/leakage
+  plateau — see DESIGN.md "Door-open max-on-time watchdog".)*
 
 ## FW — Firmware host & control
 
@@ -193,11 +197,12 @@ provides them.
 - **FW-2 (MUST)** Provide a programming/recovery interface: native USB for flashing + logs, and
   BOOT/EN for recovery if an OTA update fails (OTA itself is firmware; this is the hardware hook).
 - **FW-3 (MUST)** Drive every SSR/opto input LED at its operate current. Per-pin GPIO source is
-  ≤~11 mA (PTT_DRV/IO9 drives both K1 LEDs; DOOR_DRV/IO10 drives the K2 + K4 LEDs) and the simultaneous
-  aggregate is ~27 mA — both well within the ESP32-S3 per-pad (40 mA) and total-I/O budget. The firmware
+  ≤~18 mA (PTT_DRV/IO9 drives both K1 LEDs; DOOR_DRV/IO10 drives the K2 + K4 LEDs) and the simultaneous
+  aggregate is ~37 mA — both within the ESP32-S3 per-pad (40 mA) and total-I/O budget. The firmware
   MUST keep the LED-driver pads **IO9 / IO10 at the ≥20 mA pad drive strength** (the ESPHome default),
-  never the 5/10 mA settings, which would droop VOH and starve the LEDs; at 20 mA the worst corner holds
-  K1 at ~4.9 mA (~2.5× its ~2 mA must-operate; ~5.9 mA typ). *(Met by the default — a don't-reduce
+  never the 5/10 mA settings, which would droop VOH and starve the LEDs; with the 220 Ω series Rs even
+  the guaranteed-VOH corner holds every LED at ≥~5.6 mA (≥ the SUPSiC 5 mA recommended floor, ~2.8× the
+  ~2 mA must-operate; ~8–9 mA typ dual-load). *(Met by the default — a don't-reduce
   constraint; 40 mA is optional margin. See DESIGN.md "Switches K1–K4".)*
 
 ## SAFE — Safety & robustness

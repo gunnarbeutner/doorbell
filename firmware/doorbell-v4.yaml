@@ -252,7 +252,7 @@ switch:
     restore_mode: RESTORE_DEFAULT_OFF
 
 # *** IMPORTANT — the SSR gates are ACTIVE-HIGH, so these outputs are NOT inverted. ***
-# Each SSR LED is driven from the GPIO through a 300 Ω series R (with a 10 k pull-down): GPIO HIGH ->
+# Each SSR LED is driven from the GPIO through a 220 Ω series R (with a 10 k pull-down): GPIO HIGH ->
 # LED on -> contact made, so `turn_on` drives the pin HIGH => no `inverted:` here. Adding
 # `inverted: true` by mistake would energise BOTH at boot (door opener pulsing + chime force-
 # suppressed) — exactly what the gate pull-downs are there to prevent.
@@ -265,7 +265,7 @@ output:
     id: suppress_doorbell_sound_bin
   - platform: gpio
     pin: GPIO10              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
-                             # drop the WF26 latch; K2's make is delayed ~20ms (Q1/RC) so the break
+                             # drop the WF26 latch; K2's make is delayed ~38ms (Q3/RC) so the break
                              # leads = S1 break-before-make in hardware (no firmware sequencing)
     id: front_door_buzzer_bin
 
