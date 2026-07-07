@@ -1,11 +1,12 @@
 # Ordering Klingel V4 from JLCPCB (one assembled board)
 
-Goal: get **one assembled board** via JLCPCB **Economic PCBA**. The board is ~64 × 59 mm,
-**4-layer**, all parts on the **top side**; J2 (5-way screw terminal) is through-hole and J1
-(USB-C) has THT shell stakes — both **assembled by JLCPCB** (THT assembly — nothing is
-hand-soldered). Economic PCBA batch-panels small boards for us, so we don't supply a panel — but
-the edge connectors (J1 USB-C, shell protrudes; J2 screw terminal) sit flush on the outline, so
-confirm JLCPCB's panel/depanel clears them (see the gates below). U1 is an **ESP32-S3-WROOM-1U-N16R8** —
+Goal: get **one assembled board** via JLCPCB **Standard PCBA** (the current BOM is not eligible
+for Economic). The board is ~64 × 59 mm, **4-layer**, all parts on the **top side**; J2 (5-way
+screw terminal) is through-hole and J1 (USB-C) has THT shell stakes — both **assembled by JLCPCB**
+(THT assembly — nothing is hand-soldered). The board is under JLCPCB's assembly minimum, so
+order it as **"Panel by JLCPCB"** (edge rails added by them) — the edge connectors (J1 USB-C,
+shell protrudes; J2 screw terminal) sit flush on the outline, so confirm the panel/rails/depanel
+clear them (see the gates below). U1 is an **ESP32-S3-WROOM-1U-N16R8** —
 a **u.FL external antenna** module, so there is no PCB-antenna edge keepout to protect (route the
 antenna lead out of the enclosure instead).
 
@@ -54,11 +55,10 @@ board face).
   add for assembly) and emails it for your approval. **Confirm within 48 h** or it auto-proceeds.
 - **PCB Assembly:** ON
   - **Assembly side:** Top only (the board has no bottom-side parts)
-  - **PCBA Type:** **Economic** if the quote allows it — **verify part eligibility at order
-    time**. Most of the BOM is Basic/Preferred (free to assemble); the specialised parts (RF
-    module, codec, LDO, PhotoMOS SSRs, latch relay, USB-C jack, bus terminal) are Extended and
-    carry the per-type setup fee. The full free-vs-fee breakdown is in `JLCPCB-BASIC-PARTS.md`.
-    If a line forces Standard PCBA ($25/side), decide then whether to proceed or substitute.
+  - **PCBA Type:** **Standard** — the current BOM is not Economic-eligible. Standard carries the
+    $25/side setup; the specialised parts (RF module, codec, LDO, PhotoMOS SSRs, latch relay,
+    USB-C jack, bus terminal) are Extended and add per-type loading fees on top. The
+    free-vs-fee breakdown is in `JLCPCB-BASIC-PARTS.md`.
   - **Stock check:** confirm LCSC stock on the less-common Extended lines (the RF module, codec,
     LDO, SSRs, latch relay, USB-C jack, screw terminal, door switches) against the current
     `fab/doorbell-bom-jlcpcb.csv` — `JLCPCB-BASIC-PARTS.md` flags the low-stock ones.
@@ -75,9 +75,10 @@ board face).
 
 ### 1. Production file (48 h window)
 
-Economic has **no ≥70 mm / edge-rail requirement**; JLCPCB batch-panels small boards itself.
-If it prepares a production file / panel, check before approving that **no break-tab or mousebite
-lands on the edge connectors** — wherever they sit on the current outline:
+The ~64 × 59 mm board is under the Standard-assembly minimum, so JLCPCB panels it with edge
+rails ("Panel by JLCPCB"). When the production file arrives, check before approving that **no
+rail, break-tab or mousebite lands on the edge connectors** — wherever they sit on the current
+outline:
 
 - **J1** (USB-C) — the shell protrudes past the board edge; a tab there fouls the connector.
 - **J2** (5-way screw terminal) — flush on its edge; the wire mouths must stay clear.
@@ -102,20 +103,19 @@ scrutinise:
 | **USB ESD** (TPD2S017) | pin-1 — channels are in series with D± | USB dead / wrong clamp |
 | **VBUS Schottky / TVS** (SS14 series, SMF5.0A clamp) | band direction | blocks VBUS, or shorts/leaves it unclamped |
 | **PhotoMOS SSRs** (talk/door NO; chime-mute / seal-in-break **NC**) | the NC parts must stay **1-Form-B** | a swapped NO/NC breaks the gong/door fail-safe |
-| **Latch relay** (G6K-2F-Y) + its flyback (1N4148W) | orientation / band | seal-in or flyback wrong |
+| **Latch relay** (HJR4102) + its flyback (1N4148W) | orientation / band | seal-in or flyback wrong |
 | **Dual MOSFET** (2N7002DW) | SOT-363 pinout | door break-before-make / watchdog dead |
 | **Power LED** | anode/cathode | just won't light (harmless) |
 
 ## Cost expectations
 
-The PCB itself is the *small* line. On Economic PCBA there's no $25/side setup; the cost is
-dominated by the per-type **loading/feeder fee** on each unique **Extended** part (~$3 each — see
+The PCB itself is the *small* line. On Standard PCBA the cost is the **$25/side setup**, the
+per-type **loading/feeder fee** on each unique **Extended** part (~$3 each — see
 `JLCPCB-BASIC-PARTS.md` for the count), the parts themselves, and the (small) assembly + stencil
-cost. Rough budget: **€60–110 all-in** on Economic; more if any part forces Standard PCBA
-($25/side). You only pay assembly on the 1–2 boards you choose to populate.
+cost. You only pay assembly on the 1–2 boards you choose to populate.
 
 ## Why this route (one-liner)
 
-Economic PCBA assembles the whole board — SMT, the THT connectors, no setup fee, no forced
-≥70×70 rail panel — while JLCPCB handles fab and panelization of the small board. Watch the J1 and
-J2 edges at the Confirm gates, and triple-check the opto-clamp polarity at the placement gate.
+Standard PCBA assembles the whole board — SMT and the THT connectors — with JLCPCB handling fab
+and the edge-rail panel of the small board. Watch the J1 and J2 edges at the Confirm gates, and
+triple-check the opto-clamp polarity at the placement gate.
