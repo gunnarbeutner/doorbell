@@ -27,16 +27,34 @@ handset it replaces; to Home Assistant it looks like a doorbell, an intercom and
   the smart layer only ever adds, never gates.
 - **Local everything** — ESPHome native HA API, OTA updates, on-device web UI. No cloud.
 
-## How it talks to the bus
+## How the TV20/S bus works
 
-The TV20/S bus is five wires per flat: common, a standing current-limited +12 V rail, a speech
-line, and two ring lines. Rings are ~1 s +12 V pulses; a relay latch inside the handset seals in
-from the rail and *is* the call session; talk is a 2.2 kΩ bridge the central detects; audio rides
-on the DC. The board senses the ring lines with optocouplers, switches its functions with
-PhotoMOS relays in the same places the WF26's mechanical switches sat, and leaves the bus model
-untouched — the central cannot tell the difference. The full reverse-engineering lives in
-`DESIGN.md`, the WF26 handset schematic in `wf26/`, and real-bus scope captures in `captures/` —
-all usable on their own if you have this intercom family and only want ring detection or muting.
+Five wires run from the central to each flat:
+
+| Line | Role |
+|------|------|
+| 1 | Common — the reference for everything below |
+| 2 | Standing **+12 V supply**, current-limited (~90 Ω source), always on |
+| 3 | Speech — talk audio toward the door station |
+| 4 | **Türruf** — front-door ring |
+| 5 | **Etagenruf** — floor-button ring |
+
+A **ring** is the central putting ~12 V on a ring line for about a second; the gong is literally
+the handset's speaker driven from that pulse through a capacitor (the floor line rings the
+speaker directly). The line-4 pulse also pulls in a relay inside the handset, which **seals
+itself in from line 2** and holds line 4 high — that standing level *is* the "call in progress"
+state, and the supply rail sags visibly under its load. **Talk** is a 2.2 kΩ bridge from the
+speech line to the supply: the central detects exactly that resistance as "off-hook" and routes
+audio, which simply rides on top of the DC. The **door opener** is a plain line 2↔3 contact
+closure, sequenced break-before-make so the latch drops first. The central ends every session by
+sinking line 2 low after a timeout, which drops all latches. A stock handset contains no
+electronics at all — a relay, capacitors, switches and a speaker.
+
+The board senses the ring lines with optocouplers, switches its functions with PhotoMOS relays
+in the same places the WF26's mechanical switches sat, and leaves the bus model untouched — the
+central cannot tell the difference. The full reverse-engineering lives in `DESIGN.md`, the WF26
+handset schematic in `wf26/`, and real-bus scope captures in `captures/` — all usable on their
+own if you have this intercom family and only want ring detection or muting.
 
 ## Beyond the assembled board
 
