@@ -20,7 +20,7 @@ two-way audio, and door-opener control to Home Assistant.
   (`cd sim`; `npm test`; dev server `node server.js`).
 - **`captures/`** — bench scope captures of the real TV20/S bus + web viewer (`cd captures/viewer; npm start`).
 - **`wf26/`** — reverse-engineered handset; **`docs/`** — datasheets and reference PDFs
-  (`datasheets/`, `design/`, `ordering/`, `attic/`).
+  (`datasheets/`, `design/`, `ordering/`).
 
 ## Working with the docs
 

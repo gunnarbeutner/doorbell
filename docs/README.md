@@ -10,7 +10,6 @@ backing documents. For *how* to use them to check the board, see `../VERIFICATIO
 - **`datasheets/`** — component datasheets for the parts on the board.
 - **`design/`** — intercom/handset reference docs, ESP32 design guides, the Fritzing source.
 - **`ordering/`** — JLCPCB capability PDFs and the prefab verification report.
-- **`attic/`** — superseded / reference-only docs (not the current design).
 
 ## Intercom & handset (in `design/`)
 
@@ -36,14 +35,3 @@ GAQW/GAQY212GS SSRs) have no local sheet — see `../VERIFICATION.md` §7.
 published PCB/PCBA capability limits (clearances, assembly rules), the basis for the DRU and the
 ordering notes in `../ORDERING.md`.
 
-## Superseded / reference-only (in `attic/`)
-
-Kept for history in `attic/`; **not** the current design — do not size parts from these:
-
-- Earlier / unused MCU sheets: `esp32-c3-*`, `esp32-c6-*`, plus `esp32-s3-mini-1_mini-1u_datasheet_en.pdf`
-  (the S3-MINI variant; V4 uses the **WROOM-1U**, not the MINI) — module/devkit sheets (the design moved
-  C3 → C6 → **S3**).
-- Rejected or dropped parts: `ams1117_datasheet.pdf` (the high-dropout LDO rejected for the
-  SGM2212), `kyocera-avx_TAJ_tantalum_datasheet.pdf` (old bulk-cap study), `SM-LP-5001_datasheet.pdf`
-  (the isolation transformer dropped for the transformer-less audio front-end), `cp2102n-datasheet.pdf`
-  (USB-UART, superseded by native USB), `SPPJ223200_datasheet.pdf` (alternate switch variant).
