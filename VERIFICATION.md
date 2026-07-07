@@ -137,36 +137,81 @@ those are §6) can be exercised this way.
 
 **Rig:** floating PSU (2-ch ideal, or 1-ch + a momentary button for the ring tap), a ~100 Ω resistor
 on the P2 feed, an isolated/battery 2-ch scope, a DMM, and the board's own USB-C 5 V (via a current
-meter if available). **Ground discipline:** P1 is hard-bonded to board GND *and* USB GND, so
+meter if available). Flash `firmware/doorbell-v4-bench.yaml` for these stages — the production
+config minus the HA events (a bench ring would fire the real automations) plus direct debug
+switches for K3 and the door drive. **Ground discipline:** P1 is hard-bonded to board GND *and* USB GND, so
 `PSU− = P1 = USB-GND = scope-ground` is **one node** — float the PSU, isolate the scope, grounds on
 P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isolation rule).
 
 **Stage 0 — power-off continuity (DMM).** P1↔GND ≈ 0 Ω (the deliberate bond); no short P2/P3/P4/P5 to
 each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
-continuous; TP1/TP2/TP3 present; C19 "+" toward P4.
+continuous; TP1–TP8 present; C19 "+" toward P4.
 
-**Stage 1 — local power only, no bus.** USB-C 5 V → **TP2 ≈ +4.5–5 V** (after the SS14 drop),
-**TP3 ≈ +3.30 V**, quiescent current sane, board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
+**Stage 1 — local power only, no bus.** USB-C 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
+(after the SS14 drop — there is no 5 V test point), **TP2 ≈ +3.30 V**, quiescent current sane,
+board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
 toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
-**closed** — validating each SSR + driver + GPIO map with no bus voltage present.
+**closed** — validating each SSR + driver + GPIO map with no bus voltage present. *Stage 1
+bench-confirmed on the V4.1 board (5 V rail 4.8 V at D4, TP2 = 3.3 V, boot/WiFi OK; all four SSRs
+verified via the debug switches, incl. the watchdog release and the full PTT handshake path —
+P2↔P3 = 2.19 kΩ through both K1 halves + R28; passive SW4 talk bridge confirmed, P4↔P3 = 2.19 kΩ
+held; SW3 fully confirmed — P2↔P3 make and the K5_COM break pole both actuate. Audio DC domain:
+TP4 = 3.3 V, TP8 (ES_VMID) = 1.65 V mid-rail — ES8311 I2C init and analog bias confirmed. TP5
+(ES_OUTP) = 0.07 V idle — resolved: the driver is just powered down until playback; under a test
+tone the DAC delivers cleanly, full-scale ≈ 1.1 Vrms inferred at OUTP).*
 
 **Stage 2 — emulated bus** (`PSU+ → 100 Ω → P2`, `PSU− → P1`, 12 V, limit ~120 mA):
 - **2a passive seal-in, board UNPOWERED (MODE-1/SAFE-4):** tap 12 V onto P4 ~1 s → K5 pulls in;
   release → confirm it **seals in** (P4 holds just under P2); pull P2 to 0 → K5 drops.
+  *Bench-confirmed pull-in + seal-in hold: P2 sags 12 → 11 V through the 100 Ω rig, i.e. ~10 mA —
+  the HJR4102's ~1.1 kΩ coil draws a third of the genuine WF26's 320 Ω coil (~29 mA), so the real
+  bus should sag only to ~11 V in-session (vs the WF26's 9.4 V) with the relay at ~92 % of rated
+  coil voltage. Whether the TV20/S is indifferent to the lighter session load is a §6 check.
+  Latch drop confirmed two ways: via the board door-drive (K4 break) under seal-in load, and via a
+  CV wind-down emulating the central's timeout sink — K5 releases at ~3–4 V on P2, safely between
+  the ~11 V in-session level and the ~2.5 V the TV20/S sinks P2 to at session-end.*
 - **2b ring sense, powered:** 12 V on P4 → "House Doorbell" asserts (clears on removal); 12 V on P5 →
   Etagenruf/OC2 asserts; non-detect ⇒ swap that LED's two bus connections (silent, not damage).
+  *Bench-confirmed (resistor-less, CC-limited PSU direct to the taps): both channels detect with the
+  as-built opto polarity; K5 ring actuation confirmed, incl. its ~0.1 s capacitive release tail
+  (C19 through the coil). Cross-stress: no OC2 cross-trigger during a sustained P4 drive (the
+  cathode clamp-voltage spot-check was not taken).*
   **Cross-stress:** drive P4 high, confirm the idle OC2 cathode stays clamped near 0 (per-opto
   limiter + D9 fix).
 - **2c door open (DOOR-4/5):** seal in, fire a door-open, 2-ch scope the seal-in node vs the P2↔P3
   bridge — **K4 opens ~20 ms before K2 closes** (latch drops, P4 falls, live P4 never reaches P3);
-  hold the command asserted → K2 still releases after **~6.7 s** (watchdog).
+  *DMM-level bench pass: a held door drive drops the sealed latch, and OC1 (session sense) asserts
+  edge-to-edge — on while latched, clear on drop. The break-before-make ordering itself still needs
+  the scope.*
+  hold the command asserted → K2 still releases after **~6.7 s** (watchdog — release
+  bench-confirmed at ~6–7 s via the debug hold switch, USB power only; the break-before-make
+  scope check is still open).
 - **2d chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
   closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
   regardless of mute.
+  *Bench-confirmed with the two-board tone rig into P4: electrically (0.33 V AC across P5↔P1 at
+  rest vs meter floor under mute — the residual was tone-independent ambient pickup on the then-
+  unloaded node) and acoustically with LS1 fitted (16.5 Ω): beep follows K3 through five toggle
+  phases, both ring sensors clean throughout. Bonus: the firmware's gong policy verified live —
+  on boot with HA up and "Doorbell Sound" off, the policy chain suppressed the gong on its own.
+  Still open: the P5-injection immunity check (tone on P5 must survive mute) and the sealed-latch
+  session-integrity variant; gong loudness at real bus levels is §6.*
 - **2e audio (partial):** RX — inject P2↔P1 and confirm the codec ADC sees it through the −18 dB divider,
   that a gong-level drive stays inside the codec rail [0, AVDD] (abs-max), and the signal lands on MICP
   with MICN held at VMID; TX — assert talk, drive a DAC tone, scope it on P3 through R28, confirm high-Z
   when talk is off.
+  *TX half bench-confirmed via the firmware tone + LAN scope: 1 kHz (I2S truly at 16 kHz) at
+  0.55 Vrms on a floating P3 with PTT on, 0.15 Vrms residual with PTT off = PhotoMOS off-capacitance
+  bleed into the 1 MΩ probe only (the DMM separately proved the contact opens; any bus load kills
+  the residual). Note: ESPHome's shared I2S bus is strictly half-duplex (mutex) — the DAC tone and
+  ADC capture cannot run simultaneously, so RX was driven externally: the spare V4.1 board flashed
+  as a tone source (`doorbell-v4-tonegen.yaml`, wired P1↔P1 / P2↔P2). RX half bench-confirmed: the
+  divider delivers 240 mVpp at TP6 (MIC1P) from ~1.5 Vpp on P2 (≈ the design −18 dB), and the codec
+  ADC reads −25.7 dBFS with the tone vs a −79 dBFS analog floor. Two firmware bugs found and fixed
+  in both configs en route — either alone reads as pure digital silence: the ESPHome i2s mic
+  defaults (channel right / 32-bit; the ES8311 sends left / 16-bit), and `use_microphone: true`,
+  which selects a PDM DIGITAL mic (REG14 DMIC_ON) and must be false for the analog MIC1P/MIC1N
+  inputs.*
 
 **Stage 3 — protection, last and current-limited (SAFE-2):** with the limit still low, deliberately
 reverse P2/P1 (and a mis-order or two), confirm the per-tap clamps/TVS hold and the board survives and
@@ -181,7 +226,8 @@ the timeout P2-sink and shared-bus interactions) carry over to §6.
 ## 6. Bench verification against the real TV20/S
 
 Some claims can only be settled on hardware. Probe via the commissioning test points (TP1 = GND
-anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. Use an **isolated** scope
+anchor, TP2 = +3V3, TP3–TP8 = watchdog gate + codec taps — net per test point in the schematic),
+J2's screws, and component pads. Use an **isolated** scope
 (grounds on P1 only; don't tether a mains-earthed PC) — see `TODO.md` "Bench measurements" and the
 `captures/runs/` capture procedure.
 
@@ -198,6 +244,9 @@ anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. Use an **isolat
   "Audio path".
 - **Hum / RX level** with the P1↔GND bond once RX is live; set the codec digital volume so TX
   doesn't overdrive the TV20/S amp.
+- **Session load** — the V4 latch draws ~10 mA vs the WF26's ~29 mA, so the bus rail rides ~11 V
+  in-session instead of ~9.4 V; confirm the TV20/S session behaviour (gong, opener, timeout) is
+  indifferent to the lighter load and the higher standing level.
 
 ## 7. Datasheet sources to consult
 

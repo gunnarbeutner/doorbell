@@ -39,7 +39,10 @@ TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C
       ~1.1 V, inside the ES8311 mic abs-max (~AVDD+0.3 = 3.6 V). The gong ≈ the loudest line-2 audio (V3),
       so −18 dB also bounds speech and the codec mic PGA + ~90 dB ADC SNR lift it to a usable level — the
       divider is sound; the bench just confirms the delivered ADC level and sets the PGA. Revisit Rb
-      (2.2k → −21 dB / 4.7k → −15 dB) only if that confirm shows it.
+      (2.2k → −21 dB / 4.7k → −15 dB) only if that confirm shows it. Tone-scale bench confirm done
+      (two-board rig): measured ratio ≈ design −18 dB, ADC reads −25.7 dBFS at 0 dB PGA from a
+      ~0.55 Vrms bus tone. Still open on the real bus: gong-scale abs-max headroom + the final PGA
+      choice.
 - [ ] **TX level (firmware turn-down / bench-confirm).** `OUTP → R26 (2.2 kΩ) → C14 → TALK_BRIDGE → R28
       (2.2 kΩ) → TX_OUT`; **OUTN parked** (`R16→C15→GND`, single-ended); R26 + D13 are the OUTP abs-max
       guard (sim B1). **No board change:** the WF26's talk is a passive 16 Ω transducer-mic (mV-class), so
@@ -48,6 +51,10 @@ TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C
       R26/R28 stay 2.2 kΩ (R28 = the K1 handshake bridge, must match the WF26's R29/R1). Bench: set the
       codec volume to a handset-level talk (the real-test-call capture gives the target); *only if* the
       cut is so deep it costs DAC resolution, add a passive OUTP attenuator — still no op-amp.
+      Bench reference (two-board rig): the ESPHome es8311 volume scale maps linearly to the DAC
+      register with **0.75 = 0 dB**; above that is digital gain (up to +32 dB at 1.0) and clips —
+      full-scale media at volume 1.0 distorts hard, ~0.8 is borderline. Calibrate talk level in
+      the ≤0.75 range.
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
@@ -117,6 +124,8 @@ tether it to a mains-earthed PC. Pair with a DMM.
 
 - [ ] **Session-active = OC1 high.** Line 4 holds through the session, so **OC1 (the Türruf sense)
       stays asserted edge-to-edge — gate directly on OC1, no talk-window timer** (just debounce).
+      Bench-confirmed on the emulated bus: OC1 asserts while the K5 latch holds and clears the
+      moment it drops.
       Re-add this session arm to the K3 gate (`doorbell_sound_state`) and the cross-talk masks (both
       went PTT-only when the old session-opto was dropped; OC1 now supplies the session level).
 - [ ] **OC1 PTT-mask — verify it's needed (bench).** The firmware masks OC1 (house bell) during board

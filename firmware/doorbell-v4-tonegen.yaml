@@ -1,0 +1,149 @@
+# Klingel V4 — TONE GENERATOR + HA MEDIA PLAYER for the SECOND V4.1 board (bench instrument,
+# not a doorbell). Bench bring-up uses two boards: board #1 (doorbell2 @ .78,
+# doorbell-v4-bench.yaml) is the unit under test; this config turns the spare board into an audio
+# source for board #1's RX and chime-mute tests (VERIFICATION.md §5.5 2d/2e): "Tone" + "PTT" put a
+# ~1 kHz sine onto P2/P3 through this board's own DAC → R26/C14 → TALK_BRIDGE → R28 → K1 path
+# (~0.55 Vrms into high-Z), and the "Tone generator DAC" media_player streams arbitrary HA audio
+# (TTS, clips) down the same path — with PTT on it lands on whatever the P2 wire feeds (e.g.
+# board #1's chime input). Wire P1↔P1 and source-P2 → target pin. Control via HA (native api),
+# the web UI, or REST @ 192.168.3.79. Turn "Tone" off before HA playback — they share the DAC.
+
+esphome:
+  name: doorbell3
+  friendly_name: Doorbell V4.1 tone generator
+
+esp32:
+  board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
+  variant: esp32s3
+  flash_size: 16MB              # N16R8 module = 16 MB flash
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+api:
+  reboot_timeout: 0s        # bench instrument — keep running with no HA connected
+  encryption:
+    key: !secret api_encryption_key
+
+web_server:
+  port: 80
+  ota: false
+  local: true
+
+ota:
+  platform: esphome
+  password: !secret ota_password
+
+network:
+  enable_ipv6: true
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  power_save_mode: "none"
+  reboot_timeout: 0s        # antenna may be absent — never reboot-loop over missing WiFi
+
+  manual_ip:
+    static_ip: 192.168.3.79
+    gateway: 192.168.3.1
+    subnet: 255.255.255.0
+    dns1: 192.168.3.53
+
+i2c:
+  sda: GPIO38              # I2C_SDA — ES8311 (U3) control bus
+  scl: GPIO39              # I2C_SCL — ES8311 (U3) control bus
+  scan: false
+
+i2s_audio:
+  id: i2s_bus
+  i2s_lrclk_pin: GPIO2    # I2S_WS / LRCK
+  i2s_bclk_pin: GPIO41    # I2S_BCLK / SCLK
+  i2s_mclk_pin: GPIO40    # I2S_MCLK
+
+audio_dac:
+  - platform: es8311
+    id: es8311_codec
+    address: 0x18
+    use_microphone: false  # DAC-only — this board is a source, its ADC stays idle
+
+speaker:
+  - platform: i2s_audio
+    id: intercom_speaker
+    i2s_audio_id: i2s_bus
+    dac_type: external
+    audio_dac: es8311_codec
+    i2s_dout_pin: GPIO1    # I2S_DOUT / DSDIN (ESP→codec, playback)
+
+# Same continuous phase-continuous sine generator as the bench config.
+interval:
+  - interval: 50ms
+    then:
+      - lambda: |-
+          if (!id(tone_switch).state) return;
+          // never interleave the sine with active HA media playback — shared DAC
+          auto mp_state = id(intercom_media).state;
+          if (mp_state == media_player::MEDIA_PLAYER_STATE_PLAYING ||
+              mp_state == media_player::MEDIA_PLAYER_STATE_ANNOUNCING) return;
+          static double phase = 0.0;
+          const double fs = 16000.0;
+          const double tone_hz = 1000.0;
+          const double amp = 0.5;                       // -6 dBFS
+          const double TWO_PI = 6.283185307179586;
+          const double dphase = TWO_PI * tone_hz / fs;
+          int16_t block[512];
+          while (true) {
+            double ph = phase;
+            for (int i = 0; i < 512; i++) {
+              double v = amp * 32767.0 * sin(ph);
+              block[i] = (int16_t) (v >= 0.0 ? v + 0.5 : v - 0.5);
+              ph += dphase;
+            }
+            size_t wrote = id(intercom_speaker).play((const uint8_t *) block, sizeof(block));
+            size_t accepted = wrote / 2;
+            phase += dphase * (double) accepted;
+            while (phase >= TWO_PI) phase -= TWO_PI;
+            if (accepted < 512) break;
+          }
+
+# HA-facing media player wrapping the same DAC/speaker (pattern proven on the V4.0 bench board):
+# WAV pipeline so HA transcodes and the device never decodes; 16 kHz mono matches the codec's
+# confirmed I2S rate. Engage "PTT" to route the audio onto the bus wire.
+media_player:
+  - platform: speaker
+    id: intercom_media
+    name: "Tone generator DAC"
+    announcement_pipeline:
+      speaker: intercom_speaker
+      format: WAV
+      sample_rate: 16000
+      num_channels: 1
+
+switch:
+  - platform: template
+    name: "Tone"
+    icon: mdi:sine-wave
+    id: tone_switch
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_off_action:
+      - speaker.stop: intercom_speaker
+  - platform: output
+    name: "PTT"
+    icon: mdi:phone-outgoing
+    id: ptt_switch
+    output: ptt_relay_bin
+    restore_mode: ALWAYS_OFF   # K1 open at boot — tone stays off the bus until commanded
+
+# The SSR gates are ACTIVE-HIGH (220 Ω series R + 10 k pull-down): GPIO HIGH -> contact made.
+# Only K1 (PTT) is driven on this board; the door/chime outputs are deliberately not configured.
+output:
+  - platform: gpio
+    pin: GPIO9               # K1 — PTT SSR (energised = tone onto P2/TALK_BRIDGE + TX_OUT/P3)
+    id: ptt_relay_bin

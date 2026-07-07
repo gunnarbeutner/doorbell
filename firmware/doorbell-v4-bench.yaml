@@ -1,4 +1,21 @@
-# Klingel V4 — ESPHome config for the ESP32-S3 doorbell board (U1 = ESP32-S3-WROOM-1U-N16R8, U3 = ES8311 codec).
+# Klingel V4 — BENCH BRING-UP twin of doorbell-v4.yaml (same board, same device identity).
+# Differences vs the production config, both in service of VERIFICATION.md §5.5 (emulated-bus
+# bench stages):
+#   - ALL homeassistant.event calls are stripped (bench rings/tests must not fire the real HA
+#     automations), and with them the ring-triggered auto-open chain and the event-only buttons
+#     ("Phone Call", "Debug Doorbell Opened").
+#   - Two debug switches drive the SSR outputs that have no user-facing switch: "Debug Chime
+#     Suppress" (K3) and "Debug Door Drive Hold" (unpulsed K2+K4 — the Q3 hardware watchdog still
+#     releases K2 after ~6.7 s).
+#   - Audio loopback instrumentation (2e without an external tone source): "Debug Test Tone"
+#     streams a continuous ~1 kHz sine into the ES8311 DAC, "Debug Mic Capture" runs the ADC into
+#     an RMS meter published as "Debug Mic Level" (dBFS). With PTT engaged, the tone rides
+#     DAC → R26/C14 → TALK_BRIDGE → K1 → P2 → C16/RX divider → MIC1P → ADC, so a level jump proves
+#     both analog audio paths end-to-end. voice_assistant is dropped here so it cannot contend
+#     for the microphone.
+# Flash the production doorbell-v4.yaml before the board goes in the wall. The two configs share
+# one build dir (same device name): run `esphome clean` when switching between them, or the stale
+# dependency graph fails the build.
 #
 # GPIO map (S3-WROOM-1U; USB on the north edge, the ES8311 I2C/I2S bus ascending down the codec edge):
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO12
@@ -14,30 +31,14 @@
 #   I2S_WS   (LRCK)                                : GPIO2
 #   I2S_DOUT (DAC / playback, DSDIN)               : GPIO1
 #   logger                                         : native USB-Serial-JTAG (GPIO19/GPIO20 = USB D-/D+)
-# The ES8311 bus is ordered ascending by module pad — SDA,SCL,MCLK,BCLK,DIN on GPIO38-42, then WS,DOUT
-# on GPIO2/GPIO1 — so it fans out down U1's codec edge with no crossings, matching U3's pin sequence.
-# The three SSR gates (GPIO9/10/11) and two sense optos (GPIO12/13) run ascending along the bus-side
-# edge. BOOT is GPIO0 (boot strap + SW1); EN is the module's dedicated EN pin (SW2). The S3 is dual-core
-# with 16 MB flash + 8 MB PSRAM (audio buffers live in PSRAM). Native USB-Serial-JTAG = flashing + logs.
 #
 # SSR gate outputs are ACTIVE-HIGH (see the output section): GPIO HIGH -> SSR LED on -> contact made.
 #
-# Sense disambiguation for the V4 sense points:
-#   - OC2 taps the speaker pair (P5↔P1) and pulses at audio rate on ANY loud speaker audio
-#     (floor tone, door gong, speech). Its filter chain stretches the half-cycle pulses into a
-#     level (delayed_off before delayed_on) and is masked by house_doorbell / PTT — see the sensor.
-#   - OC1 (line 4 / Türruf) needs no PTT mask: the board's talk handshake bridges P2↔P3 only
-#     (K1: P2↔TALK_BRIDGE + TX_OUT↔P3), so energising K1 never reaches line 4. Debounce only.
-#
-# Deployed identity: the V4 assumes the retired V3's name (doorbell), IP (192.168.3.18), api
-# encryption key and OTA password, so the Home Assistant side carries over without changes.
-# Bench bring-up flashes doorbell-v4-bench.yaml instead (bench identity doorbell2 @ .78, HA
-# events stripped, debug SSR switches added). The configs use separate build dirs (different
-# device names), but after any device-name change run `esphome clean` — a stale dependency graph
-# fails the build, and a piped `compile && upload` can then silently re-flash the previous binary.
+# Named doorbell2 @ 192.168.3.78 (same identity as the production config) so HA/web continuity
+# holds across bench↔production reflashes; api key and OTA password are shared with V3.
 
 esphome:
-  name: doorbell
+  name: doorbell2
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
@@ -76,7 +77,7 @@ wifi:
   power_save_mode: "none"
 
   manual_ip:
-    static_ip: 192.168.3.18
+    static_ip: 192.168.3.78
     gateway: 192.168.3.1
     subnet: 255.255.255.0
     dns1: 192.168.3.53
@@ -119,13 +120,61 @@ microphone:
     i2s_din_pin: GPIO42    # I2S_DIN / ASDOUT (codec→ESP, capture)
     channel: left          # ES8311 mono ADC transmits in the LEFT I2S slot — the ESPHome default
     bits_per_sample: 16bit # (right, 32bit) reads the empty slot = perfect digital silence
+    on_data:
+      - lambda: |-
+          // Block RMS → dBFS, published via the "Debug Mic Level" template sensor.
+          const int16_t *s = (const int16_t *) x.data();
+          const size_t n = x.size() / 2;
+          if (n == 0) return;
+          double acc = 0.0;
+          for (size_t i = 0; i < n; i++) { const double v = s[i]; acc += v * v; }
+          const double rms = sqrt(acc / (double) n);
+          const float dbfs = 20.0 * log10((rms < 1.0 ? 1.0 : rms) / 32768.0);
+          id(g_mic_dbfs) = dbfs;
+          if (dbfs > id(g_mic_peak_dbfs)) id(g_mic_peak_dbfs) = dbfs;
 
-# Two-way intercom via Home Assistant Assist. PTT-triggered (no on-device wake word),
-# replies played back through the intercom speaker.
-voice_assistant:
-  id: doorbell_voice
-  microphone: intercom_mic
-  speaker: intercom_speaker
+# (voice_assistant is intentionally absent in the bench config — see header.)
+
+globals:
+  - id: g_mic_dbfs
+    type: float
+    restore_value: no
+    initial_value: "-120.0"
+  - id: g_mic_peak_dbfs
+    type: float
+    restore_value: no
+    initial_value: "-120.0"
+
+# Continuous phase-continuous sine generator (ported from doorbell-v40-tone.yaml): while
+# "Debug Test Tone" is on, every 50 ms the speaker ring buffer is topped up with fresh samples,
+# advancing a persistent phase only by the samples actually accepted — seamless, no boundary
+# clicks. fs below assumes the default 16 kHz I2S rate; if the actual rate differs the tone just
+# lands at a different pitch, which is irrelevant for a loopback level test.
+interval:
+  - interval: 50ms
+    then:
+      - lambda: |-
+          if (!id(debug_test_tone).state) return;
+          static double phase = 0.0;
+          const double fs = 16000.0;
+          const double tone_hz = 1000.0;
+          const double amp = 0.5;                       // -6 dBFS — headroom, never clips the DAC
+          const double TWO_PI = 6.283185307179586;
+          const double dphase = TWO_PI * tone_hz / fs;
+          int16_t block[512];
+          while (true) {
+            double ph = phase;
+            for (int i = 0; i < 512; i++) {
+              double v = amp * 32767.0 * sin(ph);
+              block[i] = (int16_t) (v >= 0.0 ? v + 0.5 : v - 0.5);
+              ph += dphase;
+            }
+            size_t wrote = id(intercom_speaker).play((const uint8_t *) block, sizeof(block));
+            size_t accepted = wrote / 2;
+            phase += dphase * (double) accepted;
+            while (phase >= TWO_PI) phase -= TWO_PI;
+            if (accepted < 512) break;                  // ring buffer full — resume next tick
+          }
 
 # Optional: BLE works but uses resources. Remove this and esp32_ble_tracker if you don't
 # use the Bluetooth proxy.
@@ -164,10 +213,7 @@ binary_sensor:
       - delayed_off: 50ms      # bridge the gaps between tone half-cycles
       - delayed_on: 150ms      # require a sustained tone, and let house_doorbell latch first
       - delayed_off: 2s
-    on_press:
-      then:
-        - homeassistant.event:
-            event: esphome.doorbell_apartment
+    # bench: no on_press — the production HA event is stripped here
   - platform: gpio
     name: "House Doorbell"
     icon: mdi:doorbell
@@ -182,28 +228,7 @@ binary_sensor:
       # + TX_OUT↔P3), so energising K1 cannot couple onto line 4 — no PTT mask needed. Debounce only:
       - delayed_on: 50ms
       - delayed_off: 2s
-    on_press:
-      then:
-        if:
-          condition:
-            binary_sensor.is_on: someone_at_house_door
-          then:
-            - homeassistant.event:
-                event: esphome.doorbell_opened_arrival
-            - delay: 1.75s
-            - button.press: front_door_buzzer
-          else:
-            if:
-              condition:
-                switch.is_on: auto_open_front_door
-              then:
-                - homeassistant.event:
-                    event: esphome.doorbell_opened
-                - delay: 1.75s
-                - button.press: front_door_buzzer
-              else:
-                - homeassistant.event:
-                    event: esphome.doorbell_not_opened
+    # bench: no on_press — the production HA events AND the ring-triggered auto-open are stripped here
   - platform: homeassistant
     id: apartment_occupancy
     entity_id: binary_sensor.apartment_occupancy
@@ -223,18 +248,11 @@ binary_sensor:
       // lines 2/3) is independent of it. (It does mute the handset's own LS1 listen, which rides C1.)
       // Current policy: keep K3 OFF while transmitting (PTT) — return true (= "let it ring", K3 off) —
       // and suppress only when idle and the conditions call for it.
-      //   TODO: add a session-active arm here. The session-sense opto that used to supply it was
-      //   dropped, so this gate is PTT-only; "session active" should be derived from the OC1 (Türruf)
-      //   event + a timer and gate K3 on it (see DESIGN.md "TX-out reach" / TODO).
       if (id(intercom_ptt).state) return true;
       return !id(internet_connection).state || (id(apartment_occupancy).state && !id(someone_at_house_door).state && id(doorbell_sound).state);
     on_press:
       then:
         # State went true ("let it ring"): drop K3 so the gong's C1 path is closed (the gong rings).
-        # K3 (the C1 mute) and K1 (the talk handshake) are independent — no inter-SSR timing
-        # constraint, and K3 never makes a P2↔P3 short.
-        # (PTT is not forced off here — that would fight the PTT gate above; session-end PTT cleanup
-        # belongs to the session-active work.)
         - output.turn_off: suppress_doorbell_sound_bin   # K3 off -> C1 closed -> gong rings
     on_release:
       then:
@@ -259,6 +277,45 @@ switch:
     id: doorbell_sound
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
+  # Bench diagnostics (SAFE-6 / Stage-2c): direct drives for the two SSR outputs that have no
+  # user-facing switch of their own. Only this bench config carries them — the door-hold switch
+  # bypasses the 1.75 s button pulse (the Q3 hardware watchdog still releases K2 after ~6.7 s;
+  # K4 stays open for as long as the switch is held).
+  - platform: output
+    name: "Debug Chime Suppress"
+    icon: mdi:bug
+    id: debug_chime_suppress
+    entity_category: diagnostic
+    output: suppress_doorbell_sound_bin
+    restore_mode: ALWAYS_OFF
+  - platform: output
+    name: "Debug Door Drive Hold"
+    icon: mdi:bug
+    id: debug_door_drive_hold
+    entity_category: diagnostic
+    output: front_door_buzzer_bin
+    restore_mode: ALWAYS_OFF
+  # Audio loopback instrumentation — see header. Engage "Intercom PTT" so K1 puts the tone onto P2.
+  - platform: template
+    name: "Debug Test Tone"
+    icon: mdi:sine-wave
+    id: debug_test_tone
+    entity_category: diagnostic
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_off_action:
+      - speaker.stop: intercom_speaker
+  - platform: template
+    name: "Debug Mic Capture"
+    icon: mdi:microphone
+    id: debug_mic_capture
+    entity_category: diagnostic
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - microphone.capture: intercom_mic
+    turn_off_action:
+      - microphone.stop_capture: intercom_mic
 
 # *** IMPORTANT — the SSR gates are ACTIVE-HIGH, so these outputs are NOT inverted. ***
 # Each SSR LED is driven from the GPIO through a 220 Ω series R (with a 10 k pull-down): GPIO HIGH ->
@@ -285,26 +342,28 @@ button:
     id: front_door_buzzer
     output: front_door_buzzer_bin
     duration: 1750ms
-  - platform: template
-    name: "Phone Call"
-    icon: mdi:phone
-    id: phone_call
-    on_press:
-      then:
-        - homeassistant.event:
-            event: esphome.doorbell_phone_call
-        - button.press: front_door_buzzer
-  - platform: template
-    name: "Debug Doorbell Opened"
-    icon: mdi:bug
-    id: debug_doorbell_opened
-    entity_category: diagnostic
-    on_press:
-      then:
-        - homeassistant.event:
-            event: esphome.doorbell_opened
 
 sensor:
   - platform: wifi_signal
     name: WiFi Signal Strength
     update_interval: 60s
+  - platform: template
+    name: "Debug Mic Level"
+    id: debug_mic_level
+    unit_of_measurement: "dBFS"
+    accuracy_decimals: 1
+    update_interval: 1s
+    entity_category: diagnostic
+    lambda: return id(g_mic_dbfs);
+  - platform: template
+    name: "Debug Mic Peak"
+    id: debug_mic_peak
+    unit_of_measurement: "dBFS"
+    accuracy_decimals: 1
+    update_interval: 1s
+    entity_category: diagnostic
+    # peak block-RMS since the previous update (read-and-reset) — catches clicks between updates
+    lambda: |-
+      const float v = id(g_mic_peak_dbfs);
+      id(g_mic_peak_dbfs) = -120.0f;
+      return v;

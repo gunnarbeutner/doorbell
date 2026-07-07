@@ -10,7 +10,7 @@ logger:
 
 api:
   encryption:
-    key: "REDACTED_API_KEY"
+    key: !secret api_encryption_key
 
 web_server:
   port: 80
@@ -19,7 +19,7 @@ web_server:
 
 ota:
   platform: esphome
-  password: "REDACTED_OTA_PASSWORD"
+  password: !secret ota_password
 
 network:
   enable_ipv6: true

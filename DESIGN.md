@@ -651,7 +651,8 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
 - **Programming/bring-up:** flash + view logs over the native USB-Serial-JTAG; BOOT + EN buttons
   fitted for recovery. Two USB entries share the same D±/VBUS: **J1 (USB-C)** is a bench-only
   convenience for initial bring-up (board off the bus), and **J3 (the JST wall feed)** is both the
-  deployed power inlet and the in-field flash port. **Field re-flash (OTA failed):** pull the
+  deployed power inlet and the in-field flash port (cable wiring:
+  `docs/design/usb-jst-j3-wiring.svg`). **Field re-flash (OTA failed):** pull the
   wall-wart plug off J3's far-end cable and plug *that same cable* into a laptop — one cable, so only
   one VBUS source is ever live (J1/J3 parallel VBUS with no OR-ing — see TODO.md; the rule is never
   power both at once). The smart layer reboots, but the doorbell keeps working throughout — the
@@ -659,8 +660,10 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   minute it takes. **Flash with the laptop on battery** so the host doesn't earth board GND
   (= P1 = bus common); see "Bus↔logic coupling".
 - **Bench validation against the real TV20/S** (door pulse, chime suppress, session sense,
-  PTT) before it goes in the wall. Probe via the commissioning test points (TP1 = GND
-  scope anchor, TP2 = +5V, TP3 = +3V3), J2's screws, and component pads. The board has
+  PTT) before it goes in the wall. Wall wire-up map + line-identification signatures:
+  `docs/design/wall-wiring-v4.svg`. Probe via the commissioning test points (TP1 = GND
+  scope anchor, TP2 = +3V3, TP3–TP8 = watchdog gate + codec taps — net per test point in
+  the schematic), J2's screws, and component pads. The board has
   **H1/H2 mounting holes** (NPTH 3.2 mm) on the enclosure bosses, plus **H3–H5 JLCPCB tooling
   holes** (NPTH 1.152 mm, asymmetric) for the assembly order.
 - **3D / fit-test model:** `./build.sh step` exports `fab/doorbell.step` (also run by
@@ -945,5 +948,5 @@ pinout/V_CC bias, CC 5.1 kΩ Rd); bell-sense GPIO LOW levels; ES8311 full pinout
   V4.1: re-enable our own fiducials **and** pre-place 1.152 mm tooling holes at
   controlled positions (or carry an order remark keeping CAM-added holes away from the
   antenna edge).
-- **Mounting holes H1/H2** (NPTH 3.2 mm) on the enclosure bosses; three commissioning test points: TP1 = GND at (37.5, 62.5) (= P1, the bus common — now bonded to board GND — the scope-ground anchor), TP2 = +5V at (46.3, 21.1), TP3 = +3V3 at (28.6, 39.152). Bare 1.5 mm pads, excluded from BOM/CPL.
+- **Mounting holes H1/H2** (NPTH 3.2 mm) on the enclosure bosses; commissioning test points **TP1–TP8**: TP1 = GND (= P1, the bus common — bonded to board GND — the scope-ground anchor), TP2 = +3V3, the rest tap the door watchdog gate and the codec audio front-end (net per test point in the schematic). Bare 1.5 mm pads, excluded from BOM/CPL. The 5 V rail has no test point — probe D4's cathode.
 - Bench-confirm the relay-coil voltage under WiFi TX with a long USB cable if paranoid.
