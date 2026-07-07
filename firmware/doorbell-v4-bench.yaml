@@ -145,7 +145,7 @@ globals:
     restore_value: no
     initial_value: "-120.0"
 
-# Continuous phase-continuous sine generator (ported from doorbell-v40-tone.yaml): while
+# Continuous phase-continuous sine generator: while
 # "Debug Test Tone" is on, every 50 ms the speaker ring buffer is topped up with fresh samples,
 # advancing a persistent phase only by the samples actually accepted — seamless, no boundary
 # clicks. fs below assumes the default 16 kHz I2S rate; if the actual rate differs the tone just

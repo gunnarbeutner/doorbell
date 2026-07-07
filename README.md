@@ -39,8 +39,9 @@ untouched — the central cannot tell the difference. The full reverse-engineeri
 all usable on their own if you have this intercom family and only want ring detection or muting.
 
 **Status:** the V4.1 board (JLCPCB-fabbed and -assembled) is bench-verified and deployed —
-installed in the wall in place of the WF26, powered from the wall feed, running
-`firmware/doorbell-v4.yaml`.
+installed in the wall in place of the WF26, running `firmware/doorbell-v4.yaml`. The smart layer
+is powered by a USB wall-wart into the J3 connector; the TV20/S bus powers only the passive
+handset core, so the electronics draw nothing from the shared intercom supply.
 
 ## Repository layout
 
@@ -56,7 +57,7 @@ fab outputs; it does not author or regenerate the board.
 | `ORDERING.md` | JLCPCB ordering notes (Standard PCBA workflow + the review gates). |
 | `kicad/` | Authoritative KiCad project (`doorbell.kicad_sch` / `.kicad_pcb`). See `kicad/README.md`. |
 | `tools/` | Build/inspection Python scripts (placement check, routing verify, STEP/BOM/CPL export). |
-| `firmware/` | ESPHome configs — `doorbell-v4.yaml` (deployed), `doorbell-v4-bench.yaml` (bench twin: debug SSR switches, audio loopback instrumentation, no HA events), `doorbell-v4-tonegen.yaml` (spare board as bench tone source / HA media player), older V3/V4.0 configs kept for the retired hardware. |
+| `firmware/` | ESPHome configs — `doorbell-v4.yaml` (deployed), `doorbell-v4-bench.yaml` (bench twin: debug SSR switches, audio loopback instrumentation, no HA events), `doorbell-v4-tonegen.yaml` (spare board as bench tone source / HA media player). |
 | `sim/` | Node circuit simulator + PCB viewer used to sanity-check the design (`cd sim`; `npm test`). |
 | `wf26/` | Reverse-engineered WF26 handset (`wf26.kicad_sch`). |
 | `captures/` | Bench scope captures of the real TV20/S (ring, door-open, timeout) + web viewer. |

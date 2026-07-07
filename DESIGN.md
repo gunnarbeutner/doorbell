@@ -16,8 +16,8 @@ Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
 Intercom system reference: `docs/design/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`;
 central-unit photo: `docs/design/tv20s-board.jpg`.
 
-V3 — the board currently deployed in the wall — is documented in its own section below
-(sources: `docs/design/KlingelV4.fzz` Fritzing schematic, `firmware/doorbell-v3.yaml`).
+V3 — the retired perfboard predecessor, replaced in the wall by the V4 — is documented in its
+own section below (source: `docs/design/KlingelV4.fzz` Fritzing schematic).
 
 ---
 
@@ -345,11 +345,10 @@ Key facts:
 
 ---
 
-## V3 — the deployed board (perfboard)
+## V3 — the retired predecessor (perfboard)
 
-The system currently in the wall: an ESP32 DevKit + relay module on hand-wired perfboard,
-running `firmware/doorbell-v3.yaml` (`board: esp32dev`). Its sense/relay topology is what V4 carries
-over.
+An ESP32 DevKit + relay module on hand-wired perfboard, replaced in the wall by the V4. Its
+sense/relay topology is what V4 carries over.
 
 | Ref | Part | Role |
 |-----|------|------|
