@@ -17537,7 +17537,7 @@
 		)
 		(uuid "04564585-d477-45bc-9daa-2efaa079c6e5")
 	)
-	(text "POWER LED"
+	(text "STATUS LED"
 		(exclude_from_sim no)
 		(at 219 58 0)
 		(effects
@@ -17794,6 +17794,12 @@
 		(uuid "3a31ce26-a6cc-474b-a986-b9ea77af9d3a")
 	)
 	(junction
+		(at 233.68 73.66)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3c2ee0fa-b58d-43a6-abe8-0c1fd978f723")
+	)
+	(junction
 		(at 292.1 138.43)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -17958,10 +17964,6 @@
 	(no_connect
 		(at 130.81 69.85)
 		(uuid "1d436d59-91ca-4a68-964a-a4237d13ed74")
-	)
-	(no_connect
-		(at 130.81 39.37)
-		(uuid "2c320124-5c54-41be-9efb-02edb674c6d3")
 	)
 	(no_connect
 		(at 161.29 69.85)
@@ -18240,6 +18242,16 @@
 			(type default)
 		)
 		(uuid "16624925-9f08-4a2b-bc2b-67a8fb40a2d7")
+	)
+	(wire
+		(pts
+			(xy 233.68 73.66) (xy 233.68 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "16b0a3fa-a69a-4c46-a7e3-4cecdd4bf82d")
 	)
 	(wire
 		(pts
@@ -20023,6 +20035,16 @@
 	)
 	(wire
 		(pts
+			(xy 123.19 39.37) (xy 130.81 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bd9590bb-09de-4193-b556-4b8dc8622356")
+	)
+	(wire
+		(pts
 			(xy 228.6 213.36) (xy 228.6 217.17)
 		)
 		(stroke
@@ -20060,6 +20082,16 @@
 			(type default)
 		)
 		(uuid "c0b5a373-e11e-49bb-bd0b-d1f34bb7d563")
+	)
+	(wire
+		(pts
+			(xy 231.14 73.66) (xy 233.68 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c14d1dde-2d5d-44cb-b915-ec81de3abba9")
 	)
 	(wire
 		(pts
@@ -20113,7 +20145,7 @@
 	)
 	(wire
 		(pts
-			(xy 247.65 68.58) (xy 240.03 68.58)
+			(xy 248.92 73.66) (xy 241.3 73.66)
 		)
 		(stroke
 			(width 0)
@@ -21123,6 +21155,16 @@
 		)
 		(uuid "3c62e701-e796-4a8c-8d95-494347d8fb8e")
 	)
+	(label "STATUS_LED"
+		(at 231.14 73.66 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3c6b1b04-c517-4cdd-81cd-8c2b91eb40d9")
+	)
 	(label "GND"
 		(at 93.98 265.43 0)
 		(effects
@@ -22060,7 +22102,7 @@
 		(uuid "e313aea5-1a44-4795-a552-378fcad96e66")
 	)
 	(label "LED_A"
-		(at 240.03 68.58 0)
+		(at 241.3 73.66 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -22086,6 +22128,16 @@
 			)
 		)
 		(uuid "e7c41bbf-d745-4b68-92e1-f6c4c2615f64")
+	)
+	(label "STATUS_LED"
+		(at 123.19 39.37 180)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify right bottom)
+		)
+		(uuid "ecd26985-09cf-4584-a245-375ba43580ce")
 	)
 	(label "+3V3"
 		(at 232.41 148.59 0)
@@ -23143,7 +23195,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,1kΩ")
-		(at 251.46 68.58 270)
+		(at 252.73 73.66 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -23153,7 +23205,7 @@
 		(dnp no)
 		(uuid "18b966e7-a18e-4271-935d-0bd1cd5fe388")
 		(property "Reference" "R15"
-			(at 251.46 63.5 90)
+			(at 252.73 68.58 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23163,7 +23215,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 251.714 68.58 90)
+			(at 252.984 73.66 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -23173,7 +23225,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 251.46 68.58 0)
+			(at 252.73 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23184,7 +23236,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
-			(at 251.46 68.58 0)
+			(at 252.73 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23195,7 +23247,7 @@
 			)
 		)
 		(property "Description" "Power-LED current limiter"
-			(at 251.46 68.58 0)
+			(at 252.73 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23206,7 +23258,7 @@
 			)
 		)
 		(property "LCSC" "C21190"
-			(at 251.46 68.58 0)
+			(at 252.73 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23217,7 +23269,7 @@
 			)
 		)
 		(property "MPN" "0603WAF1001T5E"
-			(at 251.46 68.58 0)
+			(at 252.73 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29600,7 +29652,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:LED,0603,Red")
-		(at 236.22 68.58 270)
+		(at 237.49 73.66 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -29610,7 +29662,7 @@
 		(dnp no)
 		(uuid "7ded89a5-7efc-4005-b503-c7a418023290")
 		(property "Reference" "D6"
-			(at 236.22 61.214 90)
+			(at 237.49 66.294 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29619,8 +29671,8 @@
 				)
 			)
 		)
-		(property "Value" "PWR"
-			(at 236.22 63.754 90)
+		(property "Value" "STATUS"
+			(at 237.49 68.834 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29630,7 +29682,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:D_0603"
-			(at 236.22 68.58 0)
+			(at 237.49 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29641,7 +29693,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1810231112_Hubei-KENTO-Elec-KT-0603R_C2286.pdf"
-			(at 236.22 68.58 0)
+			(at 237.49 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29651,8 +29703,8 @@
 				)
 			)
 		)
-		(property "Description" "Power-on indicator LED (+3V3)"
-			(at 236.22 68.58 0)
+		(property "Description" "Status LED (IO3, active-low)"
+			(at 237.49 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29663,7 +29715,7 @@
 			)
 		)
 		(property "LCSC" "C2286"
-			(at 236.22 68.58 0)
+			(at 237.49 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29674,7 +29726,7 @@
 			)
 		)
 		(property "MPN" "KT-0603R"
-			(at 236.22 68.58 0)
+			(at 237.49 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36677,6 +36729,107 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_JLCPCB-Resistors:0603,1kΩ")
+		(at 233.68 81.28 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e3069b2a-4638-48c7-ae4c-d095829dd672")
+		(property "Reference" "R27"
+			(at 238.76 81.28 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1k"
+			(at 233.68 81.534 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:R_0603"
+			(at 233.68 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf"
+			(at 233.68 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "Status-LED pull-down (boot power-present)"
+			(at 233.68 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C21190"
+			(at 233.68 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1001T5E"
+			(at 233.68 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "eb5896dc-6a20-4b47-8b9b-d2698a66d341")
+		)
+		(pin "2"
+			(uuid "0e9ad1e9-f5c7-4915-a76f-2f37aa1bf7e4")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "R27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Transistor_FET:AO3400A")
 		(at 326.39 102.87 0)
 		(unit 1)
@@ -36973,7 +37126,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 255.27 68.58 270)
+		(at 256.54 73.66 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -36983,7 +37136,7 @@
 		(dnp no)
 		(uuid "ed732ae2-6d6e-4780-8b87-58c51ddd5b4c")
 		(property "Reference" "#PWR13"
-			(at 255.27 68.58 0)
+			(at 256.54 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36994,7 +37147,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 259.77 68.58 90)
+			(at 261.04 73.66 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37005,7 +37158,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 255.27 68.58 0)
+			(at 256.54 73.66 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37015,7 +37168,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 255.27 68.58 0)
+			(at 256.54 73.66 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37025,7 +37178,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 255.27 68.58 0)
+			(at 256.54 73.66 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -38682,7 +38835,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 232.41 68.58 270)
+		(at 233.68 85.09 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -38692,7 +38845,7 @@
 		(dnp no)
 		(uuid "fea90a8c-4c67-4239-8c43-13197a4bda85")
 		(property "Reference" "#PWR38"
-			(at 232.41 68.58 0)
+			(at 233.68 85.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38703,7 +38856,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 227.91 68.58 90)
+			(at 233.68 89.59 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -38714,7 +38867,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 232.41 68.58 0)
+			(at 233.68 85.09 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -38724,7 +38877,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 232.41 68.58 0)
+			(at 233.68 85.09 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -38734,7 +38887,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 232.41 68.58 0)
+			(at 233.68 85.09 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
