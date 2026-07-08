@@ -4,7 +4,7 @@
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO12
 #   Apartment Doorbell (OC2 / Etagenruf sense)     : GPIO13
 #   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO10
-#   suppress_sound     (K3 / chime suppress)       : GPIO11
+#   suppress_chime_bin (K3 / chime suppress)       : GPIO11
 #   K1                 (PTT SSR, talk=energised)   : GPIO9
 #   I2C_SDA  (ES8311 control)                      : GPIO38
 #   I2C_SCL  (ES8311 control)                      : GPIO39
@@ -39,8 +39,9 @@
 esphome:
   name: doorbell
   on_boot:
-    # Greeting registry — index-aligned with the `next_greeting` select options AND the greet /
-    # greet_and_open api-action indices. Index 0 = None (nullptr = "just open, no door audio"); add
+    # Greeting registry — index-aligned with the `next_greeting` select options. The greet /
+    # greet_and_open api actions resolve a greeting NAME to an index via the select (index_of), so the
+    # select's option order is authoritative. Index 0 = None (nullptr = "just open, no door audio"); add
     # greetings after it in the SAME order as the select options. Keeps file choice branch-free
     # (index -> AudioFile*); adding a greeting = one files: entry + one push_back + one select option.
     priority: -100
@@ -50,6 +51,13 @@ esphome:
           id(greetings).push_back(id(welcome_chime));  // 1 = Chime
           id(greetings).push_back(id(welcome_silent)); // 2 = Silent (1.5 s inaudible timing test)
           id(greetings).push_back(id(welcome_hello));  // 3 = Hello
+          // Registry integrity: the vector and the next_greeting select options are index-aligned by
+          // hand — flag a forgotten push_back / option at boot instead of silently playing the wrong
+          // (or no) greeting later.
+          if (id(greetings).size() != id(next_greeting).traits.get_options().size())
+            ESP_LOGE("greetings", "registry/select length mismatch: %u vs %u",
+                     (unsigned) id(greetings).size(),
+                     (unsigned) id(next_greeting).traits.get_options().size());
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
@@ -150,6 +158,8 @@ speaker:
     audio_dac: es8311_codec
     i2s_dout_pin: GPIO1    # I2S_DOUT / DSDIN (ESP→codec, playback)
 
+# ES8311 ADC capture (door-station RX). Currently unconsumed on-device since voice_assistant was
+# removed — kept as the RX path for when two-way audio returns.
 microphone:
   - platform: i2s_audio
     id: intercom_mic
@@ -185,8 +195,7 @@ media_player:
     # Safety backstop: when the player returns to idle, make sure K1 (the off-hook handshake + TX
     # route to the bus) and the welcome flag aren't left latched by any playback path. play_welcome
     # already releases them on the normal path; this also catches a stuck/aborted sequence. Not
-    # load-bearing — the script's wait_until + timeout is primary. (Revisit when voice_assistant
-    # shares this player: a streamed reply must not let an inter-chunk idle blip drop K1 mid-sentence.)
+    # load-bearing — the script's wait_until + timeout is primary.
     on_idle:
       - switch.turn_off: intercom_ptt
       - globals.set:
@@ -206,12 +215,13 @@ globals:
     restore_value: no
     initial_value: "nullptr"
   # Greeting registry, populated in esphome: on_boot (see there). Index-aligned with the
-  # `next_greeting` select and the greet/greet_and_open api indices; greetings[0] = nullptr (None).
+  # `next_greeting` select; the greet/greet_and_open api actions resolve a name to an index via the
+  # select (index_of). greetings[0] = nullptr (None).
   - id: greetings
     type: std::vector<audio::AudioFile*>
     restore_value: no
 
-# Door-station playback: mute the own speaker (K3, via the doorbell_sound_state guard), present
+# Door-station playback: mute the own speaker (K3, via the chime_enabled guard), present
 # the off-hook handshake (K1), play the embedded file, then restore everything. Also the
 # instrument for the AUDIO-2/AUDIO-6 TX-reach test — trigger from the HA app while standing at
 # the door station.
@@ -269,12 +279,15 @@ script:
       - delay: 100ms                     # settle: K1 fully released before K2 makes
       - button.press: front_door_buzzer
 
-# Two-way intercom via Home Assistant Assist. PTT-triggered (no on-device wake word),
-# replies played back through the intercom speaker.
-voice_assistant:
-  id: doorbell_voice
-  microphone: intercom_mic
-  speaker: intercom_speaker
+  # Stage the HA-primed greeting (next_greeting select) into welcome_file. Single-lambda -> runs
+  # synchronously, so a caller can read welcome_file immediately after script.execute. Shared by the
+  # ring reflex and the "Welcome & Open Door" button. None / out-of-range -> nullptr (no door audio).
+  - id: stage_selected_greeting
+    then:
+      - lambda: |-
+          auto idx = id(next_greeting).active_index();
+          id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
+                               ? id(greetings)[idx.value()] : nullptr;
 
 # Optional: BLE works but uses resources. Remove this and esp32_ble_tracker if you don't
 # use the Bluetooth proxy.
@@ -342,10 +355,7 @@ binary_sensor:
             condition:
               switch.is_on: auto_open_front_door
             then:
-              - lambda: |-
-                  auto idx = id(next_greeting).active_index();
-                  id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
-                                       ? id(greetings)[idx.value()] : nullptr;
+              - script.execute: stage_selected_greeting
               # No greeting -> hold before opening. Two reasons: (1) give the visitor time to reach the
               # door before the latch releases; (2) wait out the Türruf gong (K4's hardware
               # break-before-make already keeps the gong off line 3, so that part is belt-and-suspenders).
@@ -363,7 +373,7 @@ binary_sensor:
                   event: esphome.doorbell_not_opened
   - platform: template
     name: "Chime Enabled"
-    id: doorbell_sound_state
+    id: chime_enabled
     icon: mdi:music-note
     lambda: |-
       // K3 (NC SSR) opens C1 to mute the front-door gong. It sits in the C1 audio path (P4↔C1), NOT
@@ -379,9 +389,9 @@ binary_sensor:
       // The gong is suppressed by default (rings are announced via Alexa). Fail SAFE to ring so a
       // doorbell is never silently missed: suppress ONLY while HA is connected AND actively requests
       // it. HA clears suppress_chime when the announcement path is down (internet/Alexa), and a
-      // disconnected HA drops ha_connected -> either way the gong rings. doorbell_sound is the manual
+      // disconnected HA drops ha_connected -> either way the gong rings. force_chime is the manual
       // override that forces the gong on regardless.
-      return id(doorbell_sound).state || !(id(suppress_chime).state && id(ha_connected).state);
+      return id(force_chime).state || !(id(suppress_chime).state && id(ha_connected).state);
     on_press:
       then:
         # State went true ("let it ring"): drop K3 so the gong's C1 path is closed (the gong rings).
@@ -389,10 +399,10 @@ binary_sensor:
         # constraint, and K3 never makes a P2↔P3 short.
         # (PTT is not forced off here — that would fight the PTT gate above; session-end PTT cleanup
         # belongs to the session-active work.)
-        - output.turn_off: suppress_doorbell_sound_bin   # K3 off -> C1 closed -> gong rings
+        - output.turn_off: suppress_chime_bin   # K3 off -> C1 closed -> gong rings
     on_release:
       then:
-        - output.turn_on: suppress_doorbell_sound_bin    # K3 on -> C1 open -> silence the gong
+        - output.turn_on: suppress_chime_bin    # K3 on -> C1 open -> silence the gong
   # API connectivity — the failsafe gate for chime suppression. When the HA API link drops this goes
   # off, so the suppress lambda above can no longer mute the gong (it rings). No specific HA entity.
   - platform: status
@@ -416,11 +426,11 @@ switch:
   - platform: template
     name: "Force Chime"
     icon: mdi:bell-ring
-    id: doorbell_sound
+    id: force_chime
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
   # HA-driven chime-suppression REQUEST (the occupancy / quiet-hours policy lives in HA). Only honoured
-  # while the API is connected (see the doorbell_sound_state lambda) — a dead HA can't leave the gong
+  # while the API is connected (see the chime_enabled lambda) — a dead HA can't leave the gong
   # muted. Default off = don't suppress.
   - platform: template
     name: "Suppress Chime"
@@ -440,7 +450,7 @@ output:
     id: ptt_relay_bin
   - platform: gpio
     pin: GPIO11              # K3 — chime suppress (open C1: P4↔CHIME_C1)
-    id: suppress_doorbell_sound_bin
+    id: suppress_chime_bin
   - platform: gpio
     pin: GPIO10              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
                              # drop the WF26 latch; K2's make is delayed ~38ms (Q3/RC) so the break
@@ -449,8 +459,9 @@ output:
 
 # Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the
 # expected delivery/guest. Options MUST stay in the same order as the greetings registry (esphome:
-# on_boot) and the greet/greet_and_open api indices: 0 = None (just open, no door audio), 1 = Chime,
-# 2 = Silent (1.5 s inaudible — greet/open timing test), 3 = Hello.
+# on_boot); the greet/greet_and_open api actions resolve these option NAMES via index_of. Order:
+# 0 = None (just open, no door audio), 1 = Chime, 2 = Silent (1.5 s inaudible — greet/open timing
+# test), 3 = Hello.
 select:
   - platform: template
     name: "Next-ring greeting"
@@ -487,10 +498,7 @@ button:
     on_press:
       then:
         # Honor the HA-primed next_greeting select (same staging as the ring reflex); None -> just open.
-        - lambda: |-
-            auto idx = id(next_greeting).active_index();
-            id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
-                                 ? id(greetings)[idx.value()] : nullptr;
+        - script.execute: stage_selected_greeting
         - script.execute: welcome_and_open
 
 sensor:
