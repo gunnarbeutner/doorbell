@@ -58,6 +58,15 @@ esphome:
             ESP_LOGE("greetings", "registry/select length mismatch: %u vs %u",
                      (unsigned) id(greetings).size(),
                      (unsigned) id(next_greeting).traits.get_options().size());
+      # Enable the ES8311 DAC soft-ramp (REG0x37) to fade the DAC in/out and soften the enable/mute
+      # transient. ESPHome's codec init leaves REG37 at 0x08 (softramp disabled); 0x48 keeps the low
+      # nibble and sets DAC_RAMPRATE = 4. REG37 is written only at codec setup(), so this sticks; the
+      # delay lets setup() finish. Only partly tames the analog VMID pop — see TODO.md (V4.2 mute).
+      - delay: 1s
+      - lambda: |-
+          uint8_t reg37[2] = {0x37, 0x48};
+          id(codec_i2c)->write(0x18, reg37, 2);
+          ESP_LOGI("es8311", "DAC soft-ramp enabled (REG0x37 = 0x48)");
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
@@ -129,6 +138,7 @@ wifi:
     dns1: 192.168.3.53
 
 i2c:
+  id: codec_i2c            # referenced by the on_boot DAC soft-ramp override (REG0x37)
   sda: GPIO38              # I2C_SDA — ES8311 (U3) control bus
   scl: GPIO39              # I2C_SCL — ES8311 (U3) control bus
   scan: false
@@ -158,16 +168,11 @@ speaker:
     audio_dac: es8311_codec
     i2s_dout_pin: GPIO1    # I2S_DOUT / DSDIN (ESP→codec, playback)
 
-# ES8311 ADC capture (door-station RX). Currently unconsumed on-device since voice_assistant was
-# removed — kept as the RX path for when two-way audio returns.
-microphone:
-  - platform: i2s_audio
-    id: intercom_mic
-    i2s_audio_id: i2s_bus
-    adc_type: external     # ES8311 does the conversion; ESP only receives I2S
-    i2s_din_pin: GPIO42    # I2S_DIN / ASDOUT (codec→ESP, capture)
-    channel: left          # ES8311 mono ADC transmits in the LEFT I2S slot — the ESPHome default
-    bits_per_sample: 16bit # (right, 32bit) reads the empty slot = perfect digital silence
+# NO `microphone:` here. The mic (I2S RX) and the speaker (I2S TX) share one half-duplex I2S bus; a
+# declared mic holds the bus and makes the speaker fail to start ("Parent bus is busy"), silently
+# breaking welcome-audio playback (the door still opens, but the chime never plays). The mic was
+# unused here anyway once voice_assistant was removed. Re-add it ONLY together with a coordinator
+# (voice_assistant) that manages bus hand-off — never a bare mic alongside the media_player speaker.
 
 # Media player wrapping the codec speaker: carries the embedded welcome chime (and any HA
 # TTS/audio). With PTT engaged the audio rides the TX path to the bus/door station.
@@ -192,15 +197,24 @@ media_player:
         file: "sounds/welcome-silent.wav"  # 1.5 s digital silence — exercises greet/open timing inaudibly
       - id: welcome_hello
         file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
-    # Safety backstop: when the player returns to idle, make sure K1 (the off-hook handshake + TX
-    # route to the bus) and the welcome flag aren't left latched by any playback path. play_welcome
-    # already releases them on the normal path; this also catches a stuck/aborted sequence. Not
-    # load-bearing — the script's wait_until + timeout is primary.
+    # K1 (off-hook handshake + TX route) and the welcome_playing gong-mute FOLLOW the player state —
+    # engage while announcing/playing, release when idle/paused. Event-driven so a transient IDLE blip
+    # at announcement start can't tear K1 down mid-play: the old scheme (play_welcome raised K1
+    # explicitly + an on_idle backstop) let that pre-announcement blip drop K1, so the chime played
+    # into an OPEN contact — only off-cap bleed reached P3, nothing on a loaded bus. At idle K1 is
+    # already off, so the startup blip is a no-op; on_announcement then raises it for the audio.
+    on_announcement:
+      - switch.turn_on: intercom_ptt
+      - globals.set: { id: welcome_playing, value: "true" }
+    on_play:
+      - switch.turn_on: intercom_ptt
+      - globals.set: { id: welcome_playing, value: "true" }
     on_idle:
       - switch.turn_off: intercom_ptt
-      - globals.set:
-          id: welcome_playing
-          value: "false"
+      - globals.set: { id: welcome_playing, value: "false" }
+    on_pause:
+      - switch.turn_off: intercom_ptt
+      - globals.set: { id: welcome_playing, value: "false" }
 
 globals:
   - id: welcome_playing
@@ -235,34 +249,27 @@ script:
           condition:
             lambda: 'return id(welcome_file) != nullptr;'
           then:
-            - globals.set:
-                id: welcome_playing
-                value: "true"
-            - delay: 150ms                  # let the policy edge close K3 (own speaker muted)
-            - switch.turn_on: intercom_ptt  # K1: handshake + route to the bus
-            - delay: 300ms
             - media_player.volume_set:
                 id: intercom_media
                 volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
-            # Play the staged file via the speaker's C++ play_file() — no name-branching, files: is the
-            # one embed spot. Announcement pipeline -> state ANNOUNCING, so K1 is gated below on
-            # is_announcing (NOT is_playing, which only tracks the media pipeline and stays FALSE here).
+            # Play the staged file as an announcement. K1 (TX route) and the welcome_playing gong-mute
+            # are NOT managed here — they follow the media_player state via on_announcement/on_idle (see
+            # the media_player triggers). This script only SEQUENCES: play, then block until the
+            # announcement ends, so welcome_and_open opens after K1 has released (K2 must not short the
+            # TX tail). play_file uses the C++ speaker API — no name-branching; files: is the one embed.
             - lambda: 'id(intercom_media).play_file(id(welcome_file), true, false);'
-            # Wait for the announcement to start, then to finish — length-agnostic. Timeouts are
-            # safety backstops so a stuck/failed pipeline can't pin K1 (the off-hook handshake) on.
+            # Wait for the announcement to START (5 s also covers the i2s "bus busy" ~1 s retry), settle
+            # 400 ms past the ANNOUNCING startup blip, then wait for the real END. Timeouts are backstops.
             - wait_until:
                 condition:
                   media_player.is_announcing: intercom_media
-                timeout: 3s
+                timeout: 5s
+            - delay: 400ms
             - wait_until:
                 condition:
                   not:
                     media_player.is_announcing: intercom_media
                 timeout: 30s
-            - switch.turn_off: intercom_ptt
-            - globals.set:
-                id: welcome_playing
-                value: "false"
 
   # Greet, THEN open the door — strictly sequential, never concurrent: K1 (TX) must be fully
   # released before the buzzer's K2 bridges P2↔P3, or K2 shorts out the audio tail. play_welcome
@@ -417,6 +424,10 @@ switch:
     id: intercom_ptt
     output: ptt_relay_bin
     restore_mode: ALWAYS_OFF   # boot into listen/idle (K1 de-energised = talk strap open)
+    on_turn_on:
+      - logger.log: { format: "PTT ENGAGED  (K1 on)",  level: INFO, tag: ptt }
+    on_turn_off:
+      - logger.log: { format: "PTT DISENGAGED (K1 off)", level: INFO, tag: ptt }
   - platform: template
     name: "Auto-open front door"
     icon: mdi:gate

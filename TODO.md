@@ -96,6 +96,18 @@ TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C
       register with **0.75 = 0 dB**; above that is digital gain (up to +32 dB at 1.0) and clips —
       full-scale media at volume 1.0 distorts hard, ~0.8 is borderline. Calibrate talk level in
       the ≤0.75 range.
+- [ ] **(V4.2) Welcome-audio start "pop" — hardware-mute the TX startup transient.** On each greeting the
+      ES8311 analog output steps ~0.07 V→VMID as the DAC cold-starts, coupling through C14 onto line 3 as a
+      **~2 Vpp click at the chime onset — louder than the chime itself (~1.6 Vpp)** — now *delivered* to the
+      bus because K1 holds closed. Bench scope: `docs/scope/welcome-chime-p3.png` (leading spike vs the
+      two-note decaying bell). It's the **analog VMID-enable step**, so firmware only partly helps: the DAC
+      soft-ramp (REG0x37, enabled in firmware) ~halves the digital part but can't touch the analog step, and
+      **`timeout: never` does nothing** (the media_player stops the speaker every play, so the codec
+      cold-starts regardless — measured identical, ~2 Vpp with and without). **Fix = mute line 3 / the codec
+      output during the ~150 ms startup** (a small-signal FET gating the TX node until the audio has ramped),
+      or a keep-warm scheme that avoids the codec cold-start (harder — the media_player fights keeping the
+      speaker alive). It brackets the greeting like the WF26 talk-button click, but this onset pop is
+      prominent. Firmware plays fine; this is polish. *(DESIGN.md: "TX-out reach" / audio path)*
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
