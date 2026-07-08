@@ -362,7 +362,7 @@ binary_sensor:
               - homeassistant.event:
                   event: esphome.doorbell_not_opened
   - platform: template
-    name: "Doorbell Sound"
+    name: "Chime Enabled"
     id: doorbell_sound_state
     icon: mdi:music-note
     lambda: |-
@@ -414,8 +414,8 @@ switch:
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
   - platform: template
-    name: "Doorbell Sound"
-    icon: mdi:music-note
+    name: "Force Chime"
+    icon: mdi:bell-ring
     id: doorbell_sound
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
