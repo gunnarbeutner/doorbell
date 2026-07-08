@@ -38,6 +38,17 @@
 
 esphome:
   name: doorbell
+  on_boot:
+    # Greeting registry — index-aligned with the `next_greeting` select options AND the greet /
+    # greet_and_open api-action indices. Index 0 = None (nullptr = "just open, no door audio"); add
+    # greetings after it in the SAME order as the select options. Keeps file choice branch-free
+    # (index -> AudioFile*); adding a greeting = one files: entry + one push_back + one select option.
+    priority: -100
+    then:
+      - lambda: |-
+          id(greetings).push_back(nullptr);            // 0 = None
+          id(greetings).push_back(id(welcome_chime));  // 1 = Chime
+          id(greetings).push_back(id(welcome_silent)); // 2 = Silent (1.5 s inaudible timing test)
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
@@ -56,6 +67,25 @@ logger:
 api:
   encryption:
     key: !secret api_encryption_key
+  # Immediate, HA-driven greeting/open. `index` is into the greeting registry (0 = None, 1 = Chime, …);
+  # out-of-range -> None. HA maps a trigger type (parcel/food/guest/arrival) -> index and calls these.
+  actions:
+    - action: greet
+      variables:
+        index: int
+      then:
+        - lambda: |-
+            id(welcome_file) = (index >= 0 && (size_t) index < id(greetings).size())
+                                 ? id(greetings)[index] : nullptr;
+        - script.execute: play_welcome
+    - action: greet_and_open
+      variables:
+        index: int
+      then:
+        - lambda: |-
+            id(welcome_file) = (index >= 0 && (size_t) index < id(greetings).size())
+                                 ? id(greetings)[index] : nullptr;
+        - script.execute: welcome_and_open
 
 web_server:
   port: 80
@@ -119,6 +149,114 @@ microphone:
     i2s_din_pin: GPIO42    # I2S_DIN / ASDOUT (codec→ESP, capture)
     channel: left          # ES8311 mono ADC transmits in the LEFT I2S slot — the ESPHome default
     bits_per_sample: 16bit # (right, 32bit) reads the empty slot = perfect digital silence
+
+# Media player wrapping the codec speaker: carries the embedded welcome chime (and any HA
+# TTS/audio). With PTT engaged the audio rides the TX path to the bus/door station.
+media_player:
+  - platform: speaker
+    id: intercom_media
+    name: "Intercom"
+    announcement_pipeline:
+      speaker: intercom_speaker
+      format: WAV
+      sample_rate: 16000
+      num_channels: 1
+    # Greeting files — the single spot for embedding audio into the image. Keep each SHORT (a few
+    # seconds): the buzzer is sequenced AFTER the welcome, so a file's length adds to door-open
+    # latency and must finish within play_welcome's 30 s wait_until ceiling. Add one: new id here,
+    # then have a caller stage it (`id(welcome_file) = id(<new_id>)`) — no branching; play_welcome
+    # plays whatever pointer is staged, via C++ play_file().
+    files:
+      - id: welcome_chime
+        file: "sounds/welcome-chime.wav"   # 16 kHz mono, peak -3 dBFS
+      - id: welcome_silent
+        file: "sounds/welcome-silent.wav"  # 1.5 s digital silence — exercises greet/open timing inaudibly
+    # Safety backstop: when the player returns to idle, make sure K1 (the off-hook handshake + TX
+    # route to the bus) and the welcome flag aren't left latched by any playback path. play_welcome
+    # already releases them on the normal path; this also catches a stuck/aborted sequence. Not
+    # load-bearing — the script's wait_until + timeout is primary. (Revisit when voice_assistant
+    # shares this player: a streamed reply must not let an inter-chunk idle blip drop K1 mid-sentence.)
+    on_idle:
+      - switch.turn_off: intercom_ptt
+      - globals.set:
+          id: welcome_playing
+          value: "false"
+
+globals:
+  - id: welcome_playing
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  # The greeting to play — a pointer into the media_player's files: (the single embed spot). A caller
+  # stages it (`id(welcome_file) = id(<file>)`) before running play_welcome; nullptr = play nothing
+  # (the default). This is what lets file choice avoid any name-branching in the script.
+  - id: welcome_file
+    type: audio::AudioFile*
+    restore_value: no
+    initial_value: "nullptr"
+  # Greeting registry, populated in esphome: on_boot (see there). Index-aligned with the
+  # `next_greeting` select and the greet/greet_and_open api indices; greetings[0] = nullptr (None).
+  - id: greetings
+    type: std::vector<audio::AudioFile*>
+    restore_value: no
+
+# Door-station playback: mute the own speaker (K3, via the doorbell_sound_state guard), present
+# the off-hook handshake (K1), play the embedded file, then restore everything. Also the
+# instrument for the AUDIO-2/AUDIO-6 TX-reach test — trigger from the HA app while standing at
+# the door station.
+script:
+  - id: play_welcome
+    mode: single
+    then:
+      # No file staged (welcome_file == nullptr, e.g. next_greeting = None) -> do nothing at all: no K1
+      # handshake, no wait. That lets welcome_and_open open promptly when there is no greeting.
+      - if:
+          condition:
+            lambda: 'return id(welcome_file) != nullptr;'
+          then:
+            - globals.set:
+                id: welcome_playing
+                value: "true"
+            - delay: 150ms                  # let the policy edge close K3 (own speaker muted)
+            - switch.turn_on: intercom_ptt  # K1: handshake + route to the bus
+            - delay: 300ms
+            - media_player.volume_set:
+                id: intercom_media
+                volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
+            # Play the staged file via the speaker's C++ play_file() — no name-branching, files: is the
+            # one embed spot. Announcement pipeline -> state ANNOUNCING, so K1 is gated below on
+            # is_announcing (NOT is_playing, which only tracks the media pipeline and stays FALSE here).
+            - lambda: 'id(intercom_media).play_file(id(welcome_file), true, false);'
+            # Wait for the announcement to start, then to finish — length-agnostic. Timeouts are
+            # safety backstops so a stuck/failed pipeline can't pin K1 (the off-hook handshake) on.
+            - wait_until:
+                condition:
+                  media_player.is_announcing: intercom_media
+                timeout: 3s
+            - wait_until:
+                condition:
+                  not:
+                    media_player.is_announcing: intercom_media
+                timeout: 30s
+            - switch.turn_off: intercom_ptt
+            - globals.set:
+                id: welcome_playing
+                value: "false"
+
+  # Greet, THEN open the door — strictly sequential, never concurrent: K1 (TX) must be fully
+  # released before the buzzer's K2 bridges P2↔P3, or K2 shorts out the audio tail. play_welcome
+  # ends with K1 off; script.wait blocks until it finishes, then a short settle before the door
+  # bridge makes. (For a short greeting only — see the length cap on files: above.)
+  - id: welcome_and_open
+    mode: single
+    then:
+      - script.execute: play_welcome    # plays whatever the caller staged in welcome_file (no-op if nullptr)
+      - script.wait: play_welcome
+      # No gong-wait here: this is the generic greet->open primitive (api / button / webhook), which
+      # opens promptly. The Türruf-gong wait is applied only in the ring reflex (house_doorbell) for
+      # the no-greeting case; a greeting covers the gong on its own.
+      - delay: 100ms                     # settle: K1 fully released before K2 makes
+      - button.press: front_door_buzzer
 
 # Two-way intercom via Home Assistant Assist. PTT-triggered (no on-device wake word),
 # replies played back through the intercom speaker.
@@ -184,35 +322,34 @@ binary_sensor:
       - delayed_off: 2s
     on_press:
       then:
-        if:
-          condition:
-            binary_sensor.is_on: someone_at_house_door
-          then:
-            - homeassistant.event:
-                event: esphome.doorbell_opened_arrival
-            - delay: 1.75s
-            - button.press: front_door_buzzer
-          else:
-            if:
-              condition:
-                switch.is_on: auto_open_front_door
-              then:
-                - homeassistant.event:
-                    event: esphome.doorbell_opened
-                - delay: 1.75s
-                - button.press: front_door_buzzer
-              else:
-                - homeassistant.event:
-                    event: esphome.doorbell_not_opened
-  - platform: homeassistant
-    id: apartment_occupancy
-    entity_id: binary_sensor.apartment_occupancy
-  - platform: homeassistant
-    id: someone_at_house_door
-    entity_id: binary_sensor.someone_at_house_door
-  - platform: homeassistant
-    id: internet_connection
-    entity_id: binary_sensor.fritz_box_7590_connection
+        # Autonomous open reflex — runs locally so a ring still opens even when HA is slow or down.
+        # HA arms it via switch.auto_open_front_door (PERSISTENT; HA owns on/off) and primes which
+        # greeting plays via the next_greeting select. welcome_and_open sequences greet-then-open (the
+        # greeting covers the gong; K1 releases before K2 bridges the door). Events are generic device
+        # outputs HA consumes for notifications; HA re-derives arrival/delivery context from its state.
+        - if:
+            condition:
+              switch.is_on: auto_open_front_door
+            then:
+              - lambda: |-
+                  auto idx = id(next_greeting).active_index();
+                  id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
+                                       ? id(greetings)[idx.value()] : nullptr;
+              # No greeting -> hold before opening. Two reasons: (1) give the visitor time to reach the
+              # door before the latch releases; (2) wait out the Türruf gong (K4's hardware
+              # break-before-make already keeps the gong off line 3, so that part is belt-and-suspenders).
+              # A greeting serves both on its own, so the hold only applies when there's no greeting.
+              - if:
+                  condition:
+                    lambda: 'return id(welcome_file) == nullptr;'
+                  then:
+                    - delay: 1.75s
+              - script.execute: welcome_and_open
+              - homeassistant.event:
+                  event: esphome.doorbell_opened
+            else:
+              - homeassistant.event:
+                  event: esphome.doorbell_not_opened
   - platform: template
     name: "Doorbell Sound"
     id: doorbell_sound_state
@@ -226,8 +363,14 @@ binary_sensor:
       //   TODO: add a session-active arm here. The session-sense opto that used to supply it was
       //   dropped, so this gate is PTT-only; "session active" should be derived from the OC1 (Türruf)
       //   event + a timer and gate K3 on it (see DESIGN.md "TX-out reach" / TODO).
+      if (id(welcome_playing)) return false;  // door-station playback: hold K3 = own speaker muted
       if (id(intercom_ptt).state) return true;
-      return !id(internet_connection).state || (id(apartment_occupancy).state && !id(someone_at_house_door).state && id(doorbell_sound).state);
+      // The gong is suppressed by default (rings are announced via Alexa). Fail SAFE to ring so a
+      // doorbell is never silently missed: suppress ONLY while HA is connected AND actively requests
+      // it. HA clears suppress_chime when the announcement path is down (internet/Alexa), and a
+      // disconnected HA drops ha_connected -> either way the gong rings. doorbell_sound is the manual
+      // override that forces the gong on regardless.
+      return id(doorbell_sound).state || !(id(suppress_chime).state && id(ha_connected).state);
     on_press:
       then:
         # State went true ("let it ring"): drop K3 so the gong's C1 path is closed (the gong rings).
@@ -239,6 +382,12 @@ binary_sensor:
     on_release:
       then:
         - output.turn_on: suppress_doorbell_sound_bin    # K3 on -> C1 open -> silence the gong
+  # API connectivity — the failsafe gate for chime suppression. When the HA API link drops this goes
+  # off, so the suppress lambda above can no longer mute the gong (it rings). No specific HA entity.
+  - platform: status
+    name: "HA Connected"
+    id: ha_connected
+    entity_category: diagnostic
 
 switch:
   - platform: output
@@ -257,6 +406,15 @@ switch:
     name: "Doorbell Sound"
     icon: mdi:music-note
     id: doorbell_sound
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  # HA-driven chime-suppression REQUEST (the occupancy / quiet-hours policy lives in HA). Only honoured
+  # while the API is connected (see the doorbell_sound_state lambda) — a dead HA can't leave the gong
+  # muted. Default off = don't suppress.
+  - platform: template
+    name: "Suppress Chime"
+    icon: mdi:bell-off
+    id: suppress_chime
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
 
@@ -278,6 +436,23 @@ output:
                              # leads = S1 break-before-make in hardware (no firmware sequencing)
     id: front_door_buzzer_bin
 
+# Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the
+# expected delivery/guest. Options MUST stay in the same order as the greetings registry (esphome:
+# on_boot) and the greet/greet_and_open api indices: 0 = None (just open, no door audio), 1 = Chime,
+# 2 = Silent (1.5 s inaudible — greet/open timing test).
+select:
+  - platform: template
+    name: "Next-ring greeting"
+    id: next_greeting
+    icon: mdi:bullhorn
+    optimistic: true
+    restore_value: true
+    options:
+      - "None"
+      - "Chime"
+      - "Silent"
+    initial_option: "None"
+
 button:
   - platform: output
     name: "Front Door Buzzer"
@@ -286,14 +461,32 @@ button:
     output: front_door_buzzer_bin
     duration: 1750ms
   - platform: template
-    name: "Phone Call"
-    icon: mdi:phone
-    id: phone_call
+    name: "Play Welcome Sound"
+    icon: mdi:bullhorn
+    id: play_welcome_button
     on_press:
       then:
-        - homeassistant.event:
-            event: esphome.doorbell_phone_call
-        - button.press: front_door_buzzer
+        - lambda: 'id(welcome_file) = id(welcome_chime);'
+        - script.execute: play_welcome
+  - platform: template
+    name: "Welcome & Open Door"
+    icon: mdi:door-open
+    id: welcome_and_open_button
+    on_press:
+      then:
+        - lambda: 'id(welcome_file) = id(welcome_chime);'
+        - script.execute: welcome_and_open
+  # Timing test: runs the full greet->wait->open sequence with the 1.5 s SILENT greeting, so the
+  # K1-hold-then-buzzer timing can be verified without an audible chime.
+  - platform: template
+    name: "Test greet+open (silent)"
+    icon: mdi:timer-check
+    id: test_greet_open_silent
+    entity_category: diagnostic
+    on_press:
+      then:
+        - lambda: 'id(welcome_file) = id(welcome_silent);'
+        - script.execute: welcome_and_open
   - platform: template
     name: "Debug Doorbell Opened"
     icon: mdi:bug
