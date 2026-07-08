@@ -49,6 +49,7 @@ esphome:
           id(greetings).push_back(nullptr);            // 0 = None
           id(greetings).push_back(id(welcome_chime));  // 1 = Chime
           id(greetings).push_back(id(welcome_silent)); // 2 = Silent (1.5 s inaudible timing test)
+          id(greetings).push_back(id(welcome_hello));  // 3 = Hello
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
@@ -67,24 +68,32 @@ logger:
 api:
   encryption:
     key: !secret api_encryption_key
-  # Immediate, HA-driven greeting/open. `index` is into the greeting registry (0 = None, 1 = Chime, …);
-  # out-of-range -> None. HA maps a trigger type (parcel/food/guest/arrival) -> index and calls these.
+  # Immediate, HA-driven greeting/open. `greeting` is a greeting NAME matching a next_greeting select
+  # option ("None"/"Chime"/"Silent"/"Hello", case-sensitive) — the select's option list IS the name
+  # registry, so index_of resolves name -> greetings[]. Unknown/empty name -> None (no door audio; the
+  # door still opens for greet_and_open). HA maps a trigger type (parcel/food/guest/arrival) -> a name.
   actions:
     - action: greet
       variables:
-        index: int
+        greeting: string
       then:
         - lambda: |-
-            id(welcome_file) = (index >= 0 && (size_t) index < id(greetings).size())
-                                 ? id(greetings)[index] : nullptr;
+            auto idx = id(next_greeting)->index_of(greeting);
+            id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
+                                 ? id(greetings)[idx.value()] : nullptr;
+            if (!idx.has_value())
+              ESP_LOGW("greet", "unknown greeting '%s' — no audio", greeting.c_str());
         - script.execute: play_welcome
     - action: greet_and_open
       variables:
-        index: int
+        greeting: string
       then:
         - lambda: |-
-            id(welcome_file) = (index >= 0 && (size_t) index < id(greetings).size())
-                                 ? id(greetings)[index] : nullptr;
+            auto idx = id(next_greeting)->index_of(greeting);
+            id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
+                                 ? id(greetings)[idx.value()] : nullptr;
+            if (!idx.has_value())
+              ESP_LOGW("greet", "unknown greeting '%s' — opening with no audio", greeting.c_str());
         - script.execute: welcome_and_open
 
 web_server:
@@ -171,6 +180,8 @@ media_player:
         file: "sounds/welcome-chime.wav"   # 16 kHz mono, peak -3 dBFS
       - id: welcome_silent
         file: "sounds/welcome-silent.wav"  # 1.5 s digital silence — exercises greet/open timing inaudibly
+      - id: welcome_hello
+        file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
     # Safety backstop: when the player returns to idle, make sure K1 (the off-hook handshake + TX
     # route to the bus) and the welcome flag aren't left latched by any playback path. play_welcome
     # already releases them on the normal path; this also catches a stuck/aborted sequence. Not
@@ -439,7 +450,7 @@ output:
 # Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the
 # expected delivery/guest. Options MUST stay in the same order as the greetings registry (esphome:
 # on_boot) and the greet/greet_and_open api indices: 0 = None (just open, no door audio), 1 = Chime,
-# 2 = Silent (1.5 s inaudible — greet/open timing test).
+# 2 = Silent (1.5 s inaudible — greet/open timing test), 3 = Hello.
 select:
   - platform: template
     name: "Next-ring greeting"
@@ -451,6 +462,7 @@ select:
       - "None"
       - "Chime"
       - "Silent"
+      - "Hello"
     initial_option: "None"
 
 button:
@@ -474,28 +486,12 @@ button:
     id: welcome_and_open_button
     on_press:
       then:
-        - lambda: 'id(welcome_file) = id(welcome_chime);'
+        # Honor the HA-primed next_greeting select (same staging as the ring reflex); None -> just open.
+        - lambda: |-
+            auto idx = id(next_greeting).active_index();
+            id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
+                                 ? id(greetings)[idx.value()] : nullptr;
         - script.execute: welcome_and_open
-  # Timing test: runs the full greet->wait->open sequence with the 1.5 s SILENT greeting, so the
-  # K1-hold-then-buzzer timing can be verified without an audible chime.
-  - platform: template
-    name: "Test greet+open (silent)"
-    icon: mdi:timer-check
-    id: test_greet_open_silent
-    entity_category: diagnostic
-    on_press:
-      then:
-        - lambda: 'id(welcome_file) = id(welcome_silent);'
-        - script.execute: welcome_and_open
-  - platform: template
-    name: "Debug Doorbell Opened"
-    icon: mdi:bug
-    id: debug_doorbell_opened
-    entity_category: diagnostic
-    on_press:
-      then:
-        - homeassistant.event:
-            event: esphome.doorbell_opened
 
 sensor:
   - platform: wifi_signal
