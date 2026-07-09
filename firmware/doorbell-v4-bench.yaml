@@ -60,6 +60,7 @@ esphome:
           id(greetings).push_back(id(welcome_chime));  // 1 = Chime
           id(greetings).push_back(id(welcome_silent)); // 2 = Silent (1.5 s inaudible timing test)
           id(greetings).push_back(id(welcome_hello));  // 3 = Hello
+          id(greetings).push_back(id(welcome_secret)); // 4 = Secret
           // Registry integrity: the vector and the next_greeting select options are index-aligned by
           // hand — flag a forgotten push_back / option at boot instead of silently playing the wrong
           // (or no) greeting later.
@@ -205,6 +206,8 @@ media_player:
         file: "sounds/welcome-silent.wav"  # 1.5 s digital silence — exercises greet/open timing inaudibly
       - id: welcome_hello
         file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
+      - id: welcome_secret
+        file: "sounds/secret.wav"          # 1.4 s Zelda "secret" chime, 16 kHz mono, peak -3 dBFS
     # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute FOLLOW the
     # player's playback state — engage while announcing/playing, release when idle/paused. Event-driven
     # so K1 can't be dropped mid-play by a transient IDLE blip (the earlier bug where play_welcome
@@ -558,6 +561,7 @@ select:
       - "Chime"
       - "Silent"
       - "Hello"
+      - "Secret"
     initial_option: "None"
 
 button:
