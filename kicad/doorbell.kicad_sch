@@ -3236,6 +3236,195 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Jumper:SolderJumper_2_Bridged"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "JP"
+				(at 0 2.032 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SolderJumper_2_Bridged"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Solder Jumper, 2-pole, closed/bridged"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "solder jumper SPST"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "SolderJumper*Bridged*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "SolderJumper_2_Bridged_0_1"
+				(rectangle
+					(start -0.508 0.508)
+					(end 0.508 -0.508)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.254 1.016) (xy -0.254 -1.016)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -0.254 -1.016)
+					(mid -1.2656 0)
+					(end -0.254 1.016)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(arc
+					(start 0.254 1.016)
+					(mid 1.2656 0)
+					(end 0.254 -1.016)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.254 1.016) (xy 0.254 -1.016)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SolderJumper_2_Bridged_1_1"
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Mechanical:MountingHole"
 			(pin_names
 				(offset 1.016)
@@ -5117,6 +5306,304 @@
 				)
 			)
 			(symbol "0603,2.2uF_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 3.175)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 3.175)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "PCM_JLCPCB-Capacitors:1206,22uF,(2)"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 2.032 1.668 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "22uF"
+				(at 2.032 -0.3782 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 0.8 0.8)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "PCM_JLCPCB:C_1206"
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL31A226KAHNNNE_C12891.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "25V 22uF X5R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "LCSC" "C12891"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Stock" "2183567"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Price" "0.046USD"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Process" "SMT"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Minimum Qty" "5"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Attrition Qty" "4"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Class" "Basic Component"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Category" "Capacitors,Multilayer Ceramic Capacitors MLCC - SMD/SMT"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "Samsung Electro-Mechanics"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Part" "CL31A226KAHNNNE"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Voltage Rated" "25V"
+				(at 2.032 -2.0462 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 0.8 0.8)
+					)
+					(justify left)
+				)
+			)
+			(property "Tolerance" "±10%"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Capacitance" "22uF"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Temperature Coefficient" "X5R"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "1206,22uF,(2)_0_1"
+				(polyline
+					(pts
+						(xy -1.27 0.635) (xy 1.27 0.635)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -0.635) (xy 1.27 -0.635)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "1206,22uF,(2)_1_1"
 				(pin passive line
 					(at 0 3.81 270)
 					(length 3.175)
@@ -10999,6 +11486,323 @@
 				)
 			)
 			(symbol "0603,5.1kΩ_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "PCM_JLCPCB-Resistors:1206,1kΩ"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 1.778 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "1kΩ"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace yes)
+				(effects
+					(font
+						(size 0.8 0.8)
+					)
+				)
+			)
+			(property "Footprint" "PCM_JLCPCB:R_1206"
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010216_UNI-ROYAL-Uniroyal-Elec-1206W4F1001T5E_C4410.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "250mW Thick Film Resistors 200V ±1% 1kΩ 1206 Chip Resistor - Surface Mount ROHS"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "LCSC" "C4410"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Stock" "1172991"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Price" "0.006USD"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Process" "SMT"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Minimum Qty" "15"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Attrition Qty" "4"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Class" "Basic Component"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Category" "Resistors,Chip Resistor - Surface Mount"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Part" "1206W4F1001T5E"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Resistance" "1kΩ"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Power(Watts)" "250mW"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Type" "Thick Film Resistors"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Overload Voltage (Max)" "200V"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Operating Temperature Range" "-55°C~+155°C"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Tolerance" "±1%"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Temperature Coefficient" "±100ppm/°C"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "1206,1kΩ_0_1"
+				(rectangle
+					(start -1.016 2.54)
+					(end 1.016 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "1206,1kΩ_1_1"
 				(pin passive line
 					(at 0 3.81 270)
 					(length 1.27)
@@ -17631,7 +18435,7 @@
 		)
 		(uuid "a2992d15-2815-4656-b195-3a0c72f0684b")
 	)
-	(text "TALK (K1, NO SSR)\ngates TALK_BRIDGE<->P4;\ncodec TX -> R28 -> line 3"
+	(text "TALK (K1, dual NO SSR)\nch1: P2 -> Ra/Cf/Rb LPF -> TX_OUT\n(the 2.2k talk handshake, gong-stripped);\nch2: TX_OUT <-> P3 (handshake + codec TX via C14);\ncut JP1 = plain 2.2k strap (V4.1 fallback)"
 		(exclude_from_sim no)
 		(at 357.378 31.75 0)
 		(effects
@@ -17746,6 +18550,12 @@
 		(uuid "0855bd2d-d241-41e9-b7a4-40300ffdb3cb")
 	)
 	(junction
+		(at 374.65 39.37)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "10f8f7a3-ba39-4dea-b03b-83d2db16d7e5")
+	)
+	(junction
 		(at 254 153.67)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -17788,6 +18598,12 @@
 		(uuid "341ba607-8aba-416c-85bd-af28fffac075")
 	)
 	(junction
+		(at 379.73 46.99)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "346fd50a-0f6c-4e00-80ec-0d4320df3ac4")
+	)
+	(junction
 		(at 101.6 161.29)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -17810,6 +18626,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4578c48f-b903-48a9-911e-1dd5b62299dc")
+	)
+	(junction
+		(at 365.76 39.37)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "46e654d0-4fef-4969-bd61-7ae7c260d687")
 	)
 	(junction
 		(at 251.46 29.21)
@@ -18085,6 +18907,16 @@
 	)
 	(wire
 		(pts
+			(xy 365.76 39.37) (xy 365.76 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0121a618-307b-4750-adef-293f432ed37a")
+	)
+	(wire
+		(pts
 			(xy 254 200.66) (xy 254 208.28)
 		)
 		(stroke
@@ -18122,6 +18954,16 @@
 			(type default)
 		)
 		(uuid "08d46ad7-484d-4bff-8f5a-f617fa33d1ff")
+	)
+	(wire
+		(pts
+			(xy 383.54 39.37) (xy 374.65 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "09456ef5-817d-44fc-9826-e3fbf8049285")
 	)
 	(wire
 		(pts
@@ -18685,6 +19527,16 @@
 	)
 	(wire
 		(pts
+			(xy 365.76 39.37) (xy 374.65 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e656ed6-c800-412b-bb19-7e82a1b23d0e")
+	)
+	(wire
+		(pts
 			(xy 43.18 138.43) (xy 43.18 142.24)
 		)
 		(stroke
@@ -18822,6 +19674,16 @@
 			(type default)
 		)
 		(uuid "4d1a3541-801e-4e70-bfad-15b45576f0a0")
+	)
+	(wire
+		(pts
+			(xy 341.63 44.45) (xy 355.6 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4d356bba-f8e8-4315-83b8-7f44d5adcd8e")
 	)
 	(wire
 		(pts
@@ -18972,16 +19834,6 @@
 			(type default)
 		)
 		(uuid "58f0cba1-179c-46ca-a012-dbdba532b90c")
-	)
-	(wire
-		(pts
-			(xy 341.63 44.45) (xy 346.71 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5c48198a-7963-45e2-af99-a9c03d962b01")
 	)
 	(wire
 		(pts
@@ -19625,6 +20477,16 @@
 	)
 	(wire
 		(pts
+			(xy 363.22 39.37) (xy 365.76 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9a697d40-9b95-46cf-8787-5d28608d81ef")
+	)
+	(wire
+		(pts
 			(xy 93.98 257.81) (xy 99.06 257.81)
 		)
 		(stroke
@@ -19662,16 +20524,6 @@
 			(type default)
 		)
 		(uuid "9c925cc8-9556-4a46-9d66-cece6e2f7310")
-	)
-	(wire
-		(pts
-			(xy 367.03 39.37) (xy 363.22 39.37)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9d16bb0d-b17f-4057-8022-48249723f0af")
 	)
 	(wire
 		(pts
@@ -20055,6 +20907,16 @@
 	)
 	(wire
 		(pts
+			(xy 379.73 46.99) (xy 383.54 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "beace26e-e13b-4673-bbf3-49bd264ff811")
+	)
+	(wire
+		(pts
 			(xy 114.3 133.35) (xy 114.3 146.05)
 		)
 		(stroke
@@ -20382,6 +21244,16 @@
 			(type default)
 		)
 		(uuid "d9c53db3-bb18-4fdf-aff1-d514cc64bab2")
+	)
+	(wire
+		(pts
+			(xy 374.65 46.99) (xy 379.73 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "daa3681e-f484-477f-8a9c-e47bfe95787d")
 	)
 	(wire
 		(pts
@@ -20735,6 +21607,16 @@
 	)
 	(wire
 		(pts
+			(xy 363.22 44.45) (xy 365.76 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fc304186-da3f-42e2-ab50-36d3588e9115")
+	)
+	(wire
+		(pts
 			(xy 93.98 265.43) (xy 99.06 265.43)
 		)
 		(stroke
@@ -20774,7 +21656,7 @@
 		(uuid "01b3deb0-08d0-4ba3-9bca-848b99d9daa7")
 	)
 	(label "TX_OUT"
-		(at 346.71 44.45 0)
+		(at 341.63 44.45 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -21536,6 +22418,16 @@
 		)
 		(uuid "7e20bee1-feb2-48b4-85b4-c17a585521eb")
 	)
+	(label "CF_RET"
+		(at 383.54 46.99 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "7e6b5e28-000f-42de-9fed-1ba621159a6e")
+	)
 	(label "K4_LED"
 		(at 307.34 180.34 90)
 		(effects
@@ -21565,13 +22457,13 @@
 		)
 		(uuid "845f7dcd-e574-4603-a5b4-f609b08c0a3a")
 	)
-	(label "TX_OUT"
-		(at 367.03 39.37 0)
+	(label "HS_FILT"
+		(at 383.54 39.37 0)
 		(effects
 			(font
 				(size 1 1)
 			)
-			(justify left)
+			(justify left bottom)
 		)
 		(uuid "860507d5-6b94-491c-8d93-9bdaae9cd944")
 	)
@@ -21711,7 +22603,7 @@
 		)
 		(uuid "959fcd91-d5d4-4b70-8543-77805f21672c")
 	)
-	(label "TALK_BRIDGE"
+	(label "TX_OUT"
 		(at 203.2 240.03 180)
 		(effects
 			(font
@@ -28201,6 +29093,86 @@
 		)
 	)
 	(symbol
+		(lib_id "Jumper:SolderJumper_2_Bridged")
+		(at 379.73 52.07 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "710c6029-1b98-4a00-bacd-3d7dc3d7083a")
+		(property "Reference" "JP1"
+			(at 381 54.61 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SolderJumper_2_Bridged"
+			(at 376.174 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm"
+			(at 379.73 52.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 379.73 52.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Cf return jumper (CF_RET -> GND), factory-bridged. Cut = exact-V4.1 direct 2.2k strap fallback (step assert, no filter); solder-blob to re-enable. See TODO 'Gong-free TX handshake'."
+			(at 379.73 52.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0217cc6a-2778-4f63-afe0-49e9652b2b49")
+		)
+		(pin "2"
+			(uuid "96cef29f-a9ca-4fcb-a304-e781bde1f0a5")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "JP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,10kΩ")
 		(at 262.89 154.94 0)
 		(unit 1)
@@ -29910,6 +30882,108 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_JLCPCB-Resistors:1206,1kΩ")
+		(at 359.41 44.45 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "7fe82d5e-a29b-4221-88b3-55b655866ebb")
+		(property "Reference" "R35"
+			(at 357.886 46.99 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1kΩ"
+			(at 358.14 44.45 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:R_1206"
+			(at 359.41 44.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 359.41 44.45 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Rb - gong-free TX handshake low-pass: series from HS_FILT to TX_OUT. With Ra: the 2.2k talk bridge (= WF26 R1). 1206/250mW - rated for the sustained Cf-cracked-short fault (rail across Rb during a concurrent door press, ~146mW)."
+			(at 359.41 44.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C4410"
+			(at 359.41 44.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "1206W4F1001T5E"
+			(at 359.41 44.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "ee23ffc3-f67e-43ce-9d78-34ae7953eaca")
+		)
+		(pin "2"
+			(uuid "ca6fbe36-cd4d-4a8a-b620-925d075e8e39")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "R35")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,10uF")
 		(at 172.72 237.49 0)
 		(unit 1)
@@ -30652,109 +31726,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR42")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Resistors:0603,2.2kΩ")
-		(at 359.41 39.37 270)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "8aecf0a0-99ca-4b72-a5d2-2d0abe98eb80")
-		(property "Reference" "R28"
-			(at 360.68 41.15 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2.2k"
-			(at 357.886 39.37 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 359.41 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010230_UNI-ROYAL-Uniroyal-Elec-0603WAF2201T5E_C4190.pdf"
-			(at 359.41 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Talk series R + K1 handshake bridge (2.2k): codec TX -> TALK_BRIDGE -> R28 -> TX_OUT -> line 3, AND P2 -> K1 -> TALK_BRIDGE -> R28 -> TX_OUT -> K1 -> P3 is the talk handshake. Kept at 2.2k = the WF26's R1 (R29) so the handshake reads as 'talk', not the near-short that fires the door (DOOR threshold) - R28 must NOT drop below ~2.2k. It sets BOTH the handshake-R and part of the TX source-Z; R26 is the only source-Z lever that leaves the handshake intact (a buffer at TALK_BRIDGE drops the source-Z to R28 alone)."
-			(at 359.41 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "LCSC" "C4190"
-			(at 359.41 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "MPN" "0603WAF2201T5E"
-			(at 359.41 39.37 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "251d605f-b918-4097-9b9c-b3c6efed5595")
-		)
-		(pin "2"
-			(uuid "38f4d9c7-58e5-4c25-8e00-6a61bf8bca30")
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "R28")
 					(unit 1)
 				)
 			)
@@ -31600,6 +32571,84 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "C15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 379.73 57.15 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "949f99b2-6ca2-45a9-b4c7-37368fac58c8")
+		(property "Reference" "#PWR060"
+			(at 379.73 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 379.73 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 379.73 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 379.73 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 379.73 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "00549d8e-d2ed-420d-8e96-6b0c82801945")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR060")
 					(unit 1)
 				)
 			)
@@ -35079,6 +36128,108 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Capacitors:1206,22uF,(2)")
+		(at 374.65 43.18 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c576b85e-3733-4c4c-a287-71f8384aa073")
+		(property "Reference" "C25"
+			(at 377.19 41.91 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "22uF"
+			(at 377.19 44.45 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:C_1206"
+			(at 374.65 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 374.65 43.18 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Cf (x2 parallel with C26) - gong-free TX handshake shunt: HS_FILT -> CF_RET (-> JP1 -> GND). Strips the line-4 gong AC off the P2 pedestal before it reaches line 3; pair for flex-crack redundancy. 25V X5R."
+			(at 374.65 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C12891"
+			(at 374.65 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "CL31A226KAHNNNE"
+			(at 374.65 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b1480e87-c3a4-4e1d-b732-6308c64a903c")
+		)
+		(pin "2"
+			(uuid "ac81abd8-6cd5-41fc-9fe4-8c275539e3b1")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "C25")
 					(unit 1)
 				)
 			)
@@ -38643,6 +39794,108 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 359.41 39.37 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "fcd5f03e-49db-4a46-9c33-38aee813e9f7")
+		(property "Reference" "R34"
+			(at 358.14 37.084 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1.2kΩ"
+			(at 357.378 39.37 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:R_1206"
+			(at 359.41 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 359.41 39.37 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Ra - gong-free TX handshake low-pass: series from K1-ch1 (TALK_BRIDGE) to HS_FILT. With Rb: the 2.2k talk bridge (= WF26 R1). 1206/250mW - rated for the sustained Cf-cracked-short fault (P2 rail across Ra during PTT, ~122mW)."
+			(at 359.41 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C17891"
+			(at 359.41 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "1206W4F1201T5E"
+			(at 359.41 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "041a9e19-47f1-4fb7-8078-adbc6e20c5bb")
+		)
+		(pin "2"
+			(uuid "665e3df1-60ec-4bb7-961d-f1a5ce2459f1")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "R34")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Diode:BAT54SW")
 		(at 190.5 224.79 0)
 		(unit 1)
@@ -38754,6 +40007,108 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Capacitors:1206,22uF,(2)")
+		(at 383.54 43.18 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "fdb28fa8-ba0d-4418-9b04-f305bc11f3cd")
+		(property "Reference" "C26"
+			(at 386.08 41.91 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "22uF"
+			(at 386.08 44.45 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:C_1206"
+			(at 383.54 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 383.54 43.18 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Cf (x2 parallel with C25) - gong-free TX handshake shunt: HS_FILT -> CF_RET (-> JP1 -> GND). Strips the line-4 gong AC off the P2 pedestal before it reaches line 3; pair for flex-crack redundancy. 25V X5R."
+			(at 383.54 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C12891"
+			(at 383.54 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "CL31A226KAHNNNE"
+			(at 383.54 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "aaf539e7-f1fe-4113-a38a-b7cf5592e264")
+		)
+		(pin "2"
+			(uuid "c9806de3-cec4-4a47-954e-356f7dc4addf")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "C26")
 					(unit 1)
 				)
 			)
