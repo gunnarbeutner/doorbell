@@ -69,28 +69,45 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Doesn't
       change the J1/J3 back-feed rule (that's the power-mux item above) — still one source at a time
       unless the TPS2116 lands too. *(DESIGN.md "Power tree" / USB)*
-- [ ] **(V4.2) K4 second drive (`K5_UNLATCH`) — drop the seal-in during a greeting without firing the
-      door.** A Türruf ring latches K5 (`K1_COM↔P4`), putting the gong on line 2 (P2); the welcome chime
-      plays with K1 engaged, and its talk bridge ties `P2↔line 3` (R28) — so the gong overlays the
-      **outbound chime** (seen on the real bus) and also rides the codec RX tap (`P2→C16→MIC1P`). It's the
-      same `P4→P3` coupling the K4/Q3 break-before-make already kills on the **door** path, but K4 is ganged
-      to **DOOR_DRV**, so it does nothing during a greeting (K5 stays latched). **Fix: add a second,
-      independent K4 LED drive** (`K5_UNLATCH`, a spare GPIO) **diode-OR'd with DOOR_DRV**, so a greeting can
-      drop K5 — clearing the gong off P2 in both directions — with K2/the opener untouched. Dropping K5
-      costs nothing used: TX (`codec→C14→R28→line 3`) and the codec RX tap are K5-independent; only the
-      passive `K5→P4→C1→LS1` listen (board-dead fallback) needs it. Wiring: each drive
-      `GPIO→R→Schottky→K4-LED anode` (the diodes stop the idle pin stealing ~½ the LED current); re-size the
-      series R for the ~0.3 V drop to hold ~8 mA. **`both-high` is just a normal door-open** (K5_UNLATCH
-      redundant; K2's Q3 delay is DOOR_DRV-only, so break-before-make is intact) — the K4 LED then sees ~2×
-      current, so keep the sum under the GAQY412EH input abs-max. Fail-safe unchanged (K4 idle NC = latch
-      sealed; a stuck K5_UNLATCH just holds the seal-in broken, already deemed harmless). The **door**
-      break-before-make stays hardware-guaranteed (DOOR_DRV RC); the **greeting** K4-before-K1 ordering
-      becomes firmware's job, but it's non-safety-critical (mis-ordering only re-exposes the overlay, can't
-      misfire the door). **Not a V4.1 pulse trick:** dropping K5 by pulsing DOOR_DRV risks the opener — the
-      ~38 ms K2 delay is only ~14 ms at the fast corner, so any pulse sure to drop K5 can also fire K2.
-      **Interim (firmware, no respin):** hold the greeting until the gong AC ends (line 4 → steady DC) —
-      matches the WF26's own talk-after-bell timing — at the cost of a ~gong-length greeting delay.
-      *(DESIGN.md: "Door-open mirrors S1")*
+- [ ] **(V4.2) Gong-free TX handshake — DC-filter the 12 V pedestal, inject the codec on the P3 side.**
+      The #3 gong overlay: a ring latches K5 (`K1_COM↔P4`), bridging the line-4 gong onto P2; the TX
+      handshake (K1-ch1 taps P2 → TALK_BRIDGE → R28 → line 3) then drags that gong onto the outbound
+      greeting. **Two bench facts make a clean fix possible:** (1) the TV20/S forwards line 3 **regardless of
+      a genuine session** — all it needs is the **~12 V DC pedestal on P3 through 2.2 kΩ** (the "talk"
+      assertion); (2) that's a **DC** requirement, while the gong is ~1 kHz **AC**, and P2's pedestal is
+      inherently clean (the gong is on line 4, reaching P2 only via the K5 bridge — see `our-ring-p4-floating`).
+      So the handshake and the gong are separable by a low-pass. **Fix — split R28's two jobs:** (a) **DC
+      handshake leg** — tap P2's pedestal, low-pass it (series R + shunt C: DC passes, the ~1 kHz gong is
+      shunted to ground), buffer it, → 2.2 kΩ → P3; (b) **AC codec leg** — inject the greeting on the **P3
+      side** of that 2.2 kΩ so the filter never sees the audio (the ~90 Ω door-station load dominates P3, so
+      the handshake leg can't rob the greeting). Result: clean 12 V/2.2 kΩ pedestal **plus** the greeting on
+      P3, **no gong** — and **K5 is left untouched**, so the session, handset gong, passive listen, and
+      resident answer-back all survive; it doesn't even depend on the session. **Notes:** a **buffer** off
+      P2's filtered DC keeps the bridge *exactly* 2.2 kΩ (a bare `R_f + C_f` leaves R_f in series, reading a
+      touch high) and its high-Z sense avoids loading the bus; firmware-wise the greeting can play
+      **immediately** — no gong-wait. **Retires the deployed stopgap:** the **firmware gong-wait** (V4.1,
+      `doorbell-v4.yaml`) — session-preserving but it delays the greeting by ~the gong length; drop it once
+      this lands. **Bench
+      first:** pick the low-pass corner (well below ~1 kHz, e.g. ~100 Hz) + buffer, and re-confirm the
+      filtered/buffered bridge still reads as "talk" at the door end (it should — the DC pedestal is
+      unchanged). *(DESIGN.md: audio path / "TX-out reach")*
+- [ ] **(V4.2 gate) Breadboard the gong-free handshake on the live bus — before committing the respin.**
+      Validates the item above without pulling the board from the wall. **Non-invasive rig** (all via the
+      screw terminals + a TX_OUT pad tap): buffer module `P2 → Rf(100k) → Cf(100n) → buffer → R_hs(2.2k) →
+      P3`; bring the codec audio over with a `TX_OUT → P3` jumper and drive **`debug_test_tone` ON /
+      `intercom_ptt` OFF** so K1 stays open (its ch1 raw-P2 tap — the gong path — never engages) while the
+      DAC still reaches TX_OUT. Board otherwise idle so every board-side P3 path stays open. **Checks:** ring the
+      station, listen at the door → (a) **forwarded?** (#1 — the TV20/S's only unverified yes/no), (b)
+      **gong-free?** (#3). The electrical half — filter strips an injected 1 kHz on P2, and the pedestal
+      level — runs on the bench **off-bus** with a sig-gen (no wall). Unclip after: a buffer left on P3 holds
+      "talk" asserted. **Follower first (zero new parts):** AO3400 source-follower (SOT-23 on a breakout — a
+      TO-92 2N7000 reads ~1 V low, i.e. pessimistic); measure the pedestal (≈ P2 − 1.8 V). **Decision:**
+      forwards → ship the follower, done; fails *only* on a too-low pedestal → board **OPA991 (`C2864555`)**
+      (exact pedestal, near-certain) with the fallback jumper, *no* op-amp breadboard needed; genuinely
+      ambiguous → one OPA991 (Mouser/Digikey/Farnell — not the slow/pricey Amazon LMC6482) to disambiguate.
+      **Design-for-rework on the respin regardless:** keep the proven direct handshake (`K1-ch1 → 2.2 kΩ`) as
+      a DNP/solder-jumper fallback, so a #1 surprise is a solder fix, not a spin. Bench BOM: Rf `C25803`, Cf
+      `C14663`, R_hs `C4190` (2.2 k), AO3400 on a breakout; op-amp only if the follower loses.
 
 ## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
 
