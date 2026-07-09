@@ -69,52 +69,55 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Doesn't
       change the J1/J3 back-feed rule (that's the power-mux item above) — still one source at a time
       unless the TPS2116 lands too. *(DESIGN.md "Power tree" / USB)*
-- [ ] **(V4.2) Gong-free TX handshake — DC-filter the 12 V pedestal, inject the codec on the P3 side.**
-      The #3 gong overlay: a ring latches K5 (`K1_COM↔P4`), bridging the line-4 gong onto P2; the TX
-      handshake (K1-ch1 taps P2 → TALK_BRIDGE → R28 → line 3) then drags that gong onto the outbound
-      greeting. **Two bench facts make a clean fix possible:** (1) the TV20/S forwards line 3 **regardless of
-      a genuine session** — all it needs is the **~12 V DC pedestal on P3 through 2.2 kΩ** (the "talk"
-      assertion); (2) that's a **DC** requirement, while the gong is ~1 kHz **AC**, and P2's pedestal is
-      inherently clean (the gong is on line 4, reaching P2 only via the K5 bridge — see `our-ring-p4-floating`).
-      So the handshake and the gong are separable by a low-pass. **Fix — split R28's two jobs:** (a) **DC
-      handshake leg** — tap P2's pedestal, low-pass it (series R + shunt C: DC passes, the ~1 kHz gong is
-      shunted to ground), buffer it, → 2.2 kΩ → P3; (b) **AC codec leg** — inject the greeting on the **P3
-      side** of that 2.2 kΩ so the filter never sees the audio (the ~90 Ω door-station load dominates P3, so
-      the handshake leg can't rob the greeting). Result: clean 12 V/2.2 kΩ pedestal **plus** the greeting on
-      P3, **no gong** — and **K5 is left untouched**, so the session, handset gong, passive listen, and
-      resident answer-back all survive; it doesn't even depend on the session. **Notes:** a **buffer** off
-      P2's filtered DC keeps the bridge *exactly* 2.2 kΩ (a bare `R_f + C_f` leaves R_f in series, reading a
-      touch high) and its high-Z sense avoids loading the bus; firmware-wise the greeting can play
-      **immediately** — no gong-wait. **Retires the deployed stopgap:** the **firmware gong-wait** (V4.1,
-      `doorbell-v4.yaml`) — session-preserving but it delays the greeting by ~the gong length; drop it once
-      this lands. **Bench
-      first:** pick the low-pass corner (well below ~1 kHz, e.g. ~100 Hz) + buffer, and re-confirm the
-      filtered/buffered bridge still reads as "talk" at the door end (it should — the DC pedestal is
-      unchanged). *(DESIGN.md: audio path / "TX-out reach")*
-- [ ] **(V4.2 gate) Breadboard the gong-free handshake on the live bus — before committing the respin.**
-      Validates the item above without pulling the board from the wall. **Non-invasive rig**
-      (wiring: `docs/design/breadboard-handshake-test.svg`; all via the screw terminals + a TX_OUT pad tap):
-      buffer module `P2 → Rf(100k) → Cf(100n) → buffer → R_hs(2.2k) →
-      P3`; bring the codec audio over with a `TX_OUT → P3` jumper and drive **`debug_test_tone` ON /
-      `intercom_ptt` OFF** so K1 stays open (its ch1 raw-P2 tap — the gong path — never engages) while the
-      DAC still reaches TX_OUT. Board otherwise idle so every board-side P3 path stays open. **Checks:** ring the
-      station, listen at the door → (a) **forwarded?** (#1 — the TV20/S's only unverified yes/no), (b)
-      **gong-free?** (#3). The electrical half — filter strips an injected 1 kHz on P2, and the pedestal
-      level — runs on the bench **off-bus** with a sig-gen (no wall). Unclip after: a buffer left on P3 holds
-      "talk" asserted. **Follower first (zero new parts):** AO3400 source-follower (SOT-23 on a breakout — a
-      TO-92 2N7000 reads ~1 V low, i.e. pessimistic); measure the pedestal (≈ P2 − 1.8 V). **Decision:**
-      forwards → ship the follower, done; fails *only* on a too-low pedestal → board **OPA991 (`C2864555`)**
-      (exact pedestal, near-certain) with the fallback jumper, *no* op-amp breadboard needed; genuinely
-      ambiguous → one OPA991 (Mouser/Digikey/Farnell — not the slow/pricey Amazon LMC6482) to disambiguate.
-      **Design-for-rework on the respin regardless:** keep the proven direct handshake (`K1-ch1 → 2.2 kΩ`) as
-      a DNP/solder-jumper fallback, so a #1 surprise is a solder fix, not a spin. Bench BOM: Rf `C25803`, Cf
-      `C14663`, R_hs `C4190` (2.2 k), AO3400 on a breakout; op-amp only if the follower loses.
+- [ ] **(V4.2) DRC punch-list from the gong-free-handshake relayout** (9 violations; `./build.sh`
+      prints the DRC count but does not fail on it): **(1) the one real fix** — the GND via at
+      **(72.75, 40.75)** violates clearance + hole-clearance against the In1 +3V3 zone; nudge the via
+      or notch the zone. **(2)** delete the 0.06 mm dangling `/K4_LED` track stub at (60.95, 27.20).
+      **(3) exclusion refresh** — the zone refill/edits invalidated two stored DRC exclusions
+      (`doorbell.kicad_pro` went 7 → 5): re-exclude the isolated thieving float and the H4 silk-over-
+      copper. **(4)** decide the 4× J1 pad↔own-NPTH hole-clearances — footprint-intrinsic on unchanged
+      geometry that fabbed clean as V4.1 (DRC-engine drift), so exclude with a comment or accept.
+      **Consider hardening `build.sh`:** add `--schematic-parity` to its DRC call and fail on
+      violations — the current gate would not have caught a stale board against the new schematic.
+- [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**
+      (verifies **BUS-2(a)/(b)** on the real TV20/S; the Ra/Cf/Rb leg is in the V4.2 schematic + PCB,
+      sim-verified — `gong rejection`, `JP1 cut`, BUS-1 tests — with spectrum/levels capture-gated
+      against `our-ring-no-door`; this gate owns the two things only the wall can answer:
+      forwarded + ramp-assert).
+      Runs against the **deployed V4.1 board** without pulling it from the wall, and doubles as the
+      **TX-out-reach yes/no**. **Non-invasive rig** (wiring: `docs/design/breadboard-handshake-test.svg`;
+      all via the screw terminals + a TX_OUT pad tap): `P2 → Ra (1.2 kΩ) → HS_FILT → Rb (1 kΩ) → P3`
+      with `Cf (47 µF/25 V electrolytic, + toward HS_FILT) → P1`; bring the codec audio over with a
+      `TX_OUT → P3` jumper and drive **`debug_test_tone` ON / `intercom_ptt` OFF** (bench config) so K1
+      stays open (its ch1 raw-P2 tap — the gong path on V4.1 — never engages) while the DAC still
+      reaches TX_OUT through the V4.1 board's always-wired `R26 → C14 → R28` chain. Board otherwise
+      idle so every board-side P3 path stays open. **Checks:** ring the station, listen at the door → (a) **forwarded?** (#1 — the
+      TV20/S's only unverified yes/no), (b) **gong-free?** (#3), (c) **talk asserts despite the ~25 ms
+      RC ramp?** — the one thing the passive leg does that a switch press doesn't; an edge-sensitive
+      talk-detect here is the OPA991 trigger. The electrical half — the filter strips an injected 1 kHz,
+      the pedestal level — runs on the bench **off-bus** with a sig-gen (no wall). **Unclip after:** the
+      rig is a standing 2.2 kΩ P2↔P3 strap — it holds "talk" asserted while clipped. **Decision:** all
+      three pass → order the respin; (c) fails → the **OPA991** (`C2864555`,
+      Mouser/Digikey/Farnell) buffered high-Z variant (`P2 → 100k → 100n → buffer → 2.2 k → P3`) — no
+      follower step, a low-pedestal proxy no longer models anything we'd ship; (a) fails → the TX plan
+      needs rethinking and no filter variant rescues it. **Design-for-rework on the respin regardless:**
+      the split is purely additive and the Cf pair returns to GND through **JP1 (bridged solder
+      jumper)**, so the fallback ladder is (1) retune — swap the Cf pair smaller for a faster assert
+      (even 2×4.7 µF keeps the residual ~2 mVpp); (2) full revert — **cut JP1** and the leg degenerates
+      to the **exact 2.2 kΩ strap** (Ra+Rb) = V4.1 with a step assert; re-arm the retained firmware
+      gong-wait; blob JP1 to re-enable — a repeatable seconds-scale A/B, no parts touched. JP1 is why
+      there is **no DNP direct-strap resistor**: the jumper has no illegal state (P2↔P3 stays 2.2 kΩ
+      open or closed, whereas a populated strap ∥ Ra+Rb ≈ 1.1 kΩ would sit under the door-fire floor),
+      and a damaged Ra/Rb chain is a pad-to-pad bodge, not a footprint. A #1 surprise stays a solder
+      fix, not a spin. Bench BOM: Ra/Rb ¼ W + Cf 47 µF/25 V from bench stock;
+      op-amp only if (c) fails.
 
 ## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
 
 Transformer-less codec path (Phase 5). Bus-side topology + the RX attenuator/bias are wired and
 committed (RX: `P2→C16→R30(22k)→MIC1P` with `R33(3.3k)→VMID`, symmetric on MIC1N via C17/R31/R32;
-TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C12 = 10 µF). Remaining open:
+TX: `OUTP→R26(2.2k)→C14→TX_OUT`, handshake `P2→Ra/Cf/Rb→TX_OUT`; `P1↔GND` bonded; VMID decoupling
+C12 = 10 µF). Remaining open:
 
 - [ ] **RX divider trim (bench-confirm).** 22k/3.3k (≈−18 dB) is committed and lands the ±8.8 V gong at
       ~1.1 V, inside the ES8311 mic abs-max (~AVDD+0.3 = 3.6 V). The gong ≈ the loudest line-2 audio (V3),
@@ -124,12 +127,14 @@ TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C
       (two-board rig): measured ratio ≈ design −18 dB, ADC reads −25.7 dBFS at 0 dB PGA from a
       ~0.55 Vrms bus tone. Still open on the real bus: gong-scale abs-max headroom + the final PGA
       choice.
-- [ ] **TX level (firmware turn-down / bench-confirm).** `OUTP → R26 (2.2 kΩ) → C14 → TALK_BRIDGE → R28
-      (2.2 kΩ) → TX_OUT`; **OUTN parked** (`R16→C15→GND`, single-ended); R26 + D13 are the OUTP abs-max
+- [ ] **TX level (firmware turn-down / bench-confirm).** `OUTP → R26 (2.2 kΩ) → C14 → TX_OUT`;
+      **OUTN parked** (`R16→C15→GND`, single-ended); R26 + D13 are the OUTP abs-max
       guard (sim B1). **No board change:** the WF26's talk is a passive 16 Ω transducer-mic (mV-class), so
       the codec's ~0.9 Vrms full-scale **overpowers it ~40-50 dB** — TX level is a firmware **turn-down**
       (set the codec digital volume so the TV20/S amp isn't overdriven), not a drive/buffer problem.
-      R26/R28 stay 2.2 kΩ (R28 = the K1 handshake bridge, must match the WF26's R29/R1). Bench: set the
+      R26 stays 2.2 kΩ (the D13 clamp limiter); note the V4.2 codec series halved (R26 alone vs the old
+      R26+R28 = 4.4 kΩ) ⇒ **~+6 dB more bus level at the same digital volume — recalibrate on the new
+      board**. Bench: set the
       codec volume to a handset-level talk (the real-test-call capture gives the target); *only if* the
       cut is so deep it costs DAC resolution, add a passive OUTP attenuator — still no op-amp.
       Bench reference (two-board rig): the ESPHome es8311 volume scale maps linearly to the DAC
@@ -152,15 +157,15 @@ TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C
         spacing — codec warmth, not C14 charge. A keep-warm scheme is hard, though: the media_player stops
         the speaker every play, so `timeout: never` can't hold it warm (cold-start each greeting).
       - **K1 timing is the ~4× lever.** Warm-engage — hold K1 **open** through the cold enable (the step lands
-        on TALK_BRIDGE, isolated from line 3), then close it once TALK_BRIDGE has settled — gives ~−333 mV vs
+        on the codec-side node, isolated from line 3 by ch2), then close it once settled — gives ~−333 mV vs
         the cold ~−1334 mV (reproducible).
-      **So the fix is firmware + a small bleed, not a mute FET — K1 already gates line 3.** Delay K1's raise
-      past the DAC settle (with leading silence in the greeting so nothing clips), and add a **bleed on
-      TALK_BRIDGE→GND** to set the settle time (τ = 1 µF × R: 100 k → ~100 ms, so K1 can close ~150 ms in).
-      The bleed defines the node's DC + settle time, **not** the peak — clamping the peak needs ~2 k, which
-      also halves TX, so don't. Residual after warm-engage is ~−0.3 V off-bus. **Gate on an on-bus
-      measurement first:** R28 into the ~90 Ω bus divides P3's step ~25× (R28/90 ≈ 0.04), so even the cold
-      −1.5 V likely lands in the low tens of mV in service — possibly a non-issue on the real bus. Confirm on
+      **Measurements above are the V4.1 topology (C14 on TALK_BRIDGE via R28) — re-derive on V4.2
+      before spending anything:** C14 now lands on TX_OUT, where the Rb+Cf leg already terminates the
+      node (τ ≈ Rb·C14 ≈ 1 ms into the 44 µF reservoir) — likely providing the settle path the proposed
+      "bleed on TALK_BRIDGE→GND" was for, and the warm-engage lever (K1 open through the cold enable)
+      still applies with the step landing on TX_OUT. The bus divide also still holds (R26 into the
+      ~90 Ω bus ≈ ÷25), so even the cold −1.5 V likely lands in the low tens of mV in service —
+      possibly a non-issue on the real bus. Confirm on
       the deployed board with the Silent greeting before spending parts. Firmware plays fine; this is polish.
       *(DESIGN.md: audio path / "TX-out reach")*
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
@@ -190,14 +195,15 @@ tether it to a mains-earthed PC. Pair with a DMM.
       Use it to ground-truth (a) the real line levels during a call (P2 held at
       12 V, the line-4 session level, P3 in talk); (b) the **WF26's own TX drive on line 3 + the talk
       handshake DC** S2+R1 asserts — this is the **target level the codec must match** and the direct
-      answer to whether the 2.2 kΩ R28 bridge alone flips the TV20/S to talk (**derisks the TX-out-reach
-      / TX-level items below before committing a fab spin** — see "TX level + OUTN handling" and
+      answer to whether the 2.2 kΩ bridge alone flips the TV20/S to talk (**derisks the TX-out-reach
+      / TX-level items below before ordering the fab spin** — see "TX level + OUTN handling" and
       "Outgoing (TX)"); and (c) the **mic-bleed-during-TX** question the sim
-      raised: the handset (LS1→C1→K3(NC)→P4) couples onto transmit line 3 through K1's 2.2 kΩ (R28)
-      handshake whenever **K3 is idle** — sim shows ~1.5 Vpp on P3 *and* in the codec's own ADC (louder
-      than the codec's own ~0.9 Vpp TX), and it vanishes with K3 energised. Confirm whether a real call
-      holds K3 and what the actual bleed is **before** encoding "codec TX needs K3 energised for handset
-      isolation" as a sim regression test or in DESIGN.md.
+      raised **on the V4.1 topology**: the handset (LS1→C1→K3(NC)→P4) coupled onto transmit line 3
+      through the raw 2.2 kΩ handshake whenever **K3 was idle** — ~1.5 Vpp on P3 and in the codec's own
+      ADC, vanishing with K3 energised. **The V4.2 Ra/Cf/Rb leg shunts this path's audio band** (same
+      mechanism as the gong, ⇒ ~mVpp) — re-run the sim sweep on the new netlist; the "hold K3 for the
+      whole call" rule is probably obsolete. Confirm on hardware **before** encoding either way as a
+      sim regression test or in DESIGN.md.
 - [ ] **Line-4 hold level (mostly settled):** line 4 *must* hold through the session (else the WF26
       relay drops and the handset goes dead), and V3 senses it fine — so it holds. Just confirm the
       hold level keeps **OC1 above its detection threshold edge-to-edge** (relay hold V < pull-in V),
@@ -215,8 +221,8 @@ tether it to a mains-earthed PC. Pair with a DMM.
 - [ ] **Door-opener firing threshold** — the linchpin test. Bridge P2↔P3 with (a) a **dead
       short** and (b) **2.2 kΩ**; does each fire the TV20/S opener? Expected (per the genuine
       handset): short fires, 2.2 kΩ does *not*. This confirms the choices already in the design —
-      **R_ot→0** (K2 door needs a short, done) and **2.2 kΩ-on-K1** (R28; talk's incidental bridge
-      must *not* fire, done).
+      **R_ot→0** (K2 door needs a short, done) and **2.2 kΩ-on-K1** (Ra+Rb; talk's incidental bridge
+      must *not* fire, done — and Cf only shunts, so the bridge never reads lower).
 - [ ] **Firmware — retire the 1.75 s 'wait out the gong' door-open delay.** With K4+Q1 giving a hardware
       break-before-make, the held Türruf is never bridged onto line 3, so the `house_doorbell →
       delay: 1.75s → front_door_buzzer` mitigation is unnecessary. Removing it opens the door ~1.75 s
@@ -230,6 +236,14 @@ tether it to a mains-earthed PC. Pair with a DMM.
 
 ## Firmware (`firmware/doorbell-v4.yaml`)
 
+- [ ] **Retire the greeting gong-wait when the V4.2 board deploys.** The Ra/Cf/Rb handshake makes the
+      greeting gong-free in hardware (BUS-2(a)), so wind `gong_until_ms`'s window to 0 — but **keep the
+      code path** as the Cf-failure backstop (an aged/cracked-**open** Cf with no wait = the original
+      bleed at full strike level; the failure signature is a gong audible at the door during
+      greetings). Until the respin deploys, V4.1 keeps the wait; **interim option:** raise
+      1750 → ~4200 ms to cover the measured ~3.9 s tail (`our-ring-no-door`: the 1.75 s expiry lands on
+      the third Klang at ~3.6 Vpp ⇒ ~140 mVpp leaked onto P3 through V4.1's strap — empirically
+      inaudible thanks to masking + pipeline latency, so optional).
 - [ ] **Session-active = OC1 high.** Line 4 holds through the session, so **OC1 (the Türruf sense)
       stays asserted edge-to-edge — gate directly on OC1, no talk-window timer** (just debounce).
       Bench-confirmed on the emulated bus: OC1 asserts while the K5 latch holds and clears the
@@ -238,9 +252,10 @@ tether it to a mains-earthed PC. Pair with a DMM.
       went PTT-only when the old session-opto was dropped; OC1 now supplies the session level).
 - [ ] **OC1 PTT-mask — verify it's needed (bench).** The firmware masks OC1 (house bell) during board
       PTT to block a phantom ring → auto-open. The stated mechanism is **bench-unconfirmed and may be
-      negligible:** K1 closed bridges P4↔P3 via R28 (2.2 kΩ), but the K5 coil (~1.3 kΩ, P4↔P1)
-      clamps P4 (P4 ≈ 0.32·V_P3 — needs P3 idling ≳ 8 V to reach OC1's threshold), and OC1's 50 ms
-      debounce already rejects the codec's audio-rate AC. **Measure P3 idle bias and whether engaging
+      negligible:** K1 closed bridges P4↔P3 via the 2.2 kΩ Ra+Rb leg, but the K5 coil (~1.3 kΩ, P4↔P1)
+      clamps P4 (P4 ≈ 0.32·V_P3 — needs P3 idling ≳ 8 V to reach OC1's threshold), OC1's 50 ms
+      debounce already rejects audio-rate AC, and on V4.2 the Cf shunt strips the codec's AC from this
+      path entirely. **Measure P3 idle bias and whether engaging
       PTT alone (no real ring) trips OC1.** If it doesn't, drop the mask — it currently also blanks a
       *genuine* ring that lands mid-PTT. (Comment in `doorbell-v4.yaml` House-Doorbell filter.)
 
@@ -248,14 +263,15 @@ tether it to a mains-earthed PC. Pair with a DMM.
 
 The codec taps the speech pair **transformer-less**: **RX** = a differential sense of line 2 through the
 attenuating divider (`P2→C16→R30→MIC1P`, `P1→C17→R31→MIC1N`, each pin biased to VMID via R33/R32); **TX**
-= the codec DAC → R26 (2.2 kΩ) → C14 (DC-block) → R28 (2.2 kΩ) → line 3,
-with **K1** gating the talk handshake (`TALK_BRIDGE↔P4`). Independent of line 4 / K3, so RX/TX survive
+= the codec DAC → R26 (2.2 kΩ) → C14 (DC-block) → TX_OUT → line 3, with the gong-filtered talk
+handshake (`P2 → Ra/Cf/Rb → TX_OUT`), both behind **K1**. Independent of line 4 / K3, so RX/TX survive
 gong-suppress. **Gated on OC1** (session = Türruf held; OC1 stays high, no timer), direction by PTT.
 What remains is hardware confirmation:
 
 - [ ] **Outgoing (TX) — confirm line-3 drive reaches the door + the handshake.** Bench: in a talk
-      window, does the codec driving **line 3** get audio out to the door station, and is the **R28
-      2.2 kΩ line-4↔line-3 bridge** (gated by K1) the only thing the TV20/S needs to switch to talk — or
+      window, does the codec driving **line 3** get audio out to the door station, and is the
+      **2.2 kΩ (Ra+Rb) bridge** (gated by K1, RC-ramped ~25 ms) the only thing the TV20/S needs to
+      switch to talk — or
       something more? A WF26's C1 + 16 Ω speaker always loads line 4, which is why TX drives line 3,
       not line 4 — check the line-3 drive level with that load present. **Derisk before fab:** the
       real-test-call capture (above) measures the WF26's own line-3 talk level + handshake DC with the
@@ -268,15 +284,16 @@ What remains is hardware confirmation:
       *(DESIGN.md: "TX-out reach")*
 - [ ] **Validate the handset mic (LS1) never bleeds into the RX/TX path by accident.** LS1-as-mic
       must reach the line *only* when intended (deliberate handset talk via S2) — never leak into the
-      codec's transmit (line 3) or receive (the codec ADC) on its own. The sim found one accidental
-      path: with K1 in **talk** and **K3 idle**, the mic rides `LS1→C1→K3(NC)→P4→K1→TALK_BRIDGE→R28`
-      onto P3 (~1.5 Vpp on P3 *and* in the codec's own ADC, louder than the codec's ~0.9 Vpp TX);
-      energising K3 (opening C1) kills it (the only hop to P3 is gated by K1, so with K1 idle there's
-      no bleed at all). Sweep mic injection at LS1 across
+      codec's transmit (line 3) or receive (the codec ADC) on its own. On the **V4.1 topology** the sim
+      found one accidental path: with K1 in **talk** and **K3 idle**, the mic rode
+      `LS1→C1→K3(NC)→P4→latch→P2→K1` and the raw 2.2 kΩ strap onto P3 (~1.5 Vpp, louder than the
+      codec's ~0.9 Vpp TX), vanishing with K3 energised. **The V4.2 Ra/Cf/Rb leg shunts this path's
+      audio band** (same divider as the gong ⇒ ~mVpp expected) — re-run the sim sweep on the new
+      netlist, then sweep mic injection at LS1 across
       {K1 idle/talk × K3 idle/energised × S2 released/pressed} with **P2 held at 12 V**, and assert P3
-      and `ES_MICP/MICN` stay clean except in deliberate S2 talk; then confirm the firmware rule
-      (**hold K3 for the whole call** — see the Firmware item) actually suppresses it on hardware.
-      Encode as a sim regression test once the real-call capture (above) backs the conditions.
+      and `ES_MICP/MICN` stay clean except in deliberate S2 talk. If the filter holds, the
+      "hold K3 for the whole call" rule is obsolete — decide, then
+      encode the surviving conditions as a sim regression test.
 - [ ] **Re-check the DESIGN.md "TV20/S audio behaviour" section** — confirm the talk/listen/
       Etagenruf/Türruf routing it describes is still correct against the current model + bench
       findings (some of it predates the recent corrections). *(DESIGN.md: "TV20/S audio behaviour")*
