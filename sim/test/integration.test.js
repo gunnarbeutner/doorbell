@@ -3,11 +3,13 @@
 //
 // Architecture under test (see DESIGN.md):
 //  - K1/K2/K3 are PhotoMOS SSRs driven by a GPIO through a 300 Ω LED resistor on /PTT_DRV /DOOR_DRV /MUTE_DRV.
-//    K1 (NO) gates /TALK_BRIDGE↔/P4 (the talk handshake); K2 (NO) bridges /P2↔/P3 (door opener);
-//    K3 (NC) bridges /P4↔/CHIME_C1 (chime) — closed at rest, opened to suppress.
+//    K1 (dual NO) talks: ch1 sources /P2 into the Ra/Cf/Rb low-pass (/TALK_BRIDGE → R34 → /HS_FILT →
+//    R35 → /TX_OUT — the gong-stripped 2.2 k talk handshake; Cf = C25∥C26 returns via JP1), ch2 gates
+//    /TX_OUT↔/P3; K2 (NO) bridges /P2↔/P3 (door opener); K3 (NC) bridges /P4↔/CHIME_C1 (chime) —
+//    closed at rest, opened to suppress.
 //  - The embedded WF26 core (K5 latch + S1/S2 + C1) is passive and works unpowered (SAFE-4).
 //  - Audio is transformer-less: RX taps /P2 through C16 to the ES8311 ADC (MICP/MICN); TX runs the
-//    codec DAC (OUTP) through C14 → /TALK_BRIDGE → R28 (2.2 k) → /P3.
+//    codec DAC (OUTP) through R26 → C14 → /TX_OUT, downstream of the filter.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { importNetlist } from '../src/import.js';
@@ -322,6 +324,9 @@ function safetyViolations(RES) {
 const fmtV = (x) => `${x.ref} pin ${x.pin} (${x.net}) = ${x.v.toFixed(2)} V, outside [${x.lo}, ${x.hi}] — ${x.why}`;
 
 // shared talk scenario: assert PTT at t = 1.5 ms (the make edge), codec DAC biased mid-rail + a tone.
+// Deliberately SHORT — it exercises the K1 make transient (safety). The handshake DC is a RAMP now
+// (Cf charges through Ra; τ ≈ 55 ms in the lightly-loaded sim), so its assert is checked with a
+// long-T run below, not in this window.
 const TALK = {
   sources: { '/VBUS': 5, '/P1': 0 },
   bus: { '/P2': 12 },
@@ -332,18 +337,25 @@ const TALK = {
   T: 3.5e-3, dt: 2e-6,
 };
 
-test('codec talk (TX): OUTP reaches line 3 only while K1 talks (gated), AND stays within abs-max (safety)', () => {
+test('codec talk (TX): K1 make stays within abs-max (B1); the handshake ramps, then asserts', () => {
   const RES = scenarioRES(TALK);
-  // FUNCTION — once K1 is energised the talk path engages: line 3 goes DC-hot off the P2 handshake.
-  assert.ok(meanLevel(RES, '/P3', '/P1') > 6,
-    `line 3 should go hot off the P2 handshake while talking, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
-
-  // SAFETY INVARIANT (B1) — energising K1 lands +12 V P2 on /TALK_BRIDGE; with no series R, C14 throws
-  // OUTP past the ES8311 analog abs-max. U3 reports this about ITSELF (the limit lives in the Ic class).
+  // SAFETY INVARIANT (B1) — C14's bus side lives on /TX_OUT: a PTT make (and a door bridge yanking P3
+  // to the rail — the sweep below) steps that node, and C14 couples the edge back toward OUTP. R26 +
+  // D13 must hold OUTP inside the ES8311 analog abs-max. U3 reports this about ITSELF (limit in Ic).
   const v = safetyViolations(RES).filter((x) => x.ref === 'U3');
   assert.equal(v.length, 0,
-    `ES8311 must stay within abs-max during a PTT make — B1: add a series R (~2.2 k) between OUTP and C14:\n  ` +
+    `ES8311 must stay within abs-max during a PTT make — B1: series R26 + D13 between OUTP and C14:\n  ` +
     v.map(fmtV).join('\n  '));
+
+  // FUNCTION, part 1 — right after the make, line 3 is still COLD: the filter ramps instead of
+  // stepping (this is the gong-free property's flip side; a step here would mean Cf is disconnected).
+  assert.ok(meanLevel(RES, '/P3', '/P1') < 3,
+    `line 3 should still be ramping just after the make, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
+
+  // FUNCTION, part 2 — once Cf settles (~3τ), the P2 pedestal asserts talk on line 3.
+  const settled = scenarioRES({ ...TALK, T: 0.5, dt: 2e-5 });
+  assert.ok(meanLevel(settled, '/P3', '/P1') > 10,
+    `line 3 should be DC-hot off the P2 handshake once the filter settles, got ${meanLevel(settled, '/P3', '/P1').toFixed(2)} V`);
 });
 
 // Generic gate: sweep the scenario battery and ask every component. B1 is one cell; the bus ring and the
@@ -354,6 +366,11 @@ test('safety invariants: every component stays within its abs-max across the sce
     ['talk (PTT make)', scenarioRES(TALK)],
     ['house ring', scenarioRES({ sources: { '/VBUS': 5, '/P1': 0 }, bus: { '/P2': 12, '/P4': 12 }, program: { U3: { out: 1.65 } }, T: 3e-3, dt: 5e-6 })],
     ['RX gong ±8.8 V', scenarioRES({ sources: { '/VBUS': 5, '/P1': 0 }, bus: { '/P2': gong }, program: { U3: { out: 1.65 } }, T: 40 / 1000, dt: 1 / (1000 * 64) })],
+    // the new C14 worst case: a door bridge (K2 makes ~38 ms after DOOR_DRV via the Q3 lead delay)
+    // yanks P3 to the rail while PTT holds ch2 closed — the step couples through C14 toward OUTP.
+    ['door bridge during talk', scenarioRES({ sources: { '/VBUS': 5, '/P1': 0 }, bus: { '/P2': 12 },
+      program: { U1: { '/PTT_DRV': 3.3, '/DOOR_DRV': (t) => (t < 1.5e-3 ? 0 : 3.3) }, U3: { out: 1.65 } },
+      T: 60e-3, dt: 2e-5 })],
   ];
   const viol = scenarios.flatMap(([n, RES]) => safetyViolations(RES).map((x) => `[${n}] ${fmtV(x)}`));
   assert.equal(viol.length, 0,
@@ -362,23 +379,46 @@ test('safety invariants: every component stays within its abs-max across the sce
 });
 
 // BUS-1: the dual GAQW212GS gates the TX *output* — ch2 (/TX_OUT↔/P3). With K1 open that contact lifts,
-// so the permanently-wired codec (ES_OUTP→C14→TALK_BRIDGE→R28→TX_OUT) cannot reach line 3: line 3 is
-// high-Z at idle. This is the whole point of the dual gate.
+// so the permanently-wired codec (ES_OUTP→R26→C14→TX_OUT) — and the whole Ra/Cf/Rb filter leg hanging
+// between the two open channels — cannot reach line 3: line 3 is high-Z at idle. The point of the dual gate.
 test('TX idle isolation: codec audio must not reach line 3 when K1 is open (BUS-1)', () => {
   const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * 1000 * t);
   const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 }, program: { U1: { '/PTT_DRV': 0 }, U3: { out: { p: codecOut(1), n: codecOut(-1) } } }, ...AC });
   assert.ok(swingPP(RES, '/P3', '/P1') < 0.1, `K1 open should keep codec audio off line 3, got ${swingPP(RES, '/P3', '/P1').toFixed(2)} Vpp`);
 });
 
-test('talk handshake (K1): energised bridges the P2 supply onto line 3 through R28; idle lifts it', () => {
-  // K1 closes both halves: ch1 (/P2↔/TALK_BRIDGE) sources the handshake from the always-on P2 supply and
-  // ch2 (/TX_OUT↔/P3) gates the output. P2 → TALK_BRIDGE → R28 (2.2 k) → TX_OUT → P3 — the DC talk
-  // handshake to the station (mirrors the WF26's 2.2 k talk R). Idle: both contacts open, line 3 lifts.
-  const talk = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 3.3 } } }).V;
-  assert.ok(talk['/P3'] > 6, `K1 in talk should bring line 3 DC-hot off the P2 supply, got ${talk['/P3']?.toFixed(2)} V`);
+test('talk handshake (K1): energised bridges the P2 supply onto line 3 through Ra+Rb; idle lifts it', () => {
+  // K1 closes both halves: ch1 (/P2↔/TALK_BRIDGE) sources the handshake from the always-on P2 supply
+  // into the low-pass — P2 → R34 (1.2 k) → HS_FILT (Cf ∥ via JP1) → R35 (1 k) → TX_OUT — and ch2
+  // (/TX_OUT↔/P3) gates the output. Ra+Rb = 2.2 k total, the WF26's R1 mirrored, gong-stripped.
+  // T must clear the RC settle (~3τ ≈ 160 ms): the default 40 ms window sits mid-ramp.
+  const talk = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 3.3 } }, T: 0.4 }).V;
+  assert.ok(talk['/P3'] > 10, `K1 in talk should bring line 3 DC-hot off the P2 supply, got ${talk['/P3']?.toFixed(2)} V`);
 
   const idle = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 0 } } }).V;
   assert.ok(!(idle['/P3'] > 6), `K1 idle should lift line 3 off the handshake, got ${idle['/P3']?.toFixed(2)} V`);
+});
+
+// The fallback is on the board: JP1 (bridged solder jumper) is Cf's only ground return. Cut, the leg
+// degenerates to the plain 2.2 k strap — V4.1's step-assert handshake, no filter (see TODO).
+test('JP1 cut (fallback): the leg degenerates to the plain 2.2 k strap — talk asserts with no ramp', () => {
+  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, switches: { JP1: false },
+    program: { U1: { '/PTT_DRV': 3.3 } }, T: 5e-3 });
+  assert.ok(V['/P3'] > 10, `with Cf disconnected the strap should assert within ms (V4.1 behaviour), got ${V['/P3']?.toFixed(2)} V`);
+});
+
+// The reason the filter exists (capture-gated: our-ring-no-door — 1009/841/673 Hz Klänge on the
+// latched P2): with PTT engaged, V4.1's direct strap dragged the gong onto line 3 over the greeting.
+// The split leg passes the DC pedestal and shunts the AC at HS_FILT. ±8.8 V @ 1 kHz is the design
+// ceiling (neighbour-ring case); raw through a 2.2 k strap that would be volts on P3.
+test('gong rejection: a ±8.8 V 1 kHz gong riding P2 stays off line 3 while the handshake DC passes', () => {
+  const gongP2 = (t) => 12 + 8.8 * Math.sin(2 * Math.PI * 1000 * t);
+  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': gongP2 },
+    program: { U1: { '/PTT_DRV': 3.3 }, U3: { out: 1.65 } }, T: 0.6, dt: 2e-5 });
+  assert.ok(meanLevel(RES, '/P3', '/P1') > 10,
+    `the pedestal must still assert talk under the gong, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
+  assert.ok(swingPP(RES, '/P3', '/P1') < 0.2,
+    `the gong must die in the Ra/Cf divider, got ${(swingPP(RES, '/P3', '/P1') * 1000).toFixed(0)} mVpp on line 3 (raw input: 17.6 Vpp)`);
 });
 
 // TX is deliberately session-INDEPENDENT (gated-TX requirement: the board may assert talk whenever it
@@ -386,8 +426,8 @@ test('talk handshake (K1): energised bridges the P2 supply onto line 3 through R
 // energised at all times — not from line 4, so K1 energised drives line 3 with line 4 cold. Policy for
 // *when* to talk lives in firmware, not this hardware gate.
 test('TX is session-independent: K1 energised drives line 3 from P2 with line 4 cold (no Türruf)', () => {
-  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 }, program: { U1: { '/PTT_DRV': 3.3 } } });
-  assert.ok(V['/P3'] > 6, `P2-sourced handshake should reach line 3 with no session, got ${V['/P3']?.toFixed(2)} V`);
+  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 }, program: { U1: { '/PTT_DRV': 3.3 } }, T: 0.4 });
+  assert.ok(V['/P3'] > 10, `P2-sourced handshake should reach line 3 with no session, got ${V['/P3']?.toFixed(2)} V`);
 });
 
 // The session itself is the passive K5 latch: a Türruf energises the
