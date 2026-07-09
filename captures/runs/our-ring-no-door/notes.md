@@ -69,6 +69,23 @@ pull-in just fits; a PhotoMOS fits easily) — chime-suppress does **not** need 
 through **~840 Hz** to **~672 Hz** (the 3-Klang, a falling sequence), decaying over ~3.9 s — matches
 the 1010 / 3032 / 672 Hz chime of `our-ring-door-open` and `neighbour-ring-door-open`.
 
+Fitted additive model (heterodyne envelope tracking + Theil–Sen exponential fit on the
+bandpassed/denoised CH1 audio; onset amplitudes in dB re the strike-1 peak-normalised extract):
+the fundamentals sit at **6:5:4 over the 672 Hz root — a descending major triad** (fifth, third,
+root), and each strike is an **odd-harmonic series** (1f, 3f, 5f, 7f…) — the signature of the
+TV20/S tone generator, not a struck bell.
+
+| Strike (onset) | Partials — f (Hz) / onset dB / τ (ms) |
+|---|---|
+| 1 (0 ms) | 1010.2 / −5.8 / 1353 · 3030.7 / −17.9 / 1361 · 5051.1 / −27.8 / 1439 |
+| 2 (790 ms) | 840.5 / −9.2 / 1135 · 2521.6 / −21.3 / 1332 · 4202.7 / −29.2 / 1468 · 5883.8 / −38.8 / 1740 · 1849.2 / −42.5 / 4093 |
+| 3 (1552 ms) | 672.4 / −10.8 / 1502 · 2017.2 / −20.8 / 1480 · 3362.0 / −27.3 / 1414 · 4706.8 / −33.6 / 1452 · 6051.6 / −40.9 / 1889 |
+
+The 1010 Hz fundamental beats (a close doublet — its envelope has periodic nulls), so short-window
+decay fits fail on it; the τ values above come from full-ring-out tracking with noise-floor
+truncation. `firmware/sounds/candidates/gong-remaster.wav` is a noise-free additive resynthesis
+from this table.
+
 **Session geometry matches the handset seal-in model.** Line 4 holds at **9.25 V**, **0.18 V below
 P2 (9.43 V)** — line 4 is pulled up *from* P2 through the latched contact, not driven by the
 TV20/S, so it tracks just under P2 (the same 0.1–0.2 V offset as the other held sessions). P2's

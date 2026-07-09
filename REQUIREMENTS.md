@@ -72,6 +72,30 @@ shared party line across apartments.
   (BUS-1 is about presenting a WF26-equivalent load to the *shared* bus — other apartments share lines
   1/2/3.)
 
+- **BUS-2 (MUST)** Any conductive path the board **adds or engages** between bus lines, or between a
+  board-side source and a bus line (the K1 talk/handshake bridge, the K2 door bridge, the latch
+  seal-in, the codec TX network), MUST NOT deliver signals **unintended for the destination** at a
+  disturbing level — in **every reachable composed state**: each measured bus scenario (ring + gong,
+  held session, neighbour activity, door-open — `captures/runs/`) combined with each actuator state
+  (SSR / switch / latch position) the firmware or the bus can produce. Quantified:
+  - **(a) Function degradation:** at any node where the board delivers an intended signal, every
+    unintended contributor arriving through a board-created or board-engaged path stays **≥ 20 dB
+    below the intended signal** at that node.
+  - **(b) Actuation:** signals forwarded through board paths stay below the level that actuates any
+    bus function or board sense (door release, ring/session detection) — the outbound counterpart of
+    RING-4.
+  - **(c) Transitions count as signals:** steps from the board's own state changes (a contact
+    making/breaking into a charged coupling network, the codec output stage enabling) are held to
+    the same two limits.
+
+  BUS-2 is deliberately **stricter than WF26-equivalence** (MODE-2): the board's bridges are
+  electrically identical to the handset's switches, but firmware engages them in compositions a human
+  never would (a talk bridge at t = 0 of every ring, when the gong is guaranteed live) — path
+  equivalence does not imply timing equivalence. *(Realised by the Ra/Cf/Rb gong-stripped handshake
+  (a), the Ra+Rb = 2.2 kΩ floor with a shunt-only Cf (b), and the K4↔K2 break-before-make (c); the
+  codec cold-start step (c) is bench-gated — see DESIGN.md "Audio path" ("TX front-end", "Gong ↔ TX
+  handshake") and "Door-open mirrors S1".)*
+
 ## RING — Ring detection
 
 - **RING-1 (MUST)** Detect an incoming call (a ring), and expose it to the ESP/firmware.
@@ -137,10 +161,17 @@ shared party line across apartments.
   VMID, plus **D14** — a BAT54SW dual-series Schottky clamping MIC1P for the unpowered case, the
   RX twin of AUDIO-9's D13 — see DESIGN "Audio path".)*
 - **AUDIO-9 (MUST)** The TX inject path MUST keep the codec **output** (OUTP) within the ES8311's
-  output abs-max — both under the **normal** K1-make transient (the +12 V P2 step coupling back through
-  C14 on every talk-start) and under a **single-fault C14-short** (sustained +12 V DC through R26). The
+  output abs-max — both under **normal** bus transients stepping C14's bus side (TX_OUT — chiefly a
+  door bridge pulling line 3 to the rail while PTT holds the output gate closed) and under a
+  **single-fault C14-short** (sustained bus DC through R26). The
   TX counterpart to AUDIO-8. *(Met by R26 (2.2 kΩ) limiting the current into D13 — a BAT54S dual-series
   Schottky clamping OUTP to [AGND−0.3, AVDD+0.3] — see DESIGN "Audio path" / TX front-end.)*
+- **AUDIO-10 (SHOULD)** Outbound TX (greetings, talk) SHOULD NOT re-inject the bus's own gong onto the
+  talk line: the Türruf tone standing on line 2 during a latched session (or a neighbour's ring on the
+  shared line 2) must not ride the talk handshake onto line 3 at an audible level, and the greeting
+  should not need to be delayed to avoid it. *(Met by the low-passed Ra/Cf/Rb handshake leg — see
+  DESIGN "Audio path" / "Gong ↔ TX handshake". The deployed V4.1 board predates the filter and meets
+  the audibility half by a firmware gong-wait, at the cost of the no-delay half.)*
 
 ## DOOR — Door opener
 
@@ -255,7 +286,7 @@ provides them.
   behaviour the board must match) and the **board**, with the board in both **powered** (smart layer
   active) and **unpowered** (passive fallback) states. The tests MUST show the unpowered board
   reproduces the WF26's behaviour (MODE-1, SAFE-4) and the powered board adds the smart functions
-  without violating BUS-1. (Test *results* live in DESIGN.md "Verification status"; the verification
+  without violating BUS-1 or BUS-2 (composed-state cross-coupling — e.g. the `gong rejection` test). (Test *results* live in DESIGN.md "Verification status"; the verification
 *procedure* — what to run and check — is VERIFICATION.md.)
 
 ---
@@ -263,7 +294,8 @@ provides them.
 ## Open questions (to nail down)
 
 1. **TX-out reach & full-duplex feasibility (open, bench)** — does the TV20/S forward the board's
-   line-3 talk audio to the door station once it sees the R28 handshake bridge (AUDIO-2), and does it
+   line-3 talk audio to the door station once it sees the 2.2 kΩ (Ra+Rb) handshake bridge — including
+   accepting its ~25 ms RC-ramped assert (AUDIO-2), and does it
    tolerate simultaneous RX+TX at all (the prerequisite for the AUDIO-3 full-duplex MAY)? Both need a
    bench test against the real TV20/S; see DESIGN.md "Audio path".
 
