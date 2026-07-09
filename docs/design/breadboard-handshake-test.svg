@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" font-family="'Helvetica Neue',Arial,sans-serif">
+  <rect x="0" y="0" width="1000" height="740" fill="#f6f6f4"/>
+  <style>
+    .wire{stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .v12{stroke:#c0392b}
+    .ped{stroke:#1f4e79}
+    .aud{stroke:#2e7d32}
+    .gnd{stroke:#444}
+    .comp{fill:#fff;stroke:#333;stroke-width:2}
+    .lbl{fill:#222;font-size:14px}
+    .sm{fill:#555;font-size:11.5px}
+    .nd{fill:#1f4e79}
+    .h{font-size:12.5px;font-weight:bold;fill:#333}
+  </style>
+
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#111">Breadboard rig — gong‑free TX handshake test (non‑invasive; board stays in the wall)</text>
+
+  <!-- ============ board tap terminals ============ -->
+  <circle cx="86" cy="110" r="7" fill="#fff" stroke="#c0392b" stroke-width="3"/>
+  <text x="74" y="106" text-anchor="end" class="lbl" font-weight="bold">P2</text>
+  <text x="74" y="121" text-anchor="end" class="sm">line 2 · ~12 V</text>
+
+  <circle cx="86" cy="400" r="7" fill="#fff" stroke="#444" stroke-width="3"/>
+  <text x="74" y="396" text-anchor="end" class="lbl" font-weight="bold">P1 / GND</text>
+  <text x="74" y="411" text-anchor="end" class="sm">line 1</text>
+
+  <circle cx="908" cy="300" r="7" fill="#fff" stroke="#1f4e79" stroke-width="3"/>
+  <text x="922" y="296" class="lbl" font-weight="bold">P3</text>
+  <text x="922" y="311" class="sm">line 3</text>
+
+  <circle cx="908" cy="372" r="7" fill="#fff" stroke="#2e7d32" stroke-width="3"/>
+  <text x="922" y="368" class="lbl" font-weight="bold">TX_OUT</text>
+  <text x="922" y="383" class="sm">codec pad</text>
+
+  <!-- ============ rails ============ -->
+  <path class="wire v12" d="M86 110 H470"/>
+  <text x="466" y="103" class="sm" fill="#c0392b" text-anchor="end">+12 V rail (P2)</text>
+  <path class="wire gnd" d="M86 400 H300"/>
+  <text x="298" y="416" class="sm" fill="#444" text-anchor="end">GND rail (P1)</text>
+
+  <!-- ============ Rf : P2 -> HS_SENSE ============ -->
+  <path class="wire v12" d="M200 110 V140"/>
+  <rect class="comp" x="189" y="140" width="22" height="56" rx="2"/>
+  <path class="wire ped" d="M200 196 V220"/>
+  <text x="220" y="172" class="lbl">Rf 100k</text>
+
+  <circle cx="200" cy="220" r="4" class="nd"/>
+  <text x="150" y="248" class="sm">HS_SENSE</text>
+
+  <!-- Cf : HS_SENSE -> GND -->
+  <path class="wire ped" d="M200 220 V300"/>
+  <path class="wire gnd" d="M182 300 H218 M182 312 H218 M200 312 V400"/>
+  <text x="224" y="309" class="lbl">Cf 100n</text>
+
+  <!-- Rg + gate lead -->
+  <path class="wire ped" d="M200 220 H240"/>
+  <rect class="comp" x="240" y="209" width="66" height="22" rx="2"/>
+  <path class="wire ped" d="M306 220 H360"/>
+  <text x="243" y="203" class="sm">Rg 1k (opt.)</text>
+
+  <!-- ============ AO3400 source-follower ============ -->
+  <line x1="360" y1="200" x2="360" y2="240" stroke="#333" stroke-width="2.4"/>
+  <line x1="372" y1="200" x2="372" y2="240" stroke="#333" stroke-width="2.4"/>
+  <!-- drain (top) = +12 V -->
+  <path class="wire v12" d="M372 207 H398 V110"/>
+  <!-- source (bottom) = HS_BUF -->
+  <path class="wire ped" d="M372 233 H398 V300"/>
+  <path d="M392 229 l-10 4 l10 4 z" fill="#333"/>
+  <text x="410" y="188" class="lbl" font-weight="bold">AO3400</text>
+  <text x="410" y="203" class="sm">source‑follower</text>
+  <text x="378" y="199" class="sm">D</text>
+  <text x="345" y="214" class="sm">G</text>
+  <text x="401" y="252" class="sm">S</text>
+
+  <circle cx="398" cy="300" r="4" class="nd"/>
+  <text x="410" y="292" class="sm">HS_BUF</text>
+
+  <!-- ============ R_hs : HS_BUF -> P3 node ============ -->
+  <path class="wire ped" d="M398 300 H470"/>
+  <rect class="comp" x="470" y="289" width="80" height="22" rx="2"/>
+  <path class="wire ped" d="M550 300 H700"/>
+  <text x="474" y="283" class="lbl">R_hs 2.2k</text>
+
+  <circle cx="700" cy="300" r="4" class="nd"/>
+  <text x="662" y="290" class="sm">P3 node</text>
+  <path class="wire ped" d="M700 300 H908"/>
+
+  <!-- TX_OUT audio jumper -->
+  <path class="wire aud" d="M908 372 H700 V300"/>
+  <text x="716" y="392" class="aud" font-size="11.5px">codec audio jumper</text>
+
+  <!-- ============ net legend ============ -->
+  <rect x="600" y="120" width="348" height="116" rx="8" fill="#fff" stroke="#ddd"/>
+  <text x="616" y="141" class="h">Nets</text>
+  <line x1="616" y1="158" x2="648" y2="158" class="wire v12"/><text x="656" y="162" class="sm">P2 / +12 V  (drain, Rf top)</text>
+  <line x1="616" y1="178" x2="648" y2="178" class="wire ped"/><text x="656" y="182" class="sm">handshake pedestal (DC)</text>
+  <line x1="616" y1="198" x2="648" y2="198" class="wire aud"/><text x="656" y="202" class="sm">codec audio (AC)</text>
+  <line x1="616" y1="218" x2="648" y2="218" class="wire gnd"/><text x="656" y="222" class="sm">GND (P1)</text>
+
+  <line x1="40" y1="452" x2="960" y2="452" stroke="#ddd" stroke-width="1.5"/>
+
+  <!-- ============ op-amp variant inset ============ -->
+  <rect x="40" y="470" width="440" height="248" rx="10" fill="#fff" stroke="#bbb" stroke-dasharray="6 4"/>
+  <text x="60" y="494" class="h">Alternative buffer — op‑amp OPA991 (exact pedestal)</text>
+  <text x="60" y="511" class="sm">same Rf/Cf input &amp; R_hs output — swap only the buffer block</text>
+
+  <text x="58" y="578" class="sm">HS_SENSE</text>
+  <path class="wire ped" d="M120 574 H180"/>
+  <path class="comp" d="M180 556 L180 628 L260 592 Z"/>
+  <text x="188" y="579" class="sm">+</text>
+  <text x="188" y="616" class="sm">–</text>
+  <!-- output -->
+  <path class="wire ped" d="M260 592 H320"/>
+  <circle cx="320" cy="592" r="4" class="nd"/>
+  <text x="328" y="588" class="sm">HS_BUF → R_hs</text>
+  <!-- feedback -->
+  <path class="wire ped" d="M320 592 V648 H150 V610 H180"/>
+  <text x="190" y="666" class="sm">unity feedback</text>
+  <!-- V+ / V- -->
+  <path class="wire v12" d="M210 569 V545"/>
+  <text x="216" y="542" class="sm" fill="#c0392b">V+ = P2</text>
+  <path class="wire gnd" d="M210 615 V639"/>
+  <text x="216" y="653" class="sm" fill="#444">V– = GND</text>
+  <text x="330" y="616" class="sm">+ 100n V+→GND decap</text>
+
+  <!-- ============ setup + procedure notes ============ -->
+  <rect x="500" y="470" width="460" height="248" rx="10" fill="#fff" stroke="#bbb"/>
+  <text x="518" y="494" class="h">Setup &amp; procedure</text>
+  <text x="518" y="516" class="sm">Taps: P2, P3, P1/GND = bus screw terminals · TX_OUT = codec pad.</text>
+  <text x="518" y="537" class="sm"><tspan font-weight="bold">Firmware:</tspan> debug_test_tone <tspan font-weight="bold">ON</tspan>, intercom_ptt <tspan font-weight="bold">OFF</tspan> → K1 open</text>
+  <text x="532" y="553" class="sm">(ch1 raw‑P2 gong path never engages); board otherwise idle.</text>
+  <text x="518" y="575" class="sm"><tspan font-weight="bold">Live‑bus:</tspan> ring the station → listen at the door:</text>
+  <text x="532" y="591" class="sm">(a) forwarded?   (b) gong‑free?</text>
+  <text x="518" y="613" class="sm"><tspan font-weight="bold">Bench (off‑bus):</tspan> inject 12 V + 1 kHz on P2 → Cf strips the</text>
+  <text x="532" y="629" class="sm">1 kHz; measure the pedestal at HS_BUF.</text>
+  <text x="518" y="651" class="sm">Pedestal: follower ≈ P2 − ~1.8 V (Vgs) · op‑amp ≈ P2 (exact).</text>
+  <text x="518" y="673" class="sm" fill="#b8500a"><tspan font-weight="bold">Unclip after</tspan> — a buffer left on P3 holds "talk" asserted.</text>
+  <text x="518" y="695" class="sm">BOM: Rf 100k C25803 · Cf 100n C14663 · R_hs 2.2k C4190 · AO3400.</text>
+</svg>

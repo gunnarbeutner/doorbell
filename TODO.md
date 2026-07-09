@@ -92,8 +92,9 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       filtered/buffered bridge still reads as "talk" at the door end (it should — the DC pedestal is
       unchanged). *(DESIGN.md: audio path / "TX-out reach")*
 - [ ] **(V4.2 gate) Breadboard the gong-free handshake on the live bus — before committing the respin.**
-      Validates the item above without pulling the board from the wall. **Non-invasive rig** (all via the
-      screw terminals + a TX_OUT pad tap): buffer module `P2 → Rf(100k) → Cf(100n) → buffer → R_hs(2.2k) →
+      Validates the item above without pulling the board from the wall. **Non-invasive rig**
+      (wiring: `docs/design/breadboard-handshake-test.svg`; all via the screw terminals + a TX_OUT pad tap):
+      buffer module `P2 → Rf(100k) → Cf(100n) → buffer → R_hs(2.2k) →
       P3`; bring the codec audio over with a `TX_OUT → P3` jumper and drive **`debug_test_tone` ON /
       `intercom_ptt` OFF** so K1 stays open (its ch1 raw-P2 tap — the gong path — never engages) while the
       DAC still reaches TX_OUT. Board otherwise idle so every board-side P3 path stays open. **Checks:** ring the
