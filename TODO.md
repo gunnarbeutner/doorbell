@@ -69,16 +69,15 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Doesn't
       change the J1/J3 back-feed rule (that's the power-mux item above) — still one source at a time
       unless the TPS2116 lands too. *(DESIGN.md "Power tree" / USB)*
-- [ ] **(V4.2) DRC punch-list from the gong-free-handshake relayout** (9 violations; `./build.sh`
-      prints the DRC count but does not fail on it): **(1) the one real fix** — the GND via at
-      **(72.75, 40.75)** violates clearance + hole-clearance against the In1 +3V3 zone; nudge the via
-      or notch the zone. **(2)** delete the 0.06 mm dangling `/K4_LED` track stub at (60.95, 27.20).
-      **(3) exclusion refresh** — the zone refill/edits invalidated two stored DRC exclusions
-      (`doorbell.kicad_pro` went 7 → 5): re-exclude the isolated thieving float and the H4 silk-over-
-      copper. **(4)** decide the 4× J1 pad↔own-NPTH hole-clearances — footprint-intrinsic on unchanged
-      geometry that fabbed clean as V4.1 (DRC-engine drift), so exclude with a comment or accept.
-      **Consider hardening `build.sh`:** add `--schematic-parity` to its DRC call and fail on
-      violations — the current gate would not have caught a stale board against the new schematic.
+- [ ] **(V4.2) DRC punch-list — remaining exclusion decisions** (6 violations left; the via-vs-In1
+      clearance turned out to be a stale zone fill — refilled + saved, clear — and the `/K4_LED` stub
+      is deleted): **(1) re-exclude** the two the refill/edits invalidated (`doorbell.kicad_pro` went
+      7 → 5): the isolated `thieving_F_float` at (16.4, 16.2) — route.py's sliver policy already
+      accepts it — and the H4 silk-over-copper. **(2) decide** the 4× J1 pad↔own-NPTH hole-clearances —
+      footprint-intrinsic on unchanged geometry that fabbed clean as V4.1 (DRC-engine drift), so
+      exclude with a comment or accept. **Consider hardening `build.sh`:** add `--schematic-parity` to
+      its DRC call and fail on violations — the current gate would not have caught a stale board
+      against the new schematic.
 - [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**
       (verifies **BUS-2(a)/(b)** on the real TV20/S; the Ra/Cf/Rb leg is in the V4.2 schematic + PCB,
       sim-verified — `gong rejection`, `JP1 cut`, BUS-1 tests — with spectrum/levels capture-gated
