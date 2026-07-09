@@ -69,6 +69,28 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Doesn't
       change the J1/J3 back-feed rule (that's the power-mux item above) — still one source at a time
       unless the TPS2116 lands too. *(DESIGN.md "Power tree" / USB)*
+- [ ] **(V4.2) K4 second drive (`K5_UNLATCH`) — drop the seal-in during a greeting without firing the
+      door.** A Türruf ring latches K5 (`K1_COM↔P4`), putting the gong on line 2 (P2); the welcome chime
+      plays with K1 engaged, and its talk bridge ties `P2↔line 3` (R28) — so the gong overlays the
+      **outbound chime** (seen on the real bus) and also rides the codec RX tap (`P2→C16→MIC1P`). It's the
+      same `P4→P3` coupling the K4/Q3 break-before-make already kills on the **door** path, but K4 is ganged
+      to **DOOR_DRV**, so it does nothing during a greeting (K5 stays latched). **Fix: add a second,
+      independent K4 LED drive** (`K5_UNLATCH`, a spare GPIO) **diode-OR'd with DOOR_DRV**, so a greeting can
+      drop K5 — clearing the gong off P2 in both directions — with K2/the opener untouched. Dropping K5
+      costs nothing used: TX (`codec→C14→R28→line 3`) and the codec RX tap are K5-independent; only the
+      passive `K5→P4→C1→LS1` listen (board-dead fallback) needs it. Wiring: each drive
+      `GPIO→R→Schottky→K4-LED anode` (the diodes stop the idle pin stealing ~½ the LED current); re-size the
+      series R for the ~0.3 V drop to hold ~8 mA. **`both-high` is just a normal door-open** (K5_UNLATCH
+      redundant; K2's Q3 delay is DOOR_DRV-only, so break-before-make is intact) — the K4 LED then sees ~2×
+      current, so keep the sum under the GAQY412EH input abs-max. Fail-safe unchanged (K4 idle NC = latch
+      sealed; a stuck K5_UNLATCH just holds the seal-in broken, already deemed harmless). The **door**
+      break-before-make stays hardware-guaranteed (DOOR_DRV RC); the **greeting** K4-before-K1 ordering
+      becomes firmware's job, but it's non-safety-critical (mis-ordering only re-exposes the overlay, can't
+      misfire the door). **Not a V4.1 pulse trick:** dropping K5 by pulsing DOOR_DRV risks the opener — the
+      ~38 ms K2 delay is only ~14 ms at the fast corner, so any pulse sure to drop K5 can also fire K2.
+      **Interim (firmware, no respin):** hold the greeting until the gong AC ends (line 4 → steady DC) —
+      matches the WF26's own talk-after-bell timing — at the cost of a ~gong-length greeting delay.
+      *(DESIGN.md: "Door-open mirrors S1")*
 
 ## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
 
@@ -96,18 +118,33 @@ TX: `OUTP→R26(2.2k)→C14→TALK_BRIDGE`; `P1↔GND` bonded; VMID decoupling C
       register with **0.75 = 0 dB**; above that is digital gain (up to +32 dB at 1.0) and clips —
       full-scale media at volume 1.0 distorts hard, ~0.8 is borderline. Calibrate talk level in
       the ≤0.75 range.
-- [ ] **(V4.2) Welcome-audio start "pop" — hardware-mute the TX startup transient.** On each greeting the
-      ES8311 analog output steps ~0.07 V→VMID as the DAC cold-starts, coupling through C14 onto line 3 as a
-      **~2 Vpp click at the chime onset — louder than the chime itself (~1.6 Vpp)** — now *delivered* to the
-      bus because K1 holds closed. Bench scope: `docs/scope/welcome-chime-p3.png` (leading spike vs the
-      two-note decaying bell). It's the **analog VMID-enable step**, so firmware only partly helps: the DAC
-      soft-ramp (REG0x37, enabled in firmware) ~halves the digital part but can't touch the analog step, and
-      **`timeout: never` does nothing** (the media_player stops the speaker every play, so the codec
-      cold-starts regardless — measured identical, ~2 Vpp with and without). **Fix = mute line 3 / the codec
-      output during the ~150 ms startup** (a small-signal FET gating the TX node until the audio has ramped),
-      or a keep-warm scheme that avoids the codec cold-start (harder — the media_player fights keeping the
-      speaker alive). It brackets the greeting like the WF26 talk-button click, but this onset pop is
-      prominent. Firmware plays fine; this is polish. *(DESIGN.md: "TX-out reach" / audio path)*
+- [ ] **(V4.2) Welcome-audio onset step on line 3 — sequence K1 past the DAC cold-start (and confirm it
+      even matters on-bus).** On the first greeting from idle the ES8311 output stage cold-starts, stepping
+      through C14 onto line 3 as a large onset transient at the chime start — **delivered to the bus because
+      K1 is already closed** (on_announcement raises PTT at playback start). Bench (off-bus, `doorbell2`):
+      the step dips P3 ~**−1.5 V** and recovers over ~1 s; illustration `docs/scope/welcome-chime-p3.png`.
+      Measured this session:
+      - **It's the DAC output-stage (VMID) enable, not K1 and not the audio.** PTT alone (K1 make, no audio)
+        moves P3 only ~−75 mV; toggling the DAC soft-ramp register shifts the step; the audio itself starts
+        ~75 ms later (I²S startup gap). A cold analog enable step, coupled through C14.
+      - **The DAC soft-ramp makes it worse — default it OFF.** REG0x37 ON ≈ −1480 mV vs OFF ≈ −1274 mV
+        (~200–350 mV deeper across the pedestal): it fades the digital audio but stretches the analog DC
+        excursion, so the `on_boot` 0x48 override is net-negative for this transient.
+      - **It's a cold-start.** Play 1 ≈ −1.4 V; plays 2–5 ≈ −0.55 V (2.5× smaller), stable even at ~4.4 s
+        spacing — codec warmth, not C14 charge. A keep-warm scheme is hard, though: the media_player stops
+        the speaker every play, so `timeout: never` can't hold it warm (cold-start each greeting).
+      - **K1 timing is the ~4× lever.** Warm-engage — hold K1 **open** through the cold enable (the step lands
+        on TALK_BRIDGE, isolated from line 3), then close it once TALK_BRIDGE has settled — gives ~−333 mV vs
+        the cold ~−1334 mV (reproducible).
+      **So the fix is firmware + a small bleed, not a mute FET — K1 already gates line 3.** Delay K1's raise
+      past the DAC settle (with leading silence in the greeting so nothing clips), and add a **bleed on
+      TALK_BRIDGE→GND** to set the settle time (τ = 1 µF × R: 100 k → ~100 ms, so K1 can close ~150 ms in).
+      The bleed defines the node's DC + settle time, **not** the peak — clamping the peak needs ~2 k, which
+      also halves TX, so don't. Residual after warm-engage is ~−0.3 V off-bus. **Gate on an on-bus
+      measurement first:** R28 into the ~90 Ω bus divides P3's step ~25× (R28/90 ≈ 0.04), so even the cold
+      −1.5 V likely lands in the low tens of mV in service — possibly a non-issue on the real bus. Confirm on
+      the deployed board with the Silent greeting before spending parts. Firmware plays fine; this is polish.
+      *(DESIGN.md: audio path / "TX-out reach")*
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
