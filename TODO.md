@@ -119,7 +119,7 @@ C12 = 10 µF). Remaining open:
       ~90 Ω bus ≈ ÷25), so even the cold −1.5 V likely lands in the low tens of mV in service —
       possibly a non-issue on the real bus. Confirm on
       the deployed board with the Silent greeting before spending parts. Firmware plays fine; this is polish.
-      *(DESIGN.md: audio path / "TX-out reach")*
+      *(DESIGN.md: "Audio path")*
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
 ## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
@@ -170,11 +170,6 @@ tether it to a mains-earthed PC. Pair with a DMM.
       gap (working assumption ≥~10 ms) and confirm a step-driven **K3 (GAQY412EH NC SSR)** opens within it
       so the first Klang is muted; scope where the chime becomes audible vs the pedestal rise. K3's own
       turn-off can't be isolated from the bus capture — step-drive it directly.
-- [ ] **Door-opener firing threshold** — the linchpin test. Bridge P2↔P3 with (a) a **dead
-      short** and (b) **2.2 kΩ**; does each fire the TV20/S opener? Expected (per the genuine
-      handset): short fires, 2.2 kΩ does *not*. This confirms the choices already in the design —
-      **R_ot→0** (K2 door needs a short, done) and **2.2 kΩ-on-K1** (Ra+Rb; talk's incidental bridge
-      must *not* fire, done — and Cf only shunts, so the bridge never reads lower).
 - [ ] **Firmware — retire the 1.75 s 'wait out the gong' door-open delay.** With K4+Q1 giving a hardware
       break-before-make, the held Türruf is never bridged onto line 3, so the `house_doorbell →
       delay: 1.75s → front_door_buzzer` mitigation is unnecessary. Removing it opens the door ~1.75 s
@@ -211,41 +206,26 @@ tether it to a mains-earthed PC. Pair with a DMM.
       PTT alone (no real ring) trips OC1.** If it doesn't, drop the mask — it currently also blanks a
       *genuine* ring that lands mid-PTT. (Comment in `doorbell-v4.yaml` House-Doorbell filter.)
 
-## Audio path — bench-verify (the routing is wired; confirm it on hardware)
+## Audio path — remaining verification
 
 The codec taps the speech pair **transformer-less**: **RX** = a differential sense of line 2 through the
 attenuating divider (`P2→C16→R30→MIC1P`, `P1→C17→R31→MIC1N`, each pin biased to VMID via R33/R32); **TX**
 = the codec DAC → R26 (2.2 kΩ) → C14 (DC-block) → TX_OUT → line 3, with the gong-filtered talk
 handshake (`P2 → Ra/Cf/Rb → TX_OUT`), both behind **K1**. Independent of line 4 / K3, so RX/TX survive
 gong-suppress. **Gated on OC1** (session = Türruf held; OC1 stays high, no timer), direction by PTT.
-What remains is hardware confirmation:
+V4.1 field operation already proves that codec TX on line 3 reaches the door station and that the
+2.2 kΩ handshake enables talk without firing the opener. The V4.2-specific ~25 ms RC-ramped
+handshake is covered by the earlier live-bus passive-split gate. What remains:
 
-- [ ] **Outgoing (TX) — confirm line-3 drive reaches the door + the handshake.** Bench: in a talk
-      window, does the codec driving **line 3** get audio out to the door station, and is the
-      **2.2 kΩ (Ra+Rb) bridge** (gated by K1, RC-ramped ~25 ms) the only thing the TV20/S needs to
-      switch to talk — or
-      something more? A WF26's C1 + 16 Ω speaker always loads line 4, which is why TX drives line 3,
-      not line 4 — check the line-3 drive level with that load present. **Derisk before fab:** the
-      real-test-call capture (above) measures the WF26's own line-3 talk level + handshake DC with the
-      true load present — get that first, then optionally inject a tone through a breadboard
-      `DC-block + 2.2 kΩ` onto line 3 (real WF26 load on line 4) to confirm reach with no board.
-      *(DESIGN.md: "TX-out reach")*
 - [ ] **Incoming (RX) — confirm the line-2 tap level/impedance.** RX is on **line 2** (ref line 1),
       independent of line 4 / K3. Bench-check the received level and source impedance on line 2↔P1
       during a call, and that the R30/R33 (and R31/R32) divider lands the codec input in range.
-      *(DESIGN.md: "TX-out reach")*
-- [ ] **Validate the handset mic (LS1) never bleeds into the RX/TX path by accident.** LS1-as-mic
-      must reach the line *only* when intended (deliberate handset talk via S2) — never leak into the
-      codec's transmit (line 3) or receive (the codec ADC) on its own. On the **V4.1 topology** the sim
-      found one accidental path: with K1 in **talk** and **K3 idle**, the mic rode
-      `LS1→C1→K3(NC)→P4→latch→P2→K1` and the raw 2.2 kΩ strap onto P3 (~1.5 Vpp, louder than the
-      codec's ~0.9 Vpp TX), vanishing with K3 energised. **The V4.2 Ra/Cf/Rb leg shunts this path's
-      audio band** (same divider as the gong ⇒ ~mVpp expected) — re-run the sim sweep on the new
-      netlist, then sweep mic injection at LS1 across
-      {K1 idle/talk × K3 idle/energised × S2 released/pressed} with **P2 held at 12 V**, and assert P3
-      and `ES_MICP/MICN` stay clean except in deliberate S2 talk. If the filter holds, the
-      "hold K3 for the whole call" rule is obsolete — decide, then
-      encode the surviving conditions as a sim regression test.
-- [ ] **Re-check the DESIGN.md "TV20/S audio behaviour" section** — confirm the talk/listen/
-      Etagenruf/Türruf routing it describes is still correct against the current model + bench
-      findings (some of it predates the recent corrections). *(DESIGN.md: "TV20/S audio behaviour")*
+      *(DESIGN.md: "Audio path")*
+- [ ] **Software-TX isolation from the passive LS1 microphone.** Check only the relevant unintended
+      state: **K1 active, SW4 released**, with K3 both idle and energised. Inject a voice-band signal
+      at LS1 and require the V4.2 Ra/Cf/Rb filter to leave only a small residual on P3 relative to the
+      codec TX level. This guards the old V4.1 leakage path
+      `LS1→C1→K3→P4→latch/P2→K1→P3`; Cf should now shunt it like gong audio. Do **not** treat SW4
+      pressed as an isolation failure—that is intentional dumb-handset talk through its independent
+      `P4→SW4→R29→P3` path. Simultaneous manual and software TX is unsupported. Once this regression
+      passes, close the item; no dedicated bench sweep is required unless audible echo remains.

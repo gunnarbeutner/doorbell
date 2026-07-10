@@ -229,10 +229,12 @@ triggers (line 4 Türruf, line 5 Etagenruf) are separate conductors.
 - **Talk** — resident presses the Sprechen button (S2); LS1 acts as the mic, the TV20/S
   amplifies it out to the door station.
 - **Listen** — releasing reverses direction; door-station mic → WF26 speaker for ~25 s.
-- **Auto-disconnect** — WF26 drops the circuit after ~60 s.
+- **Auto-disconnect** — after ~60 s the TV20/S briefly sinks **P2 low**, dropping the WF26's
+  P2-fed seal-in relay; the handset contains no timer or active disconnect circuit.
 
-Implications: the V4 audio path taps the bus **speech pair** — RX on P1↔P2, TX on P1↔P3 — gated by
-the session (see "Audio path").
+Implications: the V4 audio path taps the bus **speech pair** — RX on P1↔P2, TX on P1↔P3. Firmware
+normally uses OC1/session state to decide when to exchange audio, but the hardware TX gate is
+deliberately session-independent and can assert from the standing P2 supply (see "Audio path").
 
 ### TV20/S central unit — from the board photo
 
@@ -245,10 +247,11 @@ are read directly from the parts; the points below are inferred from them, not t
   its inputs are cap-coupled (as is that class of AF amp), so the amplifiers respond to the **AC on
   lines 2/3, not the DC bias** on them. The speech path does not care about the speech-line DC level.
 - **The DC on the speech pair is a separate signalling layer**, not part of the audio — session
-  start / talk-detect / hold, handled by the **relays + transistors**. So the talk handshake (the
-  line-3 DC the WF26 asserts through R1) most likely drives a relay/transistor talk-detect that flips
-  the half-duplex direction — but the **exact trigger (DC level vs current vs edge) is unconfirmed**
-  from a photo and needs a bench probe (this is the open TX-out-reach question, see REQUIREMENTS.md).
+  start / talk-detect / hold, handled by the **relays + transistors**. V4.1 field operation proves
+  the functional contract: a 2.2 kΩ handshake enables talk, codec audio on line 3 is forwarded to
+  the door, and the same resistance does not fire the opener. The photo still does not reveal the
+  detector's internal DC/current threshold. V4.2's only new live-bus question is whether that
+  detector accepts the ~25 ms RC-ramped handshake.
 - The separate **8 VAC / 1 A bell transformer** for the door opener is visible on its `8V~` terminal
   (consistent with "Power" above).
 
@@ -337,18 +340,20 @@ Key facts:
 > single audio crossover; the two switches are a **direct 2↔3 door bridge (S1)** and a
 > **2.2 kΩ 4↔3 talk bridge (S2)**. No firmware handshake exists.
 
-**Open / inferred (verify on the bench):**
-- **Does line 4 hold ~12 V through the talk window, not just the ring?** Listen needs the relay
-  to stay pulled in for the session, so the Türruf DC must persist past the chime. Re-measure
-  P4→P1 idle / ringing / mid-talk-window.
+**Session hold:** after the TV20/S's ~1 s Türruf pulse, the energised relay connects P2 through S1
+and its NO contact back onto P4. Thus P2—not a continuing central-unit line-4 drive—holds the coil
+and line 4 high for the session. OC1 consequently tracks the latch edge-to-edge. Door-open breaks
+that seal-in; the inactivity timeout ends it with the measured P2-low pulse.
 
 **Interfacing takeaways (audio tap / virtual PTT):**
 - Record/monitor: a high-Z tap on **P1/P5** (the transducer) captures gong, Etagenruf and both
   speech directions regardless of bus line — *but* it rides the relay/C1 path, so it dies when the
   gong is suppressed (C1 opened). The board instead taps the **speech pair** (RX P1↔P2, TX
   P1↔P3), which is independent of line 4 / suppress — see "Audio path."
-- Virtual talk from the bus: bridge **line 4 ↔ line 3 through ~2.2 kΩ** (mimic S2). Virtual
-  door-open: short **line 2 ↔ line 3** directly (mimic S1).
+- To mimic the stock S2 during a held session, bridge **line 4 ↔ line 3 through ~2.2 kΩ**; the
+  energised latch already makes P4 follow P2. The smart K1 path instead sources its 2.2 kΩ filtered
+  handshake directly from **P2**, allowing controlled TX independently of session state. Virtual
+  door-open remains a direct **line 2 ↔ line 3** short paired with a seal-in break (mimic S1).
 - Injecting TX audio on P1/P5 makes LS1 replay it (quiet at mic level); lift one LS1 lead to
   silence it (1-wire board mod).
 
@@ -570,9 +575,9 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~38 ms (Q3 · R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
 - K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
-  door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. Whether the TV20/S
-  forwards the line-3 audio to the door station once it sees the Ra+Rb handshake bridge is the open
-  **TX-out reach** question (see "Audio path").
+  door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. V4.1 field operation
+  proves that the TV20/S forwards codec audio on line 3 after a 2.2 kΩ handshake; the remaining V4.2
+  gate is acceptance of the Ra/Cf/Rb leg's ~25 ms ramp (see "Audio path").
 
 ### SSR LED drive (per channel)
 
@@ -721,7 +726,7 @@ KiCad**; `./build.sh` verifies the inner copper-fill planes and fails if any net
 
 ---
 
-## Audio path (half-duplex; analog values + TX-out reach bench-gated)
+## Audio path (half-duplex; analog values + V4.2 handshake-ramp gate)
 
 **The bus is half-duplex by design.** Speech is on the **1/2/3 group** (the STR *Sprechverkehr*):
 **listen on line 2, talk on line 3, ref line 1 (common)**. The board taps that pair with an **ES8311
@@ -737,8 +742,9 @@ that shared common (the SAFE-3 trade; see "Bus↔logic coupling"):
   the gong-stripping low-pass `P2 → Ra (1.2 kΩ) → HS_FILT [Cf 2×22 µF → JP1 → GND] → Rb (1 kΩ) →
   TX_OUT`. The **dual K1** gates both:
   ch1 sources the **DC handshake from the always-on P2** (`P2 ↔ TALK_BRIDGE`) and ch2 gates the output
-  (`TX_OUT ↔ P3`) so line 3 is high-Z at idle (BUS-1). ⚠ Whether the TV20/S forwards line-3 audio to
-  the door once it sees that bridge is bench-gated — see "TX-out reach".
+  (`TX_OUT ↔ P3`) so line 3 is high-Z at idle (BUS-1). V4.1 field operation proves line-3 codec-audio
+  forwarding with a 2.2 kΩ handshake; the live-bus V4.2 gate checks acceptance of the filtered
+  leg's ~25 ms ramp.
 
 Tapping 1/2/3 (not the WF26 *speaker* pair P1/P5) keeps the smart audio **independent of line 4 / K3 /
 the gong-suppress**, so it works with the gong muted.
@@ -866,12 +872,10 @@ retire it when the V4.2 board deploys (TODO).
   the only miswire mode is a per-conductor scramble at the clamps, which no connector feature can prevent —
   survival rests on this bidirectional topology plus the silkscreen labels. Envelope + parts: see TODO / "Protection".
 - **Hum** with the P1↔GND bond once RX is live.
-- **⚠ TX-out reach (bench-gated).** Not yet confirmed on hardware: that the TV20/S **forwards the
-  line-3 audio out to the door station** once it sees the 2.2 kΩ (Ra+Rb) handshake bridge — including
-  that its talk-detect accepts the filtered leg's ~25 ms RC ramp in place of a switch-speed step —
-  and that the line-3 drive level reaches the door cleanly. (The handset's own audio rides its
-  internal line-4 path and goes quiet under gong-suppress — acceptable; nobody uses the handset while
-  it's muted.)
+- **⚠ V4.2 handshake ramp (bench-gated).** V4.1 proves that the TV20/S forwards codec audio on line
+  3, that a 2.2 kΩ handshake enables talk, and that the drive level reaches the door cleanly. V4.2
+  preserves the 2.2 kΩ final resistance but replaces the switch-speed assertion with a ~25 ms RC
+  ramp; the live-bus passive-split test must confirm that the talk detector accepts that edge shape.
 
 ---
 
@@ -977,10 +981,10 @@ the K1 talk strap (genuine R1); K3's chime-mute sits in the **C1 audio path** (P
 it can't touch the latch or the Etagenruf; the K5 coil is across **P1↔P4** (ring-driven, then
 sealed in from P2 — see "Bell signals"); and K1/K2/K3 are independent (no interlock, like the handset).
 **Session state = OC1 high**, gated directly (line 4 holds through the session), no timer.
-**The end-to-end TX-out reach is the remaining open investigation** — the codec taps the speech pair
-(RX ← line 2 differential, TX → line 3 via K1's handshake, gong-suppress-independent); what's
-bench-gated is whether the TV20/S forwards the line-3 audio to the door once it sees the 2.2 kΩ talk
-bridge (see `TODO.md`, "TX-out reach"). See Switches / Audio path / Bell-sense.
+**End-to-end TX reach is field-proven on V4.1** — the codec taps the speech pair (RX ← line 2
+differential, TX → line 3 via K1's handshake, gong-suppress-independent), and the TV20/S forwards
+that audio to the door. The remaining V4.2-specific gate is the filtered handshake's ~25 ms ramp;
+see the live-bus passive-split item in `TODO.md`. See Switches / Audio path / Bell-sense.
 
 **Datasheet-verified:** GAQY212GS / GAQY412EH PhotoMOS pinout + Ron/Voff/LED drive (K3 = 1-Form-B
 **NC** confirmed); K5 (G6K-2F-Y) latch pinout; SGM2212 SOT-223 pinout + ~1 V dropout headroom;

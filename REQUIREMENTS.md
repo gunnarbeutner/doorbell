@@ -139,11 +139,12 @@ shared party line across apartments.
 - **AUDIO-2 (MUST)** Inject **ESP/codec-generated** audio onto the bus speech pair (up-audio, line 3)
   — the firmware streams audio to the bus. **Minimum:** play a custom welcome chime on a ring (e.g.
   before auto-opening). **Goal:** arbitrary streamed audio (announcements / TTS, and live talk).
-  (Whether the injected audio reaches the door station is the TX-out-reach open item.)
+  V4.1 field operation proves that injected line-3 audio reaches the door station with a 2.2 kΩ
+  handshake; V4.2 must retain that result with its RC-ramped handshake assertion.
 - **AUDIO-3 (MUST/MAY)** Half-duplex is **sufficient** and is the baseline (a talk window opened
   after a ring; single transducer, so no echo cancellation). Full-duplex is a **MAY** (nice-to-have)
   and is **contingent on the TV20/S supporting it at all** — likely it does not; it needs a bench
-  test of the TV20/S before it could be committed (see Open questions / TX-out reach).
+  test of the TV20/S before it could be committed (see Open questions / full-duplex feasibility).
 - **AUDIO-4 (MUST)** The bus audio tap MUST NOT DC-load the bus: **AC-coupled** (a series DC-block, so
   no DC flows) and presenting a **high AC impedance** so it does not appreciably attenuate other
   handsets on the shared speech pair (the speech-pair case of BUS-1). *(Met by series DC-block caps +
@@ -303,11 +304,11 @@ height envelope changes.
 
 ## Open questions (to nail down)
 
-1. **TX-out reach & full-duplex feasibility (open, bench)** — does the TV20/S forward the board's
-   line-3 talk audio to the door station once it sees the 2.2 kΩ (Ra+Rb) handshake bridge — including
-   accepting its ~25 ms RC-ramped assert (AUDIO-2), and does it
-   tolerate simultaneous RX+TX at all (the prerequisite for the AUDIO-3 full-duplex MAY)? Both need a
-   bench test against the real TV20/S; see DESIGN.md "Audio path".
+1. **V4.2 handshake ramp & full-duplex feasibility (open, bench)** — V4.1 proves line-3 TX reach,
+   the 2.2 kΩ talk handshake and usable door-station audio. Confirm that the TV20/S also accepts
+   V4.2's ~25 ms RC-ramped assertion (AUDIO-2). Separately, determine whether it tolerates
+   simultaneous RX+TX at all (the prerequisite for the AUDIO-3 full-duplex MAY); see DESIGN.md
+   "Audio path".
 
 *Resolved:* Galvanic isolation — **SHOULD**, not MUST; the hard requirement is fault containment
 (SAFE-7) — the board may fry, but the USB supply and the apartment must not. Etagenruf — MUST stay
