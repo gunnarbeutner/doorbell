@@ -156,7 +156,7 @@ tether it to a mains-earthed PC. Pair with a DMM.
 - [ ] **Bench — confirm the door lead.** On the real board: a door-open drops K5 (session ends),
       and K2's make lands after the latch drop (no 12 V-DC/gong blip on line 3). Tune C18/R17 if the
       ~20 ms lead doesn't clear the actual latch-drop time.
-## Firmware (`firmware/doorbell-v4.yaml`)
+## Firmware (`firmware/doorbell.yaml`)
 
 - [ ] **Retire the ring → welcome-audio gong-wait when the V4.2 board deploys.** The Ra/Cf/Rb handshake makes the
       greeting gong-free in hardware (BUS-2(a)), so wind `gong_until_ms`'s window to 0 — but **keep the

@@ -1,16 +1,4 @@
-# Klingel V4 — BENCH BRING-UP twin of doorbell-v4.yaml (U1 = ESP32-S3-WROOM-1U-N16R8, U3 = ES8311).
-# Tracks the production config's behaviour (welcome audio, greeting registry, name-based greet API,
-# chime policy) but with bench deltas, all in service of VERIFICATION.md §5.5 (emulated-bus stages):
-#   - Identity doorbell2 @ 192.168.3.78 (shares the api key + OTA password); production is doorbell @ .18.
-#   - ALL homeassistant.event calls are stripped (a bench ring must not fire the real HA automations),
-#     and with them the ring-triggered auto-open reflex — house/apartment sense is detection-only here.
-#   - Two debug switches drive the SSR outputs with no user-facing switch: "Debug Chime Suppress" (K3)
-#     and "Debug Door Drive Hold" (unpulsed K2+K4 — the Q3 watchdog still releases K2 after ~6.7 s).
-#   - "Debug Test Tone": a continuous ~1 kHz sine on the DAC/TX path (scope it on P3 with PTT on).
-#     NO microphone here: the mic (I2S RX) and speaker (I2S TX) share one half-duplex I2S bus, and a
-#     declared mic holds the bus so the speaker can't start ("Parent bus is busy") — which breaks
-#     welcome-audio playback. RX / the mic-loopback meter is dropped; verify audio with the scope.
-#     The welcome-audio media_player and the tone share one speaker — use one at a time.
+# Klingel V4 — ESPHome config for the ESP32-S3 doorbell board (U1 = ESP32-S3-WROOM-1U-N16R8, U3 = ES8311 codec).
 #
 # GPIO map (S3-WROOM-1U; USB on the north edge, the ES8311 I2C/I2S bus ascending down the codec edge):
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO12
@@ -35,19 +23,15 @@
 #
 # SSR gate outputs are ACTIVE-HIGH (see the output section): GPIO HIGH -> SSR LED on -> contact made.
 #
-# Sense disambiguation for the V4 sense points:
-#   - OC2 taps the speaker pair (P5↔P1) and pulses at audio rate on ANY loud speaker audio
-#     (floor tone, door gong, speech). Its filter chain stretches the half-cycle pulses into a
-#     level (delayed_off before delayed_on) and is masked by house_doorbell / PTT — see the sensor.
-#   - OC1 (line 4 / Türruf) needs no PTT mask: the board's talk handshake bridges P2↔P3 only
-#     (K1: P2↔TALK_BRIDGE + TX_OUT↔P3), so energising K1 never reaches line 4. Debounce only.
-#
-# The two configs use separate build dirs (different device names), so no `esphome clean` is needed
-# between them; flash the production doorbell-v4.yaml before the board goes in the wall. Keep this in
-# sync with doorbell-v4.yaml — it is a copy of it plus the bench deltas listed above.
+# Deployed identity: the V4 assumes the retired V3's name (doorbell), IP (192.168.3.18), api
+# encryption key and OTA password, so the Home Assistant side carries over without changes.
+# Bench bring-up flashes doorbell-bench.yaml instead (bench identity doorbell2 @ .78, HA
+# events stripped, debug SSR switches added). The configs use separate build dirs (different
+# device names), but after any device-name change run `esphome clean` — a stale dependency graph
+# fails the build, and a piped `compile && upload` can then silently re-flash the previous binary.
 
 esphome:
-  name: doorbell2
+  name: doorbell
   on_boot:
     # Greeting registry — index-aligned with the `next_greeting` select options. The greet /
     # greet_and_open api actions resolve a greeting NAME to an index via the select (index_of), so the
@@ -69,10 +53,10 @@ esphome:
             ESP_LOGE("greetings", "registry/select length mismatch: %u vs %u",
                      (unsigned) id(greetings).size(),
                      (unsigned) id(next_greeting).traits.get_options().size());
-      # POP TEST (bench): enable the ES8311 DAC soft-ramp to fade the DAC in/out and suppress the
-      # enable/mute "pop" on P3. ESPHome's codec init leaves REG0x37 at 0x08 (DAC_RAMPRATE = 0 =
-      # softramp disabled); 0x48 keeps the low nibble and sets DAC_RAMPRATE = 4 (0.25 dB / 32 LRCK).
-      # REG37 is written only at codec setup(), so this override sticks. The delay lets setup() finish.
+      # Enable the ES8311 DAC soft-ramp (REG0x37) to fade the DAC in/out and soften the enable/mute
+      # transient. ESPHome's codec init leaves REG37 at 0x08 (softramp disabled); 0x48 keeps the low
+      # nibble and sets DAC_RAMPRATE = 4. REG37 is written only at codec setup(), so this sticks; the
+      # delay lets setup() finish. Only partly tames the analog VMID pop — see TODO.md (V4.2 mute).
       - delay: 1s
       - lambda: |-
           uint8_t reg37[2] = {0x37, 0x48};
@@ -148,33 +132,31 @@ wifi:
   power_save_mode: "none"
 
   manual_ip:
-    static_ip: 192.168.3.78
+    static_ip: 192.168.3.18
     gateway: 192.168.3.1
     subnet: 255.255.255.0
     dns1: 192.168.3.53
 
 i2c:
   id: codec_i2c            # referenced by the on_boot DAC soft-ramp override (REG0x37)
-  sda: GPIO38              # I2C_SDA — ES8311 (U3) control bus
-  scl: GPIO39              # I2C_SCL — ES8311 (U3) control bus
+  sda: GPIO38
+  scl: GPIO39
   scan: false
 
 i2s_audio:
   id: i2s_bus
-  i2s_lrclk_pin: GPIO2    # I2S_WS / LRCK
-  i2s_bclk_pin: GPIO41    # I2S_BCLK / SCLK
-  i2s_mclk_pin: GPIO40    # I2S_MCLK
+  i2s_lrclk_pin: GPIO2
+  i2s_bclk_pin: GPIO41
+  i2s_mclk_pin: GPIO40
 
 audio_dac:
   - platform: es8311
     id: es8311_codec
     address: 0x18          # CE → R20 (10k) → GND on U3 → I2C addr 0x18
-    use_microphone: false  # MUST be false for the analog MIC1P/MIC1N inputs: this option selects a
-                           # PDM DIGITAL mic (REG14 DMIC_ON) — true switches the ADC away from the
-                           # analog PGA and yields pure digital silence. The analog ADC path is
-                           # configured unconditionally by the driver.
-    mic_gain: 0DB          # the input divider (R30/R31 22k + R32/R33 3.3k→VMID, ~-18dB) already drops the bus; the PGA can't attenuate anyway
-                           # audio (gong peaks > 2Vrms full-scale) — keep all the headroom
+    use_microphone: false  # false = the analog MIC1P/MIC1N path (true would select a PDM digital mic —
+                           # misleading name). Moot now that no microphone: is declared, but keep it false.
+    mic_gain: 0DB          # the input divider (R30/R31 22k + R32/R33 3.3k→VMID, ~-18dB) already drops the
+                           # bus; the PGA can't attenuate, and gong peaks (>2Vrms) need the headroom.
 
 speaker:
   - platform: i2s_audio
@@ -182,15 +164,15 @@ speaker:
     i2s_audio_id: i2s_bus
     dac_type: external
     audio_dac: es8311_codec
-    i2s_dout_pin: GPIO1    # I2S_DOUT / DSDIN (ESP→codec, playback)
+    i2s_dout_pin: GPIO1
 
-# NOTE: no `microphone:` here (nor in prod). The mic (I2S RX) and the speaker (I2S TX) share one
-# half-duplex I2S bus; a declared mic holds the bus and makes the speaker fail to start ("Parent bus
-# is busy"), which breaks welcome-audio playback. The RX path / loopback meter is dropped — scope the
-# TX node for audio verification. Re-add the mic only together with a coordinator (voice_assistant).
+# NO `microphone:` here. The mic (I2S RX) and the speaker (I2S TX) share one half-duplex I2S bus; a
+# declared mic holds the bus and makes the speaker fail to start ("Parent bus is busy"), silently
+# breaking welcome-audio playback (the door still opens, but the chime never plays). The mic was
+# unused here anyway once voice_assistant was removed. Re-add it ONLY together with a coordinator
+# (voice_assistant) that manages bus hand-off — never a bare mic alongside the media_player speaker.
 
-# Media player wrapping the codec speaker: carries the embedded welcome chime (and any HA
-# TTS/audio). With PTT engaged the audio rides the TX path to the bus/door station.
+# Media player over the codec speaker. With PTT (K1) engaged the audio rides the TX path to the bus.
 media_player:
   - platform: speaker
     id: intercom_media
@@ -214,25 +196,22 @@ media_player:
         file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
       - id: welcome_secret
         file: "sounds/secret.wav"          # 1.4 s Zelda "secret" chime, 16 kHz mono, peak -3 dBFS
-    # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute FOLLOW the
-    # player's playback state — engage while announcing/playing, release when idle/paused. Event-driven
-    # so K1 can't be dropped mid-play by a transient IDLE blip (the earlier bug where play_welcome
-    # raised K1 explicitly and the pre-announcement IDLE blip's backstop tore it back down). At idle K1
-    # is already off, so the startup IDLE blip is a no-op; on_announcement then raises it for the audio.
+    # K1 (off-hook handshake + TX route) and the welcome_playing gong-mute FOLLOW the player state —
+    # engage while announcing/playing, release when idle/paused. Event-driven so a transient IDLE blip
+    # at announcement start can't tear K1 down mid-play: the old scheme (play_welcome raised K1
+    # explicitly + an on_idle backstop) let that pre-announcement blip drop K1, so the chime played
+    # into an OPEN contact — only off-cap bleed reached P3, nothing on a loaded bus. At idle K1 is
+    # already off, so the startup blip is a no-op; on_announcement then raises it for the audio.
     on_announcement:
-      - logger.log: { format: "media_player ANNOUNCING -> K1 on", level: INFO, tag: mp }
       - switch.turn_on: intercom_ptt
       - globals.set: { id: welcome_playing, value: "true" }
     on_play:
-      - logger.log: { format: "media_player PLAYING -> K1 on", level: INFO, tag: mp }
       - switch.turn_on: intercom_ptt
       - globals.set: { id: welcome_playing, value: "true" }
     on_idle:
-      - logger.log: { format: "media_player IDLE -> K1 off", level: INFO, tag: mp }
       - switch.turn_off: intercom_ptt
       - globals.set: { id: welcome_playing, value: "false" }
     on_pause:
-      - logger.log: { format: "media_player PAUSED -> K1 off", level: INFO, tag: mp }
       - switch.turn_off: intercom_ptt
       - globals.set: { id: welcome_playing, value: "false" }
 
@@ -241,16 +220,13 @@ globals:
     type: bool
     restore_value: no
     initial_value: "false"
-  # The greeting to play — a pointer into the media_player's files: (the single embed spot). A caller
-  # stages it (`id(welcome_file) = id(<file>)`) before running play_welcome; nullptr = play nothing
-  # (the default). This is what lets file choice avoid any name-branching in the script.
+  # The greeting to play — a pointer into the media_player's files:. A caller stages it
+  # (`id(welcome_file) = id(<file>)`) before running play_welcome; nullptr = play nothing (the default).
   - id: welcome_file
     type: audio::AudioFile*
     restore_value: no
     initial_value: "nullptr"
-  # Greeting registry, populated in esphome: on_boot (see there). Index-aligned with the
-  # `next_greeting` select; the greet/greet_and_open api actions resolve a name to an index via the
-  # select (index_of). greetings[0] = nullptr (None).
+  # Greeting registry — populated + explained in esphome: on_boot. greetings[0] = nullptr (None).
   - id: greetings
     type: std::vector<audio::AudioFile*>
     restore_value: no
@@ -263,10 +239,10 @@ globals:
     restore_value: no
     initial_value: "0"
 
-# Door-station playback: play the embedded file, blocking until it finishes. K1 (off-hook handshake +
-# TX route) and the K3 gong-mute (welcome_playing) follow the player state via the media_player
-# on_announcement/on_idle triggers, not this script. Also the instrument for the AUDIO-2/AUDIO-6
-# TX-reach test — trigger from the HA app while standing at the door station.
+# Door-station playback: mute the own speaker (K3, via the chime_enabled guard), present
+# the off-hook handshake (K1), play the embedded file, then restore everything. Also the
+# instrument for the AUDIO-2/AUDIO-6 TX-reach test — trigger from the HA app while standing at
+# the door station.
 script:
   - id: play_welcome
     mode: single
@@ -287,10 +263,9 @@ script:
                 id: intercom_media
                 volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
             # Play the staged file as an announcement. K1 (TX route) and the welcome_playing gong-mute
-            # are NOT managed here — they follow the media_player state via on_announcement/on_idle (see
-            # the media_player triggers). This script only SEQUENCES: play, then block until the
-            # announcement ends, so welcome_and_open opens after K1 has released (K2 must not short the
-            # TX tail). play_file uses the C++ speaker API — no name-branching; files: is the one embed.
+            # are NOT managed here — they follow the media_player state (on_announcement/on_idle). This
+            # script only SEQUENCES: play, then block until the announcement ends, so welcome_and_open
+            # opens after K1 has released (K2 must not short the TX tail).
             - lambda: 'id(intercom_media).play_file(id(welcome_file), true, false);'
             # Wait for the announcement to START (5 s also covers the i2s "bus busy" ~1 s retry), settle
             # 400 ms past the ANNOUNCING startup blip, then wait for the real END. Timeouts are backstops.
@@ -316,13 +291,13 @@ script:
       - script.wait: play_welcome
       # No gong-wait here: play_welcome already holds the greeting until the Türruf gong finishes (gated
       # on a recent house ring), so this generic greet->open primitive (api / button / webhook) opens
-      # promptly.
+      # promptly. The no-greeting visitor-reach hold lives in the ring reflex.
       - delay: 100ms                     # settle: K1 fully released before K2 makes
       - button.press: front_door_buzzer
 
-  # Stage the HA-primed greeting (next_greeting select) into welcome_file. Single-lambda -> runs
-  # synchronously, so a caller can read welcome_file immediately after script.execute. Shared by the
-  # ring reflex and the "Welcome & Open Door" button. None / out-of-range -> nullptr (no door audio).
+  # Stage the HA-primed greeting (next_greeting select) into welcome_file — synchronously, so a caller
+  # can read welcome_file right after script.execute. Shared by the ring reflex and the "Welcome & Open
+  # Door" button. None / out-of-range -> nullptr (no door audio).
   - id: stage_selected_greeting
     then:
       - lambda: |-
@@ -330,38 +305,6 @@ script:
           id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
                                ? id(greetings)[idx.value()] : nullptr;
 
-# Bench loopback tone: while "Debug Test Tone" is on, top up the speaker ring buffer every 50 ms with
-# a phase-continuous ~1 kHz sine (advancing phase only by samples actually accepted — no boundary
-# clicks). fs assumes the default 16 kHz I2S rate; a different rate just shifts the pitch, irrelevant
-# for a level test. Shares intercom_speaker with the welcome-audio media_player — use one at a time.
-interval:
-  - interval: 50ms
-    then:
-      - lambda: |-
-          if (!id(debug_test_tone).state) return;
-          static double phase = 0.0;
-          const double fs = 16000.0;
-          const double tone_hz = 1000.0;
-          const double amp = 0.5;                       // -6 dBFS — headroom, never clips the DAC
-          const double TWO_PI = 6.283185307179586;
-          const double dphase = TWO_PI * tone_hz / fs;
-          int16_t block[512];
-          while (true) {
-            double ph = phase;
-            for (int i = 0; i < 512; i++) {
-              double v = amp * 32767.0 * sin(ph);
-              block[i] = (int16_t) (v >= 0.0 ? v + 0.5 : v - 0.5);
-              ph += dphase;
-            }
-            size_t wrote = id(intercom_speaker).play((const uint8_t *) block, sizeof(block));
-            size_t accepted = wrote / 2;
-            phase += dphase * (double) accepted;
-            while (phase >= TWO_PI) phase -= TWO_PI;
-            if (accepted < 512) break;                  // ring buffer full — resume next tick
-          }
-
-# Optional: BLE works but uses resources. Remove this and esp32_ble_tracker if you don't
-# use the Bluetooth proxy.
 bluetooth_proxy:
   active: false
 
@@ -397,7 +340,10 @@ binary_sensor:
       - delayed_off: 50ms      # bridge the gaps between tone half-cycles
       - delayed_on: 150ms      # require a sustained tone, and let house_doorbell latch first
       - delayed_off: 2s
-    # bench: no on_press — the production HA event (doorbell_apartment) is stripped here
+    on_press:
+      then:
+        - homeassistant.event:
+            event: esphome.doorbell_apartment
   - platform: gpio
     name: "House Doorbell"
     icon: mdi:doorbell
@@ -414,10 +360,38 @@ binary_sensor:
       - delayed_off: 2s
     on_press:
       then:
-        # Stamp the Türruf gong window so play_welcome's gong-wait is exercisable on the bench. The
-        # production HA events and the ring-triggered auto-open reflex stay stripped here — a bench ring
-        # is still door-detection-only; exercise greet/open via the buttons or the greet API.
+        # Mark the Türruf gong active, so a greeting waits it out in play_welcome instead of overlaying
+        # it on line 3. 1750 ms: the gong is ~3.8 s electrically (CH1/P4, captures/runs/our-ring-no-door),
+        # but 1.75 s sufficed on V3's stronger direct P2↔P3 buzzer — the door station appears to add its
+        # own ~2 s speech-onset delay (the same one that clipped the first V4 greeting) that covers the
+        # gong tail. Confirm against door-station audio before trusting the margin.
         - lambda: 'id(gong_until_ms) = millis() + 1750;'
+        # Autonomous open reflex — runs locally so a ring still opens even when HA is slow or down.
+        # HA arms it via switch.auto_open_front_door (PERSISTENT; HA owns on/off) and primes which
+        # greeting plays via the next_greeting select. welcome_and_open sequences greet-then-open; the
+        # greeting waits out the gong inside play_welcome, then K1 releases before K2 bridges the door.
+        # Events are generic device outputs HA consumes for notifications; HA re-derives context from state.
+        - if:
+            condition:
+              switch.is_on: auto_open_front_door
+            then:
+              - script.execute: stage_selected_greeting
+              # No greeting -> hold before opening so the visitor has time to reach the door before the
+              # latch releases. This is an intentional UX delay and is independent of gong_until_ms,
+              # which delays welcome audio and can be retired when the filtered V4.2 handshake deploys.
+              # A greeting covers the visitor-reach interval by its own duration, so this hold applies
+              # only when there is no greeting.
+              - if:
+                  condition:
+                    lambda: 'return id(welcome_file) == nullptr;'
+                  then:
+                    - delay: 1.75s
+              - script.execute: welcome_and_open
+              - homeassistant.event:
+                  event: esphome.doorbell_opened
+            else:
+              - homeassistant.event:
+                  event: esphome.doorbell_not_opened
   - platform: template
     name: "Chime Enabled"
     id: chime_enabled
@@ -458,9 +432,10 @@ binary_sensor:
     entity_category: diagnostic
 
 switch:
+  # K1 (talk handshake + TX gate) follows the media_player state (on_announcement/on_idle) and is read
+  # by two policy lambdas — not a user control. Kept off HA (id, no name): a stray toggle would only
+  # assert the handshake pedestal onto the live bus (no audio) or cut K1 mid-greeting.
   - platform: output
-    name: "Intercom PTT"
-    icon: mdi:phone-outgoing
     id: intercom_ptt
     output: ptt_relay_bin
     restore_mode: ALWAYS_OFF   # boot into listen/idle (K1 de-energised = talk strap open)
@@ -489,48 +464,6 @@ switch:
     id: suppress_chime
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
-  # Bench diagnostics (SAFE-6 / Stage-2c): direct drives for the two SSR outputs with no user-facing
-  # switch of their own. Only this bench config carries them — the door-hold switch bypasses the
-  # 1.75 s button pulse (the Q3 watchdog still releases K2 after ~6.7 s; K4 stays open while held).
-  - platform: output
-    name: "Debug Chime Suppress"
-    icon: mdi:bug
-    id: debug_chime_suppress
-    entity_category: diagnostic
-    output: suppress_chime_bin
-    restore_mode: ALWAYS_OFF
-  - platform: output
-    name: "Debug Door Drive Hold"
-    icon: mdi:bug
-    id: debug_door_drive_hold
-    entity_category: diagnostic
-    output: front_door_buzzer_bin
-    restore_mode: ALWAYS_OFF
-  # Bench tone source — a ~1 kHz sine on the DAC/TX path. Engage "Intercom PTT" so K1 puts it on P2/P3;
-  # scope the TX node (mic loopback is gone — the half-duplex bus can't play + capture at once anyway).
-  - platform: template
-    name: "Debug Test Tone"
-    icon: mdi:sine-wave
-    id: debug_test_tone
-    entity_category: diagnostic
-    optimistic: true
-    restore_mode: ALWAYS_OFF
-    turn_off_action:
-      - speaker.stop: intercom_speaker
-  # POP A/B: flip the ES8311 DAC soft-ramp live so we can scope P3 with it off vs on in one session.
-  # ON  -> REG0x37 = 0x48 (DAC_RAMPRATE 4, ramp enabled); OFF -> 0x08 (ESPHome default, ramp disabled).
-  # Boot default is ON (the on_boot override); toggle OFF to capture the "before" pop.
-  - platform: template
-    name: "Debug DAC Softramp"
-    id: debug_dac_softramp
-    icon: mdi:tune-vertical
-    entity_category: diagnostic
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
-    turn_on_action:
-      - lambda: 'uint8_t r[2] = {0x37, 0x48}; id(codec_i2c)->write(0x18, r, 2);'
-    turn_off_action:
-      - lambda: 'uint8_t r[2] = {0x37, 0x08}; id(codec_i2c)->write(0x18, r, 2);'
 
 # *** IMPORTANT — the SSR gates are ACTIVE-HIGH, so these outputs are NOT inverted. ***
 # Each SSR LED is driven from the GPIO through a 220 Ω series R (with a 10 k pull-down): GPIO HIGH ->
@@ -550,11 +483,8 @@ output:
                              # leads = S1 break-before-make in hardware (no firmware sequencing)
     id: front_door_buzzer_bin
 
-# Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the
-# expected delivery/guest. Options MUST stay in the same order as the greetings registry (esphome:
-# on_boot); the greet/greet_and_open api actions resolve these option NAMES via index_of. Order:
-# 0 = None (just open, no door audio), 1 = Chime, 2 = Silent (1.5 s inaudible — greet/open timing
-# test), 3 = Hello.
+# Which greeting the auto-open reflex plays on the NEXT ring — HA primes this ahead of an expected
+# delivery/guest. Options MUST stay in the same order as the greetings registry (esphome: on_boot).
 select:
   - platform: template
     name: "Next-ring greeting"

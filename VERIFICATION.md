@@ -28,7 +28,7 @@ own ERC/DRC can't express and exports the fab outputs from the authoritative fil
   parts inside the outline).
 - **`route.py`** — 0 unrouted nets; no over-limit copper-thieving float island wide enough to take a
   GND stitching via (too-narrow slivers are accepted).
-- **Firmware** — `esphome config firmware/doorbell-v4.yaml` parses clean (needs a `secrets.yaml`
+- **Firmware** — `esphome config firmware/doorbell.yaml` parses clean (needs a `secrets.yaml`
   with `wifi_ssid`/`wifi_password` alongside). Confirm the GPIO assignments in the YAML match the
   schematic.
 
@@ -139,7 +139,7 @@ those are §6) can be exercised this way.
 
 **Rig:** floating PSU (2-ch ideal, or 1-ch + a momentary button for the ring tap), a ~100 Ω resistor
 on the P2 feed, an isolated/battery 2-ch scope, a DMM, and the board's own USB-C 5 V (via a current
-meter if available). Flash `firmware/doorbell-v4-bench.yaml` for these stages — the production
+meter if available). Flash `firmware/doorbell-bench.yaml` for these stages — the production
 config minus the HA events (a bench ring would fire the real automations) plus direct debug
 switches for K3 and the door drive. **Ground discipline:** P1 is hard-bonded to board GND *and* USB GND, so
 `PSU− = P1 = USB-GND = scope-ground` is **one node** — float the PSU, isolate the scope, grounds on

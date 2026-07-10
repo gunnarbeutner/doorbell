@@ -9,7 +9,7 @@ can't express (connectivity + the copper-thieving sliver limit in `route.py`, pl
 `check_pcb.py`) — and exports the fab outputs; it does not generate the board.
 `tools/doorbell_design.py` holds the placement constants `check_pcb.py` verifies (connector edge
 fit, mounting-hole MLCC keep-out); the KiCad files are authoritative for everything else.
-V4 firmware: `firmware/doorbell-v4.yaml`. LCSC part numbers live in the schematic symbols as hidden
+Firmware: `firmware/doorbell.yaml`. LCSC part numbers live in the schematic symbols as hidden
 `LCSC`/`Description`/`MPN`/`Datasheet` fields (the JLCPCB library symbols carry most; the rest are
 set by hand) and `tools/jlcpcb_files.py` reads them from the schematic for the BOM.
 Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
@@ -290,7 +290,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 
 ### ESP32-S3 GPIO map
 
-The authoritative pin assignment lives in `firmware/doorbell-v4.yaml` and the schematic
+The authoritative pin assignment lives in `firmware/doorbell.yaml` and the schematic
 (`kicad/doorbell.kicad_sch`, U1); it is not duplicated here. **Placement rationale:** U1 sits so the
 native-USB pins (IO19/IO20) reach the USB-C connector (J1) / the D5 ESD clamp, and the ES8311 I²C/I²S
 bus is assigned **ascending by module pad** (SDA, SCL, MCLK, BCLK, DIN on GPIO38–42, then WS, DOUT on
@@ -352,7 +352,7 @@ opto collector ──► GPIO (internal pull-up)   opto emitter ──► GND  (
   because the weak ~45 kΩ internal pull-up demands only ~56 µA while the opto can sink
   ~0.85 mA even at abused-low CTR. Result is insensitive to opto part variation; with each
   emitter tied straight to GND the GPIO LOW is just V_CE(sat) ≈ 0.1 V.
-- **Cross-talk masking** (`firmware/doorbell-v4.yaml`, lambda filters ahead of the debounce):
+- **Cross-talk masking** (`firmware/doorbell.yaml`, lambda filters ahead of the debounce):
   **OC1 is not masked**; it senses the DC-dominated line-4 session level and must remain able to
   report a genuine ring during PTT.
   - **Apartment Doorbell (OC2)** taps the speaker pair, so it pulses on *any* loud
@@ -362,7 +362,7 @@ opto collector ──► GPIO (internal pull-up)   opto emitter ──► GND  (
   - All masked interferers are AC, so the raw input keeps toggling and the masks
     re-evaluate continuously while active. The masks must never gate a *steady-DC*
     signal that outlives the mask window — the lambda only re-runs on raw-input edges.
-- **OC2 tone detection** (`firmware/doorbell-v4.yaml`): the opto conducts only on positive
+- **OC2 tone detection** (`firmware/doorbell.yaml`): the opto conducts only on positive
   half-cycles above the LED threshold, so OC2's raw input toggles at audio rate
   (~1 ms low / ~1.4 ms high) and a plain `delayed_on` would never latch. The filter
   chain stretches the conduction pulses into a level first (`delayed_off: 50ms`), then

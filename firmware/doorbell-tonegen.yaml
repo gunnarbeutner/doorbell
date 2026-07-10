@@ -1,6 +1,6 @@
 # Klingel V4 — TONE GENERATOR + HA MEDIA PLAYER for the SECOND V4.1 board (bench instrument,
 # not a doorbell). Bench bring-up uses two boards: board #1 (doorbell2 @ .78,
-# doorbell-v4-bench.yaml) is the unit under test; this config turns the spare board into an audio
+# doorbell-bench.yaml) is the unit under test; this config turns the spare board into an audio
 # source for board #1's RX and chime-mute tests (VERIFICATION.md §5.5 2d/2e): "Tone" + "PTT" put a
 # ~1 kHz sine onto P2/P3 through this board's own DAC → R26/C14 → TALK_BRIDGE → R28 → K1 path
 # (~0.55 Vrms into high-Z), and the "Tone generator DAC" media_player streams arbitrary HA audio

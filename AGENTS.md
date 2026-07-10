@@ -14,8 +14,8 @@ corresponding V4.1 function works.
 - `REQUIREMENTS.md` defines required behavior and safety properties.
 - `DESIGN.md` explains the current architecture and rationale.
 - `kicad/doorbell.kicad_sch` and `kicad/doorbell.kicad_pcb` are authoritative for the hardware.
-- `firmware/doorbell-v4.yaml` is the production ESPHome configuration;
-  `firmware/doorbell-v4-bench.yaml` is its bench-safe counterpart.
+- `firmware/doorbell.yaml` is the production ESPHome configuration;
+  `firmware/doorbell-bench.yaml` is its bench-safe counterpart.
 - `wf26/wf26.kicad_sch` captures the reverse-engineered passive handset.
 - `VERIFICATION.md` is the reusable pre-fab verification procedure. Open work belongs in `TODO.md`.
 - Exact parts and ordering instructions belong in the schematic and `ORDERING.md`.
@@ -23,7 +23,7 @@ corresponding V4.1 function works.
 Keep requirements, design rationale, schematic/PCB behavior, firmware comments and tests consistent.
 Do not copy transient tool versions, warning counts or report results into durable documentation.
 Keep bench firmware behavior aligned with production except for the safety and diagnostic differences
-documented at the top of `firmware/doorbell-v4-bench.yaml`.
+documented at the top of `firmware/doorbell-bench.yaml`.
 
 ## Verification
 
