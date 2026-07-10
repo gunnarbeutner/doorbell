@@ -62,6 +62,7 @@ esphome:
           id(greetings).push_back(id(welcome_silent)); // 2 = Silent (1.5 s inaudible timing test)
           id(greetings).push_back(id(welcome_hello));  // 3 = Hello
           id(greetings).push_back(id(welcome_secret)); // 4 = Secret
+          id(greetings).push_back(id(welcome_windows));// 5 = Windows
           // Registry integrity: the vector and the next_greeting select options are index-aligned by
           // hand — flag a forgotten push_back / option at boot instead of silently playing the wrong
           // (or no) greeting later.
@@ -102,7 +103,8 @@ api:
   encryption:
     key: !secret api_encryption_key
   # Immediate, HA-driven greeting/open. `greeting` is a greeting NAME matching a next_greeting select
-  # option ("None"/"Chime"/"Silent"/"Hello", case-sensitive) — the select's option list IS the name
+  # option ("None"/"Chime"/"Silent"/"Hello"/"Secret"/"Windows", case-sensitive) — the select's
+  # option list IS the name
   # registry, so index_of resolves name -> greetings[]. Unknown/empty name -> None (no door audio; the
   # door still opens for greet_and_open). HA maps a trigger type (parcel/food/guest/arrival) -> a name.
   actions:
@@ -214,6 +216,8 @@ media_player:
         file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
       - id: welcome_secret
         file: "sounds/secret.wav"          # 1.4 s Zelda "secret" chime, 16 kHz mono, peak -3 dBFS
+      - id: welcome_windows
+        file: "sounds/windows.wav"         # 6.7 s Windows sound, 16 kHz mono PCM, peak -3 dBFS
     # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute FOLLOW the
     # player's playback state — engage while announcing/playing, release when idle/paused. Event-driven
     # so K1 can't be dropped mid-play by a transient IDLE blip (the earlier bug where play_welcome
@@ -554,7 +558,7 @@ output:
 # expected delivery/guest. Options MUST stay in the same order as the greetings registry (esphome:
 # on_boot); the greet/greet_and_open api actions resolve these option NAMES via index_of. Order:
 # 0 = None (just open, no door audio), 1 = Chime, 2 = Silent (1.5 s inaudible — greet/open timing
-# test), 3 = Hello.
+# test), 3 = Hello, 4 = Secret, 5 = Windows.
 select:
   - platform: template
     name: "Next-ring greeting"
@@ -568,6 +572,7 @@ select:
       - "Silent"
       - "Hello"
       - "Secret"
+      - "Windows"
     initial_option: "None"
 
 button:
