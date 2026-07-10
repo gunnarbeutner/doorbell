@@ -114,15 +114,6 @@ C12 = 10 µF). Remaining open:
       *(DESIGN.md: "Audio path")*
 - [ ] **Hum check** with the P1↔GND bond once RX is live (bench 6).
 
-## Bus protection & grounding (`kicad/doorbell.kicad_sch`)
-
-- [ ] **Bus TVS — confirm the surge transient stays under the clamp; align the 3D models.** The per-line
-      bidirectional TVS (H24VND3BA on D2/D3/D7/D12, P2–P5 → P1/GND) and the non-polar C19/C21 anti-series
-      pair are placed and routed (DRC clean). Still open: (1) a **higher-bandwidth capture** of a ring/door
-      onset — the 25–50 kSa/s captures undersample the fast switching edges, so confirm the true transient
-      peak stays below the ~31 V breakdown knee (else step the standoff up); the prefab gate also flags this
-      surge margin as unmeasured. (2) Align the imported 3D models (min-z = 0) + clear KiCad’s 3D cache.
-
 ## Bench measurements (settle the remaining open questions)
 
 Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/power-bank handheld;
