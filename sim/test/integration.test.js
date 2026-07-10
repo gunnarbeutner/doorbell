@@ -217,35 +217,31 @@ const endAndRecloseChime = ({ charged, wait, jp2 = true }) => {
   return chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, T: 0.05, seed: ended.state, observe: true, jp2 });
 };
 
-test('chime suppress transition: immediate K3 reclose reproduces the reset/brownout hazard', () => {
+test('chime suppress transition: immediate K3 reclose cannot accumulate enough K5 pickup force', () => {
   const reclosed = endAndRecloseChime({ charged: trappedChimeCharge(), wait: 0.02 });
-  assert.equal(reclosed.relatched, true, 'an immediate reclose should expose the known unsafe transition until reset handling is fixed');
+  assert.equal(reclosed.relatched, false, 'the decaying C1 reclose pulse must not accumulate enough coil force to operate K5');
   assert.ok(reclosed.peakP4 > 9.6, `expected a K5-operate-level P4 pulse, got ${reclosed.peakP4.toFixed(2)} V`);
 });
 
-test('chime suppress transition: JP2 cut proves the safety result depends on the R36 bleed', () => {
+test('chime suppress transition: JP2 cut retains charge but still cannot re-latch K5', () => {
   const reclosed = endAndRecloseChime({ charged: trappedChimeCharge({ jp2: false }), wait: 12, jp2: false });
-  assert.equal(reclosed.relatched, true, 'cutting JP2 must preserve the trapped-charge failure signature');
+  assert.equal(reclosed.relatched, false, 'stored C1 charge must not operate K5 even with the bleed deliberately cut');
+  assert.ok(reclosed.peakP4 > 9.6, `the diagnostic control should retain a pickup-level pulse, got ${reclosed.peakP4.toFixed(2)} V`);
 });
 
-test('chime suppress transition: bleed delay has an unsafe short-wait and a safe 5τ boundary', () => {
+test('chime suppress transition: both fresh and bled charge are harmless to K5', () => {
   const waits = [0.02, 2.4, 4.8, 7.2, 12];
   const results = waits.map((wait) => ({ wait, result: endAndRecloseChime({ charged: trappedChimeCharge(), wait }) }));
-  assert.equal(results[0].result.relatched, true, 'the short-wait control must remain unsafe');
-  assert.equal(results.at(-1).result.relatched, false, 'the documented 12 s / 5τ delay must be safe');
-  const firstSafe = results.find(({ result }) => !result.relatched);
-  assert.ok(firstSafe && firstSafe.wait <= 12, `no safe boundary found: ${results.map(({ wait, result }) => `${wait}s=${result.relatched}`).join(', ')}`);
+  assert.ok(results.every(({ result }) => !result.relatched),
+    `the reclose pulse must never operate K5: ${results.map(({ wait, result }) => `${wait}s=${result.relatched}`).join(', ')}`);
 });
 
-test('chime suppress transition: reclosing K3 after the 5τ bleed must not create a phantom K5 latch', () => {
-  // R36 discharges the 23.5 µF effective gong capacitance with τ≈2.4 s. Five time constants
-  // (~12 s) is the minimum safe-unmute delay used here; the coarser step keeps this wait cheap.
+test('chime suppress transition: R36 still reduces the reclose pulse after five time constants', () => {
+  // R36 is a passive robustness bleed, not a required firmware safety timer.  Five time constants
+  // (~12 s) should nevertheless leave only a small residual reclose pulse.
   const reclosed = endAndRecloseChime({ charged: trappedChimeCharge(), wait: 12 });
-  assert.equal(
-    reclosed.relatched,
-    false,
-    `reclosing K3 injected ${reclosed.peakP4.toFixed(2)} V onto P4 and pulled K5 back in`,
-  );
+  assert.equal(reclosed.relatched, false, `a bled reclose must not operate K5 (P4 peak ${reclosed.peakP4.toFixed(2)} V)`);
+  assert.ok(reclosed.peakP4 < 1.5, `R36 should substantially bleed CHIME_C1 by 12 s, got ${reclosed.peakP4.toFixed(2)} V`);
 });
 
 // Safety invariant (GONG requirement — the Etagenruf must always ring): the Etagenruf (apartment

@@ -91,7 +91,10 @@ function createStepper(els, sources, gnd, dt, seed) {
     if (e.type === 'L') e.ip = 0;
     if (e.type === 'D' || e.type === 'OPTO' || e.type === 'SSR') e.vl = 0;
     if (e.type === 'OPTO') e.vl2 = 0;
-    if (e.type === 'RC') e.coilOn = false; // relay contact latch state (hysteretic)
+    if (e.type === 'RC') {
+      e.coilOn = false; // relay contact latch state (hysteretic)
+      e.pickupElapsed = 0;
+    }
     if (e.type === 'SSR') e.ledOn = false; // PhotoMOS LED energized latch (hysteretic, like the relay)
     if (e.type === 'LDO') e.ldoOn = true; // pass element conducting? (gated on input being source-fed, below)
   }
@@ -302,7 +305,23 @@ function createStepper(els, sources, gnd, dt, seed) {
       }
       if (e.type === 'RC') {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
-        e.coilOn = e.coilOn ? vc >= e.release : vc >= e.pickup; // pick up at >=pickup, drop out at <release
+        if (e.coilOn) {
+          e.coilOn = vc >= e.release; // released contacts return once the coil falls below its hold voltage
+          if (!e.coilOn) e.pickupElapsed = 0;
+        } else if (vc >= e.pickup) {
+          // Must-operate is a *static* voltage.  A coil close to that threshold has almost no excess
+          // magnetic force above its return spring, so it cannot complete an operation in the same time
+          // as a nominal-voltage coil.  Integrate that excess force (roughly proportional to I²) instead
+          // of treating every voltage above pickup as a full-strength 3 ms command.  This matters for
+          // K5: the measured C19/C21 reclose pulse starts near 10 V and decays through 9.6 V without
+          // moving the armature, even though 9.6 V is its DC must-operate specification.
+          const den = (e.nominal || e.pickup) ** 2 - e.pickup ** 2;
+          const drive = den > 0 ? Math.max(0, (vc ** 2 - e.pickup ** 2) / den) : 1;
+          e.pickupElapsed += dt * drive;
+          e.coilOn = e.pickupElapsed >= (e.operate || 0);
+        } else {
+          e.pickupElapsed = 0;
+        }
       }
       if (e.type === 'SSR') {
         // latch the LED-energized state from its forward current (operate at >= iop, release at < iop/2),

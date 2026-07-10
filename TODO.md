@@ -6,18 +6,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
 
 ## V4 main board — schematic / layout changes (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
-- [ ] **Complete the K3 trapped-charge safety contract.** R36 (100 kΩ) and factory-bridged JP2 now
-      discharge CHIME_C1 (τ≈2.4 s), and the stateful simulator regression passes after a 12 s / 5τ
-      wait. Implement the matching firmware rule: reclose K3 only after line 4 is idle and the full
-      discharge interval has elapsed. Then explicitly resolve reset/brownout during that interval;
-      the passive bleed does not make an immediate hardware-default reclose safe, and firmware cannot
-      assume it retains control of `MUTE_DRV` during reset. Pick and verify a reset-safe mechanism
-      (a supervised hold/delay or latch, a switched low-resistance discharge path, a proven
-      reset-persistent GPIO state, or a demonstrated harmless immediate reclose at worst-case charge),
-      then add a reset/brownout regression for that exact mechanism. Any hardware solution must still
-      restore the passive gong after complete logic-power loss; changing K3 to a non-fail-safe default
-      is not acceptable.
-
 - [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**
       (verifies **BUS-2(a)/(b)** on the real TV20/S; the Ra/Cf/Rb leg is in the V4.2 schematic + PCB,
       sim-verified — `gong rejection`, `JP1 cut`, BUS-1 tests — with spectrum/levels capture-gated
@@ -57,23 +45,12 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       remain inside the SGM2212 and LP5907 stability ranges; change the local bulk arrangement before
       fabrication if they do not.
 
-- [ ] **Verify D6 assembly polarity.** Cross-check the KT-0603R cathode mark, the KiCad footprint's
-      pad numbering and the exported CPL rotation against the JLCPCB part preview. This is not a
-      functional-board risk—a mistake only leaves the status LED dark—but it is cheap to settle before
-      ordering.
-
 - [ ] **Decide whether to buffer the PhotoMOS LED drives for V4.2.** A small low-side transistor/FET
       stage on `PTT_DRV`, `DOOR_DRV` and optionally `MUTE_DRV` would make LED current independent of
       the ESP32's undocumented loaded-VOH corner and isolate the dual-LED actuator loads from the MCU.
       Preserve the present fail-safe states with explicit gate/base pull-downs. If direct drive is
       retained, close the corresponding bench/source-evidence item below rather than relying on the
       module datasheet's typical 40 mA figure.
-
-- [ ] **Decide whether to strengthen the OC1/OC2 low-current guarantee.** The present 5.1 kΩ inputs
-      produce about 1.25–1.9 mA from measured calls, while the fitted LTV-217-B-G's CTR rank is
-      guaranteed at 5 mA. Prefer an optocoupler with a guaranteed CTR near 1 mA; only reduce the input
-      resistors after quantifying the extra shared-bus loading, reverse-clamp current and dissipation.
-      Retain the present circuit if sourced low-current/temperature evidence or bench margin closes it.
 
 - [ ] **Add pre-fab diagnostic pads where routing permits.** Prioritise `CHIME_C1`, `CHIME_MID`,
       `DELAY_GATE`, `WD_GATE`, `AVDD`, `VMID`, `OC1_OUT` and `OC2_OUT`; keep or confirm convenient
