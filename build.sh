@@ -87,8 +87,18 @@ pcb_drc() {
     fi
     exit "$rc"
   fi
-  kicad-cli pcb drc "$PCB" -o /tmp/doorbell_drc.txt 2>&1 | q | tail -1
-  grep -iE "unconnected pads|DRC violations" /tmp/doorbell_drc.txt || true
+  local drc_rc=0
+  rm -f /tmp/doorbell_drc.txt /tmp/doorbell_drc_cli.txt
+  kicad-cli pcb drc --schematic-parity --exit-code-violations "$PCB" \
+    -o /tmp/doorbell_drc.txt >/tmp/doorbell_drc_cli.txt 2>&1 || drc_rc=$?
+  q </tmp/doorbell_drc_cli.txt
+  if [ -f /tmp/doorbell_drc.txt ]; then
+    grep -iE "unconnected pads|DRC violations|schematic parity" /tmp/doorbell_drc.txt || true
+  fi
+  if [ "$drc_rc" -ne 0 ]; then
+    echo "ERROR: KiCad DRC/parity gate failed (exit $drc_rc). See /tmp/doorbell_drc.txt." >&2
+    return "$drc_rc"
+  fi
 }
 simulation() {
   echo "▶ sim unit tests"

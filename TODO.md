@@ -31,11 +31,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Purely
       a connector/mechanical change — the J1/J3 back-feed is already handled by the D4/D15 diode-OR.
       *(DESIGN.md "Power tree" / USB)*
-- [ ] **Harden `build.sh`'s DRC step.** The gong-free-handshake relayout exposed two gaps: the DRC
-      count is printed but **not failed on** (a stale-zone-fill clearance hit sailed through
-      the default release), and **schematic parity isn't checked** (a board missing new schematic parts would
-      pass). Add `--schematic-parity` + `--exit-code-violations` to the `kicad-cli pcb drc` call
-      (exclusions are respected, so the now-clean 0/0 board stays green).
 - [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**
       (verifies **BUS-2(a)/(b)** on the real TV20/S; the Ra/Cf/Rb leg is in the V4.2 schematic + PCB,
       sim-verified — `gong rejection`, `JP1 cut`, BUS-1 tests — with spectrum/levels capture-gated

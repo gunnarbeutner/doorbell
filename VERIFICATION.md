@@ -21,7 +21,9 @@ own ERC/DRC can't express and exports the fab outputs from the authoritative fil
   screw terminal / buttons / LDO; the informational `GND`/`P1` same-net note from the deliberate
   P1↔GND bond; cosmetic `lib_symbol_mismatch` if a placed SSR symbol drifted from the cached lib —
   re-sync the symbol and re-run so the schematic pin numbering provably equals the footprint).
-- **DRC** — 0/0. Clearances are pinned to JLCPCB capability in `kicad/doorbell.kicad_dru`.
+- **DRC + schematic parity** — 0/0. The gate uses `--exit-code-violations` so any unexcluded
+  violation fails the build, and `--schematic-parity` so a PCB that has drifted from the schematic
+  also fails. Clearances are pinned to JLCPCB capability in `kicad/doorbell.kicad_dru`.
 - **`check_pcb.py`** — placement PASS (edge connectors J1/J2 and U1 flush on their board edges;
   parts inside the outline).
 - **`route.py`** — 0 unrouted nets; no over-limit copper-thieving float island wide enough to take a
