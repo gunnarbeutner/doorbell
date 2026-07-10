@@ -376,11 +376,11 @@ binary_sensor:
               switch.is_on: auto_open_front_door
             then:
               - script.execute: stage_selected_greeting
-              # No greeting -> hold before opening: (1) give the visitor time to reach the door before
-              # the latch releases; (2) wait out the Türruf gong for the door path (K4's break-before-make
-              # already keeps the held gong off line 3, so this part is belt-and-suspenders). A greeting
-              # instead waits out the gong inside play_welcome and covers visitor-reach by its own
-              # duration, so this hold only applies when there's no greeting.
+              # No greeting -> hold before opening so the visitor has time to reach the door before the
+              # latch releases. This is an intentional UX delay and is independent of gong_until_ms,
+              # which delays welcome audio and can be retired when the filtered V4.2 handshake deploys.
+              # A greeting covers the visitor-reach interval by its own duration, so this hold applies
+              # only when there is no greeting.
               - if:
                   condition:
                     lambda: 'return id(welcome_file) == nullptr;'

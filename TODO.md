@@ -66,7 +66,8 @@ C12 = 10 µF). Remaining open:
 - [ ] **RX divider trim (bench-confirm).** 22k/3.3k (≈−18 dB) is committed and lands the ±8.8 V gong at
       ~1.1 V, inside the ES8311 mic abs-max (~AVDD+0.3 = 3.6 V). The gong ≈ the loudest line-2 audio (V3),
       so −18 dB also bounds speech and the codec mic PGA + ~90 dB ADC SNR lift it to a usable level — the
-      divider is sound; the bench just confirms the delivered ADC level and sets the PGA. Revisit Rb
+      divider is sound; the bench just confirms the real line-2 level/source impedance, delivered ADC
+      level and final PGA setting during a call. Revisit Rb
       (2.2k → −21 dB / 4.7k → −15 dB) only if that confirm shows it. Tone-scale bench confirm done
       (two-board rig): measured ratio ≈ design −18 dB, ADC reads −25.7 dBFS at 0 dB PGA from a
       ~0.55 Vrms bus tone. Still open on the real bus: gong-scale abs-max headroom + the final PGA
@@ -120,8 +121,8 @@ Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/p
 ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-coil reads, and don't
 tether it to a mains-earthed PC. Pair with a DMM.
 
-- [ ] **Record a real test call (full speech session) — do this before trusting the sim's talk /
-      RX-TX model.** The existing captures cover the ring + door-open (`captures/runs/our-ring-door-open/notes.md`)
+- [ ] **Record a real test call (full speech session) for reference levels.** The existing captures cover
+      the ring + door-open (`captures/runs/our-ring-door-open/notes.md`)
       but not a **call with audio**. Drive the genuine sequence: **pulse line 4 (P4) to initiate**,
       with **P2 held at +12 V for the whole call (at least)**, then talk/listen. Capture via
       `captures/capture.py` (DHO804 isolated, grounds on **P1**, 3 ch — P4, P2, P3) and write the
@@ -129,10 +130,9 @@ tether it to a mains-earthed PC. Pair with a DMM.
       trace is idle or a door-open bridge, so there is *no* TX-direction (voice-on-line-3) data yet.
       Use it to ground-truth (a) the real line levels during a call (P2 held at
       12 V, the line-4 session level, P3 in talk); (b) the **WF26's own TX drive on line 3 + the talk
-      handshake DC** S2+R1 asserts — this is the **target level the codec must match** and the direct
-      answer to whether the 2.2 kΩ bridge alone flips the TV20/S to talk (**derisks the TX-out-reach
-      / TX-level items below before ordering the fab spin** — see "TX level + OUTN handling" and
-      "Outgoing (TX)"); and (c) the **mic-bleed-during-TX** question the sim
+      handshake DC** S2+R1 asserts — this is the **target level the codec must match** (V4.1 operation
+      already proves that codec TX reaches the door and the 2.2 kΩ handshake asserts talk); and (c) the
+      **mic-bleed-during-TX** question the sim
       raised **on the V4.1 topology**: the handset (LS1→C1→K3(NC)→P4) coupled onto transmit line 3
       through the raw 2.2 kΩ handshake whenever **K3 was idle** — ~1.5 Vpp on P3 and in the codec's own
       ADC, vanishing with K3 energised. **The V4.2 Ra/Cf/Rb leg shunts this path's audio band** (same
@@ -153,41 +153,26 @@ tether it to a mains-earthed PC. Pair with a DMM.
       gap (working assumption ≥~10 ms) and confirm a step-driven **K3 (GAQY412EH NC SSR)** opens within it
       so the first Klang is muted; scope where the chime becomes audible vs the pedestal rise. K3's own
       turn-off can't be isolated from the bus capture — step-drive it directly.
-- [ ] **Firmware — retire the 1.75 s 'wait out the gong' door-open delay.** With K4+Q1 giving a hardware
-      break-before-make, the held Türruf is never bridged onto line 3, so the `house_doorbell →
-      delay: 1.75s → front_door_buzzer` mitigation is unnecessary. Removing it opens the door ~1.75 s
-      sooner — confirm that's the wanted UX, then drop the delay.
 - [ ] **Bench — confirm the door lead.** On the real board: a door-open drops K5 (session ends),
       and K2's make lands after the latch drop (no 12 V-DC/gong blip on line 3). Tune C18/R17 if the
       ~20 ms lead doesn't clear the actual latch-drop time.
-- [ ] **(Nice-to-have) confirm the audio model** end-to-end: Etagenruf direct on line 5; gong
-      DC→coil / AC→C1→speaker (expect **no** cone offset); talk mic→C1→P4→R1→line 3; listen
-      line 2→relay→P4→C1→speaker.
-
 ## Firmware (`firmware/doorbell-v4.yaml`)
 
-- [ ] **Retire the greeting gong-wait when the V4.2 board deploys.** The Ra/Cf/Rb handshake makes the
+- [ ] **Retire the ring → welcome-audio gong-wait when the V4.2 board deploys.** The Ra/Cf/Rb handshake makes the
       greeting gong-free in hardware (BUS-2(a)), so wind `gong_until_ms`'s window to 0 — but **keep the
       code path** as the Cf-failure backstop (an aged/cracked-**open** Cf with no wait = the original
       bleed at full strike level; the failure signature is a gong audible at the door during
       greetings). Until the respin deploys, V4.1 keeps the wait; **interim option:** raise
       1750 → ~4200 ms to cover the measured ~3.9 s tail (`our-ring-no-door`: the 1.75 s expiry lands on
       the third Klang at ~3.6 Vpp ⇒ ~140 mVpp leaked onto P3 through V4.1's strap — empirically
-      inaudible thanks to masking + pipeline latency, so optional).
+      inaudible thanks to masking + pipeline latency, so optional). This is independent of the
+      intentional no-greeting auto-open hold, which gives the visitor time to reach the door and stays.
 - [ ] **Session-active = OC1 high.** Line 4 holds through the session, so **OC1 (the Türruf sense)
       stays asserted edge-to-edge — gate directly on OC1, no talk-window timer** (just debounce).
       Bench-confirmed on the emulated bus: OC1 asserts while the K5 latch holds and clears the
       moment it drops.
       Re-add this session arm to the K3 gate (`doorbell_sound_state`) and the cross-talk masks (both
       went PTT-only when the old session-opto was dropped; OC1 now supplies the session level).
-- [ ] **OC1 PTT-mask — verify it's needed (bench).** The firmware masks OC1 (house bell) during board
-      PTT to block a phantom ring → auto-open. The stated mechanism is **bench-unconfirmed and may be
-      negligible:** K1 closed bridges P4↔P3 via the 2.2 kΩ Ra+Rb leg, but the K5 coil (~1.3 kΩ, P4↔P1)
-      clamps P4 (P4 ≈ 0.32·V_P3 — needs P3 idling ≳ 8 V to reach OC1's threshold), OC1's 50 ms
-      debounce already rejects audio-rate AC, and on V4.2 the Cf shunt strips the codec's AC from this
-      path entirely. **Measure P3 idle bias and whether engaging
-      PTT alone (no real ring) trips OC1.** If it doesn't, drop the mask — it currently also blanks a
-      *genuine* ring that lands mid-PTT. (Comment in `doorbell-v4.yaml` House-Doorbell filter.)
 
 ## Audio path — remaining verification
 
@@ -200,10 +185,6 @@ V4.1 field operation already proves that codec TX on line 3 reaches the door sta
 2.2 kΩ handshake enables talk without firing the opener. The V4.2-specific ~25 ms RC-ramped
 handshake is covered by the earlier live-bus passive-split gate. What remains:
 
-- [ ] **Incoming (RX) — confirm the line-2 tap level/impedance.** RX is on **line 2** (ref line 1),
-      independent of line 4 / K3. Bench-check the received level and source impedance on line 2↔P1
-      during a call, and that the R30/R33 (and R31/R32) divider lands the codec input in range.
-      *(DESIGN.md: "Audio path")*
 - [ ] **Software-TX isolation from the passive LS1 microphone.** Check only the relevant unintended
       state: **K1 active, SW4 released**, with K3 both idle and energised. Inject a voice-band signal
       at LS1 and require the V4.2 Ra/Cf/Rb filter to leave only a small residual on P3 relative to the
