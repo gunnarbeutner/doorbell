@@ -181,6 +181,53 @@ test('chime suppress fail-safe: line 4 stays bridged to C1 when the ESP is unpow
   assert.ok(near(V['/CHIME_C1'], 12), `unpowered, K3 NC must bridge line 4 → /CHIME_C1, got ${V['/CHIME_C1']?.toFixed(2)} V`);
 });
 
+test('chime suppress transition: reclosing K3 after a ring must not create a phantom K5 latch', () => {
+  const gnd = gndOf(netlist), dt = 20e-6;
+  const phase = ({ mute, sources, T, seed, observe = false, step = dt }) => {
+    const els = buildElements(netlist, { program: { U1: { '/MUTE_DRV': mute ? 3.3 : 0 } } });
+    const sim = createStepper(
+      els,
+      Object.entries(sources).map(([net, v]) => ({ net, vf: () => v })),
+      gnd,
+      step,
+      seed,
+    );
+    let peakP4 = -Infinity;
+    let relatched = false;
+    for (let t = 0; t < T; t += step) {
+      sim.step(t);
+      if (observe) {
+        peakP4 = Math.max(peakP4, sim.vn[sim.ni['/P4']] ?? 0);
+        relatched ||= Boolean(sim.extractState().relays.K5);
+      }
+    }
+    return { state: sim.extractState(), peakP4, relatched };
+  };
+
+  // Charge the gong coupling capacitors from a real ring with K3 closed, then open K3 while the
+  // ring is still present. Ending the session with P2 low drops K5 but leaves CHIME_C1 isolated and
+  // charged. Reclosing the NC contact later must not turn that stored charge into another pull-in.
+  const ringing = phase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.02 });
+  const muted = phase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.005, seed: ringing.state });
+  // R36 discharges the 23.5 µF effective gong capacitance with τ≈2.4 s. Five time constants
+  // (~12 s) is the minimum safe-unmute delay used here; the coarser step keeps this wait cheap.
+  const ended = phase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 0 }, T: 12, step: 1e-3, seed: muted.state });
+  assert.equal(ended.state.relays.K5, false, 'the original ring/session must be over before the reclose check');
+
+  const reclosed = phase({
+    mute: false,
+    sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 },
+    T: 0.05,
+    seed: ended.state,
+    observe: true,
+  });
+  assert.equal(
+    reclosed.relatched,
+    false,
+    `reclosing K3 injected ${reclosed.peakP4.toFixed(2)} V onto P4 and pulled K5 back in`,
+  );
+});
+
 // Safety invariant (GONG requirement — the Etagenruf must always ring): the Etagenruf (apartment
 // door — someone physically at your own door) reaches LS1 directly on line 5, bypassing K3, so it is
 // *structurally* non-suppressible. K3 can mute only the Türruf (through C1). The guarantee is hardware,

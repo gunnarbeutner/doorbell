@@ -6,6 +6,12 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
 
 ## V4 main board — schematic / layout changes (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
+- [ ] **Complete the K3 trapped-charge safety contract.** R36 (100 kΩ) and factory-bridged JP2 now
+      discharge CHIME_C1 (τ≈2.4 s), and the stateful simulator regression passes after a 12 s / 5τ
+      wait. Implement the matching firmware rule: reclose K3 only after line 4 is idle and the full
+      discharge interval has elapsed. Then explicitly resolve reset/brownout during that interval;
+      the passive bleed does not make an immediate hardware-default reclose safe.
+
 - [ ] **(V4.2) Status LED — remaining tails.** The active-low IO3 status LED is now wired in the
       schematic + PCB and verified (D6 cathode → `STATUS_LED` → U1 IO3; **R27** 1 kΩ pull-down → GND;
       anode kept on R15 → +3V3; ERC/DRC/schematic-parity all clean, LED fully routed). Left to do:

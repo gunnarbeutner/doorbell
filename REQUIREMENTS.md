@@ -107,6 +107,10 @@ shared party line across apartments.
   particular a PTT/talk bridge or speaker/session audio on the sensed lines must not be reported as a
   ring (and must never trigger the door opener). *(Realised in firmware masking, DESIGN.md
   "Bell / session sense front-end".)*
+- **RING-4a (MUST)** Chime-suppression state changes MUST NOT create a new ring/session. Charge
+  trapped on the K3/C19/C21 coupling node MUST be discharged before K3 recloses; the hardware bleed
+  and firmware unmute delay MUST be sized and verified together. Reset/brownout behavior during the
+  discharge interval MUST be included in the transition analysis.
 - **RING-5 (SHOULD)** Detection SHOULD be galvanically isolated from the bus (see SAFE-3).
 
 ## GONG — Audible gong suppression

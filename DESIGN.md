@@ -559,7 +559,12 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
 - **K3 — chime mute.** In the gong's audio path (`P4 ↔ CHIME_C1 ↔ C1 ↔ P5 → LS1`). NC ⇒ de-energised
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
   = gong muted, with **line 4, the latch and the Etagenruf all untouched** (Etagenruf reaches LS1
-  directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4).
+  directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4). **R36 (100 kΩ) + JP2
+  (factory-bridged)** bleed `CHIME_C1` to GND while K3 is open, discharging the effective ~23.5 µF
+  C19/C21 coupling capacitance (τ≈2.4 s). Firmware must wait at least **~12 s (5τ)** after line 4
+  becomes idle before reclosing K3. JP2 exists only for diagnostic A/B isolation; production/default
+  is bridged. A reset-driven immediate reclose during the discharge window is not made safe by the
+  bleed and remains part of the reset-state safety analysis.
 - **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`SW3.6 ↔
   K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
   (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~38 ms (Q3 · R17·C18) the
