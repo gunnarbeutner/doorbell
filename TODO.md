@@ -12,17 +12,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       discharge interval has elapsed. Then explicitly resolve reset/brownout during that interval;
       the passive bleed does not make an immediate hardware-default reclose safe.
 
-- [ ] **(V4.2) Investigate a vertical (top-entry) USB-C receptacle for J1 (e.g. LCSC C5156600).** The
-      present J1 is a horizontal board-edge USB-C; once the board is mounted in the wall enclosure that
-      edge faces the wall and the port is unreachable, so a USB reflash means un-mounting the board. A
-      vertical receptacle points the port up out of the board face so it's reachable in place — makes
-      USB **recovery** flashing viable without pulling the board (OTA stays the primary reflash path).
-      Check: the vertical body clears the enclosure lid **and stays out of the button travel envelope —
-      not just the buttons' rest position but their full pressed-down depth** (the same buttons whose
-      gap D6 leaks through descend toward the board when pressed); the north-edge USB routing still fans
-      out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Purely
-      a connector/mechanical change — the J1/J3 back-feed is already handled by the D4/D15 diode-OR.
-      *(DESIGN.md "Power tree" / USB)*
 - [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**
       (verifies **BUS-2(a)/(b)** on the real TV20/S; the Ra/Cf/Rb leg is in the V4.2 schematic + PCB,
       sim-verified — `gong rejection`, `JP1 cut`, BUS-1 tests — with spectrum/levels capture-gated
