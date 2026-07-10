@@ -12,7 +12,7 @@ two-way audio, and door-opener control to Home Assistant.
 - **[DESIGN.md](DESIGN.md)** — *how* it's built (architecture, pin map, relays, sense front-end,
   audio path, power, passive fallback, isolation). Authoritative for the circuit's rationale.
 - **`kicad/`** — the actual schematic + PCB (`doorbell.kicad_sch` / `.kicad_pcb`); these are the
-  source of truth for the board itself, edited directly in KiCad. `./build.sh all-route` verifies
+  source of truth for the board itself, edited directly in KiCad. `./build.sh` verifies
   and exports fab outputs.
 - **`tools/`** — build/inspection Python scripts (placement check, routing verify, STEP/BOM/CPL export).
 - **`firmware/`** — ESPHome config (`doorbell-v4.yaml`).

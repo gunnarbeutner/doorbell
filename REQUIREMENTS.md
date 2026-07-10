@@ -279,6 +279,12 @@ provides them.
   switches**: the switch plunger tips (door, talk) land under the housing's button apertures so a
   physical press operates them — this is also what makes the manual buttons work unpowered (MODE-1a).
 
+**MECH-1 / MECH-1a verification status:** PASS on the assembled V4.1 PCB in the real WF26 housing.
+The board seats on the bosses, the lid closes over the populated board, the transducer and wire
+entry align, and both housing buttons actuate their board switches. This physical installation is
+the authoritative enclosure-fit check; re-open the gate if the mechanical interface or component
+height envelope changes.
+
 ## VER — Verification
 
 - **VER-1 (MUST)** The design MUST be validated with **unit / integration tests in the project's

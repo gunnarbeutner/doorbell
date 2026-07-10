@@ -27,7 +27,7 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       *(DESIGN.md "Power tree" / USB)*
 - [ ] **Harden `build.sh`'s DRC step.** The gong-free-handshake relayout exposed two gaps: the DRC
       count is printed but **not failed on** (a stale-zone-fill clearance hit sailed through
-      `all-route`), and **schematic parity isn't checked** (a board missing new schematic parts would
+      the default release), and **schematic parity isn't checked** (a board missing new schematic parts would
       pass). Add `--schematic-parity` + `--exit-code-violations` to the `kicad-cli pcb drc` call
       (exclusions are respected, so the now-clean 0/0 board stays green).
 - [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**

@@ -66,9 +66,9 @@ Highest *sustained* level is **P2 at ~14 V** (12 V rail + ring transients), not 
 a bidirectional **18 V-standoff** bus TVS (e.g. SMF18CA) clears every line with margin, and **P2 is
 the binding line**. (See `../TODO.md` bus-protection.)
 
-**V4 sense prediction — OC2 fires, OC1 stays silent.** Applying the V4 front-end (per-opto 5.1 kΩ
-limiter + 10 kΩ pull-up + shared 1 kΩ emitter → effective conduction threshold ~1.6–3.7 V over
-CTR 0.5–2.6) to these waveforms:
+**V4 sense prediction — OC2 fires, OC1 stays silent.** Applying the V4 front-end (each opto has its
+own 5.1 kΩ LED limiter, a 10 kΩ collector pull-up, and a direct emitter return to GND; there is no
+shared emitter resistor) to these waveforms:
 
 - **OC2 (P5) detects.** The buzzy peaks cross the threshold once per cycle (max gap 2.7 ms even at
   a 5 V threshold), so `delayed_off:50ms` stretches them into a continuous level over the ~470 ms

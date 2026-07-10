@@ -4,16 +4,15 @@
 # source — edit them in KiCad. This script never authors copper; it runs the
 # checks KiCad's own DRC/ERC can't express and exports the fab outputs.
 #
-#   ./build.sh           verify + fab            (full run)   [default = all-route]
-#   ./build.sh sch       schematic ERC (+ PDF export)
-#   ./build.sh check     PCB placement constraints (check_pcb.py)
-#   ./build.sh route     verify planes/thieving/connectivity (route.py) + DRC
-#   ./build.sh sim       run the sim/ circuit-simulator unit tests
-#   ./build.sh fab       export Gerbers/drill/position + BOM to fab/
-#   ./build.sh step      export STEP 3D model to fab/ (omits STEP_Exclude parts)
-#   ./build.sh step-board export bare-board STEP (no components, vias cut) for a 3D-printed switch fit-test
-#   ./build.sh all       sch + check + route + sim   (all checks, no fab)
-#   ./build.sh all-route sch + check + route + sim + fab + step   (full run)
+#   ./build.sh             release: verify, then generate all order-ready outputs (default)
+#   ./build.sh verify      ERC + placement + PCB connectivity/DRC + simulation; no exports
+#   ./build.sh release     same complete run as no arguments
+#   ./build.sh schematic   schematic ERC + PDF export
+#   ./build.sh pcb         placement constraints + planes/thieving/connectivity + DRC
+#   ./build.sh simulation  run the circuit-simulator unit tests
+#   ./build.sh fabrication export Gerbers/drill/position + BOM to fab/
+#   ./build.sh step        export populated STEP model (omits STEP_Exclude parts)
+#   ./build.sh board-step  export bare-board STEP for a 3D-printed switch fit-test
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -24,10 +23,14 @@ PCB="kicad/doorbell.kicad_pcb"
 NOISE='fontconfig|invalid attribute|invalid constant|assert|traits|wxApp|Analytics|New version|Error retrieving source file attributes|NSCocoaErrorDomain'
 q() { grep -vE "$NOISE" || true; }
 
-sch() {
+erc() {
   echo "▶ schematic ERC"
   kicad-cli sch erc "$SCH" -o /tmp/doorbell_erc.txt 2>&1 | q >/dev/null || true
   grep "ERC messages" /tmp/doorbell_erc.txt
+}
+schematic() {
+  erc
+  echo "▶ schematic PDF -> kicad/doorbell.pdf"
   kicad-cli sch export pdf "$SCH" -o kicad/doorbell.pdf 2>&1 | q | tail -1
 }
 check() {
@@ -71,7 +74,7 @@ if lines:
 PY
   rm -f /tmp/doorbell_drc.json
 }
-route() {
+pcb_drc() {
   echo "▶ verify planes/thieving/connectivity + DRC"
   local rc=0
   "$KPY" tools/route.py >/tmp/doorbell_route.txt 2>&1 || rc=$?
@@ -87,11 +90,11 @@ route() {
   kicad-cli pcb drc "$PCB" -o /tmp/doorbell_drc.txt 2>&1 | q | tail -1
   grep -iE "unconnected pads|DRC violations" /tmp/doorbell_drc.txt || true
 }
-sim() {
+simulation() {
   echo "▶ sim unit tests"
   ( cd sim && node --test )
 }
-fab() {
+fabrication() {
   echo "▶ fab outputs -> fab/"
   mkdir -p fab
   rm -f fab/*.gtl fab/*.gbl fab/*.gts fab/*.gbs \
@@ -134,7 +137,7 @@ step() {
   rm -f "$tmp"
 }
 
-step_board() {
+board_step() {
   echo "▶ bare-board STEP (no components) -> fab/doorbell-board.step"
   mkdir -p fab
   # Board substrate only — outline, mounting/tooling holes, and every THT pad drill; no
@@ -157,16 +160,30 @@ step_board() {
   rm -f "$tmp"
 }
 
-case "${1:-all-route}" in
-  sch)        sch ;;
-  check)      check ;;
-  route)      route ;;
-  sim)        sim ;;
-  fab)        fab ;;
-  step)       step ;;
-  step-board) step_board ;;
-  all)        sch; check; route; sim ;;
-  all-route)  sch; check; route; sim; fab; step ;;
-  *) echo "usage: $0 {sch|check|route|sim|fab|step|step-board|all|all-route}"; exit 1 ;;
+verify() {
+  erc
+  check
+  pcb_drc
+  simulation
+}
+
+release() {
+  verify
+  echo "▶ schematic PDF -> kicad/doorbell.pdf"
+  kicad-cli sch export pdf "$SCH" -o kicad/doorbell.pdf 2>&1 | q | tail -1
+  fabrication
+  step
+}
+
+case "${1:-release}" in
+  verify)       verify ;;
+  release)      release ;;
+  schematic)    schematic ;;
+  pcb)          check; pcb_drc ;;
+  simulation)   simulation ;;
+  fabrication)  fabrication ;;
+  step)         step ;;
+  board-step)   board_step ;;
+  *) echo "usage: $0 {verify|release|schematic|pcb|simulation|fabrication|step|board-step}"; exit 1 ;;
 esac
 echo "✓ done"

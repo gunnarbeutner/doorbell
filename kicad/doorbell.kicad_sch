@@ -26958,7 +26958,7 @@
 				)
 			)
 		)
-		(property "Description" "Codec DAC OUTP AC-coupling (codec TX) onto the talk node TALK_BRIDGE; reaches line 3 via R28 (2.2k) when K1 is energized; transformer-less"
+		(property "Description" "Codec DAC OUTP AC-coupling (codec TX) onto TX_OUT; reaches line 3 through K1 with R26 (2.2k) in series; transformer-less"
 			(at 203.2 232.41 0)
 			(hide yes)
 			(show_name no)
@@ -31419,7 +31419,7 @@
 				)
 			)
 		)
-		(property "Description" "Passive WF26-core talk series R (S2): in series with the SW4 Sprechen/Hören manual talk button - the genuine handset's 2.2k talk resistor that R28 matches on the codec path"
+		(property "Description" "Passive WF26-core talk series R (S2): in series with the SW4 Sprechen/Hören manual talk button - the genuine handset's 2.2k talk resistor that R26 matches on the codec path"
 			(at 78.74 328.93 0)
 			(hide yes)
 			(show_name no)

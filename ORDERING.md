@@ -10,16 +10,19 @@ clear them (see the gates below). U1 is an **ESP32-S3-WROOM-1U-N16R8** —
 a **u.FL external antenna** module, so there is no PCB-antenna edge keepout to protect (route the
 antenna lead out of the enclosure instead).
 
-> Run `./build.sh all-route` first to (re)export the fab files in `fab/` — the committed
+> Run `./build.sh` first to verify the design and re-export the fab files in `fab/` — the committed
 > gerbers/BOM/CPL are build outputs and may lag the schematic.
 
-## Pre-fab mechanical fit test (3D-print the board)
+## Mechanical fit gate (physically passed on V4.1)
 
-Do this **before ordering** — a board that doesn't seat in the WF26 housing or whose buttons don't
-line up is a respin, and it's the one failure class no gerber/DRC/sim gate can catch (MECH-1 /
-MECH-1a). `./build.sh all-route` (or `./build.sh step`) exports `fab/doorbell.step` — the PCB
-plus all component bodies as a solid. Print it (FDM is fine; the test is dimensional, not cosmetic)
-and check it against the **original WF26 enclosure** and its buttons:
+**MECH-1 and MECH-1a have passed:** the assembled V4.1 PCB fits and operates in the original WF26
+enclosure. The board seats on the bosses, the populated-board height clears the closed lid, the
+speaker and wire entry align, and both original housing buttons actuate the board switches. This is
+a real-hardware fit result, not an inference from the STEP model.
+
+Repeat this gate before ordering only if a revision changes the board outline, mounting pattern,
+switch/speaker/connector placement, or maximum component height. `./build.sh` (or
+`./build.sh step`) exports `fab/doorbell.step`; print it and check it against the original enclosure:
 
 - **Board fits the housing (MECH-1).** Outline clears the housing walls/posts; the mounting holes
   (H1–H5) line up with the enclosure's bosses; nothing tall (U1, the latch relay K5, the

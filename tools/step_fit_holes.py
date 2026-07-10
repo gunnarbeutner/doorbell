@@ -9,7 +9,7 @@ small vertical holes undersized — so every THT pad drill of a flagged footprin
 OVERSIZE_MM here.
 
 Selection is driven entirely by the STEP_Exclude flag (no hard-coded refdes), so the regular
-assembly export (`build.sh step`) and the bare-board export (`build.sh step-board`) stay in sync:
+assembly export (`build.sh step`) and the bare-board export (`build.sh board-step`) stay in sync:
 flag a part in KiCad and both get the matching enlarged holes. The rewrite lands ONLY on a
 throwaway copy — the committed board and every fab output keep the real drill sizes.
 

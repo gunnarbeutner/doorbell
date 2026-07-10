@@ -10,6 +10,8 @@ backing documents. For *how* to use them to check the board, see `../VERIFICATIO
 - **`datasheets/`** — component datasheets for the parts on the board.
 - **`design/`** — intercom/handset reference docs, ESP32 design guides, the Fritzing source.
 - **`ordering/`** — JLCPCB capability PDFs and the prefab verification report.
+- **`verification/`** — revision-specific bench/field evidence and review dispositions. These are
+  historical records; the revision-neutral pre-fab procedure remains `../VERIFICATION.md`.
 
 ## Intercom & handset (in `design/`)
 
@@ -36,4 +38,3 @@ GAQW/GAQY212GS SSRs) have no local sheet — see `../VERIFICATION.md` §7.
 `PCB Manufacturing & Assembly Capabilities - JLCPCB.pdf` and `… - JLCPCB - PCBA.pdf` — JLCPCB's
 published PCB/PCBA capability limits (clearances, assembly rules), the basis for the DRU and the
 ordering notes in `../ORDERING.md`.
-

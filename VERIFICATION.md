@@ -1,6 +1,6 @@
 # Verification — how to check the board before fab
 
-This is the **procedure** for verifying Klingel V4, not the log of any one run. The
+This is the **procedure** for verifying a board before fabrication, not the log of any one run. The
 `kicad/doorbell.kicad_sch` / `.kicad_pcb` are authoritative; everything here is a way to
 confirm them — the automated gates, an independent schematic review, the bench tests against the
 real TV20/S — before committing money to a fab order. Re-run it whenever the schematic or PCB
@@ -14,7 +14,7 @@ pin used in a way that breaks boot or can't drive its net).
 
 ## 1. Automated gates
 
-Run `./build.sh all-route` and require it green before anything else — it runs the checks KiCad's
+Run `./build.sh verify` and require it green before anything else — it runs the checks KiCad's
 own ERC/DRC can't express and exports the fab outputs from the authoritative files:
 
 - **ERC** — 0 errors. Expect only benign warnings (pin-type "unspecified vs passive/power" on the
@@ -30,8 +30,9 @@ own ERC/DRC can't express and exports the fab outputs from the authoritative fil
   with `wifi_ssid`/`wifi_password` alongside). Confirm the GPIO assignments in the YAML match the
   schematic.
 
-Green gates verify the files; the `fab/` outputs are exported from them and may lag the
-schematic — **re-export (`./build.sh all-route`) before ordering** so the BOM/CPL match.
+Green gates verify the files without rewriting generated artifacts. The `fab/` outputs may lag the
+schematic — **run `./build.sh` before ordering** to repeat verification and export a matched release
+set so the Gerbers, BOM, CPL, PDF and STEP agree.
 
 ## 2. Independent schematic review (do it blind)
 
@@ -40,7 +41,7 @@ DESIGN.md/REQUIREMENTS.md — so the review can't just echo the design's own ass
 from:
 
 - the netlist exported from the schematic (`kicad-cli sch export netlist`),
-- the manufacturer datasheets (see §6),
+- the manufacturer datasheets (see §7),
 - the reverse-engineered handset (`wf26/wf26.kicad_sch` + `wf26/wf26-schematic.md`),
 - the STR TV20/S service plan (`docs/design/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`).
 
@@ -118,9 +119,8 @@ These are the kinds of issue this review exists to surface — judgement calls, 
   measurement-justified SAFE-3 deviation. Confirm the TV20/S common is safe to bond to USB/PC
   ground and that no bus conductor floats at a mains-referenced potential; containment then rests
   on per-tap protection + the sacrificial F1 fuse (SAFE-7).
-- **Electrolytic polarity vs the handset readout.** The gong cap's "+" follows the +12 V P4 side —
-  **bench-confirmed on the genuine WF26 (+→P4, −→P5)**, matching both the wf26 reverse-engineered
-  schematic (C1.1+ → P4) and the V4 board (C19). Only an early +→P5 hand-assumption was wrong.
+- **Electrolytic polarity vs the handset readout.** Establish the genuine handset's gong-capacitor
+  polarity with a meter and confirm that the schematic, footprint and assembly orientation match it.
 - **Pinouts confirmed by proxy** (see §4) — flag any part not yet checked against its own sheet.
 - **Single-ended TX off OUTP.** The codec's differential negative half is AC-terminated, not
   driven — functionally fine, but the lever if the line-3 drive level proves marginal.
@@ -150,78 +150,42 @@ continuous; TP1–TP8 present; C19 "+" toward P4.
 **Stage 1 — local power only, no bus.** USB-C 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
 (after the SS14 drop — there is no 5 V test point), **TP2 ≈ +3.30 V**, quiescent current sane,
 board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
-toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
-**closed** — validating each SSR + driver + GPIO map with no bus voltage present. *Stage 1
-bench-confirmed on the V4.1 board (5 V rail 4.8 V at D4, TP2 = 3.3 V, boot/WiFi OK; all four SSRs
-verified via the debug switches, incl. the watchdog release and the full PTT handshake path —
-P2↔P3 = 2.19 kΩ through both K1 halves + R28; passive SW4 talk bridge confirmed, P4↔P3 = 2.19 kΩ
-held; SW3 fully confirmed — P2↔P3 make and the K5_COM break pole both actuate. Audio DC domain:
-TP4 = 3.3 V, TP8 (ES_VMID) = 1.65 V mid-rail — ES8311 I2C init and analog bias confirmed. TP5
-(ES_OUTP) = 0.07 V idle — resolved: the driver is just powered down until playback; under a test
-tone the DAC delivers cleanly, full-scale ≈ 1.1 Vrms inferred at OUTP).*
+  toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
+  **closed** — validating each SSR + driver + GPIO map with no bus voltage present. Record the 5 V,
+  +3V3, codec VMID and idle-output voltages in the run-specific evidence log.
 
 **Stage 2 — emulated bus** (`PSU+ → 100 Ω → P2`, `PSU− → P1`, 12 V, limit ~120 mA):
 - **2a passive seal-in, board UNPOWERED (MODE-1/SAFE-4):** tap 12 V onto P4 ~1 s → K5 pulls in;
   release → confirm it **seals in** (P4 holds just under P2); pull P2 to 0 → K5 drops.
-  *Bench-confirmed pull-in + seal-in hold: P2 sags 12 → 11 V through the 100 Ω rig, i.e. ~10 mA —
-  the HJR4102's ~1.1 kΩ coil draws a third of the genuine WF26's 320 Ω coil (~29 mA), so the real
-  bus should sag only to ~11 V in-session (vs the WF26's 9.4 V) with the relay at ~92 % of rated
-  coil voltage. Whether the TV20/S is indifferent to the lighter session load is a §6 check.
-  Latch drop confirmed two ways: via the board door-drive (K4 break) under seal-in load, and via a
-  CV wind-down emulating the central's timeout sink — K5 releases at ~3–4 V on P2, safely between
-  the ~11 V in-session level and the ~2.5 V the TV20/S sinks P2 to at session-end.*
+  Measure pull-in, sealed current/voltage and drop-out voltage; compare all three against the relay
+  datasheet and the real-bus operating range.
 - **2b ring sense, powered:** 12 V on P4 → "House Doorbell" asserts (clears on removal); 12 V on P5 →
   Etagenruf/OC2 asserts; non-detect ⇒ swap that LED's two bus connections (silent, not damage).
-  *Bench-confirmed (resistor-less, CC-limited PSU direct to the taps): both channels detect with the
-  as-built opto polarity; K5 ring actuation confirmed, incl. its ~0.1 s capacitive release tail
-  (C19 through the coil). Cross-stress: no OC2 cross-trigger during a sustained P4 drive (the
-  cathode clamp-voltage spot-check was not taken).*
   **Cross-stress:** drive P4 high, confirm the idle OC2 cathode stays clamped near 0 (per-opto
   limiter + D9 fix).
 - **2c door open (DOOR-4/5):** seal in, fire a door-open, 2-ch scope the seal-in node vs the P2↔P3
   bridge — **K4 opens ~20 ms before K2 closes** (latch drops, P4 falls, live P4 never reaches P3);
-  *DMM-level bench pass: a held door drive drops the sealed latch, and OC1 (session sense) asserts
-  edge-to-edge — on while latched, clear on drop. The break-before-make ordering itself still needs
-  the scope.*
-  hold the command asserted → K2 still releases after **~6.7 s** (watchdog — release
-  bench-confirmed at ~6–7 s via the debug hold switch, USB power only; the break-before-make
-  scope check is still open).
+  hold the command asserted and measure that the watchdog releases K2 after the minimum normal
+  firmware pulse but before the specified maximum fault-on time.
 - **2d chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
   closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
   regardless of mute.
-  *Bench-confirmed with the two-board tone rig into P4: electrically (0.33 V AC across P5↔P1 at
-  rest vs meter floor under mute — the residual was tone-independent ambient pickup on the then-
-  unloaded node) and acoustically with LS1 fitted (16.5 Ω): beep follows K3 through five toggle
-  phases, both ring sensors clean throughout. Bonus: the firmware's gong policy verified live —
-  on boot with HA up and "Doorbell Sound" off, the policy chain suppressed the gong on its own.
-  Still open: the P5-injection immunity check (tone on P5 must survive mute) and the sealed-latch
-  session-integrity variant; gong loudness at real bus levels is §6.*
 - **2e audio (partial):** RX — inject P2↔P1 and confirm the codec ADC sees it through the −18 dB divider,
   that a gong-level drive stays inside the codec rail [0, AVDD] (abs-max), and the signal lands on MICP
-  with MICN held at VMID; TX — assert talk, drive a DAC tone, scope it on P3 through R28, confirm high-Z
+  with MICN held at VMID; TX — assert talk, drive a DAC tone, scope it on P3 through the TX resistor,
+  confirm the populated reference and net from the schematic rather than assuming a revision-specific
+  designator, and confirm high-Z
   when talk is off.
-  *TX half bench-confirmed via the firmware tone + LAN scope: 1 kHz (I2S truly at 16 kHz) at
-  0.55 Vrms on a floating P3 with PTT on, 0.15 Vrms residual with PTT off = PhotoMOS off-capacitance
-  bleed into the 1 MΩ probe only (the DMM separately proved the contact opens; any bus load kills
-  the residual). Note: ESPHome's shared I2S bus is strictly half-duplex (mutex) — the DAC tone and
-  ADC capture cannot run simultaneously, so RX was driven externally: the spare V4.1 board flashed
-  as a tone source (`doorbell-v4-tonegen.yaml`, wired P1↔P1 / P2↔P2). RX half bench-confirmed: the
-  divider delivers 240 mVpp at TP6 (MIC1P) from ~1.5 Vpp on P2 (≈ the design −18 dB), and the codec
-  ADC reads −25.7 dBFS with the tone vs a −79 dBFS analog floor. Two firmware bugs found and fixed
-  in both configs en route — either alone reads as pure digital silence: the ESPHome i2s mic
-  defaults (channel right / 32-bit; the ES8311 sends left / 16-bit), and `use_microphone: true`,
-  which selects a PDM DIGITAL mic (REG14 DMIC_ON) and must be false for the analog MIC1P/MIC1N
-  inputs.*
 
 **Stage 3 — protection, last and current-limited (SAFE-2):** with the limit still low, deliberately
 reverse P2/P1 (and a mis-order or two), confirm the per-tap clamps/TVS hold and the board survives and
 still works once correct wiring is restored — F1 only protects the USB side, the bus taps rely on
 per-tap protection.
 
-This proves power, default-safe states, sense + polarity, the full latch seal-in/drop mechanics, the
-door break-before-make timing, the watchdog and chime-mute — every board property that does **not**
-depend on a TV20/S response. The responses that do (TX-out reach, opener firing, real gong/levels/hum,
-the timeout P2-sink and shared-bus interactions) carry over to §6.
+Do not proceed until these checks prove power, default-safe states, sense and polarity, latch
+seal-in/drop mechanics, door break-before-make timing, watchdog operation and chime suppression.
+The responses that depend on a TV20/S (TX-out reach, opener firing, real gong/levels/hum, timeout
+sink and shared-bus interactions) carry over to §6.
 
 ## 6. Bench verification against the real TV20/S
 
@@ -237,16 +201,13 @@ J2's screws, and component pads. Use an **isolated** scope
 - **Door pulse / chime suppress / session sense** — confirm the opener fires, the gong mutes with
   line 4 / the latch / the Etagenruf untouched, and OC1 tracks the session edge-to-edge.
 - **Break-before-make** — confirm a board door-open drops the latch (line 4 falls, P2 rises) as on
-  the genuine S1; confirm the watchdog releases the bridge if the drive is held.
-- **⚠ TX-out reach (open)** — confirm the TV20/S forwards the line-3 audio to the door station once
-  it sees the R28 2.2 kΩ handshake bridge, at a usable level (AUDIO-2/AUDIO-6). This is the
-  prerequisite for the full-duplex AUDIO-3 MAY and the main open question — see DESIGN.md
-  "Audio path".
+  the genuine S1; hold the command and verify the watchdog timeout against the requirements.
+- **TX-out reach** — confirm the TV20/S forwards line-3 audio to the door station once it sees the
+  schematic's talk-handshake resistance, at a usable level (AUDIO-2/AUDIO-6).
 - **Hum / RX level** with the P1↔GND bond once RX is live; set the codec digital volume so TX
   doesn't overdrive the TV20/S amp.
-- **Session load** — the V4 latch draws ~10 mA vs the WF26's ~29 mA, so the bus rail rides ~11 V
-  in-session instead of ~9.4 V; confirm the TV20/S session behaviour (gong, opener, timeout) is
-  indifferent to the lighter load and the higher standing level.
+- **Session load** — measure the board's sealed current and bus voltage against the stock WF26,
+  then confirm session behaviour (gong, opener and timeout) across that difference.
 
 ## 7. Datasheet sources to consult
 
@@ -256,3 +217,16 @@ GAQW/GAQY212GS PhotoMOS, the AO3400A door/watchdog FETs, the BAT54SW codec-clamp
 PC817-family opto convention (proxy for the LTV-217), and the STR
 TV20/S Verdrahtungsplan + Fehlersuchhilfe. SS14, SMF5.0A, 1N4148W and the USB-C jack are reasoned
 from standard pin conventions, cross-checked against the project's JLCPCB symbol pads.
+
+
+For every ordered part, use the exact manufacturer PDF corresponding to the BOM/LCSC entry. Record
+the symbol pin, footprint pad, physical package pin and net for each polarity-sensitive or active
+device. Recalculate all timing and threshold claims from the ordered part's guaranteed ranges; do
+not carry a previous board's pinout or measured timing forward as evidence.
+
+## 8. Mechanical enclosure verification
+
+Fit the fully populated height envelope—preferably a first article or an accurate printed STEP—into
+the real enclosure. Verify outline and boss clearance, closed-lid Z clearance, speaker/grille and
+wire-entry alignment, connector access, and full actuation of both housing buttons. Record photos,
+measurements and the exact board revision in a separate run-specific evidence file.

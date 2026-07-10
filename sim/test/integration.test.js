@@ -516,7 +516,7 @@ test('DOOR-4: a board door-open (DOOR_DRV) releases K5 like S1', () => {
 // ── Door-open max-on-time watchdog (Q3 unit 2 + R25/C20/D11) ─────────────────────────────────────
 // The door opener is the K2 bridge (P2↔P3). If the ESP hangs with /DOOR_DRV latched high the door
 // would stay "pressed", so a hardware one-shot limits it: /DOOR_DRV charges /WD_GATE through R25
-// (5.1 M) · C20 (2.2 µF) (τ ≈ 11 s; ~7.4 s typ trip); once /WD_GATE passes the FET threshold, Q3 unit 2 pulls /DELAY_GATE
+// (10 M) · C20 (2.2 µF) (τ ≈ 22 s; ~8.4 s nominal model trip); once /WD_GATE passes the FET threshold, Q3 unit 2 pulls /DELAY_GATE
 // low, turning off Q3 unit 1 (K2's break-before-make low-side switch) → K2 opens → the bridge drops.
 // R25 is sized so even the worst (cold / min-Vth / cap-derated) corner trips well after the 1.75 s
 // firmware pulse, so a real door-open is never cut short (DOOR-5).
@@ -543,7 +543,8 @@ test('door watchdog timing: /DOOR_DRV stuck high opens the door, then self-relea
   for (let t = 0; t < 1.75; t += dt) sim.step(t);
   const open = sim.extractState();
   assert.ok(near(open.vn['/P3'], 12), `door must still be bridged at the end of the 1.75 s pulse (not truncated), got P3=${open.vn['/P3']?.toFixed(2)} V`);
-  // run past the ~7.4 s typ timeout: the watchdog must drop the bridge though /DOOR_DRV is still asserted
+  // run past the current revision's ~8.4 s nominal model timeout: the watchdog must drop the bridge
+  // though /DOOR_DRV is still asserted
   for (let t = 1.75; t < 16.0; t += dt) sim.step(t);
   const released = sim.extractState();
   assert.ok(!near(released.vn['/P3'], 12, 2.0), `watchdog should release the door by 16 s, got P3=${released.vn['/P3']?.toFixed(2)} V`);

@@ -7,12 +7,14 @@ KiCad. `build.sh` never authors copper; it runs the checks KiCad's own DRC/ERC c
 express and exports the fab outputs:
 
 ```
-./build.sh            # verify + fab (full run; = all-route)
-./build.sh sch        # schematic ERC + PDF export
-./build.sh check      # PCB placement constraints (tools/check_pcb.py)
-./build.sh route      # verify planes/thieving/connectivity (tools/route.py) + DRC
-./build.sh fab        # Gerbers + drill + position + BOM -> fab/
-./build.sh all-route  # sch + check + route + fab (full run)
+./build.sh              # verify + all order-ready exports (full release)
+./build.sh verify       # ERC + placement + PCB/DRC + simulation; no exports
+./build.sh schematic    # schematic ERC + PDF export
+./build.sh pcb          # placement + planes/thieving/connectivity + DRC
+./build.sh simulation   # circuit-simulator tests
+./build.sh fabrication  # Gerbers + drill + position + BOM -> fab/
+./build.sh step         # populated STEP model
+./build.sh board-step   # bare-board STEP model
 ```
 
 | Script | Interpreter | Role |
@@ -37,7 +39,7 @@ This README is only the build/verify/fab process. Everything else stays in its a
 source so it can't drift out of sync — so there is **no part list, net list, or pin table here**:
 
 - **Parts / values / footprints / LCSC numbers** — in the schematic (hidden `LCSC`/`MPN`/`Footprint`
-  fields); exported to `fab/doorbell-bom-jlcpcb.csv` by `build.sh fab`.
+  fields); exported to `fab/doorbell-bom-jlcpcb.csv` by `build.sh fabrication`.
 - **Net connectivity and pin assignments** — `doorbell.kicad_sch` (open it, or
   `kicad-cli sch export netlist`).
 - **Architecture, pin map, relays/SSRs, audio path, power, isolation, layout** — `../DESIGN.md`;

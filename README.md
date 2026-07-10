@@ -80,7 +80,7 @@ handset core, so the electronics draw nothing from the shared intercom supply.
 ## Repository layout
 
 The **KiCad files** (`kicad/doorbell.kicad_sch` / `.kicad_pcb`) are the authoritative source for
-the board — edited directly in KiCad. `./build.sh all-route` only verifies them and exports the
+the board — edited directly in KiCad. `./build.sh` verifies them and exports the
 fab outputs; it does not author or regenerate the board.
 
 | Path | What |
@@ -96,13 +96,14 @@ fab outputs; it does not author or regenerate the board.
 | `wf26/` | Reverse-engineered WF26 handset (`wf26.kicad_sch`). |
 | `captures/` | Bench scope captures of the real TV20/S (ring, door-open, timeout) + web viewer. |
 | `docs/` | Datasheets and reference docs (`datasheets/`, `design/`, `ordering/`) — incl. the wall wire-up map (`design/wall-wiring-v4.svg`) and the J3 power-cable pinout (`design/usb-jst-j3-wiring.svg`). |
-| `fab/` | Generated fab outputs (Gerbers, drill, BOM, CPL, STEP) — produced by `./build.sh fab`. |
+| `fab/` | Generated fab outputs (Gerbers, drill, BOM, CPL, STEP) — produced by `./build.sh`. |
 | `orders/` | Shipped fabrication order archives. |
 
 ## Build
 
 ```bash
-./build.sh all-route   # verify (ERC/DRC/placement/routing) + export fab outputs
+./build.sh             # verify (ERC/DRC/placement/routing/simulation) + export fab outputs
+./build.sh verify      # run the same checks without updating generated artifacts
 ```
 
 See `kicad/README.md` for the build pipeline details.

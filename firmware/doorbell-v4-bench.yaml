@@ -533,7 +533,7 @@ switch:
 # suppressed) — exactly what the gate pull-downs are there to prevent.
 output:
   - platform: gpio
-    pin: GPIO9               # K1 — PTT SSR (energised = talk: P2↔TALK_BRIDGE handshake + TX_OUT↔P3 gate, codec→C14→R28→P3)
+    pin: GPIO9               # K1 — PTT SSR (energised = talk: P2↔TALK_BRIDGE handshake + TX_OUT↔P3 gate, codec→C14→R26→P3)
     id: ptt_relay_bin
   - platform: gpio
     pin: GPIO11              # K3 — chime suppress (open C1: P4↔CHIME_C1)

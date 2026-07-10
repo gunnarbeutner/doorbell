@@ -4,7 +4,7 @@
 When the design changes in a way that affects behaviour, update REQUIREMENTS.md too.
 
 **V4 source of truth: the KiCad files** (`kicad/doorbell.kicad_sch` / `kicad/doorbell.kicad_pcb`),
-edited directly in KiCad. `./build.sh all-route` verifies them — the checks KiCad's own DRC/ERC
+edited directly in KiCad. `./build.sh` verifies them — the checks KiCad's own DRC/ERC
 can't express (connectivity + the copper-thieving sliver limit in `route.py`, placement in
 `check_pcb.py`) — and exports the fab outputs; it does not generate the board.
 `tools/doorbell_design.py` holds the placement constants `check_pcb.py` verifies (connector edge
@@ -114,6 +114,10 @@ over the ESPHome task watchdog (which also reboots a hung MCU). Q3 (break-before
 (this watchdog) are separate **AO3400A** SOT-23 logic-level N-FETs — chosen (over the 2N7002) so the
 worst-case GPIO plateau clears Vth,max with margin; the R17/R25 RCs are sized for its 0.65–1.45 V
 Vgs(th) window. Verified in `sim/test` (still bridged at the 1.75 s pulse; releases within the timeout).
+The deployed **V4.1 hardware watchdog was also exercised with DOOR_DRV held on and released the
+door-opener bridge after approximately 6–7 s**. That measurement validates the assembled-board
+watchdog mechanism and its margin over the firmware pulse; it is not substituted for the current
+10 MΩ revision's calculated corner range, which must be remeasured on its first assembly.
 
 > **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
 > it is the junction of C1, R1, the K5 coil and its NO contact: the ring's **DC energises the
@@ -623,7 +627,7 @@ test notes").
 ### BOM
 
 Part values/footprints/LCSC numbers are maintained **directly in the authoritative KiCad files**
-(`kicad/doorbell.kicad_sch` / `.kicad_pcb` — the generator scripts are gone). `./build.sh all-route`
+(`kicad/doorbell.kicad_sch` / `.kicad_pcb` — the generator scripts are gone). `./build.sh`
 **exports** the order files from them (`fab/doorbell-bom-jlcpcb.csv` + `doorbell-cpl.csv`). See
 `ORDERING.md` for the stock/eligibility checks at order time.
 
@@ -634,7 +638,7 @@ Part values/footprints/LCSC numbers are maintained **directly in the authoritati
 Physical layout — traces, vias, copper zones, component positions, the 4-layer stack — lives in the
 authoritative `kicad/doorbell.kicad_pcb`; this section keeps only the decisions and rules behind it.
 The board is **4-layer**, ~**64 × 59 mm**, all parts on the top side, and **100 % hand-routed in
-KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails if any net is unrouted.
+KiCad**; `./build.sh` verifies the inner copper-fill planes and fails if any net is unrouted.
 
 - **Why 4-layer.** J1 (USB4105) is a single-row SMD Type-C: D+/D−/CC/VBUS all escape from one
   fine-pitch interleaved pad row, which needs the extra layers — a plane reference for the USB pair
@@ -682,8 +686,8 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   **H1/H2 mounting holes** (NPTH 3.2 mm) on the enclosure bosses; no pre-placed assembly-tooling
   holes (JLCPCB's CAM adds its own panel registration — see "Known minor items" — and the WROOM-1U's
   external u.FL antenna leaves no PCB-antenna keepout for a CAM hole to disturb).
-- **3D / fit-test model:** `./build.sh step` exports `fab/doorbell.step` (also run by
-  `all-route`). Footprints carrying a truthy custom field **`STEP_Exclude`** are omitted from the
+- **3D / fit-test model:** `./build.sh step` exports `fab/doorbell.step` (also run by the default
+  release). Footprints carrying a truthy custom field **`STEP_Exclude`** are omitted from the
   model — flag SW3/SW4 (set the field in KiCad's Footprint Properties) so the real panel switches
   can be fit-tested against the print. `kicad-cli`'s `--component-filter` is include-only, so
   `tools/step_exclude.py` emits the complement. The *same* flag drives `tools/step_fit_holes.py`,
@@ -694,7 +698,7 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   the board's global frame and spliced into the top assembly representation — no CAD kernel needed),
   bridging the board's top face up into each part's leads so components like the K5 relay don't snap
   off the thin printed leads.
-- **Printable bare-board model:** `./build.sh step-board` exports `fab/doorbell-board.step` —
+- **Printable bare-board model:** `./build.sh board-step` exports `fab/doorbell-board.step` —
   the substrate only (no component bodies), with the mounting holes and THT pad drills cut
   through (`--board-only --no-extra-pad-thickness`). The 80 routing vias (all 0.3 mm, sub-printable
   on a 0.4 mm nozzle) are deliberately *not* cut — they aren't needed for the SW3/SW4 fit-test, and
@@ -704,7 +708,7 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   `tools/step_fit_holes.py` enlarges the **`STEP_Exclude`**-flagged footprints' THT drills by
   +0.5 mm (SW3/SW4: 0.9→1.4 mm signal, 1.35→1.85 mm peg) on a throwaway copy to compensate for FDM
   undersizing — the committed board and every fab output keep the as-fab holes. Standalone; not part
-  of `all-route`. The board's **top face
+  of the default release. The board's **top face
   is flat**; its bottom carries a ~0.035 mm copper annular ring around every plated hole/via (the
   bare board's real copper — board-only has no flag to omit it). For a clean first layer, **print the
   top face down** (holes are through, so flipping doesn't affect the fit-test) or sink the model
@@ -926,8 +930,12 @@ not a tweak of the current board:
   an existing aperture, or an added hole) — the bus can't supply it.
 - **Antenna:** U1 (WROOM-1U) uses a **u.FL external antenna** — route the antenna lead out of the
   housing; no RF-transparent PCB-antenna region is needed (unlike the old WROOM-1).
-- **Z-height:** **TBD** — measure the cavity depth; USB-C, the relays, the screw terminal and the
-  transducer must fit it.
+- **Physical fit is verified:** the JLCPCB-assembled **V4.1 PCB was installed in the original WF26
+  enclosure** with the lid closed and the handset operating. Its outline, boss pattern, switch
+  plunger positions, transducer/grille position, wire entry and assembled component Z-height all
+  fit the real housing. The current mechanical interface and component envelope inherit that
+  proven layout; repeat the housing fit test only after changing the outline, mounting holes,
+  enclosure-pinned parts, or maximum component height.
 - Outline is **64 × 59 mm** (above); still take the **mounting pattern** and the
   **speaker / button / wire-entry positions** from the **real WF26** (and `wf26/wf26.kicad_pcb`
   where it captures them).
@@ -945,7 +953,7 @@ not a tweak of the current board:
 
 ## Verification status
 
-Automated gates (run by `./build.sh all-route`): **ERC 0 errors, DRC 0/0, routes
+Automated gates (run by `./build.sh verify` and by the default release): **ERC 0 errors, DRC 0/0, routes
 0 unrouted, `check_pcb.py` PASS** — these verify the authoritative KiCad files; the
 gerbers/BOM/CPL in `fab/` are exported from them. The firmware config passes `esphome config firmware/doorbell-v4.yaml`
 (ESPHome 2026.5.3; needs a `secrets.yaml` with `wifi_ssid`/`wifi_password` alongside).
@@ -972,7 +980,10 @@ bridge (see `TODO.md`, "TX-out reach"). See Switches / Audio path / Bell-sense.
 **Datasheet-verified:** GAQY212GS / GAQY412EH PhotoMOS pinout + Ron/Voff/LED drive (K3 = 1-Form-B
 **NC** confirmed); K5 (G6K-2F-Y) latch pinout; SGM2212 SOT-223 pinout + ~1 V dropout headroom;
 1N4148W pin 1 = cathode (CDFER lib); LTV-217 pinout; USB front-end (D+/D− not swapped; TPD2S017
-pinout/V_CC bias, CC 5.1 kΩ Rd); bell-sense GPIO LOW levels; ES8311 full pinout; every U1 pad↔GPIO assignment against the
+pinout/V_CC bias, CC 5.1 kΩ Rd); **D14 BAT54SW** ordered part C22466373 and SOT-323 pinout
+(1=A/GND, 2=K/+3V3, 3=COM/MIC1P); **Q3/Q4 AO3400A** ordered part C20917 and SOT-23 pinout
+(1=G, 2=S, 3=D), including its 0.65–1.45 V Vgs(th) and ±100 nA Igss timing corners; bell-sense
+GPIO LOW levels; ES8311 full pinout; every U1 pad↔GPIO assignment against the
 **ESP32-S3-WROOM-1U** pinout (the GPIO map's pad numbers are the WROOM-1U pads, from the schematic).
 
 **Known minor items (accepted):**
