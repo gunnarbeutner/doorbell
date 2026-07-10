@@ -10,7 +10,10 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       discharge CHIME_C1 (τ≈2.4 s), and the stateful simulator regression passes after a 12 s / 5τ
       wait. Implement the matching firmware rule: reclose K3 only after line 4 is idle and the full
       discharge interval has elapsed. Then explicitly resolve reset/brownout during that interval;
-      the passive bleed does not make an immediate hardware-default reclose safe.
+      the passive bleed does not make an immediate hardware-default reclose safe, and firmware cannot
+      assume it retains control of `MUTE_DRV` during reset. Pick and verify a reset-safe mechanism
+      (hardware hold/delay, a proven reset-persistent GPIO state, or a demonstrated harmless immediate
+      reclose at worst-case charge), then add a reset/brownout regression for that exact mechanism.
 
 - [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**
       (verifies **BUS-2(a)/(b)** on the real TV20/S; the Ra/Cf/Rb leg is in the V4.2 schematic + PCB,
@@ -44,6 +47,17 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       and a damaged Ra/Rb chain is a pad-to-pad bodge, not a footprint. A #1 surprise stays a solder
       fix, not a spin. Bench BOM: Ra/Rb ¼ W + Cf 47 µF/25 V from bench stock;
       op-amp only if (c) fails.
+
+- [ ] **Close the regulator-capacitance stability margins.** From the exact fitted MLCC datasheets,
+      calculate U2's total effective +3V3 output capacitance and U4's effective input/output
+      capacitance plus ESR at their DC bias, tolerance and temperature corners. Confirm the results
+      remain inside the SGM2212 and LP5907 stability ranges; change the local bulk arrangement before
+      fabrication if they do not.
+
+- [ ] **Verify D6 assembly polarity.** Cross-check the KT-0603R cathode mark, the KiCad footprint's
+      pad numbering and the exported CPL rotation against the JLCPCB part preview. This is not a
+      functional-board risk—a mistake only leaves the status LED dark—but it is cheap to settle before
+      ordering.
 
 ## Audio refactor — analog front-end (RX/TX) finalization (`kicad/doorbell.kicad_sch`)
 
@@ -145,6 +159,21 @@ tether it to a mains-earthed PC. Pair with a DMM.
 - [ ] **Bench — confirm the door lead.** On the real board: a door-open drops K5 (session ends),
       and K2's make lands after the latch drop (no 12 V-DC/gong blip on line 3). Tune C18/R17 if the
       ~20 ms lead doesn't clear the actual latch-drop time.
+- [ ] **Sustained Etagenruf stress — close the C19/C21/D1 qualification warning.** Drive the longest
+      credible floor-call waveform and measure or simulate each anti-series electrolytic's voltage
+      (including reverse voltage), ripple current and midpoint charge, plus D1 current. The exact RVT
+      datasheet does not qualify bipolar/reverse-bias service; replace the pair with a qualified
+      bipolar solution if the measured stress cannot be justified. Also watch for unintended K5
+      movement and an objectionable LS1 impulse.
+- [ ] **K5 pull-in margin on the V4.2 load.** Measure P4 at the coil during the lowest credible bus
+      voltage and, if practical, the hot corner. Require margin above the relay's must-operate voltage;
+      V4.1 pull-in evidence does not include the changed V4.2 loading.
+- [ ] **SSR GPIO drive and watchdog re-arm transient.** With both dual-load outputs exercised, measure
+      `PTT_DRV`, `DOOR_DRV` and `MUTE_DRV` high voltage / LED current and confirm every PhotoMOS clears
+      its operate point with useful margin. Capture the C20 discharge through D11 into `DOOR_DRV`;
+      add series limiting or otherwise justify it if the GPIO transient exceeds a sourced ESP32-S3
+      limit. The module datasheet's 40 mA figure is typical and does not guarantee the loaded-VOH
+      calculation used by the prefab review.
 ## Firmware (`firmware/doorbell.yaml`)
 
 - [ ] **Retire the ring → welcome-audio gong-wait when the V4.2 board deploys.** The Ra/Cf/Rb handshake makes the
@@ -172,13 +201,5 @@ handshake (`P2 → Ra/Cf/Rb → TX_OUT`), both behind **K1**. Independent of lin
 gong-suppress. **Gated on OC1** (session = Türruf held; OC1 stays high, no timer), direction by PTT.
 V4.1 field operation already proves that codec TX on line 3 reaches the door station and that the
 2.2 kΩ handshake enables talk without firing the opener. The V4.2-specific ~25 ms RC-ramped
-handshake is covered by the earlier live-bus passive-split gate. What remains:
-
-- [ ] **Software-TX isolation from the passive LS1 microphone.** Check only the relevant unintended
-      state: **K1 active, SW4 released**, with K3 both idle and energised. Inject a voice-band signal
-      at LS1 and require the V4.2 Ra/Cf/Rb filter to leave only a small residual on P3 relative to the
-      codec TX level. This guards the old V4.1 leakage path
-      `LS1→C1→K3→P4→latch/P2→K1→P3`; Cf should now shunt it like gong audio. Do **not** treat SW4
-      pressed as an isolation failure—that is intentional dumb-handset talk through its independent
-      `P4→SW4→R29→P3` path. Simultaneous manual and software TX is unsupported. Once this regression
-      passes, close the item; no dedicated bench sweep is required unless audible echo remains.
+handshake is covered by the earlier live-bus passive-split gate. Software-TX isolation from the
+passive LS1 microphone is covered by simulation with K1 active, SW4 released, and both K3 states.

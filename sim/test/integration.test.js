@@ -488,6 +488,66 @@ test('gong rejection: a ±8.8 V 1 kHz gong riding P2 stays off line 3 while the 
     `the gong must die in the Ra/Cf divider, got ${(swingPP(RES, '/P3', '/P1') * 1000).toFixed(0)} mVpp on line 3 (raw input: 17.6 Vpp)`);
 });
 
+// Software TX must not accidentally transmit the passive handset microphone. The relevant state is
+// K1 active with manual SW4 released: LS1 can still feed P4 through the gong capacitor and, while K5
+// is latched, P2 through the seal-in. The Ra/Cf/Rb handshake filter must reject that voice-band path
+// before it reaches P3. Exercise both K3 states because opening K3 physically removes the path, while
+// the harder/default case leaves it connected and relies on Cf.
+const softwareTxSwing = ({ mute, speakerTone, codecTone }) => {
+  const switches = { ...defaultSwitchState(netlist), SW4: false };
+  const tone = (t) => 1.65 + 0.4 * Math.sin(2 * Math.PI * 1000 * t); // 0.8 Vpp, centred like OUTP
+  const els = buildElements(netlist, {
+    switchState: switches,
+    program: {
+      U1: { '/PTT_DRV': 3.3, '/MUTE_DRV': mute ? 3.3 : 0 },
+      U3: { out: codecTone ? tone : 1.65 },
+    },
+  });
+  const dt = 20e-6;
+  const run = (sources, T, seed, observe = false) => {
+    const sim = createStepper(
+      els,
+      Object.entries(sources).map(([net, vf]) => ({ net, vf: typeof vf === 'function' ? vf : () => vf })),
+      gndOf(netlist),
+      dt,
+      seed,
+    );
+    let lo = Infinity, hi = -Infinity;
+    for (let t = 0; t < T; t += dt) {
+      sim.step(t);
+      if (observe && t >= T / 2) {
+        const p3 = sim.vn[sim.ni['/P3']] ?? 0;
+        lo = Math.min(lo, p3);
+        hi = Math.max(hi, p3);
+      }
+    }
+    return { state: sim.extractState(), swing: observe ? hi - lo : 0 };
+  };
+
+  // Pull K5 in from a real Türruf, then remove the P4 source: P2 must seal the call in while the
+  // measurement drives LS1 (/P5↔/P1). This preserves the exact unintended path under test.
+  const latched = run({ '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, 0.02).state;
+  assert.ok(latched.relays.K5, 'precondition: the software-TX isolation scenario must have K5 latched');
+  const speaker = speakerTone ? (t) => 0.4 * Math.sin(2 * Math.PI * 1000 * t) : undefined;
+  const sources = { '/VBUS': 5, '/P1': 0, '/P2': 12 };
+  if (speaker) sources['/P5'] = speaker;
+  return run(sources, 0.6, latched, true).swing;
+};
+
+test('software TX isolation: the passive LS1 microphone stays small relative to codec TX', () => {
+  // Drive LS1 with the same deliberately severe 0.8 Vpp used for the codec reference. Nominal Cf
+  // leaves about -18.5 dB at 1 kHz; the real passive transducer is much quieter than the codec DAC.
+  const maxLeakageRatio = 0.15;
+  for (const mute of [false, true]) {
+    const leaked = softwareTxSwing({ mute, speakerTone: true, codecTone: false });
+    const wanted = softwareTxSwing({ mute, speakerTone: false, codecTone: true });
+    assert.ok(wanted > 0.01, `codec TX reference must reach P3 with K3 ${mute ? 'open' : 'closed'}, got ${wanted.toFixed(4)} Vpp`);
+    assert.ok(leaked < wanted * maxLeakageRatio,
+      `LS1 leakage with K3 ${mute ? 'open' : 'closed'} must stay below 15% of codec TX, ` +
+      `got ${(leaked * 1000).toFixed(2)} mVpp vs ${(wanted * 1000).toFixed(2)} mVpp`);
+  }
+});
+
 // TX is deliberately session-INDEPENDENT (gated-TX requirement: the board may assert talk whenever it
 // chooses, even with no incoming Türruf). The handshake is sourced from P2 — which the bus keeps
 // energised at all times — not from line 4, so K1 energised drives line 3 with line 4 cold. Policy for

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pre-fab Blind Verification"
+  short_description: "Independent PCB fabrication-readiness gate"
+  default_prompt: "Use $prefab-blind-verify to independently verify this PCB before fabrication."
