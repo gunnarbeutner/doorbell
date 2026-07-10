@@ -14,50 +14,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       status LED (its JTAG-source strap is eFuse-gated, so repurposing it is safe). **Interim, until the
       V4.2 board is installed:** the deployed V4.1 board's D6 is hardwired and still leaks — keep black
       tape over it.
-- [ ] **Isolate the two VBUS power sources (J1 USB-C + J3 wall feed) — deferred, no board room.**
-      J1 (USB-C, bench/flash) and J3 (the SH wall-feed, `J3.1`) both drive the raw **`VBUS`** net in
-      parallel with **no isolation**: if both are powered at once — e.g. opening the cover to flash via J1
-      while the wall charger feeds J3 — the two 5 V sources back-feed each other (chief risk: the laptop's
-      USB port driven by the charger). **Current mitigation = usage rule:** only one power source connected
-      at a time (unplug the wall feed before flashing via J1, or flash in-place via J3's far end). USB
-      **D±** is already fine — J1/J3 share D5's flow-through ESD clamp; this is the **VBUS power side only**.
-      **Deferred because the clean fix doesn't fit** — ~7 new parts with nowhere to place them. Options when
-      revisited:
-      1. **TPS2116 power-mux** (LCSC **C3235557**, sym `Power_Management:TPS2116DRL`, fp
-         `Package_TO_SOT_SMD:SOT-583-8`, both stock) — best: ~0 V drop (42 mΩ), reverse-current blocking,
-         auto priority; leaves F1/D10/D5/D4 untouched downstream. Hookup (VIN1 = J1 priority):
-         **MODE→VIN1**, **PR1** = divider `VIN1→300k→PR1→100k→GND` (VREF 1.0 V ⇒ ~4 V switchover),
-         **VIN2 = J3** (fallback — not threshold-gated, so its cable sag can't false-switch),
-         **VOUT (pins 2,7) → VBUS**, **ST (8)** NC, **CIN1 = CIN2 = COUT = 1 µF**. Add a **TVS on VIN2**
-         (SMF5.0A) since the mux now sits ahead of D10 and is only ~±2 kV HBM. ≈ mux + 2 R + 3 C + TVS = 7.
-      2. **Two-diode front OR** — a series Schottky in each of J1/J3 merging at VBUS (keeps F1/D10/D5
-         downstream protecting both); the two OR diodes make **D4 redundant → remove D4**. Net **+1 part**,
-         single Schottky drop. Fewer parts than the mux but a ~0.45 V drop. One diode alone won't do it:
-         protecting a laptop on J1 from a charger on J3 needs a diode in **J1's** branch too.
-      Both keep both connectors behind the front-end protection (F1 fuse, D10 TVS, D5 ESD). *(DESIGN.md
-      "Power tree")*
-- [ ] **(V4.2) Reverse-polarity: make a miswired J3 non-destructive (must not blow F1).** Today a
-      reversed feed pops F1 (pull board, reswap, replace the SMD fuse) — realistic on the hand-spliced
-      J3 pigtail; J1 is keyed and can't reverse. **Root cause is D10, not F1:** SS14 already blocks the
-      reverse feed to the logic non-destructively, but **D10 is a *unidirectional* TVS (SMF5.0A) — a
-      forward diode at −5 V**, so it conducts GND→D10→F1 and blows the fuse; **D5's VCC** on the same
-      VBUS_F node conducts its GND→VCC ESD diode too. **Fix (minimal, keeps every safety property):**
-      1. **Swap D10 → bidirectional SMF5.0CA** (same SOD-123FL footprint, part-number change only). A
-         bidirectional 5.0 V TVS conducts only above its ~6.4 V breakdown in *either* direction, so a
-         standing −5 V (5 V < 6.4 V) **doesn't conduct → F1 survives**, while the positive
-         breakdown/clamp — and thus the **overvoltage crowbar fail-safe** — is unchanged (a gross
-         reverse, e.g. −12 V, still crowbars F1, which is the wanted response). Also clamps negative
-         transients now.
-      2. **Reroute D5's VCC bias from VBUS_F to +5 V** (behind SS14) so D5 is isolated on reverse
-         (VCC ~4.6 V past the Schottky, in range) — a trace move, no new part. Or confirm D5's negative
-         abs-max tolerates −5 V.
-      Keep SS14. Net: reversed 5 V feed = board unharmed, F1 intact; overvoltage/short/transient
-      protection and SAFE-7 containment all preserved. **If the TPS2116 mux (item above) lands instead,
-      use a P-FET ideal-diode *ahead of the mux* for the reverse block** — the TPS2116's VIN abs-min
-      (~−0.3 V) can't survive −5 V itself, so reverse protection must precede it (and the P-FET also
-      buys back SS14's ~0.4 V drop). Reverse-polarity and the two-source back-feed are orthogonal but
-      share this front-end — sequence them together (reverse block → mux → clamp → LDOs). *(DESIGN.md
-      "Power tree")*
 - [ ] **(V4.2) Investigate a vertical (top-entry) USB-C receptacle for J1 (e.g. LCSC C5156600).** The
       present J1 is a horizontal board-edge USB-C; once the board is mounted in the wall enclosure that
       edge faces the wall and the port is unreachable, so a USB reflash means un-mounting the board. A
@@ -66,9 +22,9 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       Check: the vertical body clears the enclosure lid **and stays out of the button travel envelope —
       not just the buttons' rest position but their full pressed-down depth** (the same buttons whose
       gap D6 leaks through descend toward the board when pressed); the north-edge USB routing still fans
-      out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Doesn't
-      change the J1/J3 back-feed rule (that's the power-mux item above) — still one source at a time
-      unless the TPS2116 lands too. *(DESIGN.md "Power tree" / USB)*
+      out cleanly (IO19/IO20 → D5 ESD → J1); and C5156600's footprint + stock in the JLCPCB lib. Purely
+      a connector/mechanical change — the J1/J3 back-feed is already handled by the D4/D15 diode-OR.
+      *(DESIGN.md "Power tree" / USB)*
 - [ ] **Harden `build.sh`'s DRC step.** The gong-free-handshake relayout exposed two gaps: the DRC
       count is printed but **not failed on** (a stale-zone-fill clearance hit sailed through
       `all-route`), and **schematic parity isn't checked** (a board missing new schematic parts would

@@ -418,7 +418,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 | WF26 connector | **DB125-3.5-5P screw terminal — J2, 5-way (P1–P5 = pins 1–5)** (LCSC C3646874) | See "WF26 connector". 5-way (not 6): line 4 is one net now — chime-suppress moved off line 4 onto C1, so the IN_P4/P4 split is gone |
 | USB-C connector | **GCT USB4105-GF-A-060** (single-row SMD + THT shell stakes, C3025063) | ~⅓ the cost of a THT USB4085 and better stocked; the THT shell stakes keep cable-insertion strength, and the single-row SMD escape is workable on 4 layers |
 | Layers | **4-layer** | the USB Type-C single-row escape needs the extra layers + a solid plane reference; see "PCB — layout constraints & rationale" |
-| Power | **USB-C 5 V** → SS14 reverse-protection Schottky → **SGM2212-3.3** low-dropout LDO (C3294699) | The ~0.45 V Schottky drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
+| Power | **Two 5 V inlets diode-OR'd** — J1 USB-C and J3 wall feed each through a series SS14 Schottky (D4 / D15) → merged **VBUS** → F1 fuse → **+5V** → **SGM2212-3.3** low-dropout LDO (C3294699) | The per-inlet Schottkys isolate the two sources (neither back-feeds the other) and block a reversed J3 feed; the ~0.45 V drop still leaves ~1 V LDO headroom (an AMS1117's 1.3 V dropout would brown out under WiFi TX) |
 | Audio | **Transformer-less half-duplex**: ES8311 mono codec on the bus speech pair — **RX** a differential sense of line 2 (P2→C16→ADC, P1→C17→ADC), **TX** the codec DAC → R26 (2.2 kΩ) → C14 (DC-block) → TX_OUT → line 3, plus the **gong-stripped talk handshake** — P2 → Ra (1.2 kΩ) → Cf (2×22 µF, returned via JP1) → Rb (1 kΩ) → TX_OUT, a 2.2 kΩ bridge whose AC dies in the low-pass — the **dual K1** (GAQW212GS) gating both legs onto line 3 (high-Z at idle, BUS-1). Needs the **hard P1↔GND bond**; analog values bench-gated | Half-duplex by design (single LS1 transducer) ⇒ no echo cancellation. The TV20/S speech path is AC-coupled and P1 sits ~0.5 V from earth, so bonding P1↔GND is benign and lets active AC-coupled front-ends replace the transformer (smaller, fixes the talk-handshake load, no core saturation). Trade: SAFE-3 isolation → *not met*; containment is per-tap protection + F1 (SAFE-7) |
 | Form factor | **Single PCB**, no daughter boards | Eliminates inter-board jumpers (the V3 failure mode) |
 
@@ -584,12 +584,14 @@ the one surviving flyback (D1) is on the passive WF26 latch coil.
 ### Power tree
 
 ```
-USB VBUS (5V) ── F1 1A fast fuse ── SS14 (series reverse-protect) ── +5V ─┬─ SGM2212-3.3 ── +3V3 ── ESP32-S3 + ES8311 DVDD/PVDD + SSR LEDs
-                                                                          └─ LP5907-3.3 (U4) ── AU_3V3 ── FB1 600Ω ── AVDD (ES8311 analog)
+J1 USB-C 5V ──[D4 SS14]──┐
+                          ├─ VBUS ── F1 1A fast fuse ── +5V ─┬─ SGM2212-3.3 ── +3V3 ── ESP32-S3 + ES8311 DVDD/PVDD + SSR LEDs
+J3 wall 5V  ──[D15 SS14]──┘                                  └─ LP5907-3.3 (U4) ── AU_3V3 ── FB1 600Ω ── AVDD (ES8311 analog)
 CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3:    10µF + 10µF + 100nF decoupling      AU_3V3: 1µF out (C24)
 USB D±  ── IO19/IO20 (native USB)             SGM2212: 10µF in (C_in) / 10µF out (C_out)   U4: 1µF in (C23); EN→+3V3 (seq.)
-USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from fused VBUS; VBUS_F TVS: SMF5.0A (D10)
-VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all protection — a clamping D10 blows it (fail-safe)
+Two 5V inlets diode-OR'd at VBUS: per-inlet SS14 (D4 = J1, D15 = J3) isolates the sources (no back-feed) and blocks a reversed J3 feed
+USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from +5V (post-fuse); +5V TVS: SMF5.0A (D10)
+VBUS fuse: F1 (0466001.NRHF, 1A fast) after the OR-merge, ahead of all downstream protection — a clamping D10 blows it, isolating both inlets (fail-safe)
 ```
 > No bulk electrolytic: the local LDO actively regulates the ~350 mA WiFi-TX burst
 > (modeled droop ≈ 90 mV across 20 µF of ceramic on +3V3), so a bulk cap buys nothing.
@@ -662,13 +664,13 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
 - **Antenna:** U1 (WROOM-1U) has a **u.FL connector** for an external antenna — route the lead out of
   the housing; there is no PCB-antenna keepout to honour (unlike the old WROOM-1).
 - **Programming/bring-up:** flash + view logs over the native USB-Serial-JTAG; BOOT + EN buttons
-  fitted for recovery. Two USB entries share the same D±/VBUS: **J1 (USB-C)** is a bench-only
+  fitted for recovery. Two USB entries share the same D±: **J1 (USB-C)** is a bench-only
   convenience for initial bring-up (board off the bus), and **J3 (the JST wall feed)** is both the
   deployed power inlet and the in-field flash port (cable wiring:
-  `docs/design/usb-jst-j3-wiring.svg`). **Field re-flash (OTA failed):** pull the
-  wall-wart plug off J3's far-end cable and plug *that same cable* into a laptop — one cable, so only
-  one VBUS source is ever live (J1/J3 parallel VBUS with no OR-ing — see TODO.md; the rule is never
-  power both at once). The smart layer reboots, but the doorbell keeps working throughout — the
+  `docs/design/usb-jst-j3-wiring.svg`). Their **VBUS rails are diode-OR'd** (D4 for J1, D15 for J3),
+  so both inlets may be powered at once without back-feeding each other — no one-source-at-a-time
+  rule. **Field re-flash (OTA failed):** pull the wall-wart plug off J3's far-end cable and plug
+  *that same cable* into a laptop. The smart layer reboots, but the doorbell keeps working throughout — the
   passive WF26 core is bus-powered, not USB-powered (MODE-1) — so only HA/notifications drop for the
   minute it takes. **Flash with the laptop on battery** so the host doesn't earth board GND
   (= P1 = bus common); see "Bus↔logic coupling".
@@ -677,8 +679,9 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   `docs/design/wall-wiring-v4.svg`. Probe via the commissioning test points (TP1 = GND
   scope anchor, TP2 = +3V3, TP3–TP8 = watchdog gate + codec taps — net per test point in
   the schematic), J2's screws, and component pads. The board has
-  **H1/H2 mounting holes** (NPTH 3.2 mm) on the enclosure bosses, plus **H3–H5 JLCPCB tooling
-  holes** (NPTH 1.152 mm, asymmetric) for the assembly order.
+  **H1/H2 mounting holes** (NPTH 3.2 mm) on the enclosure bosses; no pre-placed assembly-tooling
+  holes (JLCPCB's CAM adds its own panel registration — see "Known minor items" — and the WROOM-1U's
+  external u.FL antenna leaves no PCB-antenna keepout for a CAM hole to disturb).
 - **3D / fit-test model:** `./build.sh step` exports `fab/doorbell.step` (also run by
   `all-route`). Footprints carrying a truthy custom field **`STEP_Exclude`** are omitted from the
   model — flag SW3/SW4 (set the field in KiCad's Footprint Properties) so the real panel switches
@@ -692,7 +695,7 @@ KiCad**; `./build.sh all-route` refills the inner copper-fill planes and fails i
   bridging the board's top face up into each part's leads so components like the K5 relay don't snap
   off the thin printed leads.
 - **Printable bare-board model:** `./build.sh step-board` exports `fab/doorbell-board.step` —
-  the substrate only (no component bodies), with the mounting/tooling holes and THT pad drills cut
+  the substrate only (no component bodies), with the mounting holes and THT pad drills cut
   through (`--board-only --no-extra-pad-thickness`). The 80 routing vias (all 0.3 mm, sub-printable
   on a 0.4 mm nozzle) are deliberately *not* cut — they aren't needed for the SW3/SW4 fit-test, and
   the switch + mounting holes are THT pad drills that `--board-only` keeps regardless. It's meant to
@@ -985,5 +988,5 @@ pinout/V_CC bias, CC 5.1 kΩ Rd); bell-sense GPIO LOW levels; ES8311 full pinout
   V4.1: re-enable our own fiducials **and** pre-place 1.152 mm tooling holes at
   controlled positions (or carry an order remark keeping CAM-added holes away from the
   antenna edge).
-- **Mounting holes H1/H2** (NPTH 3.2 mm) on the enclosure bosses; commissioning test points **TP1–TP8**: TP1 = GND (= P1, the bus common — bonded to board GND — the scope-ground anchor), TP2 = +3V3, the rest tap the door watchdog gate and the codec audio front-end (net per test point in the schematic). Bare 1.5 mm pads, excluded from BOM/CPL. The 5 V rail has no test point — probe D4's cathode.
+- **Mounting holes H1/H2** (NPTH 3.2 mm) on the enclosure bosses; commissioning test points **TP1–TP8**: TP1 = GND (= P1, the bus common — bonded to board GND — the scope-ground anchor), TP2 = +3V3, the rest tap the door watchdog gate and the codec audio front-end (net per test point in the schematic). Bare 1.5 mm pads, excluded from BOM/CPL. The +5V rail has no test point — probe F1's output pad (the OR-merge VBUS sits on D4/D15's cathodes, one fuse upstream).
 - Bench-confirm the relay-coil voltage under WiFi TX with a long USB cable if paranoid.

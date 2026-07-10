@@ -7566,80 +7566,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "H"
-				(at 1.778 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "Tooling Hole, PCM_JLCPCB, 1.152mm_0_1"
-				(circle
-					(center 0 0)
-					(radius 0.635)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "PCM_JLCPCB-Optocouplers:LTV-217-B-G"
 			(pin_names
 				(offset 1.016)
@@ -18550,6 +18476,12 @@
 		(uuid "0855bd2d-d241-41e9-b7a4-40300ffdb3cb")
 	)
 	(junction
+		(at 58.42 68.58)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0e97a8cd-3999-4c22-a132-ee425a26f6e4")
+	)
+	(junction
 		(at 374.65 39.37)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -18592,7 +18524,7 @@
 		(uuid "30d97146-cfdc-4bef-9a6a-08d5823aaf53")
 	)
 	(junction
-		(at 82.55 74.93)
+		(at 78.74 49.53)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "341ba607-8aba-416c-85bd-af28fffac075")
@@ -18634,6 +18566,12 @@
 		(uuid "46e654d0-4fef-4969-bd61-7ae7c260d687")
 	)
 	(junction
+		(at 71.12 68.58)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "52db27d3-9980-4b32-9ce5-e1e50502ea9e")
+	)
+	(junction
 		(at 251.46 29.21)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -18652,19 +18590,13 @@
 		(uuid "62064a8b-59ca-4c4f-9200-a2b07250fedc")
 	)
 	(junction
-		(at 74.93 35.56)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6961541d-46eb-4cdd-8f3b-aed7afd5daa3")
-	)
-	(junction
 		(at 172.72 229.87)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6b943f65-4c43-464b-8740-b5953e018403")
 	)
 	(junction
-		(at 66.04 17.78)
+		(at 77.47 68.58)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6e100b41-1211-43d5-9865-5248a42e7c98")
@@ -18800,7 +18732,7 @@
 		(uuid "4c839ead-bd50-4643-abe3-c7c39958cfef")
 	)
 	(no_connect
-		(at 63.5 66.04)
+		(at 43.18 58.42)
 		(uuid "4f8c4521-fa80-49d4-870f-13149e44bc54")
 	)
 	(no_connect
@@ -18856,7 +18788,7 @@
 		(uuid "c53f3dac-6fcb-4ee8-9da2-bdf034d1cd1e")
 	)
 	(no_connect
-		(at 63.5 63.5)
+		(at 43.18 55.88)
 		(uuid "cbac0324-1f5c-4c05-a430-307feff08434")
 	)
 	(no_connect
@@ -18987,16 +18919,6 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 90.17) (xy 25.4 90.17)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0b1d770f-5481-48a1-92c4-6e7eb5594332")
-	)
-	(wire
-		(pts
 			(xy 203.2 236.22) (xy 203.2 240.03)
 		)
 		(stroke
@@ -19057,7 +18979,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 48.26) (xy 68.58 50.8)
+			(xy 48.26 40.64) (xy 48.26 43.18)
 		)
 		(stroke
 			(width 0)
@@ -19074,6 +18996,16 @@
 			(type default)
 		)
 		(uuid "1287fe8b-6bd1-4172-baaf-635df32233db")
+	)
+	(wire
+		(pts
+			(xy 29.21 90.17) (xy 30.48 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "133ffaca-4dfa-4a4c-9782-ac6fd75efa5c")
 	)
 	(wire
 		(pts
@@ -19197,6 +19129,16 @@
 	)
 	(wire
 		(pts
+			(xy 58.42 64.77) (xy 58.42 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "21315c5f-8af1-4a56-8005-6b9d6aec8e48")
+	)
+	(wire
+		(pts
 			(xy 87.63 247.65) (xy 87.63 260.35)
 		)
 		(stroke
@@ -19237,16 +19179,6 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 87.63) (xy 25.4 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2384f8be-a38b-42e3-a879-cade47993d95")
-	)
-	(wire
-		(pts
 			(xy 186.69 217.17) (xy 203.2 217.17)
 		)
 		(stroke
@@ -19254,16 +19186,6 @@
 			(type default)
 		)
 		(uuid "248f4b58-02bf-4d05-885e-ae672b414843")
-	)
-	(wire
-		(pts
-			(xy 63.5 85.09) (xy 68.58 85.09)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2522b53a-4571-4a95-b712-383d371a3abf")
 	)
 	(wire
 		(pts
@@ -19337,7 +19259,7 @@
 	)
 	(wire
 		(pts
-			(xy 66.04 55.88) (xy 63.5 55.88)
+			(xy 45.72 48.26) (xy 43.18 48.26)
 		)
 		(stroke
 			(width 0)
@@ -19397,7 +19319,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 74.93) (xy 82.55 74.93)
+			(xy 73.66 49.53) (xy 78.74 49.53)
 		)
 		(stroke
 			(width 0)
@@ -19427,16 +19349,6 @@
 	)
 	(wire
 		(pts
-			(xy 74.93 35.56) (xy 74.93 17.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "354f9f6f-cbcc-49a0-9e22-64a217660b12")
-	)
-	(wire
-		(pts
 			(xy 257.81 187.96) (xy 257.81 213.36)
 		)
 		(stroke
@@ -19457,7 +19369,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 73.66) (xy 82.55 74.93)
+			(xy 78.74 48.26) (xy 78.74 49.53)
 		)
 		(stroke
 			(width 0)
@@ -19567,7 +19479,7 @@
 	)
 	(wire
 		(pts
-			(xy 74.93 17.78) (xy 66.04 17.78)
+			(xy 86.36 68.58) (xy 77.47 68.58)
 		)
 		(stroke
 			(width 0)
@@ -19607,13 +19519,13 @@
 	)
 	(wire
 		(pts
-			(xy 74.93 35.56) (xy 77.47 35.56)
+			(xy 58.42 68.58) (xy 58.42 72.39)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "447224f9-6a23-4749-8089-558582f10f09")
+		(uuid "448093f2-1227-4fe5-a9a1-f50869815ce6")
 	)
 	(wire
 		(pts
@@ -19654,6 +19566,16 @@
 			(type default)
 		)
 		(uuid "49e0cbd6-5ea2-4894-832b-b87fce569a37")
+	)
+	(wire
+		(pts
+			(xy 29.21 85.09) (xy 30.48 85.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4a6545a2-89a0-4b82-a32f-156caf42f909")
 	)
 	(wire
 		(pts
@@ -19817,7 +19739,7 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 53.34) (xy 66.04 53.34)
+			(xy 43.18 45.72) (xy 45.72 45.72)
 		)
 		(stroke
 			(width 0)
@@ -19837,7 +19759,17 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 17.78) (xy 66.04 17.78)
+			(xy 20.32 87.63) (xy 30.48 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5c6a484d-50ea-4d1f-bd13-926f9ea9c6f1")
+	)
+	(wire
+		(pts
+			(xy 71.12 68.58) (xy 77.47 68.58)
 		)
 		(stroke
 			(width 0)
@@ -19857,13 +19789,13 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 90.17) (xy 68.58 90.17)
+			(xy 58.42 68.58) (xy 63.5 68.58)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "5d1d4206-f993-4530-bc32-5d2a66faca42")
+		(uuid "5d17dc8c-c02f-4a66-bc38-61310cf4aeb1")
 	)
 	(wire
 		(pts
@@ -19987,7 +19919,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 68.58) (xy 77.47 74.93)
+			(xy 73.66 43.18) (xy 73.66 49.53)
 		)
 		(stroke
 			(width 0)
@@ -20157,7 +20089,7 @@
 	)
 	(wire
 		(pts
-			(xy 66.04 53.34) (xy 66.04 55.88)
+			(xy 45.72 45.72) (xy 45.72 48.26)
 		)
 		(stroke
 			(width 0)
@@ -20407,13 +20339,13 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 85.09) (xy 25.4 85.09)
+			(xy 63.5 90.17) (xy 64.77 90.17)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "8e0ee24f-577a-43a5-8e24-16a0c11bbd04")
+		(uuid "8e2eda31-821d-4172-9b25-7094e005558c")
 	)
 	(wire
 		(pts
@@ -20757,16 +20689,6 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 35.56) (xy 67.31 35.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b19a1ea2-b256-401a-ab26-57cdf6c21baa")
-	)
-	(wire
-		(pts
 			(xy 316.23 95.25) (xy 320.04 95.25)
 		)
 		(stroke
@@ -20837,7 +20759,7 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 43.18) (xy 78.74 43.18)
+			(xy 43.18 35.56) (xy 53.34 35.56)
 		)
 		(stroke
 			(width 0)
@@ -20867,17 +20789,7 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 87.63) (xy 68.58 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b9c667a0-defe-4708-8b2a-57e3c7866edf")
-	)
-	(wire
-		(pts
-			(xy 68.58 50.8) (xy 63.5 50.8)
+			(xy 48.26 43.18) (xy 43.18 43.18)
 		)
 		(stroke
 			(width 0)
@@ -20957,7 +20869,7 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 48.26) (xy 68.58 48.26)
+			(xy 43.18 40.64) (xy 48.26 40.64)
 		)
 		(stroke
 			(width 0)
@@ -20977,7 +20889,7 @@
 	)
 	(wire
 		(pts
-			(xy 72.39 63.5) (xy 77.47 63.5)
+			(xy 68.58 38.1) (xy 73.66 38.1)
 		)
 		(stroke
 			(width 0)
@@ -21087,7 +20999,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 74.93) (xy 82.55 76.2)
+			(xy 78.74 49.53) (xy 78.74 50.8)
 		)
 		(stroke
 			(width 0)
@@ -21197,7 +21109,7 @@
 	)
 	(wire
 		(pts
-			(xy 72.39 66.04) (xy 77.47 66.04)
+			(xy 68.58 40.64) (xy 73.66 40.64)
 		)
 		(stroke
 			(width 0)
@@ -21397,7 +21309,7 @@
 	)
 	(wire
 		(pts
-			(xy 72.39 60.96) (xy 77.47 60.96)
+			(xy 68.58 35.56) (xy 73.66 35.56)
 		)
 		(stroke
 			(width 0)
@@ -21477,7 +21389,7 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 40.64) (xy 86.36 40.64)
+			(xy 43.18 33.02) (xy 60.96 33.02)
 		)
 		(stroke
 			(width 0)
@@ -21577,6 +21489,16 @@
 	)
 	(wire
 		(pts
+			(xy 63.5 85.09) (xy 64.77 85.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f86abf3c-b3f3-4ab4-bbec-f52db5b82736")
+	)
+	(wire
+		(pts
 			(xy 320.04 95.25) (xy 320.04 102.87)
 		)
 		(stroke
@@ -21584,6 +21506,16 @@
 			(type default)
 		)
 		(uuid "fabbb8dd-2a92-4df7-9052-1b2370da0bfd")
+	)
+	(wire
+		(pts
+			(xy 63.5 87.63) (xy 76.2 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fae4be6a-2d4d-486b-8ca7-c95c1f735673")
 	)
 	(wire
 		(pts
@@ -21636,7 +21568,7 @@
 		(uuid "002c57d3-3fa1-4555-a4ae-48119c5b5356")
 	)
 	(label "USB_DP"
-		(at 68.58 90.17 0)
+		(at 64.77 90.17 0)
 		(effects
 			(font
 				(size 1 1)
@@ -21795,6 +21727,16 @@
 		)
 		(uuid "184bd2fd-1d35-44af-a99e-37c207988dc9")
 	)
+	(label "USB_VBUS_IN"
+		(at 43.18 27.94 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1962db3a-b638-4053-a1e8-18867792a43f")
+	)
 	(label "I2S_MCLK"
 		(at 168.91 57.15 0)
 		(effects
@@ -21844,7 +21786,7 @@
 		(uuid "2552d066-ecba-43b0-9d2c-ac395528ed55")
 	)
 	(label "USB_DP"
-		(at 66.04 53.34 0)
+		(at 45.72 45.72 0)
 		(effects
 			(font
 				(size 1 1)
@@ -21882,8 +21824,18 @@
 		)
 		(uuid "2bb7ab60-0ac7-4e66-a5ba-538765a46e26")
 	)
+	(label "VBUS"
+		(at 58.42 69.85 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "2cd1c6c1-d26c-44f0-a56f-1035c189011a")
+	)
 	(label "USB_CC2"
-		(at 63.5 43.18 0)
+		(at 43.18 35.56 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -21920,6 +21872,16 @@
 			(justify left)
 		)
 		(uuid "3161dd7c-1e3a-48e3-a272-420633dd0f6d")
+	)
+	(label "WALL_VBUS_IN"
+		(at 50.8 72.39 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "32948281-f8d0-4f02-a78e-3d8f10fabc02")
 	)
 	(label "WD_GATE"
 		(at 294.64 97.79 0)
@@ -21981,7 +21943,7 @@
 		(uuid "3606a611-f360-4dc5-bc0b-bb5cbf31df3a")
 	)
 	(label "USB_CC1"
-		(at 63.5 40.64 0)
+		(at 43.18 33.02 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -21999,15 +21961,6 @@
 			(justify left)
 		)
 		(uuid "3a54ac00-b156-43fe-a26d-b57febddf32e")
-	)
-	(label "VBUS"
-		(at 66.04 35.56 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "3a58d446-6ded-43a1-8227-b6a4c61fd8f6")
 	)
 	(label "GND"
 		(at 52.07 222.25 0)
@@ -22127,7 +22080,7 @@
 		(uuid "4894c270-b420-4b92-8ab6-21a4f455facd")
 	)
 	(label "USB_ESP_DN"
-		(at 25.4 85.09 180)
+		(at 29.21 85.09 180)
 		(effects
 			(font
 				(size 1 1)
@@ -22349,8 +22302,8 @@
 		)
 		(uuid "740232bd-5cbf-4055-a92e-5417027323c3")
 	)
-	(label "VBUS"
-		(at 72.39 60.96 0)
+	(label "WALL_VBUS_IN"
+		(at 68.58 35.56 0)
 		(effects
 			(font
 				(size 1 1)
@@ -22388,16 +22341,6 @@
 			(justify left bottom)
 		)
 		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
-	)
-	(label "VBUS_F"
-		(at 68.58 87.63 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-			(justify left)
-		)
-		(uuid "7d6895c8-971d-4384-b5f3-71ac3282d2e9")
 	)
 	(label "OC2_EMIT"
 		(at 134.62 184.15 0)
@@ -22439,7 +22382,7 @@
 		(uuid "800c8760-0e65-4bc5-8d6a-970da230f497")
 	)
 	(label "USB_DN"
-		(at 72.39 63.5 0)
+		(at 68.58 38.1 0)
 		(effects
 			(font
 				(size 1 1)
@@ -22449,7 +22392,7 @@
 		(uuid "8384cb7d-a784-4911-b51c-8e92d5082844")
 	)
 	(label "USB_DN"
-		(at 68.58 48.26 0)
+		(at 48.26 40.64 0)
 		(effects
 			(font
 				(size 1 1)
@@ -22554,6 +22497,16 @@
 		)
 		(uuid "91818379-8406-4854-97b0-be143d70c874")
 	)
+	(label "USB_VBUS_IN"
+		(at 50.8 64.77 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "924640e8-d07a-42c8-ac5a-8cff84278530")
+	)
 	(label "OC2_CATH"
 		(at 114.3 194.31 0)
 		(effects
@@ -22614,7 +22567,7 @@
 		(uuid "96ab3603-fab2-45eb-b6a2-2309b5126fde")
 	)
 	(label "USB_DP"
-		(at 72.39 66.04 0)
+		(at 68.58 40.64 0)
 		(effects
 			(font
 				(size 1 1)
@@ -22643,7 +22596,7 @@
 		(uuid "a3a49f08-1797-471a-85ab-9d3a87a1b095")
 	)
 	(label "USB_ESP_DP"
-		(at 68.58 85.09 0)
+		(at 64.77 85.09 0)
 		(effects
 			(font
 				(size 1 1)
@@ -22721,7 +22674,7 @@
 		(uuid "b073343d-e895-406f-82e6-9dcc165243d6")
 	)
 	(label "USB_DN"
-		(at 25.4 90.17 180)
+		(at 29.21 90.17 180)
 		(effects
 			(font
 				(size 1 1)
@@ -22789,16 +22742,6 @@
 			(justify right bottom)
 		)
 		(uuid "b75096c3-ad17-4b5b-a748-28cddd990719")
-	)
-	(label "GND"
-		(at 25.4 87.63 180)
-		(effects
-			(font
-				(size 1 1)
-			)
-			(justify right)
-		)
-		(uuid "b825da95-0e87-4822-b8ba-c930d03ced4f")
 	)
 	(label "I2S_MCLK"
 		(at 186.69 182.88 0)
@@ -23011,15 +22954,6 @@
 			)
 		)
 		(uuid "e688399f-938c-480c-8498-d9ec134a25bb")
-	)
-	(label "VBUS_F"
-		(at 74.93 24.13 90)
-		(effects
-			(font
-				(size 1 1)
-			)
-		)
-		(uuid "e7c41bbf-d745-4b68-92e1-f6c4c2615f64")
 	)
 	(label "STATUS_LED"
 		(at 123.19 39.37 180)
@@ -24291,7 +24225,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
-		(at 86.36 44.45 0)
+		(at 60.96 36.83 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -24301,7 +24235,7 @@
 		(dnp no)
 		(uuid "1d63870e-ac90-4408-bdeb-eb2909c6a900")
 		(property "Reference" "R13"
-			(at 88.14 43.18 0)
+			(at 62.74 35.56 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24312,7 +24246,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 88.14 45.72 0)
+			(at 62.74 38.1 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24323,7 +24257,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 86.36 44.45 0)
+			(at 60.96 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24334,7 +24268,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
-			(at 86.36 44.45 0)
+			(at 60.96 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24345,7 +24279,7 @@
 			)
 		)
 		(property "Description" "USB-C CC1 sink pull-down (advertises 5V device)"
-			(at 86.36 44.45 0)
+			(at 60.96 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24356,7 +24290,7 @@
 			)
 		)
 		(property "LCSC" "C23186"
-			(at 86.36 44.45 0)
+			(at 60.96 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24367,7 +24301,7 @@
 			)
 		)
 		(property "MPN" "0603WAF5101T5E"
-			(at 86.36 44.45 0)
+			(at 60.96 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24777,7 +24711,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic_MountingPin:Conn_01x04_MountingPin")
-		(at 82.55 63.5 0)
+		(at 78.74 38.1 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -24787,7 +24721,7 @@
 		(dnp no)
 		(uuid "2540f29f-b562-4b18-9806-27d59d23284b")
 		(property "Reference" "J3"
-			(at 85.09 63.8555 0)
+			(at 81.28 38.4555 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24798,7 +24732,7 @@
 			)
 		)
 		(property "Value" "USB-JST"
-			(at 84.836 66.294 0)
+			(at 81.026 40.894 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24809,7 +24743,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal"
-			(at 82.55 63.5 0)
+			(at 78.74 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24820,7 +24754,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_JST-SM04B-SRSS-TB-LF-SN_C160404.pdf"
-			(at 82.55 63.5 0)
+			(at 78.74 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24831,7 +24765,7 @@
 			)
 		)
 		(property "Description" "Wall-feed power + native-USB connector (JST SH 4-pin, side-entry; SM04B-SRSS-TB). VBUS/D−/D+/GND landed from the de-capped USB-A wall cable; mounting tabs (MP) → GND for strain anchoring. Shares VBUS with J1 — source isolation deferred (see TODO.md)."
-			(at 82.55 63.5 0)
+			(at 78.74 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24842,7 +24776,7 @@
 			)
 		)
 		(property "LCSC" "C160404"
-			(at 82.55 63.5 0)
+			(at 78.74 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24853,7 +24787,7 @@
 			)
 		)
 		(property "MPN" "SM04B-SRSS-TB(LF)(SN)"
-			(at 82.55 63.5 0)
+			(at 78.74 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24864,7 +24798,7 @@
 			)
 		)
 		(property "Manufacturer" "JST"
-			(at 82.55 63.5 0)
+			(at 78.74 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25052,7 +24986,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 85.09 35.56 270)
+		(at 86.36 68.58 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -25062,7 +24996,7 @@
 		(dnp no)
 		(uuid "2af10cd2-14fc-4371-96d4-3963a781176f")
 		(property "Reference" "#PWR04"
-			(at 85.09 35.56 0)
+			(at 86.36 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25073,7 +25007,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 89.59 35.56 90)
+			(at 90.86 68.58 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25084,7 +25018,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 85.09 35.56 0)
+			(at 86.36 68.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25094,7 +25028,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 85.09 35.56 0)
+			(at 86.36 68.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25104,7 +25038,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 85.09 35.56 0)
+			(at 86.36 68.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26225,7 +26159,7 @@
 		(dnp no)
 		(uuid "3cada404-0183-4d53-aeb7-3d2777f2ff51")
 		(property "Reference" "D5"
-			(at 83.49 86.36 0)
+			(at 46.482 93.98 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26236,7 +26170,7 @@
 			)
 		)
 		(property "Value" "TPD2S017"
-			(at 83.49 88.9 0)
+			(at 43.942 81.026 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26268,7 +26202,7 @@
 				)
 			)
 		)
-		(property "Description" "USB D+/D- ESD clamp, two-stage flow-through (TPD2S017); VCC biased from VBUS"
+		(property "Description" "USB D+/D- ESD clamp, two-stage flow-through (TPD2S017); VCC biased from fused +5V"
 			(at 46.99 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -26721,83 +26655,8 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm")
-		(at 217.17 265.43 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files no)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "48334f76-2c5b-47af-a623-1ea4a6e456c4")
-		(property "Reference" "H3"
-			(at 218.44 265.4299 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" ""
-			(at 217.17 265.43 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
-			(at 217.17 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
-			(at 217.17 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
-			(at 217.17 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "H3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
-		(at 78.74 50.8 0)
+		(at 53.34 43.18 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -26807,7 +26666,7 @@
 		(dnp no)
 		(uuid "48c757c4-8cdb-4043-8b38-d9ecbefa1450")
 		(property "Reference" "#PWR37"
-			(at 78.74 50.8 0)
+			(at 53.34 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26818,7 +26677,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 78.74 55.3 0)
+			(at 53.34 47.68 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26828,7 +26687,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 50.8 0)
+			(at 53.34 43.18 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26838,7 +26697,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 50.8 0)
+			(at 53.34 43.18 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26848,7 +26707,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 78.74 50.8 0)
+			(at 53.34 43.18 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -27263,7 +27122,7 @@
 	)
 	(symbol
 		(lib_id "Connector:USB_C_Receptacle_USB2.0_16P")
-		(at 48.26 50.8 0)
+		(at 27.94 43.18 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -27273,7 +27132,7 @@
 		(dnp no)
 		(uuid "54315f86-3771-4272-a04b-6d33d668d27d")
 		(property "Reference" "J1"
-			(at 48.26 27.94 0)
+			(at 27.94 20.32 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -27283,7 +27142,7 @@
 			)
 		)
 		(property "Value" "USB-C (USB4105)"
-			(at 48.26 30.48 0)
+			(at 27.94 22.86 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -27293,7 +27152,7 @@
 			)
 		)
 		(property "Footprint" "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal"
-			(at 48.26 50.8 0)
+			(at 27.94 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27304,7 +27163,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.usb.org/sites/default/files/documents/usb_type-c.zip"
-			(at 48.26 50.8 0)
+			(at 27.94 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27315,7 +27174,7 @@
 			)
 		)
 		(property "Description" "USB-C receptacle: 5V power + native-USB programming"
-			(at 48.26 50.8 0)
+			(at 27.94 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27326,7 +27185,7 @@
 			)
 		)
 		(property "LCSC" "C3025063"
-			(at 48.26 50.8 0)
+			(at 27.94 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27398,7 +27257,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 82.55 76.2 0)
+		(at 78.74 50.8 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -27409,7 +27268,7 @@
 		(fields_autoplaced yes)
 		(uuid "54758eff-bccc-460e-b24a-ece09abc6520")
 		(property "Reference" "#PWR057"
-			(at 82.55 82.55 0)
+			(at 78.74 57.15 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27420,7 +27279,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 82.55 81.28 0)
+			(at 78.74 55.88 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -27430,7 +27289,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 82.55 76.2 0)
+			(at 78.74 50.8 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27441,7 +27300,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 82.55 76.2 0)
+			(at 78.74 50.8 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27452,7 +27311,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 82.55 76.2 0)
+			(at 78.74 50.8 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27973,6 +27832,107 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR54")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_JLCPCB-Diodes:Schottky,SS14")
+		(at 54.61 72.39 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "611eb559-4240-437c-928a-aa7fbf09159f")
+		(property "Reference" "D15"
+			(at 54.61 77.978 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SS14"
+			(at 54.61 75.438 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:D_SMA"
+			(at 54.61 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2407101109_MDD-Microdiode-Semiconductor-SS14_C2480.pdf"
+			(at 54.61 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "J3 wall-feed input OR-ing / reverse-polarity Schottky: WALL_VBUS_IN -> VBUS (~0.45 V drop); blocks USB back-feed and a reversed wall feed"
+			(at 54.61 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "LCSC" "C2480"
+			(at 54.61 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "MPN" "SS14"
+			(at 54.61 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "abe87a54-d451-4130-8689-59b467155707")
+		)
+		(pin "1"
+			(uuid "355f1817-abc2-470d-9ae2-8dedd045342f")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "D15")
 					(unit 1)
 				)
 			)
@@ -29276,81 +29236,6 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm")
-		(at 238.76 265.43 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files no)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "75959758-b706-46de-b7bc-f3236ed0099b")
-		(property "Reference" "H5"
-			(at 240.03 265.4299 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" ""
-			(at 238.76 265.43 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
-			(at 238.76 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
-			(at 238.76 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
-			(at 238.76 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "H5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 172.72 241.3 0)
 		(unit 1)
@@ -30007,81 +29892,6 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "D3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_JLCPCB-Manufacturing:Tooling Hole, PCM_JLCPCB, 1.152mm")
-		(at 228.6 265.43 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files no)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "7afbbacc-6a34-4cac-8063-910ccf7292d4")
-		(property "Reference" "H4"
-			(at 229.87 265.4299 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" ""
-			(at 228.6 265.43 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "PCM_JLCPCB:Hole_Tooling_JLCPCB"
-			(at 228.6 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://jlcpcb.com/help/article/How-to-add-tooling-holes-for-PCB-assembly-order"
-			(at 228.6 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "1. Two or three tooling holes should be added on the PCB, they should be placed in opposite corners of the PCB and as far apart from one another as practical. 2. Tooling holes should be 1.152mm(45.4mil) round non-plated holes with 0.148mm solder mask expansion. 3. Tooling holes are only required for PCB assembly orders. 4. Please try to add tooling holes on empty space and keep them away from traces. If there is no enough room, you can add them to the copper area."
-			(at 228.6 265.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(instances
-			(project "doorbell"
-				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "H4")
 					(unit 1)
 				)
 			)
@@ -31088,7 +30898,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:Schottky,SS14")
-		(at 81.28 35.56 90)
+		(at 54.61 64.77 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -31098,7 +30908,7 @@
 		(dnp no)
 		(uuid "839a9d09-6f8c-47ee-9b88-99f94b81c600")
 		(property "Reference" "D4"
-			(at 81.28 30.48 270)
+			(at 54.61 59.69 270)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31108,7 +30918,7 @@
 			)
 		)
 		(property "Value" "SS14"
-			(at 81.28 33.02 270)
+			(at 54.61 62.23 270)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31118,7 +30928,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:D_SMA"
-			(at 81.28 35.56 0)
+			(at 54.61 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31129,7 +30939,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2407101109_MDD-Microdiode-Semiconductor-SS14_C2480.pdf"
-			(at 81.28 35.56 0)
+			(at 54.61 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31139,8 +30949,8 @@
 				)
 			)
 		)
-		(property "Description" "VBUS reverse-polarity protection Schottky (~0.45V drop to +5V rail)"
-			(at 81.28 35.56 0)
+		(property "Description" "J1 USB-C input OR-ing Schottky: USB_VBUS_IN -> VBUS (~0.45 V drop); blocks VBUS back-feed into the USB host"
+			(at 54.61 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31151,7 +30961,7 @@
 			)
 		)
 		(property "LCSC" "C2480"
-			(at 81.28 35.56 0)
+			(at 54.61 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31162,7 +30972,7 @@
 			)
 		)
 		(property "MPN" "SS14"
-			(at 81.28 35.56 0)
+			(at 54.61 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32092,7 +31902,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 48.26 73.66 0)
+		(at 27.94 66.04 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -32102,7 +31912,7 @@
 		(dnp no)
 		(uuid "917db77c-80f3-4586-bb5a-aa475e9cdaf1")
 		(property "Reference" "#PWR21"
-			(at 48.26 73.66 0)
+			(at 27.94 66.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32113,7 +31923,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 48.26 78.16 0)
+			(at 27.94 70.54 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -32123,7 +31933,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 48.26 73.66 0)
+			(at 27.94 66.04 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -32133,7 +31943,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 48.26 73.66 0)
+			(at 27.94 66.04 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -32143,7 +31953,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 48.26 73.66 0)
+			(at 27.94 66.04 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33085,7 +32895,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Diodes:TVS-Uni,SMF5.0A")
-		(at 66.04 21.59 180)
+		(at 77.47 72.39 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -33095,7 +32905,7 @@
 		(dnp no)
 		(uuid "a1ea1a0d-50d7-4340-8c02-26c7c698c742")
 		(property "Reference" "D10"
-			(at 67.82 20.32 0)
+			(at 79.25 71.12 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33106,7 +32916,7 @@
 			)
 		)
 		(property "Value" "SMF5.0A"
-			(at 67.82 22.86 0)
+			(at 79.25 73.66 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33117,7 +32927,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:D_SOD-123FL"
-			(at 66.04 21.59 0)
+			(at 77.47 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33128,7 +32938,7 @@
 			)
 		)
 		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2312041000_hongjiacheng-SMF5-0A_C19077497.pdf"
-			(at 66.04 21.59 0)
+			(at 77.47 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33139,7 +32949,7 @@
 			)
 		)
 		(property "Description" "VBUS surge/ESD clamp TVS (5V working voltage)"
-			(at 66.04 21.59 0)
+			(at 77.47 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33150,7 +32960,7 @@
 			)
 		)
 		(property "LCSC" "C19077497"
-			(at 66.04 21.59 0)
+			(at 77.47 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33161,7 +32971,7 @@
 			)
 		)
 		(property "MPN" "SMF5.0A"
-			(at 66.04 21.59 0)
+			(at 77.47 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33266,7 +33076,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 66.04 25.4 0)
+		(at 77.47 76.2 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -33276,7 +33086,7 @@
 		(dnp no)
 		(uuid "a48ffb70-a749-4aef-8bfe-8a48dcd5dd85")
 		(property "Reference" "#PWR41"
-			(at 66.04 25.4 0)
+			(at 77.47 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33287,7 +33097,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 66.04 29.9 0)
+			(at 77.47 80.7 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33297,7 +33107,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 66.04 25.4 0)
+			(at 77.47 76.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33307,7 +33117,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 66.04 25.4 0)
+			(at 77.47 76.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33317,7 +33127,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 66.04 25.4 0)
+			(at 77.47 76.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34103,7 +33913,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 40.64 73.66 0)
+		(at 20.32 66.04 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -34113,7 +33923,7 @@
 		(dnp no)
 		(uuid "add9524e-df65-44c9-b0f9-572945e632ff")
 		(property "Reference" "#PWR22"
-			(at 40.64 73.66 0)
+			(at 20.32 66.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -34124,7 +33934,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 40.64 78.16 0)
+			(at 20.32 70.54 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34134,7 +33944,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 40.64 73.66 0)
+			(at 20.32 66.04 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34144,7 +33954,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 40.64 73.66 0)
+			(at 20.32 66.04 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34154,7 +33964,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 40.64 73.66 0)
+			(at 20.32 66.04 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34770,7 +34580,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 86.36 48.26 0)
+		(at 60.96 40.64 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -34780,7 +34590,7 @@
 		(dnp no)
 		(uuid "b6493a11-cc82-4ea2-af84-869ffce8e6ea")
 		(property "Reference" "#PWR36"
-			(at 86.36 48.26 0)
+			(at 60.96 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -34791,7 +34601,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 86.36 52.76 0)
+			(at 60.96 45.14 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34801,7 +34611,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 86.36 48.26 0)
+			(at 60.96 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34811,7 +34621,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 86.36 48.26 0)
+			(at 60.96 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -34821,7 +34631,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 86.36 48.26 0)
+			(at 60.96 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35050,7 +34860,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Capacitors:0603,100nF")
-		(at 59.69 21.59 0)
+		(at 71.12 72.39 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -35060,7 +34870,7 @@
 		(dnp no)
 		(uuid "bb00ba25-ab68-4ea1-b250-68726157c6dd")
 		(property "Reference" "C22"
-			(at 61.47 20.32 0)
+			(at 72.9 71.12 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35071,7 +34881,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 61.47 22.86 0)
+			(at 72.9 73.66 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35082,7 +34892,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:C_0603"
-			(at 59.69 21.59 0)
+			(at 71.12 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35093,7 +34903,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf"
-			(at 59.69 21.59 0)
+			(at 71.12 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35104,7 +34914,7 @@
 			)
 		)
 		(property "Description" "TPD2S017 VCC bias bypass"
-			(at 59.69 21.59 0)
+			(at 71.12 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35115,7 +34925,7 @@
 			)
 		)
 		(property "LCSC" "C14663"
-			(at 59.69 21.59 0)
+			(at 71.12 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35126,7 +34936,7 @@
 			)
 		)
 		(property "MPN" "CC0603KRX7R9BB104"
-			(at 59.69 21.59 0)
+			(at 71.12 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35255,7 +35065,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0603,5.1kΩ")
-		(at 78.74 46.99 0)
+		(at 53.34 39.37 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -35265,7 +35075,7 @@
 		(dnp no)
 		(uuid "bdcf9a28-43e9-46ef-8e7e-1ab3bc8ec972")
 		(property "Reference" "R14"
-			(at 80.52 45.72 0)
+			(at 55.12 38.1 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35276,7 +35086,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 80.52 48.26 0)
+			(at 55.12 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35287,7 +35097,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0603"
-			(at 78.74 46.99 0)
+			(at 53.34 39.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35298,7 +35108,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010116_UNI-ROYAL-Uniroyal-Elec-0603WAF5101T5E_C23186.pdf"
-			(at 78.74 46.99 0)
+			(at 53.34 39.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35309,7 +35119,7 @@
 			)
 		)
 		(property "Description" "USB-C CC2 sink pull-down (advertises 5V device)"
-			(at 78.74 46.99 0)
+			(at 53.34 39.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35320,7 +35130,7 @@
 			)
 		)
 		(property "LCSC" "C23186"
-			(at 78.74 46.99 0)
+			(at 53.34 39.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35331,7 +35141,7 @@
 			)
 		)
 		(property "MPN" "0603WAF5101T5E"
-			(at 78.74 46.99 0)
+			(at 53.34 39.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36443,7 +36253,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 59.69 25.4 0)
+		(at 71.12 76.2 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -36453,7 +36263,7 @@
 		(dnp no)
 		(uuid "c838ee58-e536-4b43-96bc-9c9b4ce94876")
 		(property "Reference" "#PWR053"
-			(at 59.69 25.4 0)
+			(at 71.12 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36464,17 +36274,18 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 59.69 29.9 0)
+			(at 69.85 80.772 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1 1)
 				)
+				(justify left)
 			)
 		)
 		(property "Footprint" ""
-			(at 59.69 25.4 0)
+			(at 71.12 76.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36484,7 +36295,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 59.69 25.4 0)
+			(at 71.12 76.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36494,7 +36305,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 59.69 25.4 0)
+			(at 71.12 76.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36853,7 +36664,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 71.12 35.56 90)
+		(at 67.31 68.58 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -36863,7 +36674,7 @@
 		(dnp no)
 		(uuid "cae71a9d-1721-47d1-8214-7270bff4df8f")
 		(property "Reference" "F1"
-			(at 71.12 30.48 270)
+			(at 67.31 62.992 270)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36873,7 +36684,7 @@
 			)
 		)
 		(property "Value" "1A fast (466)"
-			(at 71.12 33.02 270)
+			(at 67.31 65.532 270)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36883,7 +36694,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuse_1206_3216Metric"
-			(at 71.12 35.56 0)
+			(at 67.31 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36894,7 +36705,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 71.12 35.56 0)
+			(at 67.31 68.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36904,7 +36715,7 @@
 			)
 		)
 		(property "Description" "VBUS fuse (1A fast): fail-safe for a clamping D10 / board fault; ~2x headroom over WiFi-TX+relay peaks"
-			(at 71.12 35.56 0)
+			(at 67.31 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36915,7 +36726,7 @@
 			)
 		)
 		(property "LCSC" "C151135"
-			(at 71.12 35.56 0)
+			(at 67.31 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -37339,6 +37150,84 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 20.32 87.63 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d73bd7b0-964b-4c73-9ea7-913525290eb6")
+		(property "Reference" "#PWR061"
+			(at 20.32 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 20.32 92.71 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 20.32 87.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 20.32 87.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 20.32 87.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "78846175-06ba-476b-9c66-787cc52388f4")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR061")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 185.42 123.19 0)
 		(unit 1)
 		(body_style 1)
@@ -37406,6 +37295,84 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR35")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 76.2 87.63 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "dabfb546-b94e-41d7-b6dd-cd01b9f402c1")
+		(property "Reference" "#PWR062"
+			(at 76.2 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+5V"
+			(at 76.2 82.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 76.2 87.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 76.2 87.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 76.2 87.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "66f14fdf-6b89-452a-b58f-7803674d0765")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR062")
 					(unit 1)
 				)
 			)
@@ -37604,7 +37571,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 88.9 27.94 0)
+		(at 90.17 24.13 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -37614,7 +37581,7 @@
 		(dnp no)
 		(uuid "df8606c9-4fc1-430f-8e5b-09fbd8132b16")
 		(property "Reference" "#FLG1"
-			(at 88.9 25.4 0)
+			(at 90.17 21.59 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -37625,7 +37592,7 @@
 			)
 		)
 		(property "Value" ""
-			(at 88.9 30.48 0)
+			(at 90.17 26.67 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37635,7 +37602,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 27.94 0)
+			(at 90.17 24.13 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37645,7 +37612,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 27.94 0)
+			(at 90.17 24.13 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37655,7 +37622,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 88.9 27.94 0)
+			(at 90.17 24.13 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -39043,7 +39010,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 88.9 27.94 180)
+		(at 90.17 24.13 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -39053,7 +39020,7 @@
 		(dnp no)
 		(uuid "f7bf78d9-2893-4071-a7bc-2cc649922bb2")
 		(property "Reference" "#PWR06"
-			(at 88.9 27.94 0)
+			(at 90.17 24.13 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39064,7 +39031,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 88.9 32.44 0)
+			(at 90.17 28.63 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -39074,7 +39041,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 27.94 0)
+			(at 90.17 24.13 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -39084,7 +39051,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 88.9 27.94 0)
+			(at 90.17 24.13 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -39094,7 +39061,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 88.9 27.94 0)
+			(at 90.17 24.13 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects

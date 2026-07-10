@@ -72,10 +72,6 @@ The JLCPCB-assembled PCB needs four things it doesn't ship with:
   lead stays dead without CC pull-downs. Wiring and polarity checks:
   `docs/design/usb-jst-j3-wiring.svg`.
 
-> ⚠️ **Never power J1 (the on-board USB-C) and J3 at the same time.** They drive the same raw
-> VBUS net with no OR-ing diode — unplug the wall feed before bench-flashing over USB-C. For an
-> in-place reflash, move the J3 cable's far end from the wall-wart to a laptop instead.
-
 **Status:** the V4.1 board (JLCPCB-fabbed and -assembled) is bench-verified and deployed —
 installed in the wall in place of the WF26, running `firmware/doorbell-v4.yaml`. The smart layer
 is powered by a USB wall-wart into the J3 connector; the TV20/S bus powers only the passive
