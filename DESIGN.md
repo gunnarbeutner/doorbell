@@ -444,10 +444,13 @@ this purely a placement choice: any function routes to any pad.
 - **SSR gates idle off through boot (SAFE-6).** The three DRV pins are plain GPIO that power up as
   floating inputs; the 10 k pull-downs keep the SSR LEDs dark until firmware drives them. DOOR_DRV
   sits on a pin with no boot-time drive, so the opener can't pulse on reset.
-- **Strapping pins parked safe:** the S3 straps on IO0/IO3/IO45/IO46. Only **IO0** is wired — it is the
-  boot strap, held high by R11 (10 k to +3V3) for normal SPI-flash boot, with SW1 pulling it to GND for
-  download mode. IO3 (JTAG-source), IO45 (VDD_SPI) and IO46 (ROM-log) are left unconnected at their
-  module defaults (the WROOM sets its own internal-flash voltage, so IO45/IO46 must float). The I²C/I²S
+- **Strapping pins parked safe:** the S3 straps on IO0/IO3/IO45/IO46. **IO0** is the boot strap, held
+  high by R11 (10 k to +3V3) for normal SPI-flash boot, with SW1 pulling it to GND for download mode.
+  **IO3** drives the active-low status LED: +3V3 → R15 → D6 → IO3, with R27 pulling IO3 to GND. Its
+  JTAG-source strap is eFuse-gated and does not affect normal boot, so this load is safe; firmware
+  drives IO3 high when healthy and lets ESPHome blink it on Wi-Fi/API errors. IO45 (VDD_SPI) and IO46
+  (ROM-log) remain unconnected at their module defaults (the WROOM sets its own internal-flash voltage,
+  so IO45/IO46 must float). The I²C/I²S
   bus deliberately lands SCL/MCLK/BCLK/DIN on IO39–42 = the MTCK/MTDO/MTDI/MTMS JTAG group — none of
   those are S3 strapping pins, so it only forgoes pin-JTAG (debug runs over USB-Serial-JTAG) with no
   boot-time effect. EN has the 10 k (R10) + 1 µF (C5) RC + SW2 (Espressif EN-RC spec).

@@ -18,6 +18,7 @@
 #   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO10
 #   suppress_chime_bin (K3 / chime suppress)       : GPIO11
 #   K1                 (PTT SSR, talk=energised)   : GPIO9
+#   status LED          (active-low D6)             : GPIO3
 #   I2C_SDA  (ES8311 control)                      : GPIO38
 #   I2C_SCL  (ES8311 control)                      : GPIO39
 #   I2S_MCLK (master clock)                        : GPIO40
@@ -91,6 +92,11 @@ psram:
 
 logger:
   hardware_uart: USB_SERIAL_JTAG   # logs over the native USB-C (no UART pins are broken out)
+
+status_led:
+  pin:
+    number: GPIO3
+    inverted: true              # D6 anode is fed from +3V3; sinking IO3 lights it
 
 api:
   encryption:

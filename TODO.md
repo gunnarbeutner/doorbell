@@ -12,14 +12,6 @@ n; door release = direct P2↔P3; talk = P4↔P3 via R1; relay coil = P1↔P4, r
       discharge interval has elapsed. Then explicitly resolve reset/brownout during that interval;
       the passive bleed does not make an immediate hardware-default reclose safe.
 
-- [ ] **(V4.2) Status LED — remaining tails.** The active-low IO3 status LED is now wired in the
-      schematic + PCB and verified (D6 cathode → `STATUS_LED` → U1 IO3; **R27** 1 kΩ pull-down → GND;
-      anode kept on R15 → +3V3; ERC/DRC/schematic-parity all clean, LED fully routed). Left to do:
-      **(1)** firmware — ESPHome `status_led` on **GPIO3** (`inverted: true`): blink on WiFi/API loss,
-      dark when healthy; **(2)** DESIGN.md — move IO3 in the strapping note from "unconnected" to the
-      status LED (its JTAG-source strap is eFuse-gated, so repurposing it is safe). **Interim, until the
-      V4.2 board is installed:** the deployed V4.1 board's D6 is hardwired and still leaks — keep black
-      tape over it.
 - [ ] **(V4.2) Investigate a vertical (top-entry) USB-C receptacle for J1 (e.g. LCSC C5156600).** The
       present J1 is a horizontal board-edge USB-C; once the board is mounted in the wall enclosure that
       edge faces the wall and the port is unreachable, so a USB reflash means un-mounting the board. A
