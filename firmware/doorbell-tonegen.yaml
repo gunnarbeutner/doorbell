@@ -1,4 +1,4 @@
-# Klingel V4 — TONE GENERATOR + HA MEDIA PLAYER for the SECOND V4.1 board (bench instrument,
+# TONE GENERATOR + HA MEDIA PLAYER for the second V4.1 board (bench instrument,
 # not a doorbell). Bench bring-up uses two boards: board #1 (doorbell2 @ .78,
 # doorbell-bench.yaml) is the unit under test; this config turns the spare board into an audio
 # source for board #1's RX and chime-mute tests (VERIFICATION.md §5.5 2d/2e): "Tone" + "PTT" put a
@@ -10,7 +10,7 @@
 
 esphome:
   name: doorbell3
-  friendly_name: Doorbell V4.1 tone generator
+  friendly_name: Doorbell tone generator
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8

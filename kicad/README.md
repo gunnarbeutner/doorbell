@@ -1,4 +1,4 @@
-# Doorbell V4 — KiCad project
+# Doorbell controller — KiCad project
 
 ## Build pipeline (verify + fab; the KiCad files are authoritative)
 

@@ -1,4 +1,4 @@
-# Ordering Klingel V4 from JLCPCB (one assembled board)
+# Ordering the doorbell controller from JLCPCB
 
 Goal: get **one assembled board** via JLCPCB **Standard PCBA** (the current BOM is not eligible
 for Economic). The board is ~64 × 59 mm, **4-layer**, all parts on the **top side**; J2 (5-way

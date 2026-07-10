@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Schematic-importing circuit simulator + PCB viewer for the doorbell V4 board.",
+  "description": "Schematic-importing circuit simulator and PCB viewer for the doorbell controller.",
   "scripts": {
     "dev": "node server.js",
     "test": "node --test"

@@ -1,4 +1,4 @@
-# Klingel V4 — BENCH BRING-UP twin of doorbell.yaml (U1 = ESP32-S3-WROOM-1U-N16R8, U3 = ES8311).
+# BENCH BRING-UP twin of doorbell.yaml (U1 = ESP32-S3-WROOM-1U-N16R8, U3 = ES8311).
 # Tracks the production config's behaviour (welcome audio, greeting registry, name-based greet API,
 # chime policy) but with bench deltas, all in service of VERIFICATION.md §5.5 (emulated-bus stages):
 #   - Identity doorbell2 @ 192.168.3.78 (shares the api key + OTA password); production is doorbell @ .18.

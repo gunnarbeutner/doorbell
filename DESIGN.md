@@ -1,4 +1,4 @@
-# Doorbell controller (Klingel V4) — design reference
+# Doorbell controller — design reference
 
 **What the board must do is in [`REQUIREMENTS.md`](REQUIREMENTS.md); this doc is *how* it does it.**
 When the design changes in a way that affects behaviour, update REQUIREMENTS.md too.

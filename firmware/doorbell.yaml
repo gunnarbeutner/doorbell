@@ -1,4 +1,4 @@
-# Klingel V4 — ESPHome config for the ESP32-S3 doorbell board (U1 = ESP32-S3-WROOM-1U-N16R8, U3 = ES8311 codec).
+# ESPHome config for the ESP32-S3 doorbell controller (U1 = ESP32-S3-WROOM-1U-N16R8, U3 = ES8311 codec).
 #
 # GPIO map (S3-WROOM-1U; USB on the north edge, the ES8311 I2C/I2S bus ascending down the codec edge):
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO12

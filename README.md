@@ -1,10 +1,10 @@
-# Doorbell controller (Klingel V4)
+# Doorbell controller (STR WF26-compatible)
 
 A drop-in smart replacement for a **WF26 handset** on an **STR Elektronik TV20/S**
 apartment-intercom bus, built on an ESP32-S3 running ESPHome. To the building it looks like the
 handset it replaces; to Home Assistant it looks like a doorbell, an intercom and a door opener.
 
-![The Klingel V4 board installed in the wall](docs/design/v4-final.jpeg)
+![The doorbell controller installed in the wall](docs/design/v4-final.jpeg)
 
 ## What it does
 
