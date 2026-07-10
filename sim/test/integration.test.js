@@ -181,14 +181,13 @@ test('chime suppress fail-safe: line 4 stays bridged to C1 when the ESP is unpow
   assert.ok(near(V['/CHIME_C1'], 12), `unpowered, K3 NC must bridge line 4 → /CHIME_C1, got ${V['/CHIME_C1']?.toFixed(2)} V`);
 });
 
-test('chime suppress transition: reclosing K3 after a ring must not create a phantom K5 latch', () => {
-  const gnd = gndOf(netlist), dt = 20e-6;
-  const phase = ({ mute, sources, T, seed, observe = false, step = dt }) => {
-    const els = buildElements(netlist, { program: { U1: { '/MUTE_DRV': mute ? 3.3 : 0 } } });
+const chimePhase = ({ mute, sources, T, seed, observe = false, step = 20e-6, jp2 = true }) => {
+    const switchState = { ...defaultSwitchState(netlist), JP2: jp2 };
+    const els = buildElements(netlist, { switchState, program: { U1: { '/MUTE_DRV': mute ? 3.3 : 0 } } });
     const sim = createStepper(
       els,
       Object.entries(sources).map(([net, v]) => ({ net, vf: () => v })),
-      gnd,
+      gndOf(netlist),
       step,
       seed,
     );
@@ -202,25 +201,46 @@ test('chime suppress transition: reclosing K3 after a ring must not create a pha
       }
     }
     return { state: sim.extractState(), peakP4, relatched };
-  };
+};
 
+const trappedChimeCharge = ({ jp2 = true } = {}) => {
   // Charge the gong coupling capacitors from a real ring with K3 closed, then open K3 while the
   // ring is still present. Ending the session with P2 low drops K5 but leaves CHIME_C1 isolated and
   // charged. Reclosing the NC contact later must not turn that stored charge into another pull-in.
-  const ringing = phase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.02 });
-  const muted = phase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.005, seed: ringing.state });
+  const ringing = chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.02, jp2 });
+  return chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.005, seed: ringing.state, jp2 }).state;
+};
+
+const endAndRecloseChime = ({ charged, wait, jp2 = true }) => {
+  const ended = chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 0 }, T: wait, step: wait > 0.1 ? 5e-3 : 20e-6, seed: charged, jp2 });
+  assert.equal(ended.state.relays.K5, false, 'the original ring/session must be over before the reclose check');
+  return chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, T: 0.05, seed: ended.state, observe: true, jp2 });
+};
+
+test('chime suppress transition: immediate K3 reclose reproduces the reset/brownout hazard', () => {
+  const reclosed = endAndRecloseChime({ charged: trappedChimeCharge(), wait: 0.02 });
+  assert.equal(reclosed.relatched, true, 'an immediate reclose should expose the known unsafe transition until reset handling is fixed');
+  assert.ok(reclosed.peakP4 > 9.6, `expected a K5-operate-level P4 pulse, got ${reclosed.peakP4.toFixed(2)} V`);
+});
+
+test('chime suppress transition: JP2 cut proves the safety result depends on the R36 bleed', () => {
+  const reclosed = endAndRecloseChime({ charged: trappedChimeCharge({ jp2: false }), wait: 12, jp2: false });
+  assert.equal(reclosed.relatched, true, 'cutting JP2 must preserve the trapped-charge failure signature');
+});
+
+test('chime suppress transition: bleed delay has an unsafe short-wait and a safe 5τ boundary', () => {
+  const waits = [0.02, 2.4, 4.8, 7.2, 12];
+  const results = waits.map((wait) => ({ wait, result: endAndRecloseChime({ charged: trappedChimeCharge(), wait }) }));
+  assert.equal(results[0].result.relatched, true, 'the short-wait control must remain unsafe');
+  assert.equal(results.at(-1).result.relatched, false, 'the documented 12 s / 5τ delay must be safe');
+  const firstSafe = results.find(({ result }) => !result.relatched);
+  assert.ok(firstSafe && firstSafe.wait <= 12, `no safe boundary found: ${results.map(({ wait, result }) => `${wait}s=${result.relatched}`).join(', ')}`);
+});
+
+test('chime suppress transition: reclosing K3 after the 5τ bleed must not create a phantom K5 latch', () => {
   // R36 discharges the 23.5 µF effective gong capacitance with τ≈2.4 s. Five time constants
   // (~12 s) is the minimum safe-unmute delay used here; the coarser step keeps this wait cheap.
-  const ended = phase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 0 }, T: 12, step: 1e-3, seed: muted.state });
-  assert.equal(ended.state.relays.K5, false, 'the original ring/session must be over before the reclose check');
-
-  const reclosed = phase({
-    mute: false,
-    sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 },
-    T: 0.05,
-    seed: ended.state,
-    observe: true,
-  });
+  const reclosed = endAndRecloseChime({ charged: trappedChimeCharge(), wait: 12 });
   assert.equal(
     reclosed.relatched,
     false,
@@ -558,6 +578,51 @@ test('DOOR-4: a board door-open (DOOR_DRV) releases K5 like S1', () => {
   const opened = latchSettle(elsOpen, [['/P2', 12], ['/P1', 0], ['/VBUS', 5]], 0.12, held);
   assert.ok(!opened.relays.K5, 'DOOR-4: a board door-open must release the latch (K4 breaks the seal-in)');
   assert.ok(near(opened.vn['/P3'], 12), `door-open must fire the opener (P2→P3), got ${opened.vn['/P3']?.toFixed(2)} V`);
+});
+
+const doorDrivePhase = ({ drive, T, seed, observe = false }) => {
+  const step = 20e-6;
+  const els = buildElements(netlist, {
+    switchState: defaultSwitchState(netlist),
+    program: { U1: { '/DOOR_DRV': drive ? 3.3 : 0 } },
+  });
+  const sim = createStepper(
+    els,
+    [['/VBUS', 5], ['/P1', 0], ['/P2', 12]].map(([net, v]) => ({ net, vf: () => v })),
+    gndOf(netlist),
+    step,
+    seed,
+  );
+  let makeBeforeBreak = false;
+  for (let t = 0; t < T; t += step) {
+    sim.step(t);
+    if (observe) {
+      const { ssrs } = sim.extractState();
+      // K2 energized = door bridge made; K4 not energized = NC seal-in contact closed.
+      makeBeforeBreak ||= Boolean(ssrs.K2) && !Boolean(ssrs.K4);
+    }
+  }
+  return { state: sim.extractState(), makeBeforeBreak };
+};
+
+const retriggerDoorAfter = (gap) => {
+  const first = doorDrivePhase({ drive: true, T: 0.1 });
+  const released = doorDrivePhase({ drive: false, T: gap, seed: first.state });
+  return {
+    releaseGate: released.state.vn['/DELAY_GATE'],
+    retriggered: doorDrivePhase({ drive: true, T: 0.08, seed: released.state, observe: true }),
+  };
+};
+
+test('door retrigger: a short off-time leaves C18/Q3 partially armed', () => {
+  const { releaseGate } = retriggerDoorAfter(0.01);
+  assert.ok(releaseGate > 0.65, `10 ms off-time should leave DELAY_GATE above Q3 Vth,min, got ${releaseGate.toFixed(2)} V`);
+});
+
+test('door retrigger: 0.5 s minimum off-time restores break-before-make', () => {
+  const { releaseGate, retriggered } = retriggerDoorAfter(0.5);
+  assert.ok(releaseGate < 0.1, `500 ms off-time should discharge DELAY_GATE, got ${releaseGate.toFixed(2)} V`);
+  assert.equal(retriggered.makeBeforeBreak, false, '500 ms off-time must fully re-arm the K4-before-K2 sequence');
 });
 
 // ── Door-open max-on-time watchdog (Q3 unit 2 + R25/C20/D11) ─────────────────────────────────────
