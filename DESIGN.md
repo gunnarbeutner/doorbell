@@ -16,7 +16,7 @@ Ordering: `ORDERING.md`. Reverse-engineered handset: `wf26/wf26.kicad_sch`.
 Intercom system reference: `docs/design/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf`;
 central-unit photo: `docs/design/tv20s-board.jpg`.
 
-V3 — the retired perfboard predecessor, replaced in the wall by the V4 — is documented in its
+V3 — the retired perfboard predecessor, superseded in the wall by V4 — is documented in its
 own section below (source: `docs/design/KlingelV4.fzz` Fritzing schematic).
 
 ---
@@ -25,11 +25,11 @@ own section below (source: `docs/design/KlingelV4.fzz` Fritzing schematic).
 
 This is an interface board between an **STR TV20/S intercom system** and Home Assistant
 (via ESPHome on an ESP32). The TV20/S is a 5-wire intercom bus powered by an NTR201
-transformer (230 V → 12 VAC). The **WF26/G** is the apartment handset; this board **replaces** one,
-carrying an on-board passive WF26 core so it still works with the board unpowered.
+transformer (230 V → 12 VAC). This board is the electronics of the apartment handset: it combines
+the passive WF26 circuit with the smart interface, so normal handset operation survives without power.
 
 ```
-[NTR201 transformer]──12VAC──[TV20/S central unit]──5-wire bus──[WF26 handset(s) / this board]
+[NTR201 transformer]──12VAC──[TV20/S central unit]──5-wire bus──[this endpoint + other handsets]
                                       │
                                       └──8-12VAC, 1A max──[Türöffner / door opener]
 ```
@@ -252,7 +252,7 @@ that seal-in; the inactivity timeout ends it with the measured P2-low pulse.
 ## V3 — the retired predecessor (perfboard)
 
 V3 was an ESP32 DevKit and relay module on hand-wired perfboard; its source is
-`docs/design/KlingelV4.fzz`. It was replaced because the inter-board jumper connections worked loose
+`docs/design/KlingelV4.fzz`. It was retired because the inter-board jumper connections worked loose
 and because its shared optocoupler limiter allowed an active channel to reverse-stress the idle
 Etagenruf optocoupler. V4 retains the proven basic sensing and switching behavior but integrates it
 on one PCB and gives each optocoupler its own limiter and anti-parallel clamp. V3 pin assignments and
@@ -267,8 +267,8 @@ front-end is reproduced — per-opto LED limiters (a shared limiter would let a 
 reverse-bias the idle opto's LED past its 6 V VR), anti-parallel reverse-clamp diodes on each opto
 (polarity hardwired anode-to-bus-line) — as is the direct ÖT bridge (K2, P2↔P3). The three ESP-driven
 actuators are now **PhotoMOS SSRs** (K1 talk gate, K2 door, K3 chime-mute), the audio path is
-**transformer-less** (codec on the speech pair, P1↔GND bonded), and a passive **WF26 core** makes the
-board a drop-in handset when unpowered. Line 4 carries the Türruf as a ~12 V DC level with the 3-Klang
+**transformer-less** (codec on the speech pair, P1↔GND bonded), and a passive **WF26 core** preserves
+the complete handset function when unpowered. Line 4 carries the Türruf as a ~12 V DC level with the 3-Klang
 tone riding on it: the opto (on P4↔P1, **ahead of C1**) sees the DC-dominated level — so it is debounced
 in firmware (`delayed_on`/`delayed_off`), not rectified — while C1 (K3-gated) blocks that DC and passes
 only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the speaker.
@@ -633,16 +633,16 @@ make a scrambled bus connection survivable, though not functional.
 - **Hum** with the P1↔GND bond once RX is live.
 - **⚠ V4.2 handshake ramp (bench-gated).** V4.1 proves that the TV20/S forwards codec audio on line
   3, that a 2.2 kΩ handshake enables talk, and that the drive level reaches the door cleanly. V4.2
-  preserves the 2.2 kΩ final resistance but replaces the switch-speed assertion with a ~25 ms RC
+  preserves the 2.2 kΩ final resistance but changes the switch-speed assertion to a ~25 ms RC
   ramp; the live-bus passive-split test must confirm that the talk detector accepts that edge shape.
 
 ---
 
 ## On-board passive WF26 core (the unpowered fallback)
 
-The board **replaces** a WF26 — replacement-only, there is no parallel mode. So it carries a
-**hardwired passive WF26 core** (the handset's own circuit, reproduced on-board), and the smart layer
-(ESP32, codec, sense optos, K1/K2/K3) is strictly **additive** on top of it.
+The board is one complete WF26-compatible handset endpoint. Its **hardwired passive WF26 core** and
+the smart layer share the same bus connection; connecting a second WF26 in parallel is unsupported.
+The smart circuitry (ESP32, codec, sense optos, K1/K2/K3) is strictly additive to the passive core.
 
 **Fail-safe principle.** With **no board power** the board must behave like a plain WF26. So the
 passive core (transducer, C1, the Türruf-driven latch relay, R1, the talk/door switches) is a
@@ -675,7 +675,7 @@ These reproduce the handset (see "WF26 internal circuit") and run with zero boar
   adds only negligible load beyond a stock WF26 (BUS-1).
 
 ### Enclosure reuse (the existing WF26 housing)
-The replacement variant drops into the **existing WF26 enclosure**, so outline, mounting and
+The board mounts in the **existing WF26 enclosure**, so outline, mounting and
 placement are set by the housing, not by the part count — it's a mechanically-driven re-floorplan,
 not a tweak of the current board:
 - **Outline + mounting holes** match the WF26's own PCB: nominally **64 mm (W) × 59 mm (H)**; the
