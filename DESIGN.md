@@ -411,11 +411,12 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   asserted even unfiltered OC1. A subsequent ten-cycle sweep with reclose waits from 0 to 5 s showed
   a brief P4 discharge pulse on every cycle and zero K5 re-latches. The always-connected K5 coil
   (P4→P1) loads the transient before its contacts move. Therefore firmware need not impose a 5τ/12 s
-  reclose delay, and an immediate fail-safe reclose on reset/brownout is acceptable. JP2 exists only
-  for diagnostic A/B isolation; production/default is bridged. Repeat this acceptance capture on the
-  first V4.2 board because its C19/C21 implementation differs. The simulator models K5's
-  voltage-dependent pickup force: 9.6 V is a static must-operate limit, not a full-strength 3 ms
-  command.
+  reclose delay, and an immediate fail-safe reclose on reset/brownout is acceptable. Cutting board
+  USB power with the charge trapped produced the expected brief P4 pulse and no seal-in; see the
+  [scope capture](docs/scope/k3-usb-power-loss.png). JP2 exists only for diagnostic A/B isolation;
+  production/default is bridged. Repeat this acceptance capture on the first V4.2 board because its
+  C19/C21 implementation differs. The simulator models K5's voltage-dependent pickup force: 9.6 V
+  is a static must-operate limit, not a full-strength 3 ms command.
 - **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`SW3.6 ↔
   K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
   (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~38 ms (Q3 · R17·C18) the
