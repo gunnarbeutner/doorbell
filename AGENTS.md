@@ -43,6 +43,13 @@ against both ESPHome YAML files with `esphome config` when the local ESPHome env
 The build currently expects the macOS KiCad paths embedded in `build.sh`; if that toolchain is absent,
 report the unavailable check rather than changing project paths merely to make the local run pass.
 
+On macOS, KiCad 10's `kicad-cli pcb drc` must be run outside Codex's restricted process sandbox.
+Inside the sandbox it traps in `SwiftNativeNSArray` with `Array index out of range`, even for a newly
+created empty PCB; this is a macOS application/display-services access problem, not evidence of a bad
+board object. Retry the identical DRC command with escalated access before attempting to isolate PCB
+contents. Fontconfig warnings are unrelated. Zone edits still require refilling and saving the copper
+pours before the final DRC/parity run.
+
 Simulator tests import the current KiCad schematic at runtime. There is no generated or baked netlist
 to update separately. Add a regression test for safety-sensitive behavior whenever the simulator can
 reasonably model it.
