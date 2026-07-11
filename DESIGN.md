@@ -442,9 +442,11 @@ GPIO ── R7/R8/R9 (10kΩ) ── GND   (pull-down: SSR off while the GPIO flo
 ```
 The 220 Ω resistors give each SSR LED adequate operate current even at the GPIO's guaranteed-low
 output-high voltage. IO9 and IO10 each drive two LEDs, so firmware must retain the ESP32-S3's normal
-drive strength. The 10 kΩ pull-downs hold every smart actuator inactive while GPIOs float at boot:
-talk and door remain open, while the normally-closed chime and seal-in paths remain intact. PhotoMOS
-contacts need no flyback; D1 exists only for the passive electromechanical latch.
+drive strength. V4.1 field operation proves the same direct-drive topology with higher 300 Ω LED
+resistors; V4.2's 220 Ω values increase PhotoMOS operate-current margin, so no buffer stage is needed.
+The 10 kΩ pull-downs hold every smart actuator inactive while GPIOs float at boot: talk and door
+remain open, while the normally-closed chime and seal-in paths remain intact. PhotoMOS contacts need
+no flyback; D1 exists only for the passive electromechanical latch.
 
 ### Power tree
 
