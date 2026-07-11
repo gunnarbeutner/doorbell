@@ -311,11 +311,10 @@ this purely a placement choice: any function routes to any pad.
   sits on a pin with no boot-time drive, so the opener can't pulse on reset.
 - **Strapping pins parked safe:** the S3 straps on IO0/IO3/IO45/IO46. **IO0** is the boot strap, held
   high by R11 (10 k to +3V3) for normal SPI-flash boot, with SW1 pulling it to GND for download mode.
-  **IO3** drives the active-low status LED: +3V3 → R15 → D6 → IO3, with R27 pulling IO3 to GND. Its
-  JTAG-source strap is eFuse-gated and does not affect normal boot, so this load is safe; firmware
-  drives IO3 high when healthy and lets ESPHome blink it on Wi-Fi/API errors. IO45 (VDD_SPI) and IO46
-  (ROM-log) remain unconnected at their module defaults (the WROOM sets its own internal-flash voltage,
-  so IO45/IO46 must float). The I²C/I²S
+  IO3, IO45 and IO46 remain unconnected at their module defaults; the WROOM sets its own internal-flash
+  voltage. The active-low status LED instead uses unrestricted **IO14**:
+  `+3V3 → R15 → D6 → IO14`, with R27 (1 kΩ) pulling IO14 to GND for a defined boot indication.
+  Firmware drives IO14 high when healthy and lets ESPHome blink it on Wi-Fi/API errors. The I²C/I²S
   bus deliberately lands SCL/MCLK/BCLK/DIN on IO39–42 = the MTCK/MTDO/MTDI/MTMS JTAG group — none of
   those are S3 strapping pins, so it only forgoes pin-JTAG (debug runs over USB-Serial-JTAG) with no
   boot-time effect. EN has the 10 k (R10) + 1 µF (C5) RC + SW2 (Espressif EN-RC spec).
@@ -583,8 +582,11 @@ Consequences:
 
 **"Can we send?" — session sense.** The Türruf DC (line 4) holds for the **whole session** (the handset
 seals the latch in from P2 — see "Bell signals"), so **OC1, which senses line 4, stays asserted edge
-to edge**. So "session active" = **OC1 high**, gated directly: no talk-window timer needed (just
-debounce). Audio is gated on the session, direction by K1:
+to edge**. So "session active" = **OC1 high**, with no talk-window timer needed beyond input
+debounce. K3 control still distinguishes the initial gong from the subsequent call: while OC1 is
+high, firmware honours chime suppression for 4.2 s (the measured gong is ~3.9 s), then releases K3
+to restore the stock WF26 transducer. Welcome playback deliberately keeps K3 open. Audio direction
+is selected by K1:
 
 | Session (OC1) | K1 | State |
 |---|---|---|

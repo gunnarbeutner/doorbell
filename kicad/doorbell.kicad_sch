@@ -18749,10 +18749,6 @@
 		(uuid "4f8c4521-fa80-49d4-870f-13149e44bc54")
 	)
 	(no_connect
-		(at 130.81 67.31)
-		(uuid "5268f4d1-3b26-41a7-8015-a81ef1757248")
-	)
-	(no_connect
 		(at 161.29 26.67)
 		(uuid "5511656a-ca5e-4a75-a440-7e016979bc1f")
 	)
@@ -18827,6 +18823,10 @@
 	(no_connect
 		(at 161.29 49.53)
 		(uuid "f09c7f08-4fc5-4d3d-851a-e59c040f15ec")
+	)
+	(no_connect
+		(at 130.81 39.37)
+		(uuid "f668801b-80d2-4457-8eaf-70350326a0d6")
 	)
 	(no_connect
 		(at 130.81 72.39)
@@ -20832,16 +20832,6 @@
 	)
 	(wire
 		(pts
-			(xy 123.19 39.37) (xy 130.81 39.37)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bd9590bb-09de-4193-b556-4b8dc8622356")
-	)
-	(wire
-		(pts
 			(xy 228.6 213.36) (xy 228.6 217.17)
 		)
 		(stroke
@@ -21539,6 +21529,16 @@
 			(type default)
 		)
 		(uuid "f86abf3c-b3f3-4ab4-bbec-f52db5b82736")
+	)
+	(wire
+		(pts
+			(xy 123.19 67.31) (xy 130.81 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f8b3efe4-5313-49e2-9f15-c53abda468d8")
 	)
 	(wire
 		(pts
@@ -22623,6 +22623,16 @@
 		)
 		(uuid "a09529f3-4da3-43ac-bf8f-e1a99ce0f3b5")
 	)
+	(label "STATUS_LED"
+		(at 123.19 67.31 180)
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify right bottom)
+		)
+		(uuid "a119df80-3ff3-4b2f-8705-6aecb2e493d5")
+	)
 	(label "P2"
 		(at 52.07 227.33 180)
 		(effects
@@ -22994,16 +23004,6 @@
 			)
 		)
 		(uuid "e688399f-938c-480c-8498-d9ec134a25bb")
-	)
-	(label "STATUS_LED"
-		(at 123.19 39.37 180)
-		(effects
-			(font
-				(size 1 1)
-			)
-			(justify right bottom)
-		)
-		(uuid "ecd26985-09cf-4584-a245-375ba43580ce")
 	)
 	(label "+3V3"
 		(at 232.41 148.59 0)
@@ -30849,7 +30849,7 @@
 				)
 			)
 		)
-		(property "Description" "Status LED (IO3, active-low)"
+		(property "Description" "Status LED (IO14, active-low)"
 			(at 237.49 73.66 0)
 			(hide yes)
 			(show_name no)

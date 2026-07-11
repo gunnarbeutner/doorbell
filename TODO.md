@@ -73,13 +73,6 @@ tether it to a mains-earthed PC. Pair with a DMM.
       the third Klang at ~3.6 Vpp ⇒ ~140 mVpp leaked onto P3 through V4.1's strap — empirically
       inaudible thanks to masking + pipeline latency, so optional). This is independent of the
       intentional no-greeting auto-open hold, which gives the visitor time to reach the door and stays.
-- [ ] **Session-active = OC1 high.** Line 4 holds through the session, so **OC1 (the Türruf sense)
-      stays asserted edge-to-edge — gate directly on OC1, no talk-window timer** (just debounce).
-      Bench-confirmed on the emulated bus: OC1 asserts while the K5 latch holds and clears the
-      moment it drops.
-      Re-add this session arm to the K3 gate (`doorbell_sound_state`) and the cross-talk masks (both
-      went PTT-only when the old session-opto was dropped; OC1 now supplies the session level).
-
 ## First-board commissioning (not fabrication gates)
 
 - [ ] **Calibrate the V4.2 audio path on the installed board.** Confirm RX headroom and choose the final

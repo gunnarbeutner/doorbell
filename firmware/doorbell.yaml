@@ -6,7 +6,7 @@
 #   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO10
 #   suppress_chime_bin (K3 / chime suppress)       : GPIO11
 #   K1                 (PTT SSR, talk=energised)   : GPIO9
-#   status LED          (active-low D6)             : GPIO3
+#   status LED          (active-low D6)             : GPIO14
 #   I2C_SDA  (ES8311 control)                      : GPIO38
 #   I2C_SCL  (ES8311 control)                      : GPIO39
 #   I2S_MCLK (master clock)                        : GPIO40
@@ -80,8 +80,8 @@ logger:
 
 status_led:
   pin:
-    number: GPIO3
-    inverted: true              # D6 anode is fed from +3V3; sinking IO3 lights it
+    number: GPIO14
+    inverted: true              # D6 anode is fed from +3V3; sinking IO14 lights it
 
 api:
   encryption:
@@ -242,6 +242,13 @@ globals:
     type: uint32_t
     restore_value: no
     initial_value: "0"
+  # Chime suppression and session detection share OC1, but need different timing. OC1 rises at the
+  # start of the Türruf and then stays high while K5 is sealed in. Keep K3 open through the measured
+  # ~3.9 s gong, then release it so the stock WF26 transducer works for the rest of the call.
+  - id: gong_mute_until_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
 
 # Door-station playback: mute the own speaker (K3, via the chime_enabled guard), present
 # the off-hook handshake (K1), play the embedded file, then restore everything. Also the
@@ -369,7 +376,9 @@ binary_sensor:
         # but 1.75 s sufficed on V3's stronger direct P2↔P3 buzzer — the door station appears to add its
         # own ~2 s speech-onset delay (the same one that clipped the first V4 greeting) that covers the
         # gong tail. Confirm against door-station audio before trusting the margin.
-        - lambda: 'id(gong_until_ms) = millis() + 1750;'
+        - lambda: |-
+            id(gong_until_ms) = millis() + 1750;
+            id(gong_mute_until_ms) = millis() + 4200;
         # Autonomous open reflex — runs locally so a ring still opens even when HA is slow or down.
         # HA arms it via switch.auto_open_front_door (PERSISTENT; HA owns on/off) and primes which
         # greeting plays via the next_greeting select. welcome_and_open sequences greet-then-open; the
@@ -404,13 +413,15 @@ binary_sensor:
       // K3 (NC SSR) opens C1 to mute the front-door gong. It sits in the C1 audio path (P4↔C1), NOT
       // in line 4 — so it does NOT break the session, and the board's codec RX/TX (on the speech pair,
       // lines 2/3) is independent of it. (It does mute the handset's own LS1 listen, which rides C1.)
-      // Current policy: keep K3 OFF while transmitting (PTT) — return true (= "let it ring", K3 off) —
-      // and suppress only when idle and the conditions call for it.
-      //   TODO: add a session-active arm here. The session-sense opto that used to supply it was
-      //   dropped, so this gate is PTT-only; "session active" should be derived from the OC1 (Türruf)
-      //   event + a timer and gate K3 on it (see DESIGN.md "TX-out reach" / TODO).
+      // OC1 rises with the Türruf and remains high for the K5-sealed session. Honour chime suppression
+      // through the measured gong, then release K3 for the rest of the session so the stock WF26
+      // transducer can listen/talk normally. The deadline distinguishes those two phases; OC1 alone
+      // cannot, because it is asserted during both.
       if (id(welcome_playing)) return false;  // door-station playback: hold K3 = own speaker muted
       if (id(intercom_ptt).state) return true;
+      if (id(house_doorbell).state && id(gong_mute_until_ms) != 0 &&
+          static_cast<int32_t>(millis() - id(gong_mute_until_ms)) >= 0)
+        return true;
       // The gong is suppressed by default (rings are announced via Alexa). Fail SAFE to ring so a
       // doorbell is never silently missed: suppress ONLY while HA is connected AND actively requests
       // it. HA clears suppress_chime when the announcement path is down (internet/Alexa), and a
@@ -422,8 +433,6 @@ binary_sensor:
         # State went true ("let it ring"): drop K3 so the gong's C1 path is closed (the gong rings).
         # K3 (the C1 mute) and K1 (the talk handshake) are independent — no inter-SSR timing
         # constraint, and K3 never makes a P2↔P3 short.
-        # (PTT is not forced off here — that would fight the PTT gate above; session-end PTT cleanup
-        # belongs to the session-active work.)
         - output.turn_off: suppress_chime_bin   # K3 off -> C1 closed -> gong rings
     on_release:
       then:
