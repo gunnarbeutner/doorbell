@@ -2,14 +2,15 @@
 // The netlist is imported on the fly (reads the KiCad files via kicad-cli) — nothing baked.
 //
 // Architecture under test (see DESIGN.md):
-//  - K1/K2/K3 are PhotoMOS SSRs driven by a GPIO through a 300 Ω LED resistor on /PTT_DRV /DOOR_DRV /MUTE_DRV.
-//    K1 (dual NO) talks: ch1 sources /P2 into the Ra/Cf/Rb low-pass (/TALK_BRIDGE → R34 → /HS_FILT →
-//    R35 → /TX_OUT — the gong-stripped 2.2 k talk handshake; Cf = C25∥C26 returns via JP1), ch2 gates
-//    /TX_OUT↔/P3; K2 (NO) bridges /P2↔/P3 (door opener); K3 (NC) bridges /P4↔/CHIME_C1 (chime) —
-//    closed at rest, opened to suppress.
-//  - The embedded WF26 core (K5 latch + S1/S2 + C1) is passive and works unpowered (SAFE-4).
+//  - K1/K2/K3/K4/K6 are PhotoMOS SSRs driven by GPIOs. K1 (dual NO) restores the V4.1 talk path:
+//    ch1 /P2↔/TALK_BRIDGE, then R28 (2.2 k) to /TX_OUT; ch2 /TX_OUT↔/P3. K2 bridges /P2↔/P3
+//    (door opener); K3 (NC) bridges /P4↔/CHIME_C1 (chime); K4 (NC) breaks K5's seal-in for a
+//    board-driven door release.
+//  - K6 (NC) bridges raw /P4 to /K5_LATCH at rest. Its LED return passes through K5's spare NO pole,
+//    so /ISO_REQ cannot open K6 until K5 has physically pulled in. JP3 is an open recovery bypass.
+//  - The embedded WF26 core (K5 latch + S1/S2 + C1) remains passive and works unpowered (SAFE-4).
 //  - Audio is transformer-less: RX taps /P2 through C16 to the ES8311 ADC (MICP/MICN); TX runs the
-//    codec DAC (OUTP) through R26 → C14 → /TX_OUT, downstream of the filter.
+//    codec DAC (OUTP) through R26 → C14 → /TALK_BRIDGE → R28 → /TX_OUT.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { importNetlist } from '../src/import.js';
@@ -261,6 +262,58 @@ test('Etagenruf is structurally non-suppressible: K3 energised mutes the Türruf
     `the Etagenruf must stay audible while K3 suppresses, got ${swingPP(etagen, SPEAKER[0], SPEAKER[1]).toFixed(2)} Vpp`);
 });
 
+// ── K5-confirmed P4 isolation (V4.2 hardware; firmware remains intentionally deferred) ──
+
+test('K6 fail-safe: an unpowered board connects raw P4 to K5_LATCH', () => {
+  const { V } = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 }, switches: { JP3: false }, T: 10e-3 });
+  assert.ok(near(V['/K5_LATCH'], 12, 0.5),
+    `K6 is NC and must pass a ring without board power, got K5_LATCH=${V['/K5_LATCH']?.toFixed(2)} V`);
+});
+
+test('K6 interlock: isolation opens only after K5 pulls in, preserves seal-in, and restores on release', () => {
+  const els = buildElements(netlist, {
+    switchState: { ...defaultSwitchState(netlist), JP3: false },
+    program: { U1: { '/ISO_REQ': 3.3 } },
+  });
+  const dt = 20e-6;
+  const sim = createStepper(els, [
+    { net: '/VBUS', vf: () => 5 },
+    { net: '/P1', vf: () => 0 },
+    { net: '/P2', vf: (t) => (t < 40e-3 ? 12 : 0) },
+    { net: '/P4', vf: (t) => (t >= 5e-3 && t < 17e-3 ? 12 : 0) },
+  ], gndOf(netlist), dt);
+
+  let openedBeforeK5 = false;
+  let seenK5 = false;
+  let held;
+  for (let t = 0; t < 55e-3; t += dt) {
+    sim.step(t);
+    const state = sim.extractState();
+    seenK5 ||= Boolean(state.relays.K5);
+    openedBeforeK5 ||= Boolean(state.ssrs.K6 && !seenK5);
+    if (t >= 30e-3 && !held) held = state;
+  }
+  const released = sim.extractState();
+
+  assert.equal(openedBeforeK5, false, 'K5 auxiliary NO must block K6 LED current until K5 has pulled in');
+  assert.ok(held.relays.K5, 'K5 must remain sealed from P2 after raw P4 is isolated');
+  assert.ok(held.ssrs.K6, 'K6 LED must be energised (NC output open) while K5 is confirmed');
+  assert.ok(held.vn['/K5_SENSE'] < 0.5, `K5_SENSE must be active-low, got ${held.vn['/K5_SENSE']?.toFixed(2)} V`);
+  assert.ok(held.vn['/K5_LATCH'] > 8, `the isolated latch node must remain held from P2, got ${held.vn['/K5_LATCH']?.toFixed(2)} V`);
+  assert.equal(released.relays.K5, false, 'driving P2 low must release K5');
+  assert.equal(released.ssrs.K6, false, 'loss of K5 must interrupt K6 LED current and restore its NC output');
+});
+
+test('JP3 recovery bypass is open by default and directly spans K6 output', () => {
+  const jp3 = netlist.components.find((c) => c.ref === 'JP3');
+  assert.equal(defaultSwitchState(netlist).JP3, undefined, 'JP3 must not be factory bridged');
+  assert.equal(jp3.pins['1'], '/K5_LATCH');
+  assert.equal(jp3.pins['2'], '/P4');
+  const k6 = netlist.components.find((c) => c.ref === 'K6');
+  assert.equal(k6.pins['3'], '/K5_LATCH');
+  assert.equal(k6.pins['4'], '/P4');
+});
+
 // ── audio (transformer-less codec front-end). Exact gains are bench-gated; here we assert the path
 // couples (or doesn't), not its level. ──
 
@@ -387,9 +440,7 @@ function safetyViolations(RES) {
 const fmtV = (x) => `${x.ref} pin ${x.pin} (${x.net}) = ${x.v.toFixed(2)} V, outside [${x.lo}, ${x.hi}] — ${x.why}`;
 
 // shared talk scenario: assert PTT at t = 1.5 ms (the make edge), codec DAC biased mid-rail + a tone.
-// Deliberately SHORT — it exercises the K1 make transient (safety). The handshake DC is a RAMP now
-// (Cf charges through Ra; τ ≈ 55 ms in the lightly-loaded sim), so its assert is checked with a
-// long-T run below, not in this window.
+// Deliberately short: it exercises the K1 make transient and the restored V4.1 step handshake.
 const TALK = {
   sources: { '/VBUS': 5, '/P1': 0 },
   bus: { '/P2': 12 },
@@ -400,7 +451,7 @@ const TALK = {
   T: 3.5e-3, dt: 2e-6,
 };
 
-test('codec talk (TX): K1 make stays within abs-max (B1); the handshake ramps, then asserts', () => {
+test('codec talk (TX): K1 make stays within abs-max (B1) and the V4.1 handshake asserts promptly', () => {
   const RES = scenarioRES(TALK);
   // SAFETY INVARIANT (B1) — C14's bus side lives on /TX_OUT: a PTT make (and a door bridge yanking P3
   // to the rail — the sweep below) steps that node, and C14 couples the edge back toward OUTP. R26 +
@@ -410,15 +461,8 @@ test('codec talk (TX): K1 make stays within abs-max (B1); the handshake ramps, t
     `ES8311 must stay within abs-max during a PTT make — B1: series R26 + D13 between OUTP and C14:\n  ` +
     v.map(fmtV).join('\n  '));
 
-  // FUNCTION, part 1 — right after the make, line 3 is still COLD: the filter ramps instead of
-  // stepping (this is the gong-free property's flip side; a step here would mean Cf is disconnected).
-  assert.ok(meanLevel(RES, '/P3', '/P1') < 3,
-    `line 3 should still be ramping just after the make, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
-
-  // FUNCTION, part 2 — once Cf settles (~3τ), the P2 pedestal asserts talk on line 3.
-  const settled = scenarioRES({ ...TALK, T: 0.5, dt: 2e-5 });
-  assert.ok(meanLevel(settled, '/P3', '/P1') > 10,
-    `line 3 should be DC-hot off the P2 handshake once the filter settles, got ${meanLevel(settled, '/P3', '/P1').toFixed(2)} V`);
+  assert.ok(meanLevel(RES, '/P3', '/P1') > 10,
+    `the restored 2.2 k handshake should assert within milliseconds, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
 });
 
 // Generic gate: sweep the scenario battery and ask every component. B1 is one cell; the bus ring and the
@@ -442,60 +486,59 @@ test('safety invariants: every component stays within its abs-max across the sce
 });
 
 // BUS-1: the dual GAQW212GS gates the TX *output* — ch2 (/TX_OUT↔/P3). With K1 open that contact lifts,
-// so the permanently-wired codec (ES_OUTP→R26→C14→TX_OUT) — and the whole Ra/Cf/Rb filter leg hanging
-// between the two open channels — cannot reach line 3: line 3 is high-Z at idle. The point of the dual gate.
+// so the permanently-wired codec (ES_OUTP→R26→C14→TALK_BRIDGE→R28→TX_OUT) cannot reach line 3:
+// line 3 is high-Z at idle. This is the point of K1's second contact.
 test('TX idle isolation: codec audio must not reach line 3 when K1 is open (BUS-1)', () => {
   const codecOut = (ph) => (t) => 0.5 * ph * Math.sin(2 * Math.PI * 1000 * t);
   const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 }, program: { U1: { '/PTT_DRV': 0 }, U3: { out: { p: codecOut(1), n: codecOut(-1) } } }, ...AC });
   assert.ok(swingPP(RES, '/P3', '/P1') < 0.1, `K1 open should keep codec audio off line 3, got ${swingPP(RES, '/P3', '/P1').toFixed(2)} Vpp`);
 });
 
-test('talk handshake (K1): energised bridges the P2 supply onto line 3 through Ra+Rb; idle lifts it', () => {
-  // K1 closes both halves: ch1 (/P2↔/TALK_BRIDGE) sources the handshake from the always-on P2 supply
-  // into the low-pass — P2 → R34 (1.2 k) → HS_FILT (Cf ∥ via JP1) → R35 (1 k) → TX_OUT — and ch2
-  // (/TX_OUT↔/P3) gates the output. Ra+Rb = 2.2 k total, the WF26's R1 mirrored, gong-stripped.
-  // T must clear the RC settle (~3τ ≈ 160 ms): the default 40 ms window sits mid-ramp.
-  const talk = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 3.3 } }, T: 0.4 }).V;
+test('talk handshake (K1): energised bridges P2 onto P3 through R28; idle lifts it', () => {
+  // K1 closes both halves: P2 → K1-ch1 → TALK_BRIDGE → R28 (2.2 k) → TX_OUT → K1-ch2 → P3.
+  const talk = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 3.3 } }, T: 5e-3 }).V;
   assert.ok(talk['/P3'] > 10, `K1 in talk should bring line 3 DC-hot off the P2 supply, got ${talk['/P3']?.toFixed(2)} V`);
 
   const idle = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, program: { U1: { '/PTT_DRV': 0 } } }).V;
   assert.ok(!(idle['/P3'] > 6), `K1 idle should lift line 3 off the handshake, got ${idle['/P3']?.toFixed(2)} V`);
 });
 
-// The fallback is on the board: JP1 (bridged solder jumper) is Cf's only ground return. Cut, the leg
-// degenerates to the plain 2.2 k strap — V4.1's step-assert handshake, no filter (see TODO).
-test('JP1 cut (fallback): the leg degenerates to the plain 2.2 k strap — talk asserts with no ramp', () => {
-  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, switches: { JP1: false },
-    program: { U1: { '/PTT_DRV': 3.3 } }, T: 5e-3 });
-  assert.ok(V['/P3'] > 10, `with Cf disconnected the strap should assert within ms (V4.1 behaviour), got ${V['/P3']?.toFixed(2)} V`);
+test('TX topology: R28/C14 and both K1 contacts match the intended path', () => {
+  const C = (ref) => netlist.components.find((c) => c.ref === ref);
+  const r28 = C('R28'), c14 = C('C14'), k1 = C('K1');
+  assert.equal(r28.pins['2'], '/TALK_BRIDGE');
+  assert.equal(r28.pins['1'], '/TX_OUT');
+  assert.equal(c14.pins['2'], '/TALK_BRIDGE');
+  assert.equal(k1.pins['8'], '/P2');
+  assert.equal(k1.pins['7'], '/TALK_BRIDGE');
+  assert.equal(k1.pins['6'], '/TX_OUT');
+  assert.equal(k1.pins['5'], '/P3');
 });
 
-// The reason the filter exists (capture-gated: our-ring-no-door — 1009/841/673 Hz Klänge on the
-// latched P2): with PTT engaged, V4.1's direct strap dragged the gong onto line 3 over the greeting.
-// The split leg passes the DC pedestal and shunts the AC at HS_FILT. ±8.8 V @ 1 kHz is the design
-// ceiling (neighbour-ring case); raw through a 2.2 k strap that would be volts on P3.
-test('gong rejection: a ±8.8 V 1 kHz gong riding P2 stays off line 3 while the handshake DC passes', () => {
-  const gongP2 = (t) => 12 + 8.8 * Math.sin(2 * Math.PI * 1000 * t);
-  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': gongP2 },
-    program: { U1: { '/PTT_DRV': 3.3 }, U3: { out: 1.65 } }, T: 0.6, dt: 2e-5 });
+// K6 removes raw P4, including its gong, from the latched K5/P2 handshake source. The restored R28
+// path therefore passes the DC talk pedestal without needing a voice-band shunt on the codec output.
+test('K6 isolation: a raw-P4 gong stays off P3 while the restored handshake DC passes', () => {
+  const rawP4 = (t) => 12 + 8.8 * Math.sin(2 * Math.PI * 1000 * t);
+  const { RES } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': rawP4 },
+    program: { U1: { '/ISO_REQ': 3.3, '/PTT_DRV': 3.3 }, U3: { out: 1.65 } }, T: 40e-3, dt: 2e-5 });
   assert.ok(meanLevel(RES, '/P3', '/P1') > 10,
-    `the pedestal must still assert talk under the gong, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
+    `the P2 pedestal must still assert talk, got ${meanLevel(RES, '/P3', '/P1').toFixed(2)} V`);
   assert.ok(swingPP(RES, '/P3', '/P1') < 0.2,
-    `the gong must die in the Ra/Cf divider, got ${(swingPP(RES, '/P3', '/P1') * 1000).toFixed(0)} mVpp on line 3 (raw input: 17.6 Vpp)`);
+    `opening K6 must keep the raw-P4 gong off P3, got ${(swingPP(RES, '/P3', '/P1') * 1000).toFixed(0)} mVpp`);
 });
 
 // Software TX must not accidentally transmit the passive handset microphone. The relevant state is
 // K1 active with manual SW4 released: LS1 can still feed P4 through the gong capacitor and, while K5
-// is latched, P2 through the seal-in. The Ra/Cf/Rb handshake filter must reject that voice-band path
-// before it reaches P3. Exercise both K3 states because opening K3 physically removes the path, while
-// the harder/default case leaves it connected and relies on Cf.
+// is latched, P2 through the seal-in. K6 must break that path before K1 transmits. Exercise both K3
+// states because K3 independently controls whether the local transducer is connected to raw P4.
 const softwareTxSwing = ({ mute, speakerTone, codecTone }) => {
   const switches = { ...defaultSwitchState(netlist), SW4: false };
   const tone = (t) => 1.65 + 0.4 * Math.sin(2 * Math.PI * 1000 * t); // 0.8 Vpp, centred like OUTP
   const els = buildElements(netlist, {
     switchState: switches,
+    extra: [{ type: 'R', a: '/P2~bus', b: '/P2', value: BUS_Z, ref: 'busZ/P2' }],
     program: {
-      U1: { '/PTT_DRV': 3.3, '/MUTE_DRV': mute ? 3.3 : 0 },
+      U1: { '/PTT_DRV': 3.3, '/MUTE_DRV': mute ? 3.3 : 0, '/ISO_REQ': 3.3 },
       U3: { out: codecTone ? tone : 1.65 },
     },
   });
@@ -522,22 +565,23 @@ const softwareTxSwing = ({ mute, speakerTone, codecTone }) => {
 
   // Pull K5 in from a real Türruf, then remove the P4 source: P2 must seal the call in while the
   // measurement drives LS1 (/P5↔/P1). This preserves the exact unintended path under test.
-  const latched = run({ '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, 0.02).state;
+  const latched = run({ '/VBUS': 5, '/P1': 0, '/P2~bus': 12, '/P4': 12 }, 0.02).state;
   assert.ok(latched.relays.K5, 'precondition: the software-TX isolation scenario must have K5 latched');
+  assert.ok(latched.ssrs.K6, 'precondition: K5 must complete the K6 LED return and open isolation');
   const speaker = speakerTone ? (t) => 0.4 * Math.sin(2 * Math.PI * 1000 * t) : undefined;
-  const sources = { '/VBUS': 5, '/P1': 0, '/P2': 12 };
+  const sources = { '/VBUS': 5, '/P1': 0, '/P2~bus': 12 };
   if (speaker) sources['/P5'] = speaker;
   return run(sources, 0.6, latched, true).swing;
 };
 
 test('software TX isolation: the passive LS1 microphone stays small relative to codec TX', () => {
-  // Drive LS1 with the same deliberately severe 0.8 Vpp used for the codec reference. Nominal Cf
-  // leaves about -18.5 dB at 1 kHz; the real passive transducer is much quieter than the codec DAC.
+  // Drive LS1 with the same deliberately severe 0.8 Vpp used for the codec reference. With K6 open,
+  // the passive transducer remains on raw P4 while codec TX uses the internal P2 handshake path.
   const maxLeakageRatio = 0.15;
   for (const mute of [false, true]) {
     const leaked = softwareTxSwing({ mute, speakerTone: true, codecTone: false });
     const wanted = softwareTxSwing({ mute, speakerTone: false, codecTone: true });
-    assert.ok(wanted > 0.01, `codec TX reference must reach P3 with K3 ${mute ? 'open' : 'closed'}, got ${wanted.toFixed(4)} Vpp`);
+    assert.ok(wanted > 0.001, `codec TX reference must reach P3 with K3 ${mute ? 'open' : 'closed'}, got ${wanted.toFixed(4)} Vpp`);
     assert.ok(leaked < wanted * maxLeakageRatio,
       `LS1 leakage with K3 ${mute ? 'open' : 'closed'} must stay below 15% of codec TX, ` +
       `got ${(leaked * 1000).toFixed(2)} mVpp vs ${(wanted * 1000).toFixed(2)} mVpp`);

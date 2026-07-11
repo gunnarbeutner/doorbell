@@ -42,8 +42,9 @@ The board taps the 5-wire bus (P1–P5) to:
    gong, which stays audible in every state
 4. **Half-duplex audio**: an ES8311 codec taps the bus **speech pair** — RX a differential sense of
    line 2 (P2↔P1), TX driving line 3 (P3) through a DC-block + 2.2 kΩ gated by K1, with the talk
-   handshake sourced from P2 through a gong-stripping RC low-pass. No isolation
-   transformer; **P1 is bonded to board GND** (analog component values bench-gated)
+   handshake sourced from P2 through the restored V4.1 R28 path. V4.2 prevents own-ring bleed by
+   isolating raw P4 from the internal K5 latch node after the relay has pulled in. No isolation
+   transformer; **P1 is bonded to board GND**.
 
 The board never touches the 8–12 VAC door-opener current — switched entirely inside the TV20/S. The
 bus carries only low-voltage signalling (≤12 VDC, mA-level): the three ESP-driven switches (talk,
@@ -55,9 +56,10 @@ relay**, which the bus drives itself (so it works with the board dead).
 ## WF26 connector
 
 J2 is one 5-way, 3.5 mm-pitch screw terminal, pins 1–5 = P1–P5. A screw clamp reliably accepts the
-handset's fine stranded cable and preserves the original terminal order. **Line 4 is one P4 net**;
-chime suppression opens the gong capacitor path rather than splitting the bus conductor. The exact
-orderable connector is maintained in the schematic and `ORDERING.md`.
+handset's fine stranded cable and preserves the original terminal order. J2.4 is raw **P4**. K6,
+a normally-closed PhotoMOS, connects it to the internal **K5_LATCH** node used by the latch coil,
+seal-in contact and manual-Talk resistor. Chime suppression still opens only the raw-P4 gong-capacitor
+path. The exact orderable connector is maintained in the schematic and `ORDERING.md`.
 
 ### Pin functions (confirmed from TV20/S Verdrahtungsplan)
 
@@ -65,8 +67,8 @@ orderable connector is maintained in the schematic and `ORDERING.md`.
 |------|-------------|---------------------|
 | **P1** (= board GND) | Common reference (all bell/speech ref to line 1) | Bonded to board GND; opto LED returns (each via 5.1 kΩ to P1); the codec RX/TX reference |
 | **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in. **Idles at +12 V vs P1** — a continuous standing bus rail (`captures/runs/`: 12.06–12.11 V at rest), sagging to ~9.4 V under the seal-in load during a session and momentarily to ~2.6 V at session-end before snapping back |
-| **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (codec DAC → R26 2.2 kΩ → C14 → TX_OUT → K1-ch2 → P3, plus the gong-filtered Ra/Cf/Rb handshake leg onto TX_OUT); WF26 talk/door switches |
-| **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K3** chime-mute (P4↔C1); K5 coil + flyback **D1**; R29 |
+| **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (`OUTP → R26 → C14 → TALK_BRIDGE → R28 → TX_OUT → K1-ch2 → P3`); WF26 talk/door switches |
+| **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K3** chime-mute (P4↔C1); **K6** normally-closed bridge to `K5_LATCH` |
 | **P5** | Etagenruf — apartment/floor call (tone) | **OC2** sense; **LS1** speaker (P5↔GND); C19 (the gong cap, P4↔P5) |
 
 **Door opener (K2, SSR).** Energising K2 bridges **P2↔P3 directly** (a dead short, no series R) →
@@ -103,7 +105,8 @@ With the seal-in broken before P2↔P3 closes, the held Türruf is never bridged
 firmware's separate 1.75 s **no-greeting auto-open hold remains intentional**: it gives the visitor
 time to reach the door before the latch releases. It is not the ring→welcome-audio `gong_until_ms`
 wait, which exists only to keep V4.1's unfiltered TX handshake from forwarding the gong and can be
-retired with the filtered handshake. Boot/idle: DOOR_DRV low ⇒ Q3 off (K2 open) and K4 LED off (K4
+retired only after K6 isolation is validated on fabricated V4.2 hardware. Boot/idle: DOOR_DRV low ⇒
+Q3 off (K2 open) and K4 LED off (K4
 closed) ⇒ fail-safe (SAFE-6).
 
 **Door-open watchdog (DOOR-5).** Q4, R25, C20 and D11 form a hardware one-shot that releases K2 even
@@ -118,13 +121,14 @@ retrigger reproduced the normal break-before-make sequence and held P3 at 12 V f
 external door path. A 500 ms repeat produced the same approximately 5.8 s interval, validating the
 firmware minimum with margin.
 
-> **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
-> it is the junction of C1, R1, the K5 coil and its NO contact: the ring's **DC energises the
-> coil** (coil = P1↔P4 = common↔Türruf — a ~1 s TV20/S pulse, then sealed in from P2), and its **AC
+> **Line 4 carries the Türruf** on raw PCB net **P4**. Normally-closed K6 passes it to **K5_LATCH**,
+> the internal junction of R29, the K5 coil and its NO contact. The ring's **DC energises the
+> coil** (coil = P1↔K5_LATCH — a ~1 s TV20/S pulse, then sealed in from P2), and its **AC
 > tone reaches the speaker via C1** (P4↔P5 → LS1 = the gong). **Talk** is a 2.2 kΩ bridge of **line
-> 4↔line 3** (S2 + R1); **listen** routes line 2 → K5 → P4 → C1 → speaker. **Chime suppression
+> 4↔line 3** (S2 + R29); **listen** routes line 2 → K5 → K5_LATCH → K6 → P4 → C1 → speaker. **Chime suppression
 > opens C1** (K3, NC, in the P4↔C1 path) so the Türruf tone never reaches the speaker — line 4, the
-> latch and the Etagenruf are untouched. There is no local tone generator (no ICs); the chime *is*
+> latch and the Etagenruf are untouched. Once K5 is confirmed, firmware may open K6 during smart TX
+> to keep the raw gong off the latched P2 handshake. There is no local tone generator; the chime *is*
 > the audio on line 4. See "WF26 internal circuit" below.
 
 ### Wire colour map (existing flat Ethernet cable, confirmed)
@@ -249,8 +253,8 @@ that seal-in; the inactivity timeout ends it with the measured P2-low pulse.
   gong is suppressed (C1 opened). The board instead taps the **speech pair** (RX P1↔P2, TX
   P1↔P3), which is independent of line 4 / suppress — see "Audio path."
 - To mimic the stock S2 during a held session, bridge **line 4 ↔ line 3 through ~2.2 kΩ**; the
-  energised latch already makes P4 follow P2. The smart K1 path instead sources its 2.2 kΩ filtered
-  handshake directly from **P2**, allowing controlled TX independently of session state. Virtual
+  energised latch already makes the internal latch node follow P2. The smart K1 path sources its
+  restored 2.2 kΩ R28 handshake directly from **P2**, allowing controlled TX independently of session state. Virtual
   door-open remains a direct **line 2 ↔ line 3** short paired with a seal-in break (mimic S1).
 - Injecting TX audio on P1/P5 makes LS1 replay it (quiet at mic level); lift one LS1 lead to
   silence it (1-wire board mod).
@@ -382,13 +386,14 @@ opto collector ──► GPIO (internal pull-up)   opto emitter ──► GND  (
   reaches LS1 via C1, which strips the DC the opto rides on — so OC1's `delayed_off: 2s` also
   bridges the gaps between the three Klang so one ring = one event.
 
-### Switches (K1/K2/K3/K4 — PhotoMOS SSRs)
+### Switches (K1/K2/K3/K4/K6 — PhotoMOS SSRs)
 
 ```
-K1 (talk+TX gate, dual NO): ch1 P2↔TALK_BRIDGE (→ Ra/Cf/Rb LPF → TX_OUT), ch2 TX_OUT↔P3
+K1 (talk+TX gate, dual NO): ch1 P2↔TALK_BRIDGE (→ R28 2.2 kΩ → TX_OUT), ch2 TX_OUT↔P3
 K2 (door opener, NO): P2 ↔ P3 — energise to bridge the ÖT pair
 K3 (chime mute, NC): P4 ↔ CHIME_C1 — energise to open and mute
 K4 (seal-in break, NC): SW3.6 ↔ K5.3 — energise to drop the latch
+K6 (P4 isolator, NC): P4 ↔ K5_LATCH — opens only when ISO_REQ and K5 auxiliary NO are both active
 LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21→K4 LED (each Rn = 220 Ω)
 ```
 
@@ -396,11 +401,9 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   K1/K2 are **1-Form-A (NO)** = open at idle; K3/K4 are **1-Form-B (NC)** = closed at idle. Off-state
   default is fail-safe: K1/K2 open ⇒ no talk/door at boot (the passive core's S2/S1 cover those
   unpowered); K3 closed ⇒ the gong rings at boot/unpowered (GONG-3/SAFE-6).
-- **K1 — talk handshake + TX gate (BUS-1).** Two legs meet at **TX_OUT**, both behind the dual K1 on
-  **PTT_DRV**. One contact sources the filtered 2.2 kΩ handshake from P2; the other gates TX_OUT onto
-  P3. With K1 idle, line 3 is structurally high-impedance. The handshake works independently of an
-  incoming session and is field-proven on V4.1; the filter and JP1 fallback are described once under
-  “Audio path.”
+- **K1 — talk handshake + TX gate (BUS-1).** Ch1 sources P2 onto `TALK_BRIDGE`; R28 provides the
+  field-proven 2.2 kΩ handshake to `TX_OUT`; ch2 gates `TX_OUT` onto P3. Codec TX joins
+  `TALK_BRIDGE` through R26/C14. With K1 idle, line 3 is structurally high-impedance.
 - **Why TX drives line 3, not line 4.** A WF26 hangs **C1 (22 µF) + the 16 Ω speaker across line 4**
   = a ~20–30 Ω near-short to common across the voice band; injecting there would dump the drive into
   it. Line 3 is light (the TV20/S amp input ∥ the handshake leg's 2.2 kΩ), so the codec drives
@@ -428,10 +431,14 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
   (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~38 ms (Q3 · R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
+- **K6 — P4 isolator.** NC at rest and unpowered, so raw P4 reaches `K5_LATCH` and the passive handset
+  behaves normally. K5's auxiliary NO contact is the K6 LED return: even a stuck-high `ISO_REQ`
+  cannot open K6 until K5 has physically pulled in, and K5 release immediately removes LED current.
+  JP3 is an open recovery jumper directly across K6's output.
 - K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
   door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. V4.1 field operation
-  proves that the TV20/S forwards codec audio on line 3 after a 2.2 kΩ handshake; the remaining V4.2
-  gate is acceptance of the Ra/Cf/Rb leg's ~25 ms ramp (see "Audio path").
+  proves that the TV20/S forwards codec audio on line 3 after a 2.2 kΩ handshake. V4.2 retains that
+  topology; first-board validation now concentrates on K5-confirmed K6 isolation.
 
 ### SSR LED drive (per channel)
 
@@ -513,7 +520,7 @@ KiCad**; `./build.sh` verifies the inner copper-fill planes and fails if any net
 - **Fine-pitch clearance.** The ES8311's 0.40 mm pitch won't take the default net-class clearance, so
   routing clearance is set globally to JLCPCB's published 0.127 mm capability (hole-to-copper 0.2 mm),
   pinned in `kicad/doorbell.kicad_dru`. Trade-off: the board routes at the fab limit, not with margin.
-- **Bus-width policy.** Nets at WF26-bus potential (P1–P5, TALK_BRIDGE, HS_FILT, CF_RET, TX_OUT, CHIME_C1) and +5V are routed
+- **Bus-width policy.** Nets at WF26-bus potential (P1–P5, K5_LATCH, TALK_BRIDGE, TX_OUT, CHIME_C1) and +5V are routed
   wider than signal nets — the bus carries the Türruf and the door currents, +5V feeds the LDO and the
   ESP32's WiFi-TX peak (via +3V3). KiCad's DRC does not enforce this; it's a routing rule.
 - **Pin assignment exploits the S3 GPIO matrix** (any function routes to any pad) so U1's and U3's escape fans
@@ -550,7 +557,7 @@ KiCad**; `./build.sh` verifies the inner copper-fill planes and fails if any net
 
 ---
 
-## Audio path (half-duplex; analog values + V4.2 handshake-ramp gate)
+## Audio path (half-duplex; restored V4.1 TX + V4.2 P4 isolation)
 
 **The bus is half-duplex by design.** Speech is on the **1/2/3 group** (the STR *Sprechverkehr*):
 **listen on line 2, talk on line 3, ref line 1 (common)**. The board taps that pair with an **ES8311
@@ -561,14 +568,11 @@ that shared common (the SAFE-3 trade; see "Bus↔logic coupling"):
   → MIC1N`, each codec pin biased to VMID through a 3.3 kΩ shunt (see RX front-end below). AC-coupled
   and high-Z (no DC bus load, BUS-1); the differential tap rejects hum and the ~0.5 V common-mode, and
   the series-R/VMID divider keeps the loud line-2 gong inside the codec's input range.
-- **TX (talk):** the codec DAC drives line 3 — `OUTP → R26 (2.2 kΩ) → C14 (DC-block) → TX_OUT → P3` —
-  while the **talk handshake** (the 2.2 kΩ line-3 strap the handset's S2 asserts) runs from P2 through
-  the gong-stripping low-pass `P2 → Ra (1.2 kΩ) → HS_FILT [Cf 2×22 µF → JP1 → GND] → Rb (1 kΩ) →
-  TX_OUT`. The **dual K1** gates both:
-  ch1 sources the **DC handshake from the always-on P2** (`P2 ↔ TALK_BRIDGE`) and ch2 gates the output
-  (`TX_OUT ↔ P3`) so line 3 is high-Z at idle (BUS-1). V4.1 field operation proves line-3 codec-audio
-  forwarding with a 2.2 kΩ handshake; the live-bus V4.2 gate checks acceptance of the filtered
-  leg's ~25 ms ramp.
+- **TX (talk):** dual K1 restores the field-proven V4.1 topology: ch1 connects the always-on P2 supply
+  to `TALK_BRIDGE`; R28 (2.2 kΩ) connects `TALK_BRIDGE` to `TX_OUT`; ch2 gates `TX_OUT` onto P3.
+  Codec audio joins at `TALK_BRIDGE` through `OUTP → R26 (2.2 kΩ) → C14 (DC-block)`. With K1 open,
+  P3 is high-impedance. During a confirmed ring session, K6 can disconnect raw P4 from `K5_LATCH`,
+  preventing the own-ring gong from reaching the P2-sourced handshake without shunting codec audio.
 
 Tapping 1/2/3 (not the WF26 *speaker* pair P1/P5) keeps the smart audio **independent of line 4 / K3 /
 the gong-suppress**, so it works with the gong muted.
@@ -580,37 +584,35 @@ Consequences:
 - **Sequencing, not mixing:** assert direction → settle → stream → release → stream the other
   (walkie-talkie cadence).
 
-**"Can we send?" — session sense.** The Türruf DC (line 4) holds for the **whole session** (the handset
-seals the latch in from P2 — see "Bell signals"), so **OC1, which senses line 4, stays asserted edge
-to edge**. So "session active" = **OC1 high**, with no talk-window timer needed beyond input
-debounce. K3 control still distinguishes the initial gong from the subsequent call: while OC1 is
-high, firmware honours chime suppression for 4.2 s (the measured gong is ~3.9 s), then releases K3
-to restore the stock WF26 transducer. Welcome playback deliberately keeps K3 open. Audio direction
-is selected by K1:
+**"Can we send?" — session sense.** V4.2 adds `K5_SENSE`, pulled low by K5's auxiliary NO contact,
+so firmware can distinguish raw P4 activity from a relay that has actually pulled in and sealed.
+OC1 remains on raw P4 for ring detection and diagnostics. K3 control remains independent: it may mute
+the local gong while K6 controls only the raw-P4-to-latch connection. Audio direction is selected by
+K1:
 
-| Session (OC1) | K1 | State |
+| Session (`K5_SENSE`) | K1 | State |
 |---|---|---|
 | inactive | – | no session — neither RX nor TX |
 | active | open | listen → **capture (RX)** |
 | active | closed | talk → **send (TX)** — line 3 asserted via the K1 handshake |
 
-⇒ "can I send right now?" = **OC1 high AND K1 closed.**
+⇒ On validated V4.2 hardware, "can I send right now?" = **K5 confirmed AND K1 closed.** Production
+firmware remains on the V4.1-compatible OC1 + 1.75 s gong-wait behaviour until the first fabricated
+V4.2 board passes passive bring-up and K6 validation.
 
 **Codec + front-end (committed to the netlist; analog values bench-gated for final trim):**
 
 - **U3 is a mono ES8311 codec**, matching the bus's half-duplex audio. Its pinout and address
   configuration are authoritative in the schematic and datasheet.
-- **TX front-end:** the codec leg is `OUTP → R26 (2.2 kΩ) → C14 (1 µF DC-block) → TX_OUT → P3`; the
-  handshake leg is `P2 → K1-ch1 → R34 "Ra" (1.2 kΩ) → HS_FILT → R35 "Rb" (1 kΩ) → TX_OUT`, with
-  **Cf (C25+C26, 2×22 µF/25 V X5R) shunting `HS_FILT → CF_RET → JP1 → GND`**; K1-ch2 gates TX_OUT onto
-  P3. The DAC drives **single-ended** off OUTP; OUTN is parked through its own
+- **TX front-end:** `P2 → K1-ch1 → TALK_BRIDGE → R28 (2.2 kΩ) → TX_OUT → K1-ch2 → P3` is
+  the DC talk handshake. The codec leg joins `TALK_BRIDGE` through `OUTP → R26 (2.2 kΩ) → C14
+  (1 µF DC-block)`. The DAC drives **single-ended** off OUTP; OUTN is parked through its own
   `R16 (2.2 kΩ) → C15 → GND` termination (OUTN sees no bus path, so it needs no clamp).
   R26 and D13 protect OUTP from bus steps coupled back through C14; the series resistor limits fault
   current and the external Schottky clamp keeps the codec within its rails. Codec output is far above
   the passive handset microphone level, so firmware turns it down rather than adding a buffer. The
-  handshake remains exactly 2.2 kΩ in every jumper/capacitor state, safely distinct from the door
-  short. Cf removes the gong band while allowing the DC handshake to rise with a ~25 ms loaded time
-  constant. Cutting JP1 restores the unfiltered 2.2 kΩ fallback.
+  R28 remains exactly 2.2 kΩ, safely distinct from the door short. K6 isolates the gong source rather
+  than placing a voice-band shunt on this codec/handshake node.
 - **RX front-end:** a balanced attenuating tap fed **differentially** to the ADC —
   `P2 → C16 (1 µF) → R30 (22 kΩ) → MIC1P` and `GND → C17 (1 µF) → R31 (22 kΩ) → MIC1N`, with
   **R33 / R32 (3.3 kΩ)** shunting MIC1P / MIC1N to **VMID**. Each leg is a 22 k/3.3 k divider (≈ −18 dB):
@@ -627,11 +629,12 @@ is selected by K1:
   wicks solder away, and the codec dissipates milliwatts. EP (and pin 10/AGND, tied to it) bonds to
   GND through adjacent copper.
 
-**Why the handshake is filtered (BUS-2 a).** During a session K5 ties P2 to line 4, placing the gong
-on the handshake source. An unfiltered P2→P3 strap would therefore forward the gong to the door.
-Ra/Cf/Rb removes the audio band while passing the DC talk assertion; K3 cannot do this because it
-only opens the local speaker path. V4.1 instead delays greeting audio with `gong_until_ms`; retire
-that workaround when the filtered hardware deploys.
+**Why P4 is isolated (BUS-2 a).** During a session K5 seals `K5_LATCH` from P2. If raw P4 remains
+connected, its gong rides onto the P2-sourced talk handshake and can be forwarded to the door. Once
+K5's auxiliary contact proves pull-in, K6 opens raw P4↔`K5_LATCH`; K5 continues to hold from P2 while
+the gong remains on the raw side with OC1 and K3. The K5 contact is a hardware interlock, and K6 is
+normally closed so reset or power loss restores the passive topology. V4.1 firmware still delays
+greeting audio with `gong_until_ms`; retire that workaround only after fabricated V4.2 validation.
 
 **Final bench calibration:**
 - **RX trim + TX level.** The MIC1P/N attenuating divider and VMID bias are committed (R30/R31 22 kΩ
@@ -650,10 +653,9 @@ make a scrambled bus connection survivable, though not functional.
 **Remaining bench checks:**
 
 - **Hum** with the P1↔GND bond once RX is live.
-- **⚠ V4.2 handshake ramp (bench-gated).** V4.1 proves that the TV20/S forwards codec audio on line
-  3, that a 2.2 kΩ handshake enables talk, and that the drive level reaches the door cleanly. V4.2
-  preserves the 2.2 kΩ final resistance but changes the switch-speed assertion to a ~25 ms RC
-  ramp; the live-bus passive-split test must confirm that the talk detector accepts that edge shape.
+- **⚠ V4.2 K6 isolation.** On the first fabricated board, confirm that a ring pulls K5 in before
+  K6 opens, the P2 seal-in holds with raw P4 disconnected, own-ring energy disappears from P3 during
+  TX, K5 release immediately restores K6, and JP3 restores the original topology when bridged.
 
 ---
 
@@ -674,15 +676,16 @@ These reproduce the handset (see "WF26 internal circuit") and run with zero boar
 - **C19 + C21** — the gong audio crossover across **P5↔P4** (~22 µF non-polar: two 47 µF/50 V
   electrolytics in anti-series, so scrambled bus wiring can't reverse-stress it, SAFE-2; the
   `CHIME_C1` node sits between K3 and this cap).
-- **K5** — the **latch relay**, coil across **P1↔P4**, pulled in by the ring's own
-  ~12 V Türruf DC pulse and then **sealed in from P2** (see "Bell signals"); its NO contact routes
-  listen **line 2 → S1 → K1_COM → P4 → C1 → speaker**. **Bus-energised, not GPIO-driven** — that's
+- **K5** — the **latch relay**, coil across **P1↔K5_LATCH**; normally-closed K6 passes the ring's
+  ~12 V raw-P4 pulse at rest, after which K5 is **sealed in from P2** (see "Bell signals"). Its primary
+  NO contact routes listen **line 2 → S1 → K1_COM → K5_LATCH → K6 → P4 → C1 → speaker**.
+  **Bus-energised, not GPIO-driven** — that's
   what makes listen work unpowered. A **flyback diode (D1)** clamps its coil (the stock handset lets
   the speaker across the coil damp the kick; K3-in-series-with-C1 breaks that path, so the board adds
   its own clamp). On the V4.1 emulated bus at room temperature, automated OC1/P4 checks gave 0/5
   pull-ins at 8.5 V and 5/5 at 9.0 V, placing that board's observed boundary between them; 9.6 V
-  remains the guaranteed must-operate limit. The real ring bus is approximately 12 V, and V4.2's
-  added 100 kΩ R36 load draws only about 0.1 mA, so pull-in has comfortable design margin; retain a
+  remains the guaranteed must-operate limit. The real ring bus is approximately 12 V, and the
+  100 kΩ R36 load draws only about 0.1 mA, so pull-in has comfortable design margin; retain a
   normal 12 V latch/seal-in check at first-board bring-up, not a low-voltage fabrication gate.
 - **R29** — 2.2 kΩ talk resistor (`P4 → R1 → R1_BRIDGE`).
 - **SW3 (door, DPDT) and SW4 (talk, DPDT)** — SPPJ322300 slide switches wired as in the
@@ -736,5 +739,5 @@ copy warning counts or tool versions into this document because they become stal
 `VERIFICATION.md` defines the repeatable pre-fab review and bench procedure. `TODO.md` owns the
 remaining measurements and design gates. Established evidence relevant to the architecture is kept
 next to the decision it supports—for example, V4.1 field operation proves enclosure fit, watchdog
-release, the 2.2 kΩ talk handshake and end-to-end TX reach. The remaining V4.2-specific TX gate is
-acceptance of the filtered handshake's RC ramp.
+release, the 2.2 kΩ talk handshake and end-to-end TX reach. The remaining V4.2-specific TX work is
+first-board validation of K5-confirmed K6 isolation.

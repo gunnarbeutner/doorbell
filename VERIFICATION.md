@@ -62,9 +62,10 @@ schematic, read them from it.
   (no talk/door at boot; gong rings at boot; latch stays sealed) — see SAFE-6 / GONG-3 / DOOR-4.
 - SSR LED drive: series R sets I_F into the part's datasheet window; gate pull-downs hold every
   SSR off while the GPIO floats at boot.
-- The on-board latch relay (K5) replicates the handset's seal-in: coil across **P1↔P4** (+ on the
-  +12 V P4 side), NO contact feeding the common back to P4. Confirm contact mapping and flyback
-  diode orientation.
+- The on-board latch relay (K5) replicates the handset's seal-in: coil across **P1↔K5_LATCH**, with
+  normally-closed K6 passing raw P4 at rest; the primary NO contact seals `K5_LATCH` from P2. Confirm
+  the auxiliary NO contact grounds `K5_SENSE`, gates K6's LED return and cannot open K6 before K5
+  physically pulls in. Confirm contact mapping and flyback-diode orientation.
 - Confirm the door pair reproduces S1's **break-before-make**: the NC seal-in-break opens before
   the door bridge closes (RC-delayed), and the max-on-time one-shot releases the bridge in bounded
   time (DOOR-4 / DOOR-5). Cross-check the timing in `sim/test`.
@@ -98,7 +99,8 @@ expected line voltage and the opto's CTR spread.
 
 **Passive WF26 core** — the `WF26_*` parts reproduce the handset's door-release / talk / gong /
 seal-in topology, so the board behaves like a plain WF26 unpowered (the SSRs/codec/optos are
-additive on top). Confirm against `wf26/wf26.kicad_sch`.
+additive on top). Confirm K6 is normally closed without board power and JP3 is open by default, then
+compare the underlying handset behaviour against `wf26/wf26.kicad_sch`.
 
 ## 4. Cross-checks against external references
 
@@ -147,7 +149,7 @@ P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isola
 
 **Stage 0 — power-off continuity (DMM).** P1↔GND ≈ 0 Ω (the deliberate bond); no short P2/P3/P4/P5 to
 each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
-continuous; TP1–TP8 present; C19 "+" toward P4.
+continuous; raw P4↔`K5_LATCH` continuous through K6; JP3 open; TP1–TP8 present; C19 "+" toward P4.
 
 **Stage 1 — local power only, no bus.** USB-C 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
 (after the SS14 drop — there is no 5 V test point), **TP2 ≈ +3.30 V**, quiescent current sane,
@@ -158,7 +160,8 @@ board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
 
 **Stage 2 — emulated bus** (`PSU+ → 100 Ω → P2`, `PSU− → P1`, 12 V, limit ~120 mA):
 - **2a passive seal-in, board UNPOWERED (MODE-1/SAFE-4):** tap 12 V onto P4 ~1 s → K5 pulls in;
-  release → confirm it **seals in** (P4 holds just under P2); pull P2 to 0 → K5 drops.
+  release → confirm it **seals in** (`K5_LATCH` and raw P4 hold just under P2 through closed K6);
+  pull P2 to 0 → K5 drops.
   Measure pull-in, sealed current/voltage and drop-out voltage; compare all three against the relay
   datasheet and the real-bus operating range.
 - **2b ring sense, powered:** 12 V on P4 → "House Doorbell" asserts (clears on removal); 12 V on P5 →
@@ -169,10 +172,15 @@ board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   bridge — **K4 opens ~20 ms before K2 closes** (latch drops, P4 falls, live P4 never reaches P3);
   hold the command asserted and measure that the watchdog releases K2 after the minimum normal
   firmware pulse but before the specified maximum fault-on time.
-- **2d chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
+- **2d K5-confirmed P4 isolation:** with JP3 open, ring K5 in and confirm `K5_SENSE` goes low before
+  asserting `ISO_REQ`. Open K6, remove the raw-P4 drive and confirm K5 remains sealed from P2 while
+  raw P4 is disconnected from `K5_LATCH`. Drop P2 and confirm K5 releases and K6 immediately restores
+  continuity. Assert `ISO_REQ` before K5 pull-in and confirm the hardware interlock keeps K6 closed.
+  Finally bridge JP3 temporarily and confirm it restores permanent P4↔`K5_LATCH` continuity.
+- **2e chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
   closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
   regardless of mute.
-- **2e audio (partial):** RX — inject P2↔P1 and confirm the codec ADC sees it through the −18 dB divider,
+- **2f audio (partial):** RX — inject P2↔P1 and confirm the codec ADC sees it through the −18 dB divider,
   that a gong-level drive stays inside the codec rail [0, AVDD] (abs-max), and the signal lands on MICP
   with MICN held at VMID; TX — assert talk, drive a DAC tone, scope it on P3 through the TX resistor,
   confirm the populated reference and net from the schematic rather than assuming a revision-specific
@@ -201,7 +209,8 @@ J2's screws, and component pads. Use an **isolated** scope
   across R_lim). A wrong guess is a silent non-detect, not damage; swap the LED's two bus
   connections for that channel.
 - **Door pulse / chime suppress / session sense** — confirm the opener fires, the gong mutes with
-  line 4 / the latch / the Etagenruf untouched, and OC1 tracks the session edge-to-edge.
+  line 4 / the latch / the Etagenruf untouched, OC1 reports raw P4, and `K5_SENSE` reports actual
+  relay pull-in/release.
 - **Break-before-make** — confirm a board door-open drops the latch (line 4 falls, P2 rises) as on
   the genuine S1; hold the command and verify the watchdog timeout against the requirements.
 - **Chime-suppress transitions** — charge the gong coupling network from a real ring, open K3, end

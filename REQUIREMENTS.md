@@ -91,8 +91,9 @@ shared party line across apartments.
   BUS-2 is deliberately **stricter than WF26-equivalence** (MODE-2): the board's bridges are
   electrically identical to the handset's switches, but firmware engages them in compositions a human
   never would (a talk bridge at t = 0 of every ring, when the gong is guaranteed live) — path
-  equivalence does not imply timing equivalence. *(Realised by the Ra/Cf/Rb gong-stripped handshake
-  (a), the Ra+Rb = 2.2 kΩ floor with a shunt-only Cf (b), and the K4↔K2 break-before-make (c); the
+  equivalence does not imply timing equivalence. *(Realised by K5-confirmed K6 isolation of raw P4
+  (a), the R28 = 2.2 kΩ handshake remaining distinct from a door short (b), and the K4↔K2
+  break-before-make (c); the
   codec cold-start step (c) is bench-gated — see DESIGN.md "Audio path" ("TX front-end", "Gong ↔ TX
   handshake") and "Door-open mirrors S1".)*
 
@@ -139,8 +140,8 @@ shared party line across apartments.
 - **AUDIO-2 (MUST)** Inject **ESP/codec-generated** audio onto the bus speech pair (up-audio, line 3)
   — the firmware streams audio to the bus. **Minimum:** play a custom welcome chime on a ring (e.g.
   before auto-opening). **Goal:** arbitrary streamed audio (announcements / TTS, and live talk).
-  V4.1 field operation proves that injected line-3 audio reaches the door station with a 2.2 kΩ
-  handshake; V4.2 must retain that result with its RC-ramped handshake assertion.
+  Field operation proves that injected line-3 audio reaches the door station with the 2.2 kΩ
+  handshake; the current design retains that topology and isolates raw P4 before early TX.
 - **AUDIO-3 (MUST/MAY)** Half-duplex is **sufficient** and is the baseline (a talk window opened
   after a ring; single transducer, so no echo cancellation). Full-duplex is a **MAY** (nice-to-have)
   and is **contingent on the TV20/S supporting it at all** — likely it does not; it needs a bench
@@ -174,9 +175,9 @@ shared party line across apartments.
 - **AUDIO-10 (SHOULD)** Outbound TX (greetings, talk) SHOULD NOT re-inject the bus's own gong onto the
   talk line: the Türruf tone standing on line 2 during a latched session (or a neighbour's ring on the
   shared line 2) must not ride the talk handshake onto line 3 at an audible level, and the greeting
-  should not need to be delayed to avoid it. *(Met by the low-passed Ra/Cf/Rb handshake leg — see
-  DESIGN "Audio path" / "Gong ↔ TX handshake". The deployed V4.1 board predates the filter and meets
-  the audibility half by a firmware gong-wait, at the cost of the no-delay half.)*
+  should not need to be delayed to avoid it. *(Met on V4.2 by opening K6 after K5 pull-in, separating
+  raw P4 from the latched P2 handshake source. The deployed V4.1 board meets the audibility half with
+  a firmware gong-wait, at the cost of the no-delay half.)*
 
 ## DOOR — Door opener
 
@@ -297,18 +298,11 @@ height envelope changes.
   behaviour the board must match) and the **board**, with the board in both **powered** (smart layer
   active) and **unpowered** (passive fallback) states. The tests MUST show the unpowered board
   reproduces the WF26's behaviour (MODE-1, SAFE-4) and the powered board adds the smart functions
-  without violating BUS-1 or BUS-2 (composed-state cross-coupling — e.g. the `gong rejection` test). (Test *results* live in DESIGN.md "Verification status"; the verification
-*procedure* — what to run and check — is VERIFICATION.md.)
+  without violating BUS-1 or BUS-2 (composed-state cross-coupling — e.g. the `K6 isolation` test).
+  (Test *results* live in DESIGN.md "Verification status"; the verification *procedure* — what to
+  run and check — is VERIFICATION.md.)
 
 ---
-
-## Open questions (to nail down)
-
-1. **V4.2 handshake ramp & full-duplex feasibility (open, bench)** — V4.1 proves line-3 TX reach,
-   the 2.2 kΩ talk handshake and usable door-station audio. Confirm that the TV20/S also accepts
-   V4.2's ~25 ms RC-ramped assertion (AUDIO-2). Separately, determine whether it tolerates
-   simultaneous RX+TX at all (the prerequisite for the AUDIO-3 full-duplex MAY); see DESIGN.md
-   "Audio path".
 
 *Resolved:* Galvanic isolation — **SHOULD**, not MUST; the hard requirement is fault containment
 (SAFE-7) — the board may fry, but the USB supply and the apartment must not. Etagenruf — MUST stay

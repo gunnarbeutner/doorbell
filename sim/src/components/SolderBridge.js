@@ -12,7 +12,10 @@ export default class SolderBridge extends Component {
   }
 
   get defaultClosed() {
-    return true; // bridges are connected by default
+    const tag = `${this.lib || ''} ${this.value || ''} ${this.footprint || ''}`;
+    if (/open/i.test(tag)) return false;
+    if (/bridged|closed/i.test(tag)) return true;
+    return true; // preserve the legacy default for generic bridge symbols
   }
 
   elements(ctx = {}) {
@@ -20,7 +23,7 @@ export default class SolderBridge extends Component {
     if (pk.length < 2) return [];
 
     const state = (ctx.switchState || {})[this.ref];
-    const closed = state === undefined ? true : !!state;
+    const closed = state === undefined ? this.defaultClosed : !!state;
 
     return [{ type: 'SW', a: this.pins[pk[0]], b: this.pins[pk[1]], closed, ref: this.ref, pa: pk[0], pb: pk[1] }];
   }

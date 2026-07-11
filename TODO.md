@@ -5,38 +5,26 @@ see `DESIGN.md` and `wf26/wf26-schematic.md` for the circuit model.
 
 ## V4 main board — schematic / layout changes (`kicad/doorbell.kicad_sch` + `.kicad_pcb`)
 
-- [ ] **(V4.2 gate) Breadboard the passive split on the live bus — before ordering the respin**
-      (verifies **BUS-2(a)/(b)** on the real TV20/S; the Ra/Cf/Rb leg is in the V4.2 schematic + PCB,
-      sim-verified — `gong rejection`, `JP1 cut`, BUS-1 tests — with spectrum/levels capture-gated
-      against `our-ring-no-door`; this gate owns the two things only the wall can answer:
-      forwarded + ramp-assert).
-      Runs against the **deployed V4.1 board** without pulling it from the wall, and doubles as the
-      **TX-out-reach yes/no**. **Non-invasive rig** (wiring: `docs/design/breadboard-handshake-test.svg`;
-      all via the screw terminals + a TX_OUT pad tap): `P2 → Ra (1.2 kΩ) → HS_FILT → Rb (1 kΩ) → P3`
-      with `Cf (47 µF/25 V electrolytic, + toward HS_FILT) → P1`; bring the codec audio over with a
-      `TX_OUT → P3` jumper and drive **`debug_test_tone` ON / `intercom_ptt` OFF** (bench config) so K1
-      stays open (its ch1 raw-P2 tap — the gong path on V4.1 — never engages) while the DAC still
-      reaches TX_OUT through the V4.1 board's always-wired `R26 → C14 → R28` chain. Board otherwise
-      idle so every board-side P3 path stays open. **Checks:** ring the station, listen at the door → (a) **forwarded?** (#1 — the
-      TV20/S's only unverified yes/no), (b) **gong-free?** (#3), (c) **talk asserts despite the ~25 ms
-      RC ramp?** — the one thing the passive leg does that a switch press doesn't; an edge-sensitive
-      talk-detect here is the OPA991 trigger. The electrical half — the filter strips an injected 1 kHz,
-      the pedestal level — runs on the bench **off-bus** with a sig-gen (no wall). **Unclip after:** the
-      rig is a standing 2.2 kΩ P2↔P3 strap — it holds "talk" asserted while clipped. **Decision:** all
-      three pass → order the respin; (c) fails → the **OPA991** (`C2864555`,
-      Mouser/Digikey/Farnell) buffered high-Z variant (`P2 → 100k → 100n → buffer → 2.2 k → P3`) — no
-      follower step, a low-pedestal proxy no longer models anything we'd ship; (a) fails → the TX plan
-      needs rethinking and no filter variant rescues it. **Design-for-rework on the respin regardless:**
-      the split is purely additive and the Cf pair returns to GND through **JP1 (bridged solder
-      jumper)**, so the fallback ladder is (1) retune — swap the Cf pair smaller for a faster assert
-      (even 2×4.7 µF keeps the residual ~2 mVpp); (2) full revert — **cut JP1** and the leg degenerates
-      to the **exact 2.2 kΩ strap** (Ra+Rb) = V4.1 with a step assert; re-arm the retained firmware
-      gong-wait; blob JP1 to re-enable — a repeatable seconds-scale A/B, no parts touched. JP1 is why
-      there is **no DNP direct-strap resistor**: the jumper has no illegal state (P2↔P3 stays 2.2 kΩ
-      open or closed, whereas a populated strap ∥ Ra+Rb ≈ 1.1 kΩ would sit under the door-fire floor),
-      and a damaged Ra/Rb chain is a pad-to-pad bodge, not a footprint. A #1 surprise stays a solder
-      fix, not a spin. Bench BOM: Ra/Rb ¼ W + Cf 47 µF/25 V from bench stock;
-      op-amp only if (c) fails.
+V4.2 uses the field-proven R28/C14/K1 TX topology and K6 to disconnect raw P4 from the internal
+`K5_LATCH` node after K5's auxiliary contact proves that the relay has pulled in. JP3 provides an
+open-by-default recovery bypass. See `docs/design/k5-latch-isolation-plan.md`.
+
+- [ ] **Reference the ES8311 bus clamps to the analog rail and close power-off injection.** D13/D14
+      currently steer OUTP/MIC1P to main `+3V3`, while the codec's analog limits are referenced to
+      `AVDD`; regulator tolerance and FB1 drop therefore consume clamp margin. Rework the upper
+      clamps to the correct quiet rail or choose a protection network with guaranteed voltage and
+      injection-current limits at the actual current. Derive powered and unpowered hot-plug/miswire
+      cases, provide a defined AVDD discharge/sink path so the bus cannot phantom-power the codec,
+      and add regression coverage. Revisit R30/R31 if more passive attenuation is the cleaner way to
+      keep the full permitted line-step envelope inside AUDIO-8/SAFE-2.
+
+- [ ] **Make OC1/OC2 detection guaranteed at their real LED current.** The LTV-217-B minimum CTR is
+      specified at 5 mA/25 °C, while captured bus levels put the fitted 5.1 kΩ channels around
+      1.1–2.8 mA and the 10 kΩ collectors require roughly 10–25% effective CTR. Close the low-line,
+      resistor-tolerance, GPIO-threshold, leakage and temperature corners using a part guaranteed at
+      the operating current, more LED current, higher-value collector pull-ups (for example 47 kΩ),
+      or a justified combination. Keep per-channel reverse clamps and verify both real call types,
+      long gaps and composed-state cross-talk against RING-1/2/4 without relying on a typical curve.
 
 - [ ] **Close the regulator-capacitance stability margins.** From the exact fitted MLCC datasheets,
       calculate U2's total effective +3V3 output capacitance and U4's effective input/output
@@ -56,28 +44,41 @@ Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/p
 ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-coil reads, and don't
 tether it to a mains-earthed PC. Pair with a DMM.
 
-- [ ] **Sustained Etagenruf stress — close the C19/C21/D1 qualification warning.** Drive the longest
-      credible floor-call waveform and measure or simulate each anti-series electrolytic's voltage
-      (including reverse voltage), ripple current and midpoint charge, plus D1 current. The exact RVT
-      datasheet does not qualify bipolar/reverse-bias service; replace the pair with a qualified
-      bipolar solution if the measured stress cannot be justified. Also watch for unintended K5
-      movement and an objectionable LS1 impulse.
+- [ ] **Find why the physical Talk actuator cannot be pushed all the way in.** Check the actuator,
+      enclosure and SW4/PCB alignment and travel for interference or a dimensional mismatch; confirm
+      whether SW4 reaches its intended electrical state before the mechanical stop, and correct the
+      responsible mechanical part or placement. This is independent of the P4/K5 bleed and electronic
+      talk-handshake work.
+
+- [ ] **Upgrade D1 and close the sustained Etagenruf C19/C21/D1 stress warning.** D1 is both K5's
+      flyback clamp and the unresisted clamp for negative P4 excursions coupled through C19/C21; the
+      captured floor-call waveform therefore exercises it repetitively, not as a rare relay kick.
+      Replace the 1N4148W with a footprint-compatible, low-leakage rectifier rated for at least 1 A
+      and 40 V, using the exact ordered-part datasheet. Then drive the longest credible floor-call
+      waveform and measure or simulate D1 peak/RMS current plus each anti-series electrolytic's
+      voltage (including reverse voltage), ripple current and midpoint charge. The exact RVT sheet
+      does not qualify bipolar/reverse-bias service; replace the pair with a qualified bipolar
+      solution if the measured stress cannot be justified. Also watch for unintended K5 movement,
+      source clipping and an objectionable LS1 impulse. Include D7 in this review: it is correctly
+      connected from raw P4 to GND, but its fault-level TVS clamp does not by itself qualify the normal
+      repetitive C19/C21/D1 waveform.
+
 ## Firmware (`firmware/doorbell.yaml`)
 
-- [ ] **Retire the ring → welcome-audio gong-wait when the V4.2 board deploys.** The Ra/Cf/Rb handshake makes the
-      greeting gong-free in hardware (BUS-2(a)), so wind `gong_until_ms`'s window to 0 — but **keep the
-      code path** as the Cf-failure backstop (an aged/cracked-**open** Cf with no wait = the original
-      bleed at full strike level; the failure signature is a gong audible at the door during
-      greetings). Until the respin deploys, V4.1 keeps the wait; **interim option:** raise
-      1750 → ~4200 ms to cover the measured ~3.9 s tail (`our-ring-no-door`: the 1.75 s expiry lands on
-      the third Klang at ~3.6 Vpp ⇒ ~140 mVpp leaked onto P3 through V4.1's strap — empirically
-      inaudible thanks to masking + pipeline latency, so optional). This is independent of the
-      intentional no-greeting auto-open hold, which gives the visitor time to reach the door and stays.
+- [ ] **Implement K5-confirmed P4 isolation only after a fabricated V4.2 board passes passive bring-up.**
+      Do not change the deployed V4.1 firmware meanwhile: OC1 remains its session/ring input and the
+      1.75 s ring-to-welcome `gong_until_ms` delay remains enabled. After confirming unpowered P4↔
+      `K5_LATCH` continuity, K5 seal-in and JP3-open operation on V4.2, add GPIO4 `K5_SENSE` (active
+      low) and GPIO48 `ISO_REQ` (active high, forced low at boot). Debounce `K5_SENSE` for 5–10 ms,
+      request isolation, wait K6's maximum opening time, reconfirm K5, then allow K1/playback. Loss of
+      K5 must stop playback, release K1 and clear `ISO_REQ`; keep raw OC1 for ring diagnostics. Only
+      after installed-board validation may the ring-to-welcome gong wait be retired for V4.2. Keep the
+      separate no-greeting visitor-reach delay unchanged.
 ## First-board commissioning (not fabrication gates)
 
 - [ ] **Calibrate the V4.2 audio path on the installed board.** Confirm RX headroom and choose the final
-      mic PGA; turn TX down to a natural handset level (V4.2 is about 6 dB hotter at the same codec
-      setting); and listen for hum or an objectionable first-welcome onset transient. The committed
+      mic PGA; set TX to a natural handset level; and listen for hum or an objectionable first-welcome
+      onset transient. The committed
       divider and output protection are already bounded by simulation and bench measurements, so
       these checks tune firmware rather than decide the PCB. If the DAC cold-start is audible, keep K1
       open until the output settles; `docs/scope/welcome-chime-p3.png` records the V4.1 observation.
