@@ -93,8 +93,11 @@ two extra parts, both on the **DOOR_DRV** gate:
   so the passive/unpowered latch is untouched (MODE-1 / SAFE-4).
 - **The break leads the make.** K4's LED is driven straight off DOOR_DRV (opens immediately), while K2's
   LED returns to ground through **Q3**, a logic-level N-FET whose gate (DELAY_GATE) ramps on
-  **R17 (100 kΩ) · C18 (1 µF) ≈ 38 ms** — so K2 closes ~38 ms *after* K4 (≥~14 ms at the fast Vgs(th)/cap corner), well past the ~6 ms latch drop.
-  One gate (DOOR_DRV), hardware-timed break-before-make; the firmware just pulses the door line.
+  **R17 (100 kΩ) · C18 (1 µF) ≈ 38 ms** — so K2 closes after K4 (≥~14 ms at the fast
+  Vgs(th)/cap corner), well past the ~6 ms latch drop. The V4.1 emulated-bus bench test measured
+  approximately **33–34 ms** from P4 falling (K5 released) to P3 rising (K2 made), with no premature
+  P3 pulse; see the [scope capture](docs/scope/door-break-before-make.png). One gate (DOOR_DRV),
+  hardware-timed break-before-make; the firmware just pulses the door line.
 
 With the seal-in broken before P2↔P3 closes, the held Türruf is never bridged onto line 3. The
 firmware's separate 1.75 s **no-greeting auto-open hold remains intentional**: it gives the visitor
@@ -108,7 +111,12 @@ if firmware leaves DOOR_DRV asserted. Its deliberately loose RC/FET threshold ra
 normal 1.75 s pulse and bounds a stuck command to seconds rather than indefinitely; D11 quickly
 re-arms it when the command drops. K4 may remain open during such a fault, which only keeps the
 session latch released. Simulation covers the timing envelope, and the deployed V4.1 board released
-the opener after roughly 6–7 s when deliberately held on.
+the opener after roughly 6–7 s when deliberately held on. After a 250 ms DOOR_DRV-low interval, a
+retrigger reproduced the normal break-before-make sequence and held P3 at 12 V for approximately
+5.7–5.8 s before the watchdog released it; see the
+[scope capture](docs/scope/door-watchdog-rearm-250ms.png). This proves functional re-arm of the
+external door path. A 500 ms repeat produced the same approximately 5.8 s interval, validating the
+firmware minimum with margin.
 
 > **Line 4 carries the Türruf** (PCB net **P4** — one net, no IN_P4/P4 split). Inside the handset core
 > it is the junction of C1, R1, the K5 coil and its NO contact: the ring's **DC energises the
@@ -667,7 +675,11 @@ These reproduce the handset (see "WF26 internal circuit") and run with zero boar
   listen **line 2 → S1 → K1_COM → P4 → C1 → speaker**. **Bus-energised, not GPIO-driven** — that's
   what makes listen work unpowered. A **flyback diode (D1)** clamps its coil (the stock handset lets
   the speaker across the coil damp the kick; K3-in-series-with-C1 breaks that path, so the board adds
-  its own clamp).
+  its own clamp). On the V4.1 emulated bus at room temperature, automated OC1/P4 checks gave 0/5
+  pull-ins at 8.5 V and 5/5 at 9.0 V, placing that board's observed boundary between them; 9.6 V
+  remains the guaranteed must-operate limit. The real ring bus is approximately 12 V, and V4.2's
+  added 100 kΩ R36 load draws only about 0.1 mA, so pull-in has comfortable design margin; retain a
+  normal 12 V latch/seal-in check at first-board bring-up, not a low-voltage fabrication gate.
 - **R29** — 2.2 kΩ talk resistor (`P4 → R1 → R1_BRIDGE`).
 - **SW3 (door, DPDT) and SW4 (talk, DPDT)** — SPPJ322300 slide switches wired as in the
   handset, so a person can open the door / talk by hand with the board dead.

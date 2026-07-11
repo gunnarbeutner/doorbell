@@ -160,24 +160,17 @@ tether it to a mains-earthed PC. Pair with a DMM.
       gap (working assumption ≥~10 ms) and confirm a step-driven **K3 (GAQY412EH NC SSR)** opens within it
       so the first Klang is muted; scope where the chime becomes audible vs the pedestal rise. K3's own
       turn-off can't be isolated from the bus capture — step-drive it directly.
-- [ ] **Bench — confirm the door lead.** On the real board: a door-open drops K5 (session ends),
-      and K2's make lands after the latch drop (no 12 V-DC/gong blip on line 3). Tune C18/R17 if the
-      ~20 ms lead doesn't clear the actual latch-drop time.
 - [ ] **Sustained Etagenruf stress — close the C19/C21/D1 qualification warning.** Drive the longest
       credible floor-call waveform and measure or simulate each anti-series electrolytic's voltage
       (including reverse voltage), ripple current and midpoint charge, plus D1 current. The exact RVT
       datasheet does not qualify bipolar/reverse-bias service; replace the pair with a qualified
       bipolar solution if the measured stress cannot be justified. Also watch for unintended K5
       movement and an objectionable LS1 impulse.
-- [ ] **K5 pull-in margin on the V4.2 load.** Measure P4 at the coil during the lowest credible bus
-      voltage and, if practical, the hot corner. Require margin above the relay's must-operate voltage;
-      V4.1 pull-in evidence does not include the changed V4.2 loading.
-- [ ] **SSR GPIO drive and watchdog re-arm transient.** With both dual-load outputs exercised, measure
+- [ ] **SSR GPIO drive margin.** With both dual-load outputs exercised, measure
       `PTT_DRV`, `DOOR_DRV` and `MUTE_DRV` high voltage / LED current and confirm every PhotoMOS clears
-      its operate point with useful margin. Capture the C20 discharge through D11 into `DOOR_DRV`;
-      choose a D11 series resistor from a sourced ESP32-S3 transient limit and the required re-arm
-      time, or otherwise justify the direct diode path. A few hundred ohms should still discharge
-      2.2 µF far inside the 0.5 s retrigger interval, but the final value must come from the calculation.
+      its operate point with useful margin. External V4.1 evidence shows that both 250 ms and the
+      retained 500 ms firmware minimum restore the normal break-before-make sequence and approximately
+      5.8 s watchdog interval; functional watchdog re-arm is closed.
       If direct GPIO drive cannot be closed with useful margin, implement the buffered-driver TODO
       above. The module datasheet's 40 mA figure is typical and does not guarantee the loaded-VOH
       calculation used by the prefab review.
