@@ -205,9 +205,10 @@ J2's screws, and component pads. Use an **isolated** scope
 - **Break-before-make** — confirm a board door-open drops the latch (line 4 falls, P2 rises) as on
   the genuine S1; hold the command and verify the watchdog timeout against the requirements.
 - **Chime-suppress transitions** — charge the gong coupling network from a real ring, open K3, end
-  the ring/session, wait the specified bleed interval, then reclose K3 while monitoring P4, OC1 and
-  K5. Require no false detection or relay pull-in. Separately exercise reset/brownout during the
-  discharge interval; a normal delayed-unmute pass does not prove an immediate reset reclose safe.
+  the ring/session, then sweep K3 reclose delays from zero through the nominal bleed interval while
+  monitoring P4, OC1 and K5. Require no false detection or relay pull-in at every delay. Include
+  reset/brownout as an immediate-reclose case. If a passive bleed is fitted, confirm that the residual
+  pulse decreases with wait time; a delayed pass is not a substitute for the zero-delay test.
 - **TX-out reach** — confirm the TV20/S forwards line-3 audio to the door station once it sees the
   schematic's talk-handshake resistance, at a usable level (AUDIO-2/AUDIO-6).
 - **Hum / RX level** with the P1↔GND bond once RX is live; set the codec digital volume so TX
