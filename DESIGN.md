@@ -421,8 +421,8 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
   = gong muted, with **line 4, the latch and the Etagenruf all untouched** (Etagenruf reaches LS1
   directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4). **R36 (100 kΩ) + JP2
-  (factory-bridged)** bleed `CHIME_C1` to GND while K3 is open, discharging the effective ~23.5 µF
-  C19/C21 coupling capacitance (τ≈2.4 s). It is a passive robustness measure: on the V4.1 bench board,
+  (factory-bridged)** bleed `CHIME_C1` to GND while K3 is open, discharging C19's 22 µF
+  coupling capacitance (τ≈2.2 s). It is a passive robustness measure: on the V4.1 bench board,
   `CHIME_C1` held about 10 V for tens of seconds, yet an immediate K3 reclose neither latched K5 nor
   asserted even unfiltered OC1. A subsequent ten-cycle sweep with reclose waits from 0 to 5 s showed
   a brief P4 discharge pulse on every cycle and zero K5 re-latches. The always-connected K5 coil
@@ -430,8 +430,8 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   reclose delay, and an immediate fail-safe reclose on reset/brownout is acceptable. Cutting board
   USB power with the charge trapped produced the expected brief P4 pulse and no seal-in; see the
   [scope capture](docs/scope/k3-usb-power-loss.png). JP2 exists only for diagnostic A/B isolation;
-  production/default is bridged. Repeat this acceptance capture on the first V4.2 board because its
-  C19/C21 implementation differs. The simulator models K5's voltage-dependent pickup force: 9.6 V
+  production/default is bridged. Repeat this acceptance capture on the first fabricated board because
+  its crossover capacitor and clamp differ from the bench hardware. The simulator models K5's voltage-dependent pickup force: 9.6 V
   is a static must-operate limit, not a full-strength 3 ms command.
 - **K4 — seal-in break (DOOR-4).** NC SSR in series in the `P2 → K1_COM` seal-in (`SW3.6 ↔
   K5.3`). De-energised = closed (seal-in intact, the passive latch works unpowered); energised
@@ -658,8 +658,8 @@ front-end already tolerates the measured working envelope (`captures/runs/`: **�
 60 V Voff, optos current-limited + reverse-clamped, codec taps AC-coupled ≥ 50 V), so the TVS is
 **fault-only** (H24VND3BA): **24 V standoff** — above the +16–17 V ring/door switching transients, so it
 stays idle in normal use — clamping over-envelope surge/ESD/miswire to ~50 V, under the 60 V SSRs.
-DC-block caps are rated ≥50 V. The bidirectional clamps, AC/DC SSRs and non-polar C19/C21 gong cap
-make a scrambled bus connection survivable, though not functional.
+DC-block caps are rated ≥50 V. J2 uses the verified P1–P5 wire order; arbitrary wire ordering is not
+permitted because the WF26 audio crossover is polarized.
 
 **Remaining bench checks:**
 
@@ -684,16 +684,16 @@ inactive/transparent when unpowered (SSRs off, optos passive, codec quiet).
 ### The passive WF26 core (the `WF26_*` parts)
 These reproduce the handset (see "WF26 internal circuit") and run with zero board power:
 - **LS1** — 16 Ω speaker/mic across **P1↔P5** (doubles as the mic for talk).
-- **C19 + C21** — the gong audio crossover across **P5↔P4** (~22 µF non-polar: two 47 µF/50 V
-  electrolytics in anti-series, so scrambled bus wiring can't reverse-stress it, SAFE-2; the
-  `CHIME_C1` node sits between K3 and this cap).
+- **C19** — the 22 µF/50 V polarized gong/audio crossover across **P5↔P4**, matching the original
+  WF26 topology; pin 1 (+) faces `CHIME_C1`/P4 and pin 2 (−) faces P5.
 - **K5** — the **latch relay**, coil across **P1↔K5_LATCH**; normally-closed K6 passes the ring's
   ~12 V raw-P4 pulse at rest, after which K5 is **sealed in from P2** (see "Bell signals"). Its primary
   NO contact routes listen **line 2 → S1 → K1_COM → K5_LATCH → K6 → P4 → C1 → speaker**.
   **Bus-energised, not GPIO-driven** — that's
   what makes listen work unpowered. A **flyback diode (D1)** clamps its coil (the stock handset lets
   the speaker across the coil damp the kick; K3-in-series-with-C1 breaks that path, so the board adds
-  its own clamp). On the V4.1 emulated bus at room temperature, automated OC1/P4 checks gave 0/5
+  its own **1N4004W** clamp, also rated for the repetitive floor-call current coupled through C19).
+  On the V4.1 emulated bus at room temperature, automated OC1/P4 checks gave 0/5
   pull-ins at 8.5 V and 5/5 at 9.0 V, placing that board's observed boundary between them; 9.6 V
   remains the guaranteed must-operate limit. The real ring bus is approximately 12 V, and the
   100 kΩ R36 load draws only about 0.1 mA, so pull-in has comfortable design margin; retain a

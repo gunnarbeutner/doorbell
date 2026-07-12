@@ -27,6 +27,7 @@ export default class Diode extends Component {
         vfSpecifiedTempC: [25, 25],
       },
     };
+    if (/1N4004W/i.test(this.value)) return { Is: 1e-14, n: 1, vrr: 400 };
     if (/schottky/i.test(this.lib)) return { Is: 1e-6, n: 1.05, vrr: 40 }; // SS14 — low Vf (~0.3-0.4 V)
     if (/LED/i.test(this.lib)) return { Is: 1e-15, n: 2.6 }; // visible LED — high Vf (~1.8-2 V)
     if (/TVS/i.test(this.lib)) {
@@ -41,7 +42,7 @@ export default class Diode extends Component {
       // (which then drives a huge current through F1 and blows it: the SAFE-7 fail-safe).
       return { Is: 1e-12, n: 1, vbr: 6.5 };
     }
-    return { Is: 1e-14, n: 1 }; // 1N4148 silicon (~0.6-0.7 V)
+    return { Is: 1e-14, n: 1 }; // general silicon diode (~0.6-0.7 V)
   }
 
   elements() {

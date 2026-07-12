@@ -198,10 +198,9 @@ board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   designator, and confirm high-Z
   when talk is off.
 
-**Stage 3 — protection, last and current-limited (SAFE-2):** with the limit still low, deliberately
-reverse P2/P1 (and a mis-order or two), confirm the per-tap clamps/TVS hold and the board survives and
-still works once correct wiring is restored — F1 only protects the USB side, the bus taps rely on
-per-tap protection.
+**Stage 3 — connector polarity, before energising (SAFE-2):** use continuity mode to verify J2 follows
+the documented P1–P5 wire order and confirm C19 pin 1 (+) faces P4 through K3. Do not deliberately
+mis-order the bus: the protected taps are bidirectional, but the field-proven WF26 crossover is polarized.
 
 Do not proceed until these checks prove power, default-safe states, sense and polarity, latch
 seal-in/drop mechanics, door break-before-make timing, watchdog operation and chime suppression.

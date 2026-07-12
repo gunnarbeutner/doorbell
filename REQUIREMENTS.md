@@ -109,7 +109,7 @@ shared party line across apartments.
   ring (and must never trigger the door opener). *(Realised in firmware masking, DESIGN.md
   "Bell / session sense front-end".)*
 - **RING-4a (MUST)** Chime-suppression state changes MUST NOT create a new ring/session. Charge
-  trapped on the K3/C19/C21 coupling node MUST be discharged before K3 recloses; the hardware bleed
+  trapped on the K3/C19 coupling node MUST be discharged before K3 recloses; the hardware bleed
   and firmware unmute delay MUST be sized and verified together. Reset/brownout behavior during the
   discharge interval MUST be included in the transition analysis.
 - **RING-5 (SHOULD)** Detection SHOULD be galvanically isolated from the bus (see SAFE-3).
@@ -247,10 +247,9 @@ provides them.
 
 - **SAFE-1 (MUST)** Tolerate bus over-voltage and transients (surge / ESD on the exposed bus
   terminals) without damage.
-- **SAFE-2 (MUST)** **Survive** reverse polarity and any incorrect bus-line ordering at J2 (and reverse
-  polarity on the local-power input) **without damage**. The board **need not function** while the bus is
-  miswired, but reversed/scrambled bus wiring MUST NOT damage it, and it MUST recover once wired correctly.
-  (A bidirectional AC+DC bus rules out series blocking — see DESIGN "SAFE-7 bus protection".)
+- **SAFE-2 (MUST)** The local-power input MUST survive reverse polarity without damage. J2 MUST use
+  the verified P1–P5 wire order and be checked before power is applied; arbitrary bus-line ordering is
+  outside the electrical envelope because the field-proven WF26 crossover uses a polarized capacitor.
 - **SAFE-3 (SHOULD)** Galvanically isolate the smart layer (ESP/codec/GND) from the TV20/S bus. The
   current design **does *not* meet this** — a deliberate, measurement-justified deviation: the
   transformer-less audio bonds **P1 to board GND** (the bench measured P1 ~0.5 V from earth, so it's

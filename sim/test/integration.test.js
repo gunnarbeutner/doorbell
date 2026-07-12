@@ -430,6 +430,15 @@ test('codec clamps reference AVDD behind reverse blocking and a defined bleeder'
     `powered AVDD must remain in the ES8311 operating range, got ${powered['/AVDD']?.toFixed(3)} V`);
 });
 
+test('K5 clamp uses the 1N4004W with cathode on K5_LATCH', () => {
+  const byRef = Object.fromEntries(netlist.components.map((c) => [c.ref, c]));
+  assert.equal(byRef.D1.value, '1N4004W', 'D1 must be the sustained-current rectifier, not a switching diode');
+  assert.deepEqual(byRef.D1.pins, { '1': '/K5_LATCH', '2': 'GND' },
+    'D1 cathode must face K5_LATCH and its anode must return to P1/GND');
+  const d1 = Object.fromEntries(allComponents(netlist).map((c) => [c.ref, c])).D1;
+  assert.equal(d1.model().vrr, 400, 'the simulator must retain D1\'s 400 V reverse rating');
+});
+
 test('codec clamp qualification records the 25 °C guarantee and bounds fault current', () => {
   const components = Object.fromEntries(allComponents(netlist).map((c) => [c.ref, c]));
   const spec = components.D13.model().qualification;
@@ -502,8 +511,8 @@ function safetyViolations(RES) {
   const floating = RES.floating || {};
   for (let i = Math.floor(len / 3); i < len; i++) { // skip rail/VMID start-up, keep all transients after
     const vn = {};
-    // never assert on a floating node — its DC is undefined (e.g. the anti-series gong-cap midpoint, or a
-    // high-Z idle bus line). This is the dual of the "don't inject ideal sources" rule: don't trust them.
+    // never assert on a floating node — its DC is undefined (e.g. a high-Z idle bus line). This is the
+    // dual of the "don't inject ideal sources" rule: don't trust it.
     for (const n of nets) vn[n] = floating[n] ? NaN : RES.v[n][i];
     for (const c of COMPONENTS)
       for (const x of c.checkSafe(vn)) {

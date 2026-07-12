@@ -25,6 +25,7 @@ const GATED_KINDS = new Set(['diode', 'optocoupler', 'mosfet', 'protection', 'ic
 const KNOWN_ACTIVE_PARTS = [
   // diodes — Vf / reverse-breakdown / (bi)directionality all matter
   { kind: 'diode', match: /1N4148/i, note: 'silicon switching (~0.7 V), Is 1e-14' },
+  { kind: 'diode', match: /1N4004W/i, note: 'K5 flyback/repetitive clamp: 1 A, 400 V reverse rating, 30 A surge' },
   { kind: 'diode', match: /LMBR01S30ST5G/i, note: '30 V low-Vf Schottky; max 0.30 V at 10 mA is specified at 25 °C for the codec clamps and AVDD reverse blocker' },
   { kind: 'diode', match: /Schottky|SS14/i, note: 'general Schottky diodes, low Vf' },
   { kind: 'diode', match: /\bLED\b/i, note: 'indicator LED, high Vf (~1.8 V)' },

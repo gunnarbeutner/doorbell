@@ -26,19 +26,21 @@ Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/p
 ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-coil reads, and don't
 tether it to a mains-earthed PC. Pair with a DMM.
 
-- [ ] **10/10 — Upgrade D1 and close the sustained Etagenruf C19/C21/D1 stress warning.** D1 is both K5's
-      flyback clamp and the unresisted clamp for negative P4 excursions coupled through C19/C21; the
-      captured floor-call waveform therefore exercises it repetitively, not as a rare relay kick.
-      Replace the 1N4148W with a footprint-compatible, low-leakage rectifier rated for at least 1 A
-      and 40 V, using the exact ordered-part datasheet. Then drive the longest credible floor-call
-      waveform and measure or simulate D1 peak/RMS current plus each anti-series electrolytic's
-      voltage (including reverse voltage), ripple current and midpoint charge. The exact RVT sheet
-      does not qualify bipolar/reverse-bias service; replace the pair with a qualified bipolar
-      solution if the measured stress cannot be justified. Also watch for unintended K5 movement,
-      source clipping and an objectionable LS1 impulse. Include D7 in this review: it is correctly
-      connected from raw P4 to GND, but its fault-level TVS clamp does not by itself qualify the normal
-      repetitive C19/C21/D1 waveform.
-      - **Worst case:** repeated floor calls overheat or fail D1 or C19/C21, disabling handset functions or damaging the board.
+- [ ] **10/10 — Close the sustained Etagenruf C19/D1 stress qualification.** With K3 and K6 closed,
+      the captured 681 Hz floor-call waveform couples from P5 through C19 onto `K5_LATCH`, making D1
+      a repetitive rectifier as well as K5's flyback clamp. The fitted parts are Panasonic
+      **EEEFK1H220P** (C128458, 22 µF/50 V, 123.8 mA at 120 Hz) and **1N4004W** (C18199087,
+      1 A/400 V, 30 A surge), with D1's cathode on `K5_LATCH` and anode on P1/GND. Remaining work:
+      - Drive a transient model with the recorded `floor-call-p5` waveform and include LS1, K5 coil
+        resistance/inductance, realistic source impedance, capacitor tolerance/ESR and exact D1/D7
+        models. Check K3/K6 closed and open states plus transitions during and after a tone.
+      - Validate the worst closed/closed state on the bench: record D1 peak/RMS/average current,
+        capacitor voltage and RMS current, and junction/case-temperature rise for a 60 s held call
+        plus repeated 500 ms bursts. Require datasheet margin, no K5 pull-in or twitch, no material
+        tone clipping, OC2 detection without an OC1 false event, and no normal-operation D7 clamp.
+      - Extend the transient regression with the recorded waveform, then run `./build.sh verify`
+        before removing this item.
+      - **Worst case:** repeated floor calls overheat or fail D1 or C19, disabling handset functions or damaging the board.
 
 ## Firmware (`firmware/doorbell.yaml`)
 

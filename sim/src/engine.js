@@ -313,7 +313,7 @@ function createStepper(els, sources, gnd, dt, seed) {
           // magnetic force above its return spring, so it cannot complete an operation in the same time
           // as a nominal-voltage coil.  Integrate that excess force (roughly proportional to I²) instead
           // of treating every voltage above pickup as a full-strength 3 ms command.  This matters for
-          // K5: the measured C19/C21 reclose pulse starts near 10 V and decays through 9.6 V without
+          // K5: the measured gong-cap reclose pulse starts near 10 V and decays through 9.6 V without
           // moving the armature, even though 9.6 V is its DC must-operate specification.
           const den = (e.nominal || e.pickup) ** 2 - e.pickup ** 2;
           const drive = den > 0 ? Math.max(0, (vc ** 2 - e.pickup ** 2) / den) : 1;
