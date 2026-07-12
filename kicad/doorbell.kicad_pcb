@@ -1049,6 +1049,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -1060,6 +1061,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -1071,6 +1073,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -1082,10 +1085,12 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
 		(property ki_fp_filters "D_*")
+		(path "/d1700000-0000-4000-8000-000000000017")
 		(sheetname "/")
 		(sheetfile "doorbell.kicad_sch")
 		(units
@@ -1226,6 +1231,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/ES_MICP")
+			(pintype "passive")
 			(uuid "d556b14a-acf7-4890-b9e5-aacfff0397e5")
 		)
 		(pad "2" smd rect
@@ -1233,6 +1239,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "GND")
+			(pintype "passive")
 			(uuid "f881aef4-6126-4177-aa2c-be595a047a65")
 		)
 		(embedded_fonts no)
@@ -1266,7 +1273,7 @@
 				)
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "10uF"
 			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "00c0c49d-e299-4c5e-8a0e-eca52c3689ef")
@@ -1277,7 +1284,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1290,7 +1297,7 @@
 				)
 			)
 		)
-		(property "Description" "Audio LDO (U4) input decoupling (1µF): +5V → LP5907 VIN. Per-datasheet input cap."
+		(property "Description" "Audio LDO input capacitor: 10 µF from +5V to GND at U4 VIN; retains the effective capacitance required for regulator stability."
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1303,7 +1310,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C19702"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1316,7 +1323,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL10A105KB8NNNC"
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3397,6 +3404,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -3408,6 +3416,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -3419,6 +3428,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -3430,10 +3440,12 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
 		(property ki_fp_filters "D_*")
+		(path "/fd132964-3f8b-4822-818e-49720c395d98")
 		(sheetname "/")
 		(sheetfile "doorbell.kicad_sch")
 		(units
@@ -3574,6 +3586,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/AVDD")
+			(pintype "passive")
 			(uuid "7fb998bc-707f-4bbf-b46a-2990f66bb8fc")
 		)
 		(pad "2" smd rect
@@ -3581,6 +3594,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/ES_MICP")
+			(pintype "passive")
 			(uuid "6ccbbbcd-63c3-4719-b326-5af3f6a2accc")
 		)
 		(embedded_fonts no)
@@ -13661,7 +13675,7 @@
 				)
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "10uF"
 			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "ad6171e9-0518-4dc6-a8bb-9042c66f00ff")
@@ -13672,7 +13686,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13685,7 +13699,7 @@
 				)
 			)
 		)
-		(property "Description" "Audio LDO output capacitor: 1 µF from LP5907 VOUT/AU_3V3 to GND; satisfies the regulator's output-stability requirement ahead of D18."
+		(property "Description" "Audio LDO output capacitor: 10 µF from LP5907 VOUT/AU_3V3 to GND ahead of D18; retains the effective capacitance required for regulator stability."
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13698,7 +13712,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C19702"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13711,7 +13725,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL10A105KB8NNNC"
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13916,6 +13930,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -13927,6 +13942,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -13938,6 +13954,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -13949,10 +13966,12 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
 		(property ki_fp_filters "D_*")
+		(path "/9e4309fa-e8b1-4fb7-90b1-98d498d03171")
 		(sheetname "/")
 		(sheetfile "doorbell.kicad_sch")
 		(units
@@ -14093,6 +14112,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/AVDD")
+			(pintype "passive")
 			(uuid "d94d1af6-0b27-44dc-9967-8a497bb8fff8")
 		)
 		(pad "2" smd rect
@@ -14100,6 +14120,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "AU_3V3")
+			(pintype "passive")
 			(uuid "cf5d08a9-8bb1-44a4-adf1-ee63044cbacf")
 		)
 		(embedded_fonts no)
@@ -14172,6 +14193,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -14183,6 +14205,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -14194,6 +14217,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -14205,10 +14229,12 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
 		(property ki_fp_filters "D_*")
+		(path "/d1600000-0000-4000-8000-000000000016")
 		(sheetname "/")
 		(sheetfile "doorbell.kicad_sch")
 		(units
@@ -14349,6 +14375,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/ES_OUTP")
+			(pintype "passive")
 			(uuid "66a10832-f047-41e5-9488-16b2befab0d8")
 		)
 		(pad "2" smd rect
@@ -14356,6 +14383,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "GND")
+			(pintype "passive")
 			(uuid "7d97e345-7f45-4863-8da5-7d02bfb05119")
 		)
 		(embedded_fonts no)
@@ -23355,6 +23383,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -23366,6 +23395,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -23377,6 +23407,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -23388,10 +23419,12 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
 		(property ki_fp_filters "D_*")
+		(path "/c5436563-18cf-4b2a-b249-febde2008052")
 		(sheetname "/")
 		(sheetfile "doorbell.kicad_sch")
 		(units
@@ -23532,6 +23565,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/AVDD")
+			(pintype "passive")
 			(uuid "60e5619c-b4cc-47fc-b03c-f99c9deb2e33")
 		)
 		(pad "2" smd rect
@@ -23539,6 +23573,7 @@
 			(size 0.2 0.3)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/ES_OUTP")
+			(pintype "passive")
 			(uuid "74905228-22f2-49c9-ab8d-745957f4daf6")
 		)
 		(embedded_fonts no)

@@ -1919,6 +1919,324 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "0603,220Ω_6"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 1.778 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "220Ω"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace yes)
+				(effects
+					(font
+						(size 0.8 0.8)
+					)
+				)
+			)
+			(property "Footprint" "PCM_JLCPCB:R_0603"
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF2200T5E_C22962.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "100mW Thick Film Resistors 75V ±100ppm/°C ±1% 220Ω 0603 Chip Resistor - Surface Mount ROHS"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "LCSC" "C22962"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Stock" "3019407"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Price" "0.004USD"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Process" "SMT"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Minimum Qty" "20"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Attrition Qty" "10"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Class" "Basic Component"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Category" "Resistors,Chip Resistor - Surface Mount"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Part" "0603WAF2200T5E"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Resistance" "220Ω"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Power(Watts)" "100mW"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Type" "Thick Film Resistors"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Overload Voltage (Max)" "75V"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Operating Temperature Range" "-55°C~+155°C"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Tolerance" "±1%"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Temperature Coefficient" "±100ppm/°C"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "0603,220Ω_6_0_1"
+				(rectangle
+					(start -1.016 2.54)
+					(end 1.016 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "0603,220Ω_6_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector:TestPoint"
 			(pin_numbers
 				(hide yes)
@@ -11229,6 +11547,7 @@
 			)
 			(pin_names
 				(offset 0)
+				(hide yes)
 			)
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -24278,16 +24597,6 @@
 		)
 		(uuid "e688399f-938c-480c-8498-d9ec134a25bb")
 	)
-	(label "+3V3"
-		(at 232.41 148.59 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "f8ff3a44-c1bb-406c-af2d-275f9503fee4")
-	)
 	(label "OC1_EMIT"
 		(at 134.62 133.35 0)
 		(effects
@@ -25786,7 +26095,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Capacitors:0603,1uF")
+		(lib_id "PCM_JLCPCB-Capacitors:0603,10uF")
 		(at 254 157.48 0)
 		(unit 1)
 		(body_style 1)
@@ -25797,7 +26106,7 @@
 		(dnp no)
 		(uuid "2066864a-f1df-4e9a-b6d1-4d283ca072f6")
 		(property "Reference" "C24"
-			(at 249.174 156.21 0)
+			(at 251.968 156.21 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25807,8 +26116,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "1uF"
-			(at 249.174 158.75 0)
+		(property "Value" "10uF"
+			(at 251.968 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25829,7 +26138,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 254 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -25840,7 +26149,7 @@
 				)
 			)
 		)
-		(property "Description" "Audio LDO output capacitor: 1 µF from LP5907 VOUT/AU_3V3 to GND; satisfies the regulator's output-stability requirement ahead of D18."
+		(property "Description" "Audio LDO output capacitor: 10 µF from LP5907 VOUT/AU_3V3 to GND ahead of D18; retains the effective capacitance required for regulator stability."
 			(at 254 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -25851,7 +26160,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C19702"
 			(at 254 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -25862,7 +26171,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL10A105KB8NNNC"
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 254 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -33211,7 +33520,7 @@
 		(dnp no)
 		(uuid "89538099-2088-4f99-a133-1a0d5ef23e74")
 		(property "Reference" "R29"
-			(at 86.614 242.57 90)
+			(at 85.09 245.364 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33222,7 +33531,7 @@
 			)
 		)
 		(property "Value" "2.2k"
-			(at 85.344 244.856 90)
+			(at 85.344 247.65 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35045,7 +35354,7 @@
 			)
 		)
 		(property "Value" "LP5907MFX-3.3"
-			(at 242.316 144.526 0)
+			(at 242.57 146.304 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35731,7 +36040,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 171.96 193.04 0)
+			(at 170.18 193.04 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -35884,6 +36193,84 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 232.41 148.59 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b2c7cd13-cbe8-4726-9543-ca1dfe988622")
+		(property "Reference" "#PWR015"
+			(at 232.41 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 232.41 143.51 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 232.41 148.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 232.41 148.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 232.41 148.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8c056e6d-2218-496a-8425-aeaefc5d7172")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "#PWR015")
 					(unit 1)
 				)
 			)
@@ -39828,6 +40215,7 @@
 		)
 	)
 	(symbol
+		(lib_name "0603,220Ω_6")
 		(lib_id "PCM_JLCPCB-Resistors:0603,220Ω")
 		(at 300.99 44.45 270)
 		(unit 1)
@@ -40187,7 +40575,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Capacitors:0603,1uF")
+		(lib_id "PCM_JLCPCB-Capacitors:0603,10uF")
 		(at 227.33 157.48 0)
 		(unit 1)
 		(body_style 1)
@@ -40208,7 +40596,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "10uF"
 			(at 229.11 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40230,7 +40618,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf"
 			(at 227.33 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -40241,7 +40629,7 @@
 				)
 			)
 		)
-		(property "Description" "Audio LDO (U4) input decoupling (1µF): +5V → LP5907 VIN. Per-datasheet input cap."
+		(property "Description" "Audio LDO input capacitor: 10 µF from +5V to GND at U4 VIN; retains the effective capacitance required for regulator stability."
 			(at 227.33 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -40252,7 +40640,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15849"
+		(property "LCSC" "C19702"
 			(at 227.33 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -40263,7 +40651,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL10A105KB8NNNC"
+		(property "MPN" "CL10A106KP8NNNC"
 			(at 227.33 157.48 0)
 			(hide yes)
 			(show_name no)

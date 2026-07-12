@@ -13,13 +13,6 @@ V4.2 uses the field-proven R28/C14/K1 TX topology and K6 to disconnect raw P4 fr
 `K5_LATCH` node after K5's auxiliary contact proves that the relay has pulled in. JP3 provides an
 open-by-default recovery bypass. See `docs/design/k5-latch-isolation-plan.md`.
 
-- [ ] **9/10 — Close the regulator-capacitance stability margins.** From the exact fitted MLCC datasheets,
-      calculate U2's total effective +3V3 output capacitance and U4's effective input/output
-      capacitance plus ESR at their DC bias, tolerance and temperature corners. Confirm the results
-      remain inside the SGM2212 and LP5907 stability ranges; change the local bulk arrangement before
-      fabrication if they do not.
-      - **Worst case:** an unstable regulator causes resets, codec malfunction, persistent noise or component stress.
-
 - [ ] **7/10 — Review U3 return-current layout before freezing the PCB.** Keep AVDD, VMID, ADCVREF and
       DACVREF capacitors and their returns tight to U3/U4; prevent ESP/USB/SSR currents from sharing
       the local analog return geometry; and make the analog-to-main-ground join deliberate. Consider
