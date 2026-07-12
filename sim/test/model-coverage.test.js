@@ -25,11 +25,11 @@ const GATED_KINDS = new Set(['diode', 'optocoupler', 'mosfet', 'protection', 'ic
 const KNOWN_ACTIVE_PARTS = [
   // diodes — Vf / reverse-breakdown / (bi)directionality all matter
   { kind: 'diode', match: /1N4148/i, note: 'silicon switching (~0.7 V), Is 1e-14' },
-  { kind: 'diode', match: /Schottky|SS14/i, note: 'SS14 Schottky, low Vf' },
+  { kind: 'diode', match: /LMBR01S30ST5G/i, note: '30 V low-Vf Schottky; max 0.30 V at 10 mA is specified at 25 °C for the codec clamps and AVDD reverse blocker' },
+  { kind: 'diode', match: /Schottky|SS14/i, note: 'general Schottky diodes, low Vf' },
   { kind: 'diode', match: /\bLED\b/i, note: 'indicator LED, high Vf (~1.8 V)' },
   { kind: 'diode', match: /TVS-Uni,\s*SMF5\.0A|SMF5\.0A/i, note: 'unidirectional VBUS clamp; reverse-oriented, breaks down at vbr ~6.5 V to clamp a +VBUS surge' },
   { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 31)' },
-  { kind: 'diode', match: /BAT54/i, note: 'BAT54SW series dual Schottky rail clamps — D13 on codec OUTP (COM=ES_OUTP) and D14 on the mic input (COM=ES_MICP, guards the unpowered abs-max window); both A→GND, K→+3V3, clamp to ~[−0.3, +3.6] V (modelled by DiodeArray)' },
 
   // PhotoMOS / opto — form (NO/NC), Ron and LED operate current define switching behaviour
   { kind: 'optocoupler', match: /GAQW212GS/i, note: 'dual 1-Form-A PhotoMOS (NO), Ron ~0.8 Ω/ch (datasheet)' },
@@ -74,8 +74,8 @@ test('model coverage: every active part matches a reviewed model entry (no silen
 
 // Second gate: nothing may land on the Unmodeled catch-all silently. A part that matches NO model class
 // emits no sim elements at all — it's electrically invisible. That's only safe when it's deliberate. When
-// it isn't, the part fails open and unnoticed: FB1 (a ferrite bead = a DC short on the AVDD rail) fell
-// here because its matcher missed, silently opening the rail and floating AVDD. So a truly new /
+// it isn't, the part fails open and unnoticed. A missed conductive link can silently open a supply
+// rail and float everything downstream. So a truly new /
 // unrecognised part must be given a model (preferred) or explicitly acknowledged here — never ignored.
 const KNOWN_UNMODELED_PARTS = [
   // Parts intentionally left electrically inert. Add { match, note } only after confirming the part

@@ -464,7 +464,7 @@ no flyback; D1 exists only for the passive electromechanical latch.
 ```
 J1 USB-C 5V ──[D4 SS14]──┐
                           ├─ VBUS ── F1 1A fast fuse ── +5V ─┬─ main 3.3V LDO ── +3V3 ── digital loads
-J3 wall 5V  ──[D15 SS14]──┘                                  └─ low-noise 3.3V LDO ── filter ── codec AVDD
+J3 wall 5V  ──[D15 SS14]──┘                                  └─ low-noise 3.3V LDO ── D18 ── codec AVDD
 CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3:    10µF + 10µF + 100nF decoupling      AU_3V3: 1µF out (C24)
 USB D±  ── IO19/IO20 (native USB)             both regulators carry local input/output decoupling
 Two 5V inlets diode-OR'd at VBUS: per-inlet SS14 (D4 = J1, D15 = J3) isolates the sources (no back-feed) and blocks a reversed J3 feed
@@ -613,8 +613,8 @@ V4.2 board passes passive bring-up and K6 validation.
   the DC talk handshake. The codec leg joins `TALK_BRIDGE` through `OUTP → R26 (2.2 kΩ) → C14
   (1 µF DC-block)`. The DAC drives **single-ended** off OUTP; OUTN is parked through its own
   `R16 (2.2 kΩ) → C15 → GND` termination (OUTN sees no bus path, so it needs no clamp).
-  R26 and D13 protect OUTP from bus steps coupled back through C14; the series resistor limits fault
-  current and the external Schottky clamp keeps the codec within its rails. Codec output is far above
+  R26 limits current from bus steps coupled back through C14; D13 clamps positive excursions into
+  AVDD and D16 clamps negative excursions into GND. Codec output is far above
   the passive handset microphone level, so firmware turns it down rather than adding a buffer. The
   R28 remains exactly 2.2 kΩ, safely distinct from the door short. K6 isolates the gong source rather
   than placing a voice-band shunt on this codec/handshake node.
@@ -623,13 +623,23 @@ V4.2 board passes passive bring-up and K6 validation.
   **R33 / R32 (3.3 kΩ)** shunting MIC1P / MIC1N to **VMID**. Each leg is a 22 k/3.3 k divider (≈ −18 dB):
   it drops the bench-measured ±8.8 V line-2 Türruf gong to ~1.1 V — inside the ES8311 mic abs-max
   (AVDD + 0.3 ≈ 3.6 V), so the input ESD clamps never conduct on a ring — while the 22 kΩ also
-  current-limits any clamp conduction and is the BUS-1 high-Z line-2 load. R30 and D14 also protect
-  MIC1P when the board is unpowered, steering coupled bus current into the rail capacitance instead
-  of the codec's internal ESD structure. The 3.3 kΩ shunts bias both inputs to VMID and C12 keeps VMID
+  current-limits any clamp conduction and is the BUS-1 high-Z line-2 load. D14 clamps positive MIC1P
+  excursions into AVDD and D17 clamps negative excursions into GND, keeping that current out of the
+  codec's internal ESD structure. The 3.3 kΩ shunts bias both inputs to VMID and C12 keeps VMID
   quiet. The measured gong envelope bounds the input range; remaining work is PGA calibration.
-- **Supplies:** AVDD uses a dedicated low-noise 3.3 V regulator and ferrite filter, sequenced after
-  the digital rail. PVDD and DVDD remain on the normal +3V3 plane so their switching currents do not
-  contaminate the analog rail.
+- **Clamp rail + supplies:** all five protection diodes use LMBR01S30ST5G (30 V; maximum 0.30 V at
+  10 mA at 25 °C). The exact C383224 X3-DFN0603 footprint and 3D model are project-local; its
+  external pin-1 silk dot remains readable while the microscopic package outline stays on F.Fab.
+  U4 generates `AU_3V3`; D18 then feeds AVDD while blocking reverse current toward
+  the unpowered regulator. R37 (220 Ω) gives AVDD a defined discharge and injection-current sink.
+  The D18 drop still leaves the codec comfortably above its 1.7 V minimum operating voltage at the
+  combined codec/bleeder load. Under the simulated sustained ±17 V C14-short fault, R26 plus the
+  clamps keep OUTP within the moving AVDD/GND window, AVDD below codec turn-on, and +5 V/+3V3 off.
+  For the 0–50 °C enclosure range, the 0.30 V maximum remains a 25 °C guarantee rather than a cold
+  specification. The cold-VF margin is accepted as an engineering judgment: even the conservative
+  17 V/R bounds are only 7.8 mA through R26 and 0.8 mA through R30, with those resistors limiting any
+  current shared with the codec's internal clamps.
+  PVDD and DVDD remain on the normal +3V3 plane so their switching currents do not contaminate AVDD.
 - **EP grounding (no vias):** the QFN-20 centre EP carries no thermal vias — paste over open vias
   wicks solder away, and the codec dissipates milliwatts. EP (and pin 10/AGND, tied to it) bonds to
   GND through adjacent copper.

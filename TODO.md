@@ -13,16 +13,6 @@ V4.2 uses the field-proven R28/C14/K1 TX topology and K6 to disconnect raw P4 fr
 `K5_LATCH` node after K5's auxiliary contact proves that the relay has pulled in. JP3 provides an
 open-by-default recovery bypass. See `docs/design/k5-latch-isolation-plan.md`.
 
-- [ ] **9/10 — Reference the ES8311 bus clamps to the analog rail and close power-off injection.** D13/D14
-      currently steer OUTP/MIC1P to main `+3V3`, while the codec's analog limits are referenced to
-      `AVDD`; regulator tolerance and FB1 drop therefore consume clamp margin. Rework the upper
-      clamps to the correct quiet rail or choose a protection network with guaranteed voltage and
-      injection-current limits at the actual current. Derive powered and unpowered hot-plug/miswire
-      cases, provide a defined AVDD discharge/sink path so the bus cannot phantom-power the codec,
-      and add regression coverage. Revisit R30/R31 if more passive attenuation is the cleaner way to
-      keep the full permitted line-step envelope inside AUDIO-8/SAFE-2.
-      - **Worst case:** a bus transient phantom-powers or overstresses the codec, causing latent or permanent failure.
-
 - [ ] **9/10 — Close the regulator-capacitance stability margins.** From the exact fitted MLCC datasheets,
       calculate U2's total effective +3V3 output capacitance and U4's effective input/output
       capacitance plus ESR at their DC bias, tolerance and temperature corners. Confirm the results

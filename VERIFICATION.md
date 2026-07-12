@@ -92,6 +92,14 @@ DIN, DSDIN←ESP DOUT); CE strap sets the I²C address; the tap is **transformer
 AC-coupled — TX is `DAC → DC-block → R (2.2 kΩ) → line 3` (the handset's talk-strap value), RX a
 differential sense of line 2; line 3 is high-Z at idle (gated by the dual talk SSR).
 
+Check the external codec clamps by pin number, not only by symbol appearance: D13/D14 pin 1
+(cathode) → AVDD and pin 2 (anode) → OUTP/MIC1P; D16/D17 pin 1 → OUTP/MIC1P and pin 2 → GND.
+D18 pin 2 (anode) faces U4 `AU_3V3`, pin 1 (cathode) faces AVDD, and R37 is 220 Ω AVDD→GND.
+Confirm the exact diode sheet covers reverse voltage and the actual injection current; distinguish
+its guaranteed 25 °C VF limit from any 0–50 °C estimate. Simulate both polarities of the full bus
+envelope with the board unpowered, including sustained C14-short, and require AVDD to remain below
+codec turn-on without raising +5 V or +3V3.
+
 **Bell sense** — opto LEDs hardwired **anode → bus line, cathode → R_lim → P1**; anti-parallel
 clamps limit reverse LED voltage; collectors held high by external pull-ups (firmware `mode:
 input`). Confirm both active-low and idle-high margins across the expected line voltage, pull-up
@@ -231,7 +239,7 @@ J2's screws, and component pads. Use an **isolated** scope
 
 Local copies live in `docs/` so the references don't rot: the ESP32-S3-WROOM-1U-N16R8 module (pad map +
 strapping), ES8311 codec, SGM2212 LDO, TPD2S017 USB ESD, Omron G6K relay, SUPSiC GAQY412E/EH and
-GAQW/GAQY212GS PhotoMOS, the AO3400A door/watchdog FETs, the BAT54SW codec-clamp Schottky, the
+GAQW/GAQY212GS PhotoMOS, the AO3400A door/watchdog FETs, the LMBR01S30ST5G codec-clamp Schottky, the
 Toshiba TLP293 GB low-current sense optocoupler, and the STR
 TV20/S Verdrahtungsplan + Fehlersuchhilfe. SS14, SMF5.0A, 1N4148W and the USB-C jack are reasoned
 from standard pin conventions, cross-checked against the project's JLCPCB symbol pads.

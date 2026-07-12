@@ -359,7 +359,7 @@ test('codec record (RX): line 2 reaches the mic inputs, attenuated ~-18 dB by th
 test('RX gong-safety: a ±8.8 V line-2 gong keeps MIC1P/N inside [0, AVDD] (no clamp conduction)', () => {
   const gong = (t) => 8.8 * Math.sin(2 * Math.PI * 1000 * t);
   // feed only VBUS (external); the modelled power tree brings up the codec's supplies — +5V via F1,
-  // +3V3 (DVDD/PVDD) via U2, and AVDD via the LP5907 (+5V → U4 → AU_3V3 → FB1 → AVDD, FB1 a DC short)
+  // +3V3 (DVDD/PVDD) via U2, and AVDD via the LP5907 (+5V → U4 → AU_3V3 → D18 → AVDD)
   const { RES, V, floating } = runDC(netlist, {
     sources: { '/VBUS': 5, '/P1': 0, '/P2': gong },
     T: 40 / 1000, dt: 1 / (1000 * 64),
@@ -406,6 +406,64 @@ test('RX differential: the live signal lands on MICP; MICN stays the quiet VMID 
   // both inputs DC-bias to VMID (the ES8311 has no internal mic bias; R32/R33 set it)
   assert.ok(near(p.dc, vmid, 0.2) && near(n.dc, vmid, 0.2),
     `MICP/MICN should bias to VMID (${vmid?.toFixed(2)} V), got MICP ${p.dc.toFixed(2)} / MICN ${n.dc.toFixed(2)} V`);
+});
+
+test('codec clamps reference AVDD behind reverse blocking and a defined bleeder', () => {
+  const byRef = Object.fromEntries(netlist.components.map((c) => [c.ref, c]));
+  assert.deepEqual(byRef.D13.pins, { '1': '/AVDD', '2': '/ES_OUTP' },
+    'D13 must clamp OUTP upward into AVDD');
+  assert.deepEqual(byRef.D16.pins, { '1': '/ES_OUTP', '2': 'GND' },
+    'D16 must clamp OUTP downward into GND');
+  assert.deepEqual(byRef.D14.pins, { '1': '/AVDD', '2': '/ES_MICP' },
+    'D14 must clamp MIC1P upward into AVDD');
+  assert.deepEqual(byRef.D17.pins, { '1': '/ES_MICP', '2': 'GND' },
+    'D17 must clamp MIC1P downward into GND');
+  for (const ref of ['D13', 'D14', 'D16', 'D17', 'D18'])
+    assert.equal(byRef[ref].value, 'LMBR01S30ST5G', `${ref} must use the specified low-Vf diode`);
+  assert.equal(byRef.D18.pins['2'], 'AU_3V3', 'D18 anode must face the LP5907 output');
+  assert.equal(byRef.D18.pins['1'], '/AVDD', 'D18 cathode must face AVDD and block reverse current');
+  assert.deepEqual(new Set(Object.values(byRef.R37.pins)), new Set(['/AVDD', 'GND']),
+    'R37 must provide the explicit AVDD-to-ground sink');
+
+  const powered = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 } }).V;
+  assert.ok(powered['/AVDD'] >= 1.7 && powered['/AVDD'] <= 3.6,
+    `powered AVDD must remain in the ES8311 operating range, got ${powered['/AVDD']?.toFixed(3)} V`);
+});
+
+test('codec clamp qualification records the 25 °C guarantee and bounds fault current', () => {
+  const components = Object.fromEntries(allComponents(netlist).map((c) => [c.ref, c]));
+  const spec = components.D13.model().qualification;
+  assert.deepEqual(spec, {
+    vfMax: 0.30,
+    vfTestCurrent: 0.010,
+    vfSpecifiedTempC: [25, 25],
+  }, 'the simulator must retain the exact forward-voltage condition from the diode datasheet');
+
+  // Even a conservative V/R bound (ignoring the clamp drop) stays below the datasheet's 10 mA
+  // test point. That supports the current axis of the comparison for both TX and RX fault paths.
+  const txFaultCurrent = 17 / components.R26.val();
+  const rxFaultCurrent = 17 / components.R30.val();
+  assert.ok(txFaultCurrent <= spec.vfTestCurrent,
+    `R26 must keep the 17 V TX fault at or below 10 mA, got ${(txFaultCurrent * 1e3).toFixed(2)} mA`);
+  assert.ok(rxFaultCurrent <= spec.vfTestCurrent,
+    `R30 must keep the 17 V RX fault at or below 10 mA, got ${(rxFaultCurrent * 1e3).toFixed(2)} mA`);
+
+});
+
+test('unpowered C14-short fault cannot overdrive the codec or phantom-power the board', () => {
+  for (const bus of [-17, 17]) {
+    // Driving ES_OUTP_AC directly models C14 shorted with the measured bus envelope applied on its
+    // bus side. R26, D13/D16, R37 and D18 are the complete remaining protection path.
+    const V = runDC(netlist, { sources: { '/P1': 0, '/ES_OUTP_AC': bus }, T: 0.1 }).V;
+    assert.ok(V['/ES_OUTP'] >= -0.3 && V['/ES_OUTP'] <= V['/AVDD'] + 0.3,
+      `${bus} V fault must keep OUTP inside [AGND-0.3, AVDD+0.3], got OUTP ` +
+      `${V['/ES_OUTP']?.toFixed(3)} V / AVDD ${V['/AVDD']?.toFixed(3)} V`);
+    assert.ok(V['/AVDD'] < 1.7,
+      `${bus} V fault must keep unpowered AVDD below codec turn-on, got ${V['/AVDD']?.toFixed(3)} V`);
+    assert.ok(Math.abs(V['+5V']) < 0.05 && Math.abs(V['+3V3']) < 0.05,
+      `${bus} V fault must not phantom-power the board, got +5V ${V['+5V']?.toFixed(3)} / ` +
+      `+3V3 ${V['+3V3']?.toFixed(3)} V`);
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

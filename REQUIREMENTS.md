@@ -164,14 +164,15 @@ shared party line across apartments.
   not only under fault transients (which are SAFE-1) — **including with the board unpowered** (the
   permanently-wired tap sees every bus event in passive-fallback mode, when the abs-max window
   collapses to ±0.3 V). *(Met by the 22 kΩ/3.3 kΩ series+shunt divider, ~−18 dB, biasing MIC1P/N to
-  VMID, plus **D14** — a BAT54SW dual-series Schottky clamping MIC1P for the unpowered case, the
-  RX twin of AUDIO-9's D13 — see DESIGN "Audio path".)*
+  VMID; D14/D17 clamp MIC1P to AVDD/GND through separate low-VF Schottkys. D18 blocks reverse
+  current into the analog LDO and R37 sinks the unpowered AVDD rail — see DESIGN "Audio path".)*
 - **AUDIO-9 (MUST)** The TX inject path MUST keep the codec **output** (OUTP) within the ES8311's
   output abs-max — both under **normal** bus transients stepping C14's bus side (TX_OUT — chiefly a
   door bridge pulling line 3 to the rail while PTT holds the output gate closed) and under a
   **single-fault C14-short** (sustained bus DC through R26). The
-  TX counterpart to AUDIO-8. *(Met by R26 (2.2 kΩ) limiting the current into D13 — a BAT54SW dual-series
-  Schottky clamping OUTP to [AGND−0.3, AVDD+0.3] — see DESIGN "Audio path" / TX front-end.)*
+  TX counterpart to AUDIO-8. *(Met by R26 (2.2 kΩ) limiting current into the D13/D16 low-VF
+  Schottky clamps to AVDD/GND, with D18/R37 containing positive injection on AVDD — see DESIGN
+  "Audio path" / TX front-end.)*
 - **AUDIO-10 (SHOULD)** Outbound TX (greetings, talk) SHOULD NOT re-inject the bus's own gong onto the
   talk line: the Türruf tone standing on line 2 during a latched session (or a neighbour's ring on the
   shared line 2) must not ride the talk handshake onto line 3 at an audible level, and the greeting

@@ -28,8 +28,8 @@ pad map + strapping), **ES8311** codec (`ES8311_datasheet.pdf` + `ES8311.user.Gu
 **SGM2212** LDO (`sgm2212_datasheet.pdf`), **TPD2S017** USB ESD (`tpd2s017_datasheet.pdf`),
 **Omron G6K** relay (`g6k_datasheet.pdf`), **SUPSiC GAQY412E/EH** PhotoMOS
 (`GAQY412E_EH_datasheet.pdf`), the **SPPJ322300** door switch (`SPPJ322300_datasheet.pdf`), the
-**AO3400A** door/watchdog FETs (`ao3400a_datasheet.pdf`), and the **BAT54SW** codec-clamp Schottky
-(`bat54sw_datasheet.pdf`, the SOT-323 twin of the SOT-23 `bat54s_datasheet.pdf`).
+**AO3400A** door/watchdog FETs (`ao3400a_datasheet.pdf`), and the **LMBR01S30ST5G** codec-clamp and
+AVDD reverse-blocking Schottky (`lmbr01s30st5g_datasheet.pdf`).
 Parts reasoned from standard pin conventions (SS14, SMF5.0A, 1N4148W, the USB-C jack, the
 GAQW/GAQY212GS SSRs) have no local sheet — see `../VERIFICATION.md` §7.
 

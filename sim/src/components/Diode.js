@@ -15,7 +15,19 @@ export default class Diode extends Component {
   // Shockley Is/n by diode family — sets the forward drop. TVS parts also carry a reverse
   // breakdown (vbr) and, for the bidirectional kind, a `bidir` flag (see elements()).
   model() {
-    if (/schottky/i.test(this.lib)) return { Is: 1e-6, n: 1.05 }; // SS14 — low Vf (~0.3-0.4 V)
+    if (/LMBR01S30ST5G/i.test(this.value)) return {
+      Is: 1e-6,
+      n: 1.05,
+      vrr: 30,
+      // The electrical solver is nominal. Keep the qualification limit beside the model so tests
+      // cannot mistake a nominal waveform for a guaranteed temperature-corner result.
+      qualification: {
+        vfMax: 0.30,
+        vfTestCurrent: 0.010,
+        vfSpecifiedTempC: [25, 25],
+      },
+    };
+    if (/schottky/i.test(this.lib)) return { Is: 1e-6, n: 1.05, vrr: 40 }; // SS14 — low Vf (~0.3-0.4 V)
     if (/LED/i.test(this.lib)) return { Is: 1e-15, n: 2.6 }; // visible LED — high Vf (~1.8-2 V)
     if (/TVS/i.test(this.lib)) {
       // Bidirectional bus TVS (H24VND3BA): ~24 V standoff / ~31 V breakdown — must stay OPEN
@@ -56,7 +68,7 @@ export default class Diode extends Component {
   // reverse-voltage abs-max. A TVS is meant to clamp (rate by energy, not Vr) — skip it here.
   checkSafe(vn) {
     if (/TVS/i.test(this.lib)) return [];
-    const Vrr = /schottky/i.test(this.lib) ? 40 : 75; // SS14 40 V ; 1N4148W 75 V
+    const Vrr = this.model().vrr ?? 75;
     const out = [];
     const vk = vn[this.pins['1']], va = vn[this.pins['2']]; // KiCad Device:D pin1 = cathode, pin2 = anode
     this.chk(out, '1-2', `${this.pins['1']}↔${this.pins['2']}`, vk - va, -Infinity, Vrr, `diode reverse Vrr ${Vrr} V`);
