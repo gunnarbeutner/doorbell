@@ -13358,7 +13358,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "12k"
 			(at 0 0.2 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -13370,7 +13370,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0402WGF1002TCE_C25744.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010100_UNI-ROYAL-Uniroyal-Elec-0402WGF1202TCE_C25752.pdf"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13383,7 +13383,7 @@
 				)
 			)
 		)
-		(property "Description" "OC2 collector pull-up: defined sense level without the ESP32's internal pull-up"
+		(property "Description" "OC2 collector pull-up: 12 kΩ external pull-up defines idle HIGH and the optocoupler LOW-current threshold independently of the ESP32's internal pull-up"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13408,7 +13408,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "LCSC" "C25752"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13421,7 +13421,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF1002TCE"
+		(property "MPN" "0402WGF1202TCE"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23297,7 +23297,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "12k"
 			(at 0 0.2 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -23309,7 +23309,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0402WGF1002TCE_C25744.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010100_UNI-ROYAL-Uniroyal-Elec-0402WGF1202TCE_C25752.pdf"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23322,7 +23322,7 @@
 				)
 			)
 		)
-		(property "Description" "OC1 collector pull-up: defined sense level without the ESP32's internal pull-up"
+		(property "Description" "OC1 collector pull-up: 12 kΩ external pull-up defines idle HIGH and the optocoupler LOW-current threshold independently of the ESP32's internal pull-up"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23347,7 +23347,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "LCSC" "C25752"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23360,7 +23360,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF1002TCE"
+		(property "MPN" "0402WGF1202TCE"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")

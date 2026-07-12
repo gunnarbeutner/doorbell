@@ -20,10 +20,11 @@ export default class Optocoupler extends Component {
   // Standard 4-pin: 1 = anode, 2 = cathode (LED); 3 = emitter, 4 = collector.
   // TLP293 GB guarantees 30 % saturated CTR at IF=1 mA, VCE=0.4 V. Use that
   // production minimum specified for the fitted TLP293 GB rank.
-  elements() {
+  elements({ program = {} } = {}) {
     const P = this.pins;
+    const ctr = program[this.ref]?.ctr ?? 0.30;
 
-    return [{ type: 'OPTO', a: P['1'], b: P['2'], c: P['4'], e: P['3'], Is: 1e-13, n: 1.9, ctr: 0.30, ref: this.ref }];
+    return [{ type: 'OPTO', a: P['1'], b: P['2'], c: P['4'], e: P['3'], Is: 1e-13, n: 1.9, ctr, ref: this.ref }];
   }
 
   // TLP293 abs-max: LED reverse 5 V and collector-emitter 80 V.

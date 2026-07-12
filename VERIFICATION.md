@@ -94,8 +94,9 @@ differential sense of line 2; line 3 is high-Z at idle (gated by the dual talk S
 
 **Bell sense** — opto LEDs hardwired **anode → bus line, cathode → R_lim → P1**; anti-parallel
 clamps limit reverse LED voltage; collectors held high by external pull-ups (firmware `mode:
-input`). Confirm the sense margin: the collector low level sits well under the ESP V_IL across the
-expected line voltage and the opto's CTR spread.
+input`). Confirm both active-low and idle-high margins across the expected line voltage, pull-up
+tolerance and optocoupler CTR/dark-current spread. Record the assumed enclosure temperature range
+and distinguish guaranteed datasheet limits from engineering estimates based on typical curves.
 
 **Passive WF26 core** — the `WF26_*` parts reproduce the handset's door-release / talk / gong /
 seal-in topology, so the board behaves like a plain WF26 unpowered (the SSRs/codec/optos are
@@ -165,6 +166,8 @@ board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   datasheet and the real-bus operating range.
 - **2b ring sense, powered:** 12 V on P4 → "House Doorbell" asserts (clears on removal); 12 V on P5 →
   Etagenruf/OC2 asserts; non-detect ⇒ swap that LED's two bus connections (silent, not damage).
+  Verify collector LOW/HIGH against the MCU's V_IL/V_IH limits, including long tone gaps and composed
+  input states.
   **Cross-stress:** drive P4 high, confirm the idle OC2 cathode stays clamped near 0 (per-opto
   limiter + D9 fix).
 - **2c door open (DOOR-4/5):** seal in, fire a door-open, 2-ch scope the seal-in node vs the P2↔P3

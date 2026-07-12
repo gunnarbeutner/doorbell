@@ -330,7 +330,7 @@ Two identical channels (OC1 = house bell on P4↔P1, OC2 = apartment bell on P5�
 ```
 bus line (active, +) ──► opto LED anode ── LED ── cathode ──┬── R_lim (5.1k) ── P1 (common)
                           ▲ 1N4148W clamp, ANTI-parallel ───┘
-opto collector ──► GPIO + 10 kΩ to +3V3     opto emitter ──► GND  (per channel, direct)
+opto collector ──► GPIO + 12 kΩ to +3V3     opto emitter ──► GND  (per channel, direct)
 ```
 
 - **Fixed polarity (no switch):** the bus is taken to drive active lines **positive** w.r.t.
@@ -360,13 +360,14 @@ opto collector ──► GPIO + 10 kΩ to +3V3     opto emitter ──► GND  (
   `inverted: true` ⇒ "on". GPIO LOW level ≈ 0.12–0.27 V.
 - **Low-current sense margin:** OC1/OC2 are Toshiba **TLP293 GB-rank** parts, guaranteed to at least
   100% CTR at IF=0.5 mA and 30% saturated CTR at IF=1 mA, VCE=0.4 V (25 °C). The captured 5.1 kΩ
-  LED-current envelope is approximately 1.1–2.8 mA. At the datasheet's 1 mA test point the
-  guaranteed 0.30 mA collector current exceeds the approximately 0.27 mA needed at the ESP32's
-  worst VDD/VIL corner, but the margin is narrow. Do not call the complete production corner closed
-  until the calculation also includes bus minimum, LED forward-voltage spread, resistor tolerances,
-  collector-pull-up tolerance and the intended enclosure temperature range. The external 10 kΩ
-  pull-up keeps the idle level defined independently of firmware and limits the voltage error from
-  dark current; its idle-high corner must be checked over the same range.
+  LED-current envelope is approximately 1.1–2.8 mA. With the fitted 12 kΩ ±1% collector pull-up,
+  the ESP32's worst VDD/VIL corner needs approximately 0.23 mA. The 0.30 mA guarantee therefore has
+  enough margin for a 10% cold engineering derating to 0.27 mA over the expected 0–50 °C enclosure
+  range. For idle HIGH, applying the more severe 85 °C maximum dark current of 50 µA to the 12 kΩ
+  maximum leaves approximately 2.39 V at minimum VDD, above the 2.25 V VIH limit. These temperature
+  bounds are engineering calculations, not production CTR guarantees: Toshiba specifies minimum CTR
+  at 25 °C and presents the temperature curves as typical. First-board endpoint characterization
+  remains required.
 - **Cross-talk masking** (`firmware/doorbell.yaml`, lambda filters ahead of the debounce):
   **OC1 is not masked**; it senses the DC-dominated line-4 session level and must remain able to
   report a genuine ring during PTT.
