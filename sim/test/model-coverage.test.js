@@ -29,13 +29,13 @@ const KNOWN_ACTIVE_PARTS = [
   { kind: 'diode', match: /\bLED\b/i, note: 'indicator LED, high Vf (~1.8 V)' },
   { kind: 'diode', match: /TVS-Uni,\s*SMF5\.0A|SMF5\.0A/i, note: 'unidirectional VBUS clamp; reverse-oriented, breaks down at vbr ~6.5 V to clamp a +VBUS surge' },
   { kind: 'diode', match: /TVS-Bi,\s*H24VND3BA|H24VND3BA/i, note: 'bidirectional bus TVS: anti-series Zeners, ~24 V standoff / ~31 V breakdown (vbr 31)' },
-  { kind: 'diode', match: /BAT54/i, note: 'BAT54S/BAT54SW series dual Schottky rail clamps — D13 on codec OUTP (COM=ES_OUTP) and D14 on the mic input (COM=ES_MICP, guards the unpowered abs-max window); both A→GND, K→+3V3, clamp to ~[−0.3, +3.6] V (modelled by DiodeArray)' },
+  { kind: 'diode', match: /BAT54/i, note: 'BAT54SW series dual Schottky rail clamps — D13 on codec OUTP (COM=ES_OUTP) and D14 on the mic input (COM=ES_MICP, guards the unpowered abs-max window); both A→GND, K→+3V3, clamp to ~[−0.3, +3.6] V (modelled by DiodeArray)' },
 
   // PhotoMOS / opto — form (NO/NC), Ron and LED operate current define switching behaviour
   { kind: 'optocoupler', match: /GAQW212GS/i, note: 'dual 1-Form-A PhotoMOS (NO), Ron ~0.8 Ω/ch (datasheet)' },
   { kind: 'optocoupler', match: /GAQY212GS/i, note: '1-Form-A PhotoMOS (NO), Ron ~0.24 Ω' },
   { kind: 'optocoupler', match: /GAQY412EH/i, note: '1-Form-B PhotoMOS (NC), Ron ~1 Ω' },
-  { kind: 'optocoupler', match: /LTV-217|PC817/i, note: 'phototransistor optocoupler (Türruf/Etagenruf sense)' },
+  { kind: 'optocoupler', match: /TLP293/i, note: 'TLP293 GB sense optocoupler; modeled at its 30% minimum saturated CTR at IF=1mA' },
 
   // MOSFET — Vgs(th) / Rds(on)
   { kind: 'mosfet', match: /2N7002/i, note: 'NMOS (incl. 2N7002DW dual), Vth typ 1.6 V (1.0-2.5 V), Ron ~5 Ω' },

@@ -129,6 +129,14 @@ test('Türruf detection: a hot line 4 pulls OC1_OUT low; an idle line stays high
   assert.ok(idle['/OC1_OUT'] > 3.0, `an idle line 4 should leave OC1_OUT high (~3V3), got ${idle['/OC1_OUT']?.toFixed(2)} V`);
 });
 
+test('Türruf detection: TLP293 GB still guarantees LOW at the captured 1.1 mA LED-current corner', () => {
+  // About 7 V through the fitted 5.1 kΩ limiter gives the captured low-end IF≈1.1 mA.
+  // The model uses the TLP293 GB guaranteed 30% saturated CTR, not a typical curve.
+  const lowLine = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P4': 7 } }).V;
+  assert.ok(lowLine['/OC1_OUT'] < 0.825,
+    `low-line OC1_OUT must remain below ESP32 VIL(max), got ${lowLine['/OC1_OUT']?.toFixed(3)} V`);
+});
+
 test('Etagenruf detection: a hot line 5 pulls OC2_OUT low; D9 blocks a reverse-polarity false trigger', () => {
   const hot = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P5': 12 } }).V;
   assert.ok(hot['/OC2_OUT'] < 1.0, `a ringing line 5 should pull OC2_OUT low, got ${hot['/OC2_OUT']?.toFixed(2)} V`);

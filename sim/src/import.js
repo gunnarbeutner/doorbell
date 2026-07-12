@@ -40,6 +40,26 @@ function valueFromLibname(lib) {
   return m ? m[1].replace(/µ/g, 'u').replace(/\s/g, '') : '';
 }
 
+// Find the closing parenthesis for an s-expression without treating parentheses
+// inside quoted field values as structure. Toshiba ordering codes such as
+// `TLP293(GB-TPL,E` legitimately contain an unmatched `(` inside a string.
+function sexprEnd(s, start) {
+  let depth = 0, inString = false, escaped = false;
+  for (let j = start; j < s.length; j++) {
+    const ch = s[j];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === '(') depth++;
+    else if (ch === ')' && --depth === 0) return j;
+  }
+  return s.length - 1;
+}
+
 // return every top-level "(tag ...)" s-expression block in `s` (brace-balanced)
 function sexprBlocks(s, tag) {
   const out = [];
@@ -47,11 +67,7 @@ function sexprBlocks(s, tag) {
   while (true) {
     i = s.indexOf('(' + tag, i);
     if (i < 0) break;
-    let d = 0, j = i;
-    for (; j < s.length; j++) {
-      if (s[j] === '(') d++;
-      else if (s[j] === ')') { d--; if (d === 0) break; }
-    }
+    const j = sexprEnd(s, i);
     out.push(s.slice(i, j + 1));
     i = j + 1;
   }
@@ -67,11 +83,7 @@ function sexprComps(s) {
   const re = /\(comp\s/g;
   let m;
   while ((m = re.exec(s))) {
-    let d = 0, j = m.index;
-    for (; j < s.length; j++) {
-      if (s[j] === '(') d++;
-      else if (s[j] === ')') { d--; if (d === 0) break; }
-    }
+    const j = sexprEnd(s, m.index);
     out.push(s.slice(m.index, j + 1));
     re.lastIndex = j + 1;
   }

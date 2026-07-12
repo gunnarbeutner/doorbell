@@ -51,7 +51,8 @@ components (ref, lib, value, pins, pinfn).
 **Device parameters are per-part** — derived from each component's part type/value (no global knobs):
 diode Vf class by family (silicon `1N4148` ≈ 0.65 V, Schottky `SS14` ≈ 0.3–0.4 V, visible LED ≈ 1.9 V,
 TVS by type: unidirectional forward-only, bidirectional anti-series with a standoff `vbr`, open across the
-bus range); MOSFET `vth`/`Rds(on)` by part (`2N7002`); optocoupler LED + CTR (`PC817`/`LTV-217`);
+bus range); MOSFET `vth`/`Rds(on)` by part (`2N7002`); optocoupler LED + guaranteed CTR
+(`TLP293` GB rank);
 transformer winding `L`/`k`/`Rdc` by part (`SM-LP-5001`: Rdc 115 Ω); relay coil resistance and pull-in
 from the rated coil voltage in the value string (`DC12`, `4.5V`).
 

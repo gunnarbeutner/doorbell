@@ -1,6 +1,6 @@
 import { Component } from './Component.js';
 
-// Series dual-diode array (e.g. BAT54S): two diodes sharing a common pin —
+// Series dual-diode array (e.g. BAT54SW): two diodes sharing a common pin —
 //   A(1) ─▶├─ COM(3) ─▶├─ K(2)
 // Used here as a rail clamp on a signal: COM is the protected node, A ties to the low rail
 // and K to the high rail, so the pair holds COM within [V(A)−Vf, V(K)+Vf]. The plain Diode
@@ -17,7 +17,7 @@ export default class DiodeArray extends Component {
     return looksDiode && pins.length === 3 && hasCom; // series dual-diode array (A / K / COM)
   }
 
-  // Shockley Is/n by family — sets the forward drop. BAT54S = Schottky (~0.3 V); a silicon
+  // Shockley Is/n by family — sets the forward drop. BAT54SW = Schottky (~0.3 V); a silicon
   // series array (BAV99) would drop ~0.7 V.
   model() {
     return /BAT54|schottky/i.test(`${this.lib} ${this.value}`)

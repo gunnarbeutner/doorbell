@@ -18,13 +18,15 @@ open-by-default recovery bypass. See `docs/design/k5-latch-isolation-plan.md`.
       and add regression coverage. Revisit R30/R31 if more passive attenuation is the cleaner way to
       keep the full permitted line-step envelope inside AUDIO-8/SAFE-2.
 
-- [ ] **Make OC1/OC2 detection guaranteed at their real LED current.** The LTV-217-B minimum CTR is
-      specified at 5 mA/25 °C, while captured bus levels put the fitted 5.1 kΩ channels around
-      1.1–2.8 mA and the 10 kΩ collectors require roughly 10–25% effective CTR. Close the low-line,
-      resistor-tolerance, GPIO-threshold, leakage and temperature corners using a part guaranteed at
-      the operating current, more LED current, higher-value collector pull-ups (for example 47 kΩ),
-      or a justified combination. Keep per-channel reverse clamps and verify both real call types,
-      long gaps and composed-state cross-talk against RING-1/2/4 without relying on a typical curve.
+- [ ] **Close the OC1/OC2 detection corners.** V4.2 fits TLP293 GB-rank optocouplers. First define
+      the intended enclosure ambient range, then calculate the active-low and idle-high margins over
+      minimum bus voltage, LED forward-voltage spread, 5.1 kΩ/10 kΩ tolerances, ESP32 VDD/VIL/VIH
+      limits, CTR derating and optocoupler dark current. The datasheet's 30% saturated CTR guarantee
+      at 1 mA applies at 25 °C, and its 0.30 mA output has only modest margin over the approximately
+      0.27 mA required by the worst VDD/VIL corner. Treat temperature tests as first-board
+      characterization, not as a production guarantee. Verify both real call types at the range
+      endpoints, plus long gaps and composed-state cross-talk against RING-1/2/4. Keep the
+      per-channel reverse clamps.
 
 - [ ] **Close the regulator-capacitance stability margins.** From the exact fitted MLCC datasheets,
       calculate U2's total effective +3V3 output capacitance and U4's effective input/output

@@ -7446,438 +7446,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "PCM_JLCPCB-Optocouplers:LTV-217-B-G"
-			(pin_names
-				(offset 1.016)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "U"
-				(at -5.08 5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "LTV-217-B-G"
-				(at 0 5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
-				(at -5.08 -5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-						(italic yes)
-					)
-					(justify left)
-				)
-			)
-			(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Description" "70V 3kV 50mA 400mV@2.4mA,8mA 1 6V 1.2V DC SOP-4-175mil Transistor, Photovoltaic Output Optoisolators ROHS"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "LCSC" "C115450"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Part" "LTV-217-B-G"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Manufacturer" "Lite-On"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Category" "Optoelectronics,Optocouplers - Phototransistor Output"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Class" "Basic Component"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Attrition Qty" "4"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Minimum Qty" "5"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Process" "SMT"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Stock" "23767"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Price" "0.064USD"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "LTV-217-B-G"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "DIP*W7.62mm*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "LTV-217-B-G_0_1"
-				(rectangle
-					(start -5.08 3.81)
-					(end 5.08 -3.81)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(polyline
-					(pts
-						(xy -5.08 2.54) (xy -2.54 2.54) (xy -2.54 -1.27) (xy -2.54 0.635)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -3.175 -0.635) (xy -1.905 -0.635)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 -0.635) (xy -2.54 -2.54) (xy -5.08 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 -0.635) (xy -3.175 0.635) (xy -1.905 0.635) (xy -2.54 -0.635)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.508 0.508) (xy 0.762 0.508) (xy 0.381 0.381) (xy 0.381 0.635) (xy 0.762 0.508)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.508 -0.508) (xy 0.762 -0.508) (xy 0.381 -0.635) (xy 0.381 -0.381) (xy 0.762 -0.508)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 1.905) (xy 2.54 -1.905) (xy 2.54 -1.905)
-					)
-					(stroke
-						(width 0.508)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 0.635) (xy 4.445 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 3.048 -1.651) (xy 3.556 -1.143) (xy 4.064 -2.159) (xy 3.048 -1.651) (xy 3.048 -1.651)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 4.445 2.54) (xy 5.08 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 4.445 -2.54) (xy 2.54 -0.635)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 4.445 -2.54) (xy 5.08 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "LTV-217-B-G_1_1"
-				(pin passive line
-					(at -7.62 2.54 0)
-					(length 2.54)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -7.62 -2.54 0)
-					(length 2.54)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 -2.54 180)
-					(length 2.54)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 2.54 180)
-					(length 2.54)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "PCM_JLCPCB-Power:LDO, 3.3V, 1A"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -17364,6 +16932,438 @@
 						)
 					)
 					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "tlp293:TLP293"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "U"
+				(at -5.08 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "TLP293 (GB)"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "tlp293:SOP-4_L4.4-W2.8-P1.27-LS7.0-BR"
+				(at -5.08 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(justify left)
+				)
+			)
+			(property "Datasheet" "https://toshiba.semicon-storage.com/info/TLP293_datasheet_en_20191129.pdf?did=14419&prodname=tlp293"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Description" "Toshiba TLP293 GB low-input-current phototransistor optocoupler; CTR guaranteed at 0.5 mA"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "LCSC" "C77656"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Part" "TLP293(GB-TPL,E"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Manufacturer" "Toshiba"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Category" "Optoelectronics,Optocouplers - Phototransistor Output"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Class" "Extended Component"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Attrition Qty" "4"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Minimum Qty" "5"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Process" "SMT"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Stock" "23767"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Price" "0.064USD"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "TLP293 phototransistor optocoupler low-current GB"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "SOP-4*P1.27*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TLP293_0_1"
+				(rectangle
+					(start -5.08 3.81)
+					(end 5.08 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy -5.08 2.54) (xy -2.54 2.54) (xy -2.54 -1.27) (xy -2.54 0.635)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.175 -0.635) (xy -1.905 -0.635)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 -0.635) (xy -2.54 -2.54) (xy -5.08 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 -0.635) (xy -3.175 0.635) (xy -1.905 0.635) (xy -2.54 -0.635)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.508 0.508) (xy 0.762 0.508) (xy 0.381 0.381) (xy 0.381 0.635) (xy 0.762 0.508)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.508 -0.508) (xy 0.762 -0.508) (xy 0.381 -0.635) (xy 0.381 -0.381) (xy 0.762 -0.508)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 1.905) (xy 2.54 -1.905) (xy 2.54 -1.905)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 0.635) (xy 4.445 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 3.048 -1.651) (xy 3.556 -1.143) (xy 4.064 -2.159) (xy 3.048 -1.651) (xy 3.048 -1.651)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 4.445 2.54) (xy 5.08 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 4.445 -2.54) (xy 2.54 -0.635)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 4.445 -2.54) (xy 5.08 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TLP293_1_1"
+				(pin passive line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 7.62 -2.54 180)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 7.62 2.54 180)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -28728,7 +28728,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G")
+		(lib_id "tlp293:TLP293")
 		(at 121.92 181.61 0)
 		(unit 1)
 		(body_style 1)
@@ -28748,7 +28748,7 @@
 				)
 			)
 		)
-		(property "Value" "LTV-217 (PC817)"
+		(property "Value" "TLP293 (GB)"
 			(at 121.92 187.96 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28758,7 +28758,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
+		(property "Footprint" "tlp293:SOP-4_L4.4-W2.8-P1.27-LS7.0-BR"
 			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
@@ -28769,7 +28769,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
+		(property "Datasheet" "https://toshiba.semicon-storage.com/info/TLP293_datasheet_en_20191129.pdf?did=14419&prodname=tlp293"
 			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
@@ -28780,7 +28780,7 @@
 				)
 			)
 		)
-		(property "Description" "Apartment-bell (Etagenruf) sense opto across P1<->P5"
+		(property "Description" "Apartment-bell (Etagenruf) sense optocoupler across P1↔P5; GB rank guarantees low-current transfer"
 			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
@@ -28791,7 +28791,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C115450"
+		(property "LCSC" "C77656"
 			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
@@ -28802,7 +28802,7 @@
 				)
 			)
 		)
-		(property "MPN" "LTV-217-B-G"
+		(property "MPN" "TLP293(GB-TPL,E"
 			(at 121.92 181.61 0)
 			(hide yes)
 			(show_name no)
@@ -28810,6 +28810,17 @@
 			(effects
 				(font
 					(size 1 1)
+				)
+			)
+		)
+		(property "Manufacturer" "Toshiba"
+			(at 121.92 181.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -29789,7 +29800,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PCM_JLCPCB-Optocouplers:LTV-217-B-G")
+		(lib_id "tlp293:TLP293")
 		(at 121.92 130.81 0)
 		(unit 1)
 		(body_style 1)
@@ -29809,7 +29820,7 @@
 				)
 			)
 		)
-		(property "Value" "LTV-217 (PC817)"
+		(property "Value" "TLP293 (GB)"
 			(at 121.92 137.16 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29819,7 +29830,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PCM_JLCPCB:SOP-4_4.4x2.6mm_P1.27mm"
+		(property "Footprint" "tlp293:SOP-4_L4.4-W2.8-P1.27-LS7.0-BR"
 			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
@@ -29830,7 +29841,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_1811092010_Lite-On-LTV-217-B-G_C115450.pdf"
+		(property "Datasheet" "https://toshiba.semicon-storage.com/info/TLP293_datasheet_en_20191129.pdf?did=14419&prodname=tlp293"
 			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
@@ -29841,7 +29852,7 @@
 				)
 			)
 		)
-		(property "Description" "House-bell (Türruf) sense opto across P1<->P4"
+		(property "Description" "House-bell (Türruf) sense optocoupler across P1↔P4; GB rank guarantees low-current transfer"
 			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
@@ -29852,7 +29863,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C115450"
+		(property "LCSC" "C77656"
 			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
@@ -29863,7 +29874,7 @@
 				)
 			)
 		)
-		(property "MPN" "LTV-217-B-G"
+		(property "MPN" "TLP293(GB-TPL,E"
 			(at 121.92 130.81 0)
 			(hide yes)
 			(show_name no)
@@ -29871,6 +29882,17 @@
 			(effects
 				(font
 					(size 1 1)
+				)
+			)
+		)
+		(property "Manufacturer" "Toshiba"
+			(at 121.92 130.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -31654,7 +31676,7 @@
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board yes)
-		(in_pos_files yes)
+		(in_pos_files no)
 		(dnp no)
 		(uuid "81facdb2-de84-449a-a26d-684c2e205807")
 		(property "Reference" "JP3"
@@ -36681,7 +36703,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Diode:BAT54S")
+		(lib_id "Diode:BAT54SW")
 		(at 186.69 212.09 0)
 		(unit 1)
 		(body_style 1)
@@ -36702,7 +36724,7 @@
 				)
 			)
 		)
-		(property "Value" "BAT54S"
+		(property "Value" "BAT54SW"
 			(at 186.69 208.28 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36712,7 +36734,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
 			(at 188.595 208.915 0)
 			(hide yes)
 			(show_name no)
@@ -36724,7 +36746,7 @@
 				(justify left)
 			)
 		)
-		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2310171613_hongjiacheng-BAT54S_C7420333.pdf"
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2406191606_hongjiacheng-BAT54SW_C22466373.pdf"
 			(at 183.642 212.09 0)
 			(hide yes)
 			(show_name no)
@@ -36735,7 +36757,7 @@
 				)
 			)
 		)
-		(property "Description" "BAT54S dual-series Schottky (30 V / 200 mA, SOT-23) — codec OUTP abs-max clamp: COM→ES_OUTP, A→GND, K→+3V3"
+		(property "Description" "BAT54SW dual-series Schottky (30 V / 200 mA, SOT-323) — codec OUTP abs-max clamp: COM→ES_OUTP, A→GND, K→+3V3 (matches D14)"
 			(at 186.69 212.09 0)
 			(hide yes)
 			(show_name no)
@@ -36746,7 +36768,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C7420333"
+		(property "LCSC" "C22466373"
 			(at 186.69 212.09 0)
 			(hide yes)
 			(show_name no)
@@ -36757,7 +36779,7 @@
 				)
 			)
 		)
-		(property "MPN" "BAT54S"
+		(property "MPN" "BAT54SW"
 			(at 186.69 212.09 0)
 			(hide yes)
 			(show_name no)
@@ -37737,7 +37759,7 @@
 		(dnp no)
 		(uuid "d58f8929-2fe6-4d2d-85a3-b6ef11f2d85c")
 		(property "Reference" "R2"
-			(at 95.25 196.85 90)
+			(at 95.25 199.136 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37747,7 +37769,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 95.25 199.39 90)
+			(at 95.25 201.93 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -38509,7 +38531,7 @@
 		(dnp no)
 		(uuid "e11a182c-a29e-49b5-9f86-5f2ecb2be20f")
 		(property "Reference" "R1"
-			(at 95.25 140.716 90)
+			(at 95.25 143.002 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -38519,7 +38541,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 95.25 143.256 90)
+			(at 95.25 146.05 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -39293,7 +39315,7 @@
 				)
 			)
 		)
-		(property "Description" "Codec TX series-R / OUTP abs-max protection (2.2k): OUTP -> R26 -> C14 -> TALK_BRIDGE. Limits the OUTP clamp current when K1's make steps +12V (P2) onto TALK_BRIDGE and C14 couples that edge back to OUTP - D13 (BAT54S) clamps OUTP to [AGND-0.3, AVDD+0.3] and absorbs the ~3.9mA (sim invariant B1). Also isolates the DAC from the C14 load. TX level is a firmware digital-volume trim - the codec far exceeds the WF26's passive 16-ohm transducer-mic level."
+		(property "Description" "Codec TX series-R / OUTP abs-max protection (2.2k): OUTP -> R26 -> C14 -> TALK_BRIDGE. Limits the OUTP clamp current when K1's make steps +12V (P2) onto TALK_BRIDGE and C14 couples that edge back to OUTP - D13 (BAT54SW) clamps OUTP to [AGND-0.3, AVDD+0.3] and absorbs the ~3.9mA (sim invariant B1). Also isolates the DAC from the C14 load. TX level is a firmware digital-volume trim - the codec far exceeds the WF26's passive 16-ohm transducer-mic level."
 			(at 203.2 220.98 0)
 			(hide yes)
 			(show_name no)

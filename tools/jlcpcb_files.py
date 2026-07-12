@@ -55,3 +55,20 @@ print(f"  BOM: {len(groups)} lines ({nparts} parts) -> doorbell-bom-jlcpcb.csv")
 if missing:
     sys.exit(f"ERROR: no LCSC part # for: {'; '.join(missing)} "
              "- set the symbol's LCSC field in KiCad (or add the ref to HANDSOLDER if it is not assembled)")
+
+# JLCPCB rejects an upload when the BOM and CPL designator sets differ. The CPL is generated first
+# by build.sh, so catch inconsistent KiCad BOM/position attributes here instead of at order time.
+cpl_path = os.path.join(FAB, "doorbell-cpl.csv")
+if os.path.exists(cpl_path):
+    with open(cpl_path, newline="") as f:
+        cpl_refs = {row["Designator"] for row in csv.DictReader(f)}
+    bom_refs = set(comp)
+    cpl_only = sorted(cpl_refs - bom_refs, key=_key)
+    bom_only = sorted(bom_refs - cpl_refs, key=_key)
+    if cpl_only or bom_only:
+        details = []
+        if cpl_only:
+            details.append("CPL only: " + ",".join(cpl_only))
+        if bom_only:
+            details.append("BOM only: " + ",".join(bom_only))
+        sys.exit("ERROR: BOM/CPL designator mismatch (" + "; ".join(details) + ")")

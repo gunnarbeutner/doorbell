@@ -15,4 +15,5 @@
 	(lib (name "mosfet_2n7002dw")(type "KiCad")(uri "${KIPRJMOD}/libraries/switches/mosfet_2n7002dw.kicad_sym")(options "")(descr "2N7002DW-7-F dual N-ch MOSFET (SOT-363) — Q1 break-before-make + Q2 door watchdog (easyeda2kicad import)"))
 	(lib (name "h24vnd3ba")(type "KiCad")(uri "${KIPRJMOD}/libraries/protection/h24vnd3ba.kicad_sym")(options "")(descr "H24VND3BA 24V bidirectional TVS (SOD-323) — bus surge/ESD clamp, P2-P5→P1 (easyeda2kicad import)"))
 	(lib (name "rvt1h470m0607")(type "KiCad")(uri "${KIPRJMOD}/libraries/audio/rvt1h470m0607.kicad_sym")(options "")(descr "RVT1H470M0607 47uF/50V SMD electrolytic — C19 non-polar anti-series pair (easyeda2kicad import)"))
+	(lib (name "tlp293")(type "KiCad")(uri "${KIPRJMOD}/libraries/sense/tlp293.kicad_sym")(options "")(descr "Toshiba TLP293 GB low-input-current phototransistor optocoupler (easyeda2kicad import)"))
 )

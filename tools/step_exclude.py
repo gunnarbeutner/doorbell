@@ -19,22 +19,38 @@ FIELD = "STEP_Exclude"
 TRUTHY = {"true", "yes", "1", "exclude", "x"}
 
 
+def sexpr_end(text, start):
+    """Return the closing-paren index, ignoring parentheses inside strings."""
+    depth = 0
+    in_string = False
+    escaped = False
+    for j in range(start, len(text)):
+        c = text[j]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif c == "\\":
+                escaped = True
+            elif c == '"':
+                in_string = False
+            continue
+        if c == '"':
+            in_string = True
+        elif c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return j
+    return len(text) - 1
+
+
 def footprint_blocks(text):
     """Yield each top-level (footprint ...) s-expression substring."""
     needle = "(footprint "
     i = text.find(needle)
     while i != -1:
-        depth = 0
-        j = i
-        while j < len(text):
-            c = text[j]
-            if c == "(":
-                depth += 1
-            elif c == ")":
-                depth -= 1
-                if depth == 0:
-                    break
-            j += 1
+        j = sexpr_end(text, i)
         yield text[i:j + 1]
         i = text.find(needle, j + 1)
 

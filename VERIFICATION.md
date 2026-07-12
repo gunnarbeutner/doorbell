@@ -111,8 +111,7 @@ compare the underlying handset behaviour against `wf26/wf26.kicad_sch`.
   terminals 2 & 3; Etagenruf series-interrupts line 5; door ring = 3-chime gong, floor call =
   continuous tone. The session is held from P2 and ends via a P2 transition (door-open transfer or
   the ~60 s timeout) — cross-check against the `captures/runs/` bench captures.
-- **Datasheet pinouts** — for any part whose pinout is image-only or sourced by proxy (e.g. an opto
-  confirmed by PC817-family convention rather than its own sheet), confirm against the actual
+- **Datasheet pinouts** — for any part whose pinout is image-only or sourced by proxy, confirm against the actual
   manufacturer datasheet before fab; an emitter/collector or pin-1 swap is a silent dead-channel.
 
 ## 5. Decision-worthy classes of finding to watch for
@@ -230,7 +229,7 @@ J2's screws, and component pads. Use an **isolated** scope
 Local copies live in `docs/` so the references don't rot: the ESP32-S3-WROOM-1U-N16R8 module (pad map +
 strapping), ES8311 codec, SGM2212 LDO, TPD2S017 USB ESD, Omron G6K relay, SUPSiC GAQY412E/EH and
 GAQW/GAQY212GS PhotoMOS, the AO3400A door/watchdog FETs, the BAT54SW codec-clamp Schottky, the
-PC817-family opto convention (proxy for the LTV-217), and the STR
+Toshiba TLP293 GB low-current sense optocoupler, and the STR
 TV20/S Verdrahtungsplan + Fehlersuchhilfe. SS14, SMF5.0A, 1N4148W and the USB-C jack are reasoned
 from standard pin conventions, cross-checked against the project's JLCPCB symbol pads.
 

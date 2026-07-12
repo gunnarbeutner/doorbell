@@ -330,7 +330,7 @@ Two identical channels (OC1 = house bell on P4↔P1, OC2 = apartment bell on P5�
 ```
 bus line (active, +) ──► opto LED anode ── LED ── cathode ──┬── R_lim (5.1k) ── P1 (common)
                           ▲ 1N4148W clamp, ANTI-parallel ───┘
-opto collector ──► GPIO (internal pull-up)   opto emitter ──► GND  (per channel, direct)
+opto collector ──► GPIO + 10 kΩ to +3V3     opto emitter ──► GND  (per channel, direct)
 ```
 
 - **Fixed polarity (no switch):** the bus is taken to drive active lines **positive** w.r.t.
@@ -358,11 +358,15 @@ opto collector ──► GPIO (internal pull-up)   opto emitter ──► GND  (
   emitter node to couple one channel into another.
 - Bell present → LED conducts → phototransistor pulls the GPIO low → ESPHome
   `inverted: true` ⇒ "on". GPIO LOW level ≈ 0.12–0.27 V.
-- **Sense margin (by analysis):** at IF ≈ 1.7–2.1 mA (10–12 V line) the collector sits at
-  ≈ 0.14 V — far below the ESP32 V_IL (~0.825 V) — and stays there across CTR 0.5→2.6,
-  because the weak ~45 kΩ internal pull-up demands only ~56 µA while the opto can sink
-  ~0.85 mA even at abused-low CTR. Result is insensitive to opto part variation; with each
-  emitter tied straight to GND the GPIO LOW is just V_CE(sat) ≈ 0.1 V.
+- **Low-current sense margin:** OC1/OC2 are Toshiba **TLP293 GB-rank** parts, guaranteed to at least
+  100% CTR at IF=0.5 mA and 30% saturated CTR at IF=1 mA, VCE=0.4 V (25 °C). The captured 5.1 kΩ
+  LED-current envelope is approximately 1.1–2.8 mA. At the datasheet's 1 mA test point the
+  guaranteed 0.30 mA collector current exceeds the approximately 0.27 mA needed at the ESP32's
+  worst VDD/VIL corner, but the margin is narrow. Do not call the complete production corner closed
+  until the calculation also includes bus minimum, LED forward-voltage spread, resistor tolerances,
+  collector-pull-up tolerance and the intended enclosure temperature range. The external 10 kΩ
+  pull-up keeps the idle level defined independently of firmware and limits the voltage error from
+  dark current; its idle-high corner must be checked over the same range.
 - **Cross-talk masking** (`firmware/doorbell.yaml`, lambda filters ahead of the debounce):
   **OC1 is not masked**; it senses the DC-dominated line-4 session level and must remain able to
   report a genuine ring during PTT.
