@@ -2,7 +2,7 @@
   <rect x="0" y="0" width="940" height="760" fill="#ffffff"/>
 
   <text x="24" y="36" font-size="21" font-weight="bold" fill="#111">Final wall wire-up — doorbell controller J2</text>
-  <text x="24" y="58" font-size="13" fill="#555">The WF26's terminal NUMBER is the truth; wall-wire colours vary per install. Photograph + fill the table below BEFORE disconnecting.</text>
+  <text x="24" y="58" font-size="13" fill="#555">Confirmed installation mapping: transfer each WF26 terminal to the matching P1–P5 terminal on J2.</text>
 
   <!-- Left: WF26 terminal block -->
   <rect x="40" y="100" width="200" height="300" rx="8" fill="#fafafa" stroke="#333" stroke-width="2"/>
@@ -12,7 +12,7 @@
   <!-- Right: V4 J2 -->
   <rect x="700" y="100" width="200" height="300" rx="8" fill="#fafafa" stroke="#333" stroke-width="2"/>
   <text x="800" y="90" font-size="15" font-weight="bold" fill="#111" text-anchor="middle">Doorbell controller — J2</text>
-  <text x="800" y="126" font-size="12" fill="#777" text-anchor="middle">P1 = end screw AWAY from USB-C</text>
+  <text x="800" y="126" font-size="12" fill="#777" text-anchor="middle">P1 = end screw marked P1 on the PCB</text>
 
   <!-- terminal rows + 1:1 wires -->
   <!-- y positions: 160, 210, 260, 310, 360 -->
@@ -61,30 +61,29 @@
   </g>
 
   <!-- colour record table -->
-  <text x="40" y="440" font-size="14" font-weight="bold" fill="#111">Colour record — read from the install photo, VERIFY each seat at the wall before trusting:</text>
+  <text x="40" y="440" font-size="14" font-weight="bold" fill="#111">Confirmed installation colour record:</text>
   <g font-size="13" fill="#333">
     <rect x="40" y="452" width="860" height="34" fill="#fafafa" stroke="#999"/>
     <text x="60" y="474">Line 1: black</text>
     <text x="230" y="474">Line 2: yellow</text>
     <text x="400" y="474">Line 3: blue</text>
-    <text x="570" y="474">Line 4: white/gray ⚠</text>
-    <text x="740" y="474">Line 5: white/gray ⚠</text>
+    <text x="570" y="474">Line 4: gray</text>
+    <text x="740" y="474">Line 5: white</text>
   </g>
-  <text x="40" y="502" font-size="12" fill="#c62828">⚠ Lines 4/5 are white and gray, ORDER UNDETERMINED — the one pulsing +12 V on the street bell is line 4; the one with the floor-button tone is line 5.</text>
-  <text x="40" y="518" font-size="12" fill="#c62828">⚠ An extra BROWN wire enters the strip at the line-1 (black/common) end — doubled common, 6th terminal, or splice-through? Identify before disconnecting.</text>
+  <text x="40" y="502" font-size="12" fill="#555">The additional brown conductor at the line-1 end shares the confirmed common connection.</text>
 
   <!-- power feed -->
   <rect x="40" y="528" width="860" height="70" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="1.5"/>
-  <text x="56" y="552" font-size="14" font-weight="bold" fill="#8d6e00">Power: wall-wart → USB-A cable → J3 (JST SH-4)</text>
-  <text x="56" y="572" font-size="12.5" fill="#6d5a00">Cable build + pinout: docs/design/usb-jst-j3-wiring.svg (verified). NEVER power J1 (USB-C) and J3 at the same time —</text>
-  <text x="56" y="588" font-size="12.5" fill="#6d5a00">shared VBUS, no OR-ing. In-field reflash: move J3's far cable end from the wall-wart to a battery-powered laptop.</text>
+  <text x="56" y="552" font-size="14" font-weight="bold" fill="#8d6e00">Power: wall-wart → USB-A service lead → J1 (JST SH-4)</text>
+  <text x="56" y="572" font-size="12.5" fill="#6d5a00">Cable build + pinout: docs/design/usb-jst-j1-wiring.svg. J1 is the only power/USB inlet.</text>
+  <text x="56" y="588" font-size="12.5" fill="#6d5a00">In-field reflash: move the service lead's USB-A end from the wall supply to a battery-powered laptop.</text>
 
   <!-- checklist -->
   <g font-size="13" fill="#333">
     <text x="40" y="632" font-size="14" font-weight="bold" fill="#111">Order of operations:</text>
-    <text x="40" y="656">1. Photograph the WF26 terminals; confirm the colour table, settle the white/gray order, resolve the brown wire. 2. Verify line 2 (+12 V</text>
-    <text x="40" y="674">standing) and line 4/5 (button tests) with the DMM against line 1 — trust measurements, not colours. 3. Disconnect the WF26 (your flat's</text>
-    <text x="40" y="692">bell is dead until step 5; the rest of the building is unaffected). 4. Land wires on J2 one-for-one (1→P1 … 5→P5), tug-test. 5. Run the §6</text>
+    <text x="40" y="656">1. Photograph the WF26 terminals as a reference. 2. Disconnect the WF26 (your flat's bell is dead until step 4; the rest of the building</text>
+    <text x="40" y="674">is unaffected). 3. Land the confirmed wires on J2 one-for-one (1→P1 … 5→P5), including both common conductors at P1, then tug-test.</text>
+    <text x="40" y="692">4. Power the controller through J1. 5. Run the §6</text>
     <text x="40" y="710">bench checks (VERIFICATION.md) before closing the wall: ring detect both channels, gong + mute, session sense, PTT handshake —</text>
     <text x="40" y="728">door-open only after the 2c scope check.</text>
     <text x="40" y="750" fill="#c62828">Bus is ~12 V SELV and shared with the whole building: never short bare wires together while working — tape stripped ends.</text>

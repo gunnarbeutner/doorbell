@@ -75,8 +75,9 @@ pin 1 = cathode in the CDFER JLCPCB lib) and its role: opto reverse-clamps anti-
 their LEDs, the latch-coil flyback reverse-biased in normal operation, the VBUS series Schottky
 passing VBUS, the VBUS TVS reverse-biased below its stand-off.
 
-**USB-C + ESD** — CC1/CC2 each have a 5.1 kΩ **Rd** to GND (sink/UFP, both orientations); the ESD
-clamp is **flow-through** (connector on the _In side, ESP on _Out) with VCC biased from fused VBUS;
+**USB service inlet + ESD** — J1 pin order is VBUS/D−/D+/GND; D4 points from raw VBUS into
+VBUS_PROTECTED and blocks reverse input/back-feed. The ESD clamp is **flow-through** (connector on
+the _In side, ESP on _Out) with VCC biased from fused +5V;
 **no D+/D− swap** anywhere connector→clamp→GPIO; the fuse sits **upstream** of the TVS and LDO so a
 clamp event blows the fuse (fail-safe).
 
@@ -148,7 +149,7 @@ except the central's *active responses* (opener firing, gong tone, TX-out forwar
 those are §6) can be exercised this way.
 
 **Rig:** floating PSU (2-ch ideal, or 1-ch + a momentary button for the ring tap), a ~100 Ω resistor
-on the P2 feed, an isolated/battery 2-ch scope, a DMM, and the board's own USB-C 5 V (via a current
+on the P2 feed, an isolated/battery 2-ch scope, a DMM, and the board's own J1 5 V feed (via a current
 meter if available). Flash `firmware/doorbell-bench.yaml` for these stages — the production
 config minus the HA events (a bench ring would fire the real automations) plus direct debug
 switches for K3 and the door drive. **Ground discipline:** P1 is hard-bonded to board GND *and* USB GND, so
@@ -159,7 +160,7 @@ P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isola
 each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
 continuous; raw P4↔`K5_LATCH` continuous through K6; JP3 open; TP1–TP8 present; C19 "+" toward P4.
 
-**Stage 1 — local power only, no bus.** USB-C 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
+**Stage 1 — local power only, no bus.** J1 VBUS at 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
 (after the SS14 drop — there is no 5 V test point), **TP2 ≈ +3.30 V**, quiescent current sane,
 board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
@@ -241,7 +242,7 @@ Local copies live in `docs/` so the references don't rot: the ESP32-S3-WROOM-1U-
 strapping), ES8311 codec, SGM2212 LDO, TPD2S017 USB ESD, Omron G6K relay, SUPSiC GAQY412E/EH and
 GAQW/GAQY212GS PhotoMOS, the AO3400A door/watchdog FETs, the LMBR01S30ST5G codec-clamp Schottky, the
 Toshiba TLP293 GB low-current sense optocoupler, and the STR
-TV20/S Verdrahtungsplan + Fehlersuchhilfe. SS14, SMF5.0A, 1N4148W and the USB-C jack are reasoned
+TV20/S Verdrahtungsplan + Fehlersuchhilfe. SS14, SMF5.0A and 1N4148W are reasoned
 from standard pin conventions, cross-checked against the project's JLCPCB symbol pads.
 
 

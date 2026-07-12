@@ -840,12 +840,12 @@ test('door watchdog timing: /DOOR_DRV stuck high opens the door, then self-relea
 
 // ── power & protection front-end ──
 
-test('power OR: either input regulates +5V and +3V3', () => {
-  for (const [input, name] of [['/USB_VBUS_IN', 'J1 USB-C'], ['/WALL_VBUS_IN', 'J3 wall feed']]) {
-    const { V } = runDC(netlist, { sources: { [input]: 5, '/P1': 0 } });
-    assert.ok(near(V['+3V3'], 3.3, 0.1), `${name}: +3V3 should regulate to ~3.3 V, got ${V['+3V3']?.toFixed(3)}`);
-    assert.ok(V['+5V'] > 4.6 && V['+5V'] < 5.05, `${name}: +5V should sit just below the input, got ${V['+5V']?.toFixed(3)}`);
-  }
+test('J1 power input regulates +5V and +3V3', () => {
+  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 } });
+  assert.ok(near(V['+3V3'], 3.3, 0.1),
+    `J1: +3V3 should regulate to ~3.3 V, got ${V['+3V3']?.toFixed(3)}`);
+  assert.ok(V['+5V'] > 4.6 && V['+5V'] < 5.05,
+    `J1: +5V should sit just below the input, got ${V['+5V']?.toFixed(3)}`);
 });
 
 test('unpowered board: rails rest at 0, no phantom voltage', () => {
@@ -865,17 +865,14 @@ test('ESD array (D5): a surge on the USB data line is clamped to ~VBUS, not pass
   assert.ok(V['/USB_ESP_DN'] > 4, `the steering diode should clamp to ~VBUS+Vf, got ${V['/USB_ESP_DN']?.toFixed(2)} V`);
 });
 
-test('power OR: either input is isolated from the other input and the fused rail', () => {
-  for (const [active, inactive, activeName, inactiveName] of [
-    ['/USB_VBUS_IN', '/WALL_VBUS_IN', 'J1 USB-C', 'J3 wall feed'],
-    ['/WALL_VBUS_IN', '/USB_VBUS_IN', 'J3 wall feed', 'J1 USB-C'],
-  ]) {
-    const { V } = runDC(netlist, { sources: { [active]: 5, [inactive]: 0, '/P1': 0 } });
-    assert.ok(V['+5V'] > 4.6, `${activeName} should power the fused +5V rail, got ${V['+5V']?.toFixed(2)} V`);
-    assert.ok(V[inactive] < 0.5, `${activeName} must not back-feed ${inactiveName}, got ${V[inactive]?.toFixed(2)} V`);
-  }
+test('D4 blocks back-feed and a reversed J1 input', () => {
+  const backFeed = runDC(netlist, {
+    sources: { '+5V': 5, '/VBUS': 0, '/P1': 0 },
+  }).V;
+  assert.ok(backFeed['/VBUS'] < 0.5,
+    `fused +5V must not feed back out through J1, got ${backFeed['/VBUS']?.toFixed(2)} V`);
 
-  const { V } = runDC(netlist, { sources: { '+5V': 5, '/USB_VBUS_IN': 0, '/WALL_VBUS_IN': 0, '/P1': 0 } });
-  assert.ok(V['/USB_VBUS_IN'] < 0.5, `fused +5V must not back-feed J1, got ${V['/USB_VBUS_IN']?.toFixed(2)} V`);
-  assert.ok(V['/WALL_VBUS_IN'] < 0.5, `fused +5V must not back-feed J3, got ${V['/WALL_VBUS_IN']?.toFixed(2)} V`);
+  const reversed = runDC(netlist, { sources: { '/VBUS': -5, '/P1': 0 } }).V;
+  assert.ok(Math.abs(reversed['+5V']) < 0.1,
+    `a reversed J1 input must leave +5V off, got ${reversed['+5V']?.toFixed(2)} V`);
 });

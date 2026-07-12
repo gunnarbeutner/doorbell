@@ -2,11 +2,10 @@
 
 Goal: get **one assembled board** via JLCPCB **Standard PCBA** (the current BOM is not eligible
 for Economic). The board is ~64 × 59 mm, **4-layer**, all parts on the **top side**; J2 (5-way
-screw terminal) is through-hole and J1 (USB-C) has THT shell stakes — both **assembled by JLCPCB**
-(THT assembly — nothing is hand-soldered). The board is under JLCPCB's assembly minimum, so
-order it as **"Panel by JLCPCB"** (edge rails added by them) — the edge connectors (J1 USB-C,
-shell protrudes; J2 screw terminal) sit flush on the outline, so confirm the panel/rails/depanel
-clear them (see the gates below). U1 is an **ESP32-S3-WROOM-1U-N16R8** —
+screw terminal) is through-hole and assembled by JLCPCB. J1 is the SMT JST-SH power/USB service
+connector. The board is under JLCPCB's assembly minimum, so order it as **"Panel by JLCPCB"**
+(edge rails added by them); confirm the panel/rails/depanel clear J2 (see the gates below). U1 is an
+**ESP32-S3-WROOM-1U-N16R8** —
 a **u.FL external antenna** module, so there is no PCB-antenna edge keepout to protect (route the
 antenna lead out of the enclosure instead).
 
@@ -15,10 +14,11 @@ antenna lead out of the enclosure instead).
 
 ## Mechanical fit gate (physically passed on V4.1)
 
-**MECH-1 and MECH-1a have passed:** the assembled V4.1 PCB fits and operates in the original WF26
+**MECH-1 passed on V4.1:** the assembled PCB fits and operates in the original WF26
 enclosure. The board seats on the bosses, the populated-board height clears the closed lid, the
-speaker and wire entry align, and both original housing buttons actuate the board switches. This is
-a real-hardware fit result, not an inference from the STEP model.
+speaker and wire entry align, and both original housing buttons actuate that board's switches. The
+V4.2 printed fit test found that the former USB-C connector obstructed the Talk actuator; it has been
+removed. Repeat MECH-1a on the current print before ordering.
 
 Repeat this gate before ordering only if a revision changes the board outline, mounting pattern,
 switch/speaker/connector placement, or maximum component height. `./build.sh` (or
@@ -27,8 +27,8 @@ switch/speaker/connector placement, or maximum component height. `./build.sh` (o
 - **Board fits the housing (MECH-1).** Outline clears the housing walls/posts; the mounting holes
   (H1–H5) line up with the enclosure's bosses; nothing tall (U1, the latch relay K5, the
   electrolytics, the screw terminal) fouls a rib or the lid.
-- **Connector access.** J1 (USB-C, shell protrudes past the edge) reaches its wall aperture, and
-  J2's wire mouths are reachable to land the 5 bus wires once installed.
+- **Connector access.** The J1 JST-SH plug seats without fouling the housing or actuator, and J2's
+  wire mouths are reachable to land the five bus wires once installed.
 - **Switches fit + actuate (MECH-1a) — the point of the test.** The STEP model **deliberately omits
   SW3/SW4** (the `STEP_Exclude` field; see `tools/step_exclude.py`) — the door-release and talk
   front-panel buttons (`SPPJ322300`) — so you fit-test the printed board against the **real**
@@ -60,33 +60,29 @@ board face).
   - **Assembly side:** Top only (the board has no bottom-side parts)
   - **PCBA Type:** **Standard** — the current BOM is not Economic-eligible. Standard carries the
     $25/side setup; the specialised parts (RF module, codec, LDO, PhotoMOS SSRs, latch relay,
-    USB-C jack, bus terminal) are Extended and add per-type loading fees on top. The
+    JST-SH service connector and bus terminal) are Extended and add per-type loading fees on top. The
     free-vs-fee breakdown is in `JLCPCB-BASIC-PARTS.md`.
   - **Stock check:** confirm LCSC stock on the less-common Extended lines (the RF module, codec,
-    LDO, SSRs, latch relay, USB-C jack, screw terminal, door switches) against the current
+    LDO, SSRs, latch relay, JST-SH connector, screw terminal and door switches) against the current
     `fab/doorbell-bom-jlcpcb.csv` — `JLCPCB-BASIC-PARTS.md` flags the low-stock ones.
-  - **Through-hole parts:** J2 (and J1's shell stakes) are assembled by JLCPCB; confirm THT
+  - **Through-hole parts:** J2 is assembled by JLCPCB; confirm THT
     assembly is included when JLCPCB reviews/quotes the order.
   - **Assembly Qty:** `2` — assemble one + a spare. The setup/part fees are already paid, so
     the second board is nearly free and cheap insurance against a dud.
 - ☑ **Confirm Parts Placement** — JLCPCB checks rotation/polarity against their library and
   emails a placement preview. **Confirm within 72 h.**
 - ☑ **Depanel boards & edge rail before delivery** — you get the individual boards freed from
-  the frame (required anyway: the USB-C and screw terminal must be clear of the rails).
+  the frame (required anyway: the screw terminal must be clear of the rails).
 
 ## ⚠️ The two review gates — don't rubber-stamp these
 
 ### 1. Production file (48 h window)
 
 The ~64 × 59 mm board is under the Standard-assembly minimum, so JLCPCB panels it with edge
-rails ("Panel by JLCPCB"). When the production file arrives, check before approving that **no
-rail, break-tab or mousebite lands on the edge connectors** — wherever they sit on the current
-outline:
+rails ("Panel by JLCPCB"). When the production file arrives, check before approving that no rail,
+break-tab or mousebite lands at **J2**; its wire mouths must stay clear.
 
-- **J1** (USB-C) — the shell protrudes past the board edge; a tab there fouls the connector.
-- **J2** (5-way screw terminal) — flush on its edge; the wire mouths must stay clear.
-
-A tab/cut on either → **reject and comment**, and JLCPCB re-prepares it. Small mousebite nubs
+A tab/cut at J2 → **reject and comment**, and JLCPCB re-prepares it. Small mousebite nubs
 elsewhere on the edges are fine as long as they're clear of parts. (No PCB-antenna edge to worry
 about — the u.FL module's antenna is external.)
 

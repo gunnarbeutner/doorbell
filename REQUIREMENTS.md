@@ -261,7 +261,7 @@ provides them.
   not a galvanic barrier.
 - **SAFE-4 (MUST)** **Fail-safe / fail-passive**: with no board power, the board degrades to a working
   passive handset (MODE-1) — the on-board WF26 core runs bus-powered while the SSRs/optos/codec go inert.
-- **SAFE-5 (MUST)** The smart layer is powered locally (USB-C / 5 V), not from the bus; absence of
+- **SAFE-5 (MUST)** The smart layer is powered locally (5 V through J1), not from the bus; absence of
   that feed MUST degrade gracefully to the passive behaviour of SAFE-4.
 - **SAFE-6 (MUST)** All actuators default to their inactive/safe state at power-on and while the MCU
   is unprogrammed/booting/floating: relays off (gate pull-downs) so the door opener cannot pulse and

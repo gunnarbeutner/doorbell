@@ -65,16 +65,15 @@ The JLCPCB-assembled PCB needs four things it doesn't ship with:
 - **Speaker/mic transducer (LS1)** — a 16 Ω transducer soldered to the LS1 wire pads. It is the
   gong, the passive listen earpiece and the passive talk mic in one; deliberately not
   board-assembled.
-- **JST SH-4 pigtail for J3** (the deployed power inlet) — a pre-crimped SH-4 lead is strongly
+- **JST SH-4 male pigtail for J1** (the deployed power/service inlet) — a pre-crimped SH-4 lead is strongly
   recommended; hand-crimping 1 mm SH contacts is misery.
-- **USB power cable** — a male-USB-A cable spliced onto the pigtail (a USB-A→C cable with the C
-  end sacrificed works well). The supply side must be a USB-A port or wall-wart: a bare USB-C
-  lead stays dead without CC pull-downs. Wiring and polarity checks:
-  `docs/design/usb-jst-j3-wiring.svg`.
+- **USB power/service lead** — a four-signal USB-A male screw-terminal breakout wired to the J1
+  pigtail. Keep D+/D− short and twisted, and verify every conductor before first power-up:
+  `docs/design/usb-jst-j1-wiring.svg`.
 
 **Status:** the V4.1 board (JLCPCB-fabbed and -assembled) is bench-verified and deployed —
 installed in the wall in place of the WF26, running `firmware/doorbell.yaml`. The smart layer
-is powered by a USB wall-wart into the J3 connector; the TV20/S bus powers only the passive
+is powered by a USB wall-wart through its J3 connector; the TV20/S bus powers only the passive
 handset core, so the electronics draw nothing from the shared intercom supply.
 
 ## Repository layout
@@ -95,7 +94,7 @@ fab outputs; it does not author or regenerate the board.
 | `sim/` | Node circuit simulator + PCB viewer used to sanity-check the design (`cd sim`; `npm test`). |
 | `wf26/` | Reverse-engineered WF26 handset (`wf26.kicad_sch`). |
 | `captures/` | Bench scope captures of the real TV20/S (ring, door-open, timeout) + web viewer. |
-| `docs/` | Datasheets and reference docs (`datasheets/`, `design/`, `ordering/`) — incl. the wall wire-up map (`design/wall-wiring-v4.svg`) and the J3 power-cable pinout (`design/usb-jst-j3-wiring.svg`). |
+| `docs/` | Datasheets and reference docs (`datasheets/`, `design/`, `ordering/`) — incl. the wall wire-up map (`design/wall-wiring-v4.svg`) and the J1 power/service-cable pinout (`design/usb-jst-j1-wiring.svg`). |
 | `fab/` | Generated fab outputs (Gerbers, drill, BOM, CPL, STEP) — produced by `./build.sh`. |
 | `orders/` | Shipped fabrication order archives. |
 

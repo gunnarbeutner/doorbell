@@ -294,9 +294,10 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
   default closed. This preserves passive handset behavior with the smart layer unpowered.
 - **Transformer-less, half-duplex audio:** the codec taps lines 2/3 and shares P1 with logic ground.
   This deliberately trades galvanic isolation for a compact, direct audio path.
-- **Dual isolated 5 V inputs:** USB-C and the wall feed are diode-OR'd ahead of the fuse and 3.3 V
-  regulation, preventing either source from back-feeding the other.
-- **Four layers:** needed for the USB-C escape, continuous references and practical routing density.
+- **One protected 5 V/USB inlet:** the JST-SH service connector carries VBUS and native USB data;
+  D4 blocks reverse input and back-feed before the fuse and regulators.
+- **Four layers:** provide continuous reference planes and practical routing density around the
+  ESP32, codec and mixed bus/logic interfaces.
 - Exact device variants, footprints and supplier identifiers belong to the schematic and
   `ORDERING.md`; the sections below retain only values that affect behavior.
 
@@ -304,7 +305,7 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
 
 The authoritative pin assignment lives in `firmware/doorbell.yaml` and the schematic
 (`kicad/doorbell.kicad_sch`, U1); it is not duplicated here. **Placement rationale:** U1 sits so the
-native-USB pins (IO19/IO20) reach the USB-C connector (J1) / the D5 ESD clamp, and the ES8311 I²C/I²S
+native-USB pins (IO19/IO20) reach J1 through the D5 ESD clamp, and the ES8311 I²C/I²S
 bus is assigned **ascending by module pad** (SDA, SCL, MCLK, BCLK, DIN on GPIO38–42, then WS, DOUT on
 GPIO2/GPIO1) so it fans out toward U3 in U3's pin order with no crossings. The S3's GPIO matrix makes
 this purely a placement choice: any function routes to any pad.
@@ -316,9 +317,9 @@ this purely a placement choice: any function routes to any pad.
 - **Strapping pins parked safe:** the S3 straps on IO0/IO3/IO45/IO46. **IO0** is the boot strap, held
   high by R11 (10 k to +3V3) for normal SPI-flash boot, with SW1 pulling it to GND for download mode.
   IO3, IO45 and IO46 remain unconnected at their module defaults; the WROOM sets its own internal-flash
-  voltage. The active-low status LED instead uses unrestricted **IO14**:
-  `+3V3 → R15 → D6 → IO14`, with R27 (1 kΩ) pulling IO14 to GND for a defined boot indication.
-  Firmware drives IO14 high when healthy and lets ESPHome blink it on Wi-Fi/API errors. The I²C/I²S
+  voltage. The active-low status LED instead uses unrestricted **IO7** (U1 pad 7):
+  `+3V3 → R15 → D6 → IO7`, with R27 (1 kΩ) pulling IO7 to GND for a defined boot indication.
+  Firmware drives IO7 high when healthy and lets ESPHome blink it on Wi-Fi/API errors. The I²C/I²S
   bus deliberately lands SCL/MCLK/BCLK/DIN on IO39–42 = the MTCK/MTDO/MTDI/MTMS JTAG group — none of
   those are S3 strapping pins, so it only forgoes pin-JTAG (debug runs over USB-Serial-JTAG) with no
   boot-time effect. EN has the 10 k (R10) + 1 µF (C5) RC + SW2 (Espressif EN-RC spec).
@@ -462,14 +463,12 @@ no flyback; D1 exists only for the passive electromechanical latch.
 ### Power tree
 
 ```
-J1 USB-C 5V ──[D4 SS14]──┐
-                          ├─ VBUS ── F1 1A fast fuse ── +5V ─┬─ main 3.3V LDO ── +3V3 ── digital loads
-J3 wall 5V  ──[D15 SS14]──┘                                  └─ low-noise 3.3V LDO ── D18 ── codec AVDD
-CC1/CC2 ── 5.1kΩ each to GND (sink Rd)        +3V3:    10µF + 10µF + 100nF decoupling      AU_3V3: 1µF out (C24)
-USB D±  ── IO19/IO20 (native USB)             both regulators carry local input/output decoupling
-Two 5V inlets diode-OR'd at VBUS: per-inlet SS14 (D4 = J1, D15 = J3) isolates the sources (no back-feed) and blocks a reversed J3 feed
+J1 VBUS ──[D4 SS14]── VBUS_PROTECTED ── F1 1A fast fuse ── +5V ─┬─ main 3.3V LDO ── +3V3 ── digital loads
+                                                                  └─ low-noise 3.3V LDO ── D18 ── codec AVDD
+J1 D± ── D5 ── IO19/IO20 (native USB)         +3V3: 10µF + 10µF + 100nF; AU_3V3: 1µF out (C24)
+D4 blocks a reversed J1 supply and prevents VBUS_PROTECTED from feeding back out through the service connector
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from +5V (post-fuse); +5V TVS: SMF5.0A (D10)
-VBUS fuse: F1 (0466001.NRHF, 1A fast) after the OR-merge, ahead of all downstream protection — a clamping D10 blows it, isolating both inlets (fail-safe)
+VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all downstream protection — a clamping D10 blows it, isolating J1 (fail-safe)
 ```
 > No bulk electrolytic: the local LDO actively regulates the ~350 mA WiFi-TX burst
 > (modeled droop ≈ 90 mV across 20 µF of ceramic on +3V3), so a bulk cap buys nothing.
@@ -538,14 +537,11 @@ KiCad**; `./build.sh` verifies the inner copper-fill planes and fails if any net
 
 - **Antenna:** U1 (WROOM-1U) has a **u.FL connector** for an external antenna — route the lead out of
   the housing; there is no PCB-antenna keepout to honour (unlike the old WROOM-1).
-- **Programming/bring-up:** flash + view logs over the native USB-Serial-JTAG; BOOT + EN buttons
-  fitted for recovery. Two USB entries share the same D±: **J1 (USB-C)** is a bench-only
-  convenience for initial bring-up (board off the bus), and **J3 (the JST wall feed)** is both the
-  deployed power inlet and the in-field flash port (cable wiring:
-  `docs/design/usb-jst-j3-wiring.svg`). Their **VBUS rails are diode-OR'd** (D4 for J1, D15 for J3),
-  so both inlets may be powered at once without back-feeding each other — no one-source-at-a-time
-  rule. **Field re-flash (OTA failed):** pull the wall-wart plug off J3's far-end cable and plug
-  *that same cable* into a laptop. The smart layer reboots, but the doorbell keeps working throughout — the
+- **Programming/bring-up:** flash + view logs over native USB-Serial-JTAG; BOOT + EN buttons are
+  fitted for recovery. **J1 (JST-SH)** is the single deployed power inlet and native-USB service
+  port; its cable pinout is `docs/design/usb-jst-j1-wiring.svg`. **Field re-flash (OTA failed):**
+  move the service lead's USB-A end from the wall supply to a laptop. The smart layer reboots, but
+  the doorbell keeps working throughout — the
   passive WF26 core is bus-powered, not USB-powered (MODE-1) — so only HA/notifications drop for the
   minute it takes. **Flash with the laptop on battery** so the host doesn't earth board GND
   (= P1 = bus common); see "Bus↔logic coupling".

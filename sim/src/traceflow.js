@@ -87,8 +87,8 @@ export function buildTraceGraph(pcb) {
     // A through-hole pad's plated barrel ties the copper on every layer it spans, so snap to the nearest
     // copper on EACH layer (not just the single globally-nearest) and union them all through `own`.
     // Otherwise a TH connector pad joins only one layer's trace and the other layer's copper splits into
-    // its own piece — the /P4 coil trace (F.Cu) became an island because J3's through-hole pad snapped to
-    // its B.Cu routing only, so the coil current vanished into the pour-hub instead of its real segments.
+    // its own piece — a /P4 through-hole pad once snapped to its B.Cu routing only, so the coil current
+    // vanished into the pour-hub instead of its real segments.
     for (const L of layers) {
       let best = null,
         bestD = reach;
@@ -139,8 +139,8 @@ export function buildTraceGraph(pcb) {
     });
   });
 
-  // A connector's pins on the same net are tied together externally (USB-C's redundant VBUS / GND /
-  // shield pins), so the source/return enters/exits there at a single point. Merge them into one mesh
+  // A connector's duplicate pins on the same net are tied together externally, so the source/return
+  // enters/exits there at a single point. Merge them into one mesh
   // node — otherwise the residual splits across the pins and the leftover loops between them and around
   // the shield ring as phantom inter-pin current (beads appearing to come "out of" the GND pins).
   const merge = {};
@@ -237,7 +237,7 @@ export function traceCurrents(graph, injections) {
 
     // The net's current enters/exits the board through its connector, so the KCL residual goes there.
     // Spread it across *all* of that connector's pads on the net — a multi-pin power/GND connector
-    // (e.g. USB-C's four GND pins) shares the current in parallel; funnelling it through one pad forces
+    // (e.g. several GND pins) shares the current in parallel; funnelling it through one pad forces
     // the return to loop through whatever copper reaches that single point (the USB shield ring was
     // carrying the whole 80 mA return for exactly this reason). Shield/shell pads (pin "SH") are
     // excluded — they're chassis tie-points, not the supply return.

@@ -4,7 +4,7 @@
 Mid X / Mid Y are each part's PAD CENTROID, not the footprint origin. KiCad's pos export (and
 the footprint anchor) sit at pin 1 / pad A1 for many connectors and modules -- several mm from
 the body centre -- which throws JLCPCB's placement off (e.g. the WF26 terminal lands ~9 mm out,
-the USB-C ~3 mm). Using the pad centroid puts every part where JLCPCB expects it.
+fine-pitch connectors several mm). Using the pad centroid puts every part where JLCPCB expects it.
 
 Run with KiCad's bundled python (owns pcbnew); see build.sh.
 """

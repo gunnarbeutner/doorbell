@@ -33,13 +33,6 @@ Use the DHO804 **isolated** — check its adapter is 2-prong, or run a battery/p
 ground clip on **line 1 (P1)** only, use **CH_A − CH_B math** for across-the-coil reads, and don't
 tether it to a mains-earthed PC. Pair with a DMM.
 
-- [ ] **10/10 — Find why the physical Talk actuator cannot be pushed all the way in.** Check the actuator,
-      enclosure and SW4/PCB alignment and travel for interference or a dimensional mismatch; confirm
-      whether SW4 reaches its intended electrical state before the mechanical stop, and correct the
-      responsible mechanical part or placement. This is independent of the P4/K5 bleed and electronic
-      talk-handshake work.
-      - **Worst case:** the Talk button cannot engage, disabling the handset's passive/manual transmit function.
-
 - [ ] **10/10 — Upgrade D1 and close the sustained Etagenruf C19/C21/D1 stress warning.** D1 is both K5's
       flyback clamp and the unresisted clamp for negative P4 excursions coupled through C19/C21; the
       captured floor-call waveform therefore exercises it repetitively, not as a rare relay kick.

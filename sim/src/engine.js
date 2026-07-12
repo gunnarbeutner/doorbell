@@ -436,8 +436,8 @@ function createStepper(els, sources, gnd, dt, seed) {
         push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'SW' || e.type === 'RC') {
         // a closed switch / made relay contact is a low-R link (G = SW_GON); its current is otherwise
-        // invisible to the trace flow, so a net reached only through a contact (e.g. /P4 via K3 + the J3
-        // bridge) shows nothing. Conduction state matches the stamp: SW -> e.closed; RC -> latched coil state.
+        // invisible to the trace flow, so a net reached only through a contact (e.g. /P4 through K3)
+        // shows nothing. Conduction state matches the stamp: SW -> e.closed; RC -> latched coil state.
         const on = e.type === 'SW' ? e.closed : e.when === 'always' || (e.when === 'on') === e.coilOn;
         const I = on ? (Vof(e.a) - Vof(e.b)) * SW_GON : 0;
         push(e.ref, e.pa, e.a, -I);

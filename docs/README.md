@@ -30,7 +30,7 @@ pad map + strapping), **ES8311** codec (`ES8311_datasheet.pdf` + `ES8311.user.Gu
 (`GAQY412E_EH_datasheet.pdf`), the **SPPJ322300** door switch (`SPPJ322300_datasheet.pdf`), the
 **AO3400A** door/watchdog FETs (`ao3400a_datasheet.pdf`), and the **LMBR01S30ST5G** codec-clamp and
 AVDD reverse-blocking Schottky (`lmbr01s30st5g_datasheet.pdf`).
-Parts reasoned from standard pin conventions (SS14, SMF5.0A, 1N4148W, the USB-C jack, the
+Parts reasoned from standard pin conventions (SS14, SMF5.0A, 1N4148W, the JST-SH connector and the
 GAQW/GAQY212GS SSRs) have no local sheet — see `../VERIFICATION.md` §7.
 
 ## Fab capability (in `ordering/`)
