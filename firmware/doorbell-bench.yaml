@@ -59,7 +59,7 @@ esphome:
       - lambda: |-
           id(greetings).push_back(nullptr);            // 0 = None
           id(greetings).push_back(id(welcome_chime));  // 1 = Chime
-          id(greetings).push_back(id(welcome_silent)); // 2 = Silent (1.5 s inaudible timing test)
+          id(greetings).push_back(id(welcome_silent)); // 2 = Silent (10 s inaudible timing test)
           id(greetings).push_back(id(welcome_hello));  // 3 = Hello
           id(greetings).push_back(id(welcome_secret)); // 4 = Secret
           id(greetings).push_back(id(welcome_windows));// 5 = Windows
@@ -211,7 +211,7 @@ media_player:
       - id: welcome_chime
         file: "sounds/welcome-chime.wav"   # 16 kHz mono, peak -3 dBFS
       - id: welcome_silent
-        file: "sounds/welcome-silent.wav"  # 1.5 s digital silence — exercises greet/open timing inaudibly
+        file: "sounds/welcome-silent.wav"  # 10 s digital silence — exercises greet/open timing inaudibly
       - id: welcome_hello
         file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
       - id: welcome_secret
@@ -286,6 +286,24 @@ script:
   - id: play_welcome
     mode: single
     then:
+      # Resolve and log the actual staged pointer here, at the common playback entry point, so the
+      # trace covers select-driven buttons and both API actions. Include the embedded byte length to
+      # distinguish a correct selection from a stale/wrong AudioFile even when no sound is heard.
+      - lambda: |-
+          auto *file = id(welcome_file);
+          if (file == nullptr) {
+            ESP_LOGI("greet", "welcome selected: None (no audio)");
+          } else {
+            const auto &options = id(next_greeting).traits.get_options();
+            const char *name = "unregistered";
+            for (size_t i = 0; i < id(greetings).size(); ++i) {
+              if (id(greetings)[i] == file) {
+                if (i < options.size()) name = options[i];
+                break;
+              }
+            }
+            ESP_LOGI("greet", "welcome selected: %s (%u bytes)", name, (unsigned) file->length);
+          }
       # No file staged (welcome_file == nullptr, e.g. next_greeting = None) -> do nothing at all: no K1
       # handshake, no wait. That lets welcome_and_open open promptly when there is no greeting.
       - if:
