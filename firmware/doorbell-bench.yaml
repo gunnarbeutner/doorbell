@@ -4,6 +4,8 @@
 #   - Identity doorbell2 @ 192.168.3.78 (shares the api key + OTA password); production is doorbell @ .18.
 #   - ALL homeassistant.event calls are stripped (a bench ring must not fire the real HA automations),
 #     and with them the ring-triggered auto-open reflex — house/apartment sense is detection-only here.
+#   - The API client reboot watchdog is disabled so unattended/paused bench runs do not reboot merely
+#     because Home Assistant or a test client remains disconnected; Wi-Fi loss still retains its guard.
 #   - Two debug switches drive the SSR outputs with no user-facing switch: "Debug Chime Suppress" (K3)
 #     and "Debug Door Drive Hold" (unpulsed K2+K4 — the Q3 watchdog still releases K2 after ~6.7 s).
 #   - "Debug Test Tone": a continuous ~1 kHz sine on the DAC/TX path (scope it on P3 with PTT on).
@@ -45,6 +47,15 @@
 # The two configs use separate build dirs (different device names), so no `esphome clean` is needed
 # between them; flash the production doorbell.yaml before the board goes in the wall. Keep this in
 # sync with doorbell.yaml — it is a copy of it plus the bench deltas listed above.
+
+# Local copy of ESPHome's speaker component with the announcement-pipeline state reset described in
+# https://github.com/esphome/esphome/issues/15692. Remove this override once the upstream fix lands.
+external_components:
+  - source:
+      type: local
+      path: components
+    components:
+      - speaker
 
 esphome:
   name: doorbell2
@@ -102,6 +113,7 @@ status_led:
 api:
   encryption:
     key: !secret api_encryption_key
+  reboot_timeout: 0s           # bench runs may intentionally pause without HA/a test client attached
   # Immediate, HA-driven greeting/open. `greeting` is a greeting NAME matching a next_greeting select
   # option ("None"/"Chime"/"Silent"/"Hello"/"Secret"/"Windows", case-sensitive) — the select's
   # option list IS the name

@@ -30,6 +30,15 @@
 # device names), but after any device-name change run `esphome clean` — a stale dependency graph
 # fails the build, and a piped `compile && upload` can then silently re-flash the previous binary.
 
+# Local copy of ESPHome's speaker component with the announcement-pipeline state reset described in
+# https://github.com/esphome/esphome/issues/15692. Remove this override once the upstream fix lands.
+external_components:
+  - source:
+      type: local
+      path: components
+    components:
+      - speaker
+
 esphome:
   name: doorbell
   on_boot:
