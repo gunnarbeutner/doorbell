@@ -9,6 +9,10 @@ Blind agents may use only:
   fields. Ignore Description fields, comments, and schematic text as unverified claims.
 - Datasheets and primary references under `docs/` selected by the authoritative part map.
 - Measured bus stimuli and their notes under `captures/runs/`.
+- For only the footprint/pinout and polarized-orientation blocks: `kicad/doorbell.kicad_pcb` limited
+  to footprint pad numbers, pad nets, physical pad positions, and rotation; plus current JLCPCB
+  order-preview images staged under `/tmp/prefab/assembly-preview/`, when available. Treat the preview
+  as revision-specific evidence, not a reusable part fact.
 
 Blind agents must not read `DESIGN.md`, `REQUIREMENTS.md`, `VERIFICATION.md`, `TODO.md`,
 `kicad/README.md`, `sim/README.md`, `sim/test/`, `prefab-report.html`, or prior review output.
@@ -17,6 +21,12 @@ Resolve parts by functional role rather than trusting a reference designator sup
 Enumerate every part matching the role. Read brands and ratings from the mapped PDF, never memory or a
 better-known similarly named part. Treat captures as actual signals traversing a closed path, not
 merely as voltage envelopes. Show Ohm/Kirchhoff and transfer calculations. Do not edit files.
+
+For assembled polarized parts, separately establish (1) exact ordered-part polarity marking, (2) the
+live PCB pad's number, net, and physical position, and (3) the current assembler preview's physical
+orientation. Do not assume terminal 1 must land on generic footprint pad 1. If an assembler preview
+is unavailable or does not visibly identify the polarity marker and part position, mark physical
+assembly orientation `undetermined`; a numbering discrepancy alone is not a confirmed reversal.
 
 ## Questions
 
@@ -70,11 +80,15 @@ and absolute limits. Sum all loads sharing a GPIO and compare per-pin and aggreg
 
 For every non-trivial part, compare the schematic symbol pin-to-net assignment with the exact
 datasheet pinout. Include ICs, regulators, connectors, SSRs, optocouplers, and polarized packages.
+For JLCPCB-assembled polarized parts, also reconcile live PCB pad positions/nets with the current
+order preview; distinguish logical symbol numbering from actual physical placement.
 
 ### Polarized-part orientation
 
 Check every diode, opto/SSR LED, electrolytic or other polarized capacitor, and the claimed
-bidirectionality of TVS parts against topology and exact datasheets.
+bidirectionality of TVS parts against topology and exact datasheets. Do not call an assembled part
+reversed without current physical-placement evidence when CPL rotation can resolve a numbering
+discrepancy.
 
 ### Analog and reference supply integrity
 

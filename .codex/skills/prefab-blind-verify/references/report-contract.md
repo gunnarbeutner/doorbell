@@ -43,6 +43,14 @@ three actions, and explicit blind spots.
   functional defect even when all ratings pass.
 - Any `sourceVerified: false` block is at least a warning and is a blocker when the unverified rating
   is load-bearing for GO.
+- For JLCPCB-assembled polarized parts, a confirmed orientation finding requires agreement among the
+  exact ordered-part marking, live PCB pad net/physical position, and current order preview. Do not
+  promote a terminal-number-versus-generic-pad-number discrepancy to a confirmed reversal. If the
+  authenticated current preview is unavailable or ambiguous, record assembly orientation as
+  `undetermined`; continue the review and request the preview rather than guessing.
+- When current assembly-preview evidence refutes a blind or adversarial numbering inference, the gate
+  must show the refutation, update the block severity/counts, and retain only the unresolved source
+  gaps. Never carry a disproven blocker into the verdict.
 - A blocker-severity uncovered dimension is itself NO-GO-class until resolved.
 - Fold every coverage gap and every `undetermined` item into `blindSpots`; a verdict is conditional on
   this complete list.
