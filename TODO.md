@@ -10,14 +10,15 @@ order—for example, some firmware work must wait for fabricated hardware regard
 ## Firmware (`firmware/doorbell.yaml`)
 
 - [ ] **9/10 — Implement K5-confirmed P4 isolation only after a fabricated V4.2 board passes passive bring-up.**
-      Do not change the deployed V4.1 firmware meanwhile: OC1 remains its session/ring input and the
-      1.75 s ring-to-welcome `gong_until_ms` delay remains enabled. After confirming unpowered P4↔
+      Keep the deployed V4.1 safeguards meanwhile: OC1 remains its session/ring input, the 1.45 s
+      ring-to-audio `welcome_not_before_ms` guard remains enabled, and ring-to-open remains at least
+      1.75 s. After confirming unpowered P4↔
       `K5_LATCH` continuity, K5 seal-in and JP3-open operation on V4.2, add GPIO4 `K5_SENSE` (active
       low) and GPIO48 `ISO_REQ` (active high, forced low at boot). Debounce `K5_SENSE` for 5–10 ms,
       request isolation, wait K6's maximum opening time, reconfirm K5, then allow K1/playback. Loss of
       K5 must stop playback, release K1 and clear `ISO_REQ`; keep raw OC1 for ring diagnostics. Only
-      after installed-board validation may the ring-to-welcome gong wait be retired for V4.2. Keep the
-      separate no-greeting visitor-reach delay unchanged.
+      after installed-board validation may the ring-to-audio guard be retired for V4.2. Keep the
+      1.75 s minimum ring-to-open deadline regardless of greeting selection.
       - **Worst case:** incorrect isolation sequencing drops the session or leaves welcome TX contaminated by P4 gong energy.
 
 ## First-board commissioning (not fabrication gates)

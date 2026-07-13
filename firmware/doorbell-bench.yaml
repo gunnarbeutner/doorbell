@@ -215,9 +215,9 @@ media_player:
       - id: welcome_hello
         file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
       - id: welcome_secret
-        file: "sounds/secret.wav"          # 1.4 s Zelda "secret" chime, 16 kHz mono, peak -3 dBFS
+        file: "sounds/secret.wav"          # 1.36 s Zelda "secret" chime, leading silence trimmed
       - id: welcome_windows
-        file: "sounds/windows.wav"         # 6.7 s Windows sound, 16 kHz mono PCM, peak -3 dBFS
+        file: "sounds/windows.wav"         # 6.14 s Windows sound, leading silence trimmed, peak -3 dBFS
     # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute FOLLOW the
     # player's playback state — engage while announcing/playing, release when idle/paused. Event-driven
     # so K1 can't be dropped mid-play by a transient IDLE blip (the earlier bug where play_welcome
@@ -258,11 +258,16 @@ globals:
   - id: greetings
     type: std::vector<audio::AudioFile*>
     restore_value: no
-  # The Türruf 3-Klang gong is active on line 4 until ~this millis() timestamp — set on each house
-  # ring. play_welcome holds a greeting until it passes, so the gong can't overlay the outbound chime
-  # (a ring latches K5 = P4↔P2, and the greeting's K1 talk bridge = P2↔line 3, so the gong would
-  # otherwise couple onto line 3). Stays in the past when no ring is recent (⇒ no wait).
-  - id: gong_until_ms
+  # Earliest time a ring-triggered welcome may start. Keep the bench twin aligned with V4.1
+  # production timing: the door station suppresses initial TX until ~1.45 s after a Türruf. Manual/API
+  # greetings with no recent ring see an expired deadline and start immediately.
+  - id: welcome_not_before_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+  # Minimum ring→open deadline. A greeting always finishes and K1 settles first, so long greetings
+  # extend the actual delay rather than being truncated or overlapped with K2.
+  - id: ring_open_not_before_ms
     type: uint32_t
     restore_value: no
     initial_value: "0"
@@ -287,12 +292,11 @@ script:
           condition:
             lambda: 'return id(welcome_file) != nullptr;'
           then:
-            # Wait out the Türruf gong before engaging K1: while its AC is on line 4 a latched K5 plus
-            # K1's talk bridge would couple it onto the outbound greeting. Returns 0 ms with no recent
-            # house ring, so api / button greetings that don't follow a ring are not delayed.
+            # Defer ring-triggered TX until the measured V4.1 door-station suppression has ended.
+            # Greeting assets have no leading padding except the intentionally all-silent test file.
             - delay: !lambda |-
-                uint32_t now = millis();
-                return (id(gong_until_ms) > now) ? (id(gong_until_ms) - now) : 0;
+                uint32_t remaining = id(welcome_not_before_ms) - millis();
+                return remaining <= 5000 ? remaining : 0;
             - media_player.volume_set:
                 id: intercom_media
                 volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
@@ -324,10 +328,12 @@ script:
     then:
       - script.execute: play_welcome    # plays whatever the caller staged in welcome_file (no-op if nullptr)
       - script.wait: play_welcome
-      # No gong-wait here: play_welcome already holds the greeting until the Türruf gong finishes (gated
-      # on a recent house ring), so this generic greet->open primitive (api / button / webhook) opens
-      # promptly.
-      - delay: 100ms                     # settle: K1 fully released before K2 makes
+      # Settle K1, then honour the 1.75 s minimum ring→open deadline. An expired/no-ring deadline adds
+      # no delay; a long greeting still completes before the door bridge makes.
+      - delay: 100ms
+      - delay: !lambda |-
+          uint32_t remaining = id(ring_open_not_before_ms) - millis();
+          return remaining <= 5000 ? remaining : 0;
       - button.press: front_door_buzzer
 
   # Stage the HA-primed greeting (next_greeting select) into welcome_file. Single-lambda -> runs
@@ -424,11 +430,11 @@ binary_sensor:
       - delayed_off: 2s
     on_press:
       then:
-        # Stamp the Türruf gong window so play_welcome's gong-wait is exercisable on the bench. The
-        # production HA events and the ring-triggered auto-open reflex stay stripped here — a bench ring
-        # is still door-detection-only; exercise greet/open via the buttons or the greet API.
+        # Stamp the same independent audio/open deadlines as production. The production HA events and
+        # ring-triggered auto-open reflex stay stripped here; exercise greet/open via buttons or API.
         - lambda: |-
-            id(gong_until_ms) = millis() + 1750;
+            id(welcome_not_before_ms) = millis() + 1450;
+            id(ring_open_not_before_ms) = millis() + 1750;
             id(gong_mute_until_ms) = millis() + 4200;
   - platform: template
     name: "Chime Enabled"
@@ -595,7 +601,8 @@ button:
     id: play_welcome_button
     on_press:
       then:
-        - lambda: 'id(welcome_file) = id(welcome_chime);'
+        # Honor the HA-primed next_greeting select; None -> no playback.
+        - script.execute: stage_selected_greeting
         - script.execute: play_welcome
   - platform: template
     name: "Welcome & Open Door"

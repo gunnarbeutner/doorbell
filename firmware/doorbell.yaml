@@ -197,9 +197,9 @@ media_player:
       - id: welcome_hello
         file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
       - id: welcome_secret
-        file: "sounds/secret.wav"          # 1.4 s Zelda "secret" chime, 16 kHz mono, peak -3 dBFS
+        file: "sounds/secret.wav"          # 1.36 s Zelda "secret" chime, leading silence trimmed
       - id: welcome_windows
-        file: "sounds/windows.wav"         # 6.7 s Windows sound, 16 kHz mono PCM, peak -3 dBFS
+        file: "sounds/windows.wav"         # 6.14 s Windows sound, leading silence trimmed, peak -3 dBFS
     # K1 (off-hook handshake + TX route) and the welcome_playing gong-mute FOLLOW the player state —
     # engage while announcing/playing, release when idle/paused. Event-driven so a transient IDLE blip
     # at announcement start can't tear K1 down mid-play: the old scheme (play_welcome raised K1
@@ -234,11 +234,17 @@ globals:
   - id: greetings
     type: std::vector<audio::AudioFile*>
     restore_value: no
-  # The Türruf 3-Klang gong is active on line 4 until ~this millis() timestamp — set on each house
-  # ring. play_welcome holds a greeting until it passes, so the gong can't overlay the outbound chime
-  # (a ring latches K5 = P4↔P2, and the greeting's K1 talk bridge = P2↔line 3, so the gong would
-  # otherwise couple onto line 3). Stays in the past when no ring is recent (⇒ no wait).
-  - id: gong_until_ms
+  # Earliest time a ring-triggered welcome may start. V4.1 measurements found that the door station
+  # suppresses the start of TX until ~1.45 s after a Türruf; the same guard also avoids presenting the
+  # initial gong to V4.1's unisolated P2-sourced talk handshake. Manual/API greetings with no recent
+  # ring see an expired deadline and start immediately.
+  - id: welcome_not_before_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+  # A ring-triggered open must never happen before this time. welcome_and_open treats it as a MINIMUM:
+  # a selected greeting always finishes and K1 settles first, so a long greeting extends ring→open.
+  - id: ring_open_not_before_ms
     type: uint32_t
     restore_value: no
     initial_value: "0"
@@ -264,12 +270,13 @@ script:
           condition:
             lambda: 'return id(welcome_file) != nullptr;'
           then:
-            # Wait out the Türruf gong before engaging K1: while its AC is on line 4 a latched K5 plus
-            # K1's talk bridge would couple it onto the outbound greeting. Returns 0 ms with no recent
-            # house ring, so api / button greetings that don't follow a ring are not delayed.
+            # On V4.1, defer ring-triggered TX until the measured door-station gain suppression has
+            # ended. Greeting assets have no leading padding (except the intentionally all-silent test
+            # file), so the media start is also the audible start. The bounded unsigned difference is
+            # wrap-safe and returns 0 when the deadline is expired or no ring is recent.
             - delay: !lambda |-
-                uint32_t now = millis();
-                return (id(gong_until_ms) > now) ? (id(gong_until_ms) - now) : 0;
+                uint32_t remaining = id(welcome_not_before_ms) - millis();
+                return remaining <= 5000 ? remaining : 0;
             - media_player.volume_set:
                 id: intercom_media
                 volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
@@ -300,10 +307,13 @@ script:
     then:
       - script.execute: play_welcome    # plays whatever the caller staged in welcome_file (no-op if nullptr)
       - script.wait: play_welcome
-      # No gong-wait here: play_welcome already holds the greeting until the Türruf gong finishes (gated
-      # on a recent house ring), so this generic greet->open primitive (api / button / webhook) opens
-      # promptly. The no-greeting visitor-reach hold lives in the ring reflex.
-      - delay: 100ms                     # settle: K1 fully released before K2 makes
+      # K1 must be fully released before K2 makes. Then honour the ring→open MINIMUM deadline; if the
+      # greeting ran longer, the expired deadline adds no delay. With no greeting this produces the
+      # same 1.75 s ring→open delay; manual/API opens with no recent ring retain only the 100 ms settle.
+      - delay: 100ms
+      - delay: !lambda |-
+          uint32_t remaining = id(ring_open_not_before_ms) - millis();
+          return remaining <= 5000 ? remaining : 0;
       - button.press: front_door_buzzer
 
   # Stage the HA-primed greeting (next_greeting select) into welcome_file — synchronously, so a caller
@@ -371,34 +381,25 @@ binary_sensor:
       - delayed_off: 2s
     on_press:
       then:
-        # Mark the Türruf gong active, so a greeting waits it out in play_welcome instead of overlaying
-        # it on line 3. 1750 ms: the gong is ~3.8 s electrically (CH1/P4, captures/runs/our-ring-no-door),
-        # but 1.75 s sufficed on V3's stronger direct P2↔P3 buzzer — the door station appears to add its
-        # own ~2 s speech-onset delay (the same one that clipped the first V4 greeting) that covers the
-        # gong tail. Confirm against door-station audio before trusting the margin.
+        # Keep two independent deadlines: TX audio starts no earlier than 1.45 s, when the measured
+        # door-station suppression has ended; opening is never earlier than 1.75 s. A greeting may
+        # extend the latter because welcome_and_open always finishes TX before it makes the door bridge.
         - lambda: |-
-            id(gong_until_ms) = millis() + 1750;
+            id(welcome_not_before_ms) = millis() + 1450;
+            id(ring_open_not_before_ms) = millis() + 1750;
             id(gong_mute_until_ms) = millis() + 4200;
         # Autonomous open reflex — runs locally so a ring still opens even when HA is slow or down.
         # HA arms it via switch.auto_open_front_door (PERSISTENT; HA owns on/off) and primes which
         # greeting plays via the next_greeting select. welcome_and_open sequences greet-then-open; the
-        # greeting waits out the gong inside play_welcome, then K1 releases before K2 bridges the door.
+        # greeting observes the V4.1 TX-ready deadline, then K1 releases before K2 bridges the door.
         # Events are generic device outputs HA consumes for notifications; HA re-derives context from state.
         - if:
             condition:
               switch.is_on: auto_open_front_door
             then:
               - script.execute: stage_selected_greeting
-              # No greeting -> hold before opening so the visitor has time to reach the door before the
-              # latch releases. This is an intentional UX delay and is independent of gong_until_ms,
-              # which delays welcome audio and can be retired when the filtered V4.2 handshake deploys.
-              # A greeting covers the visitor-reach interval by its own duration, so this hold applies
-              # only when there is no greeting.
-              - if:
-                  condition:
-                    lambda: 'return id(welcome_file) == nullptr;'
-                  then:
-                    - delay: 1.75s
+              # welcome_and_open owns both invariants: a 1.75 s minimum ring→open delay regardless of
+              # selection, and completion of any selected greeting before K2 makes.
               - script.execute: welcome_and_open
               - homeassistant.event:
                   event: esphome.doorbell_opened
@@ -527,7 +528,8 @@ button:
     id: play_welcome_button
     on_press:
       then:
-        - lambda: 'id(welcome_file) = id(welcome_chime);'
+        # Honor the HA-primed next_greeting select; None -> no playback.
+        - script.execute: stage_selected_greeting
         - script.execute: play_welcome
   - platform: template
     name: "Welcome & Open Door"

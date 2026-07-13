@@ -178,7 +178,7 @@ shared party line across apartments.
   shared line 2) must not ride the talk handshake onto line 3 at an audible level, and the greeting
   should not need to be delayed to avoid it. *(Met on V4.2 by opening K6 after K5 pull-in, separating
   raw P4 from the latched P2 handshake source. The deployed V4.1 board meets the audibility half with
-  a firmware gong-wait, at the cost of the no-delay half.)*
+  a firmware ring-to-audio guard, at the cost of the no-delay half.)*
 
 ## DOOR — Door opener
 

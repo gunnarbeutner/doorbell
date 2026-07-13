@@ -102,10 +102,12 @@ two extra parts, both on the **DOOR_DRV** gate:
   hardware-timed break-before-make; the firmware just pulses the door line.
 
 With the seal-in broken before P2↔P3 closes, the held Türruf is never bridged onto line 3. The
-firmware's separate 1.75 s **no-greeting auto-open hold remains intentional**: it gives the visitor
-time to reach the door before the latch releases. It is not the ring→welcome-audio `gong_until_ms`
-wait, which exists only to keep V4.1's unfiltered TX handshake from forwarding the gong and can be
-retired only after K6 isolation is validated on fabricated V4.2 hardware. Boot/idle: DOOR_DRV low ⇒
+firmware's 1.75 s **minimum ring-to-open deadline remains intentional** regardless of greeting
+selection: it gives the visitor time to reach the door before the latch releases, while a greeting
+that runs longer completes before the opener. It is separate from V4.1's 1.45 s ring-to-audio
+`welcome_not_before_ms` guard, which covers the measured door-station startup suppression and keeps
+V4.1's unfiltered TX handshake away from the initial gong. The audio guard can be retired only after
+K6 isolation is validated on fabricated V4.2 hardware. Boot/idle: DOOR_DRV low ⇒
 Q3 off (K2 open) and K4 LED off (K4
 closed) ⇒ fail-safe (SAFE-6).
 
@@ -598,8 +600,9 @@ K1:
 | active | closed | talk → **send (TX)** — line 3 asserted via the K1 handshake |
 
 ⇒ On validated V4.2 hardware, "can I send right now?" = **K5 confirmed AND K1 closed.** Production
-firmware remains on the V4.1-compatible OC1 + 1.75 s gong-wait behaviour until the first fabricated
-V4.2 board passes passive bring-up and K6 validation.
+firmware remains on the V4.1-compatible OC1 + 1.45 s ring-to-audio guard, plus a separate 1.75 s
+minimum ring-to-open deadline, until the first fabricated V4.2 board passes passive bring-up and K6
+validation.
 
 **Codec + front-end (committed to the netlist; analog values bench-gated for final trim):**
 
@@ -645,7 +648,8 @@ connected, its gong rides onto the P2-sourced talk handshake and can be forwarde
 K5's auxiliary contact proves pull-in, K6 opens raw P4↔`K5_LATCH`; K5 continues to hold from P2 while
 the gong remains on the raw side with OC1 and K3. The K5 contact is a hardware interlock, and K6 is
 normally closed so reset or power loss restores the passive topology. V4.1 firmware still delays
-greeting audio with `gong_until_ms`; retire that workaround only after fabricated V4.2 validation.
+ring-triggered greeting audio with `welcome_not_before_ms`; retire that workaround only after
+fabricated V4.2 validation.
 
 **Final bench calibration:**
 - **RX trim + TX level.** The MIC1P/N attenuating divider and VMID bias are committed (R30/R31 22 kΩ
