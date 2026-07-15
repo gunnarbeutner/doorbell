@@ -467,7 +467,7 @@ no flyback; D1 exists only for the passive electromechanical latch.
 ```
 J1 VBUS ──[D4 SS14]── VBUS_PROTECTED ── F1 1A fast fuse ── +5V ─┬─ main 3.3V LDO ── +3V3 ── digital loads
                                                                   └─ low-noise 3.3V LDO ── D18 ── codec AVDD
-J1 D± ── D5 ── IO19/IO20 (native USB)         +3V3: 10µF + 10µF + 100nF; AU_3V3: 1µF out (C24)
+J1 D± ── D5 ── IO19/IO20 (native USB)         +3V3: 10µF + 10µF + 100nF; AU_3V3: 10µF out (C24)
 D4 blocks a reversed J1 supply and prevents VBUS_PROTECTED from feeding back out through the service connector
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from +5V (post-fuse); +5V TVS: SMF5.0A (D10)
 VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all downstream protection — a clamping D10 blows it, isolating J1 (fail-safe)

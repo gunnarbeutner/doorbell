@@ -151,7 +151,7 @@ For a greeting following a ring:
 10. Close P4 isolation and restore RX.
 
 K3 gong muting is an independent policy. It may remain open or closed throughout this sequence: K3
-only controls raw `P4 → CHIME_C1 → C19/C21 → LS1`, whereas `P4_ISO` only separates raw P4 from
+only controls raw `P4 → CHIME_C1 → C19 → LS1`, whereas `P4_ISO` only separates raw P4 from
 `K5_LATCH`. The P4-isolation safety argument must not rely on K3's state.
 
 At any point, loss of `K5_SENSE` must stop playback, open K1 and clear the isolation request. The
@@ -205,17 +205,17 @@ R28 LCSC:       C4190
 R28 MPN:        0603WAF2201T5E
 ```
 
-## 6. D1 and C19/C21 protection
+## 6. D1 and C19 protection
 
 Splitting P4 moves D1's coil-flyback function onto `K5_LATCH`. While isolation is open, D1 no longer
 clamps negative excursions on raw P4 coupled through the gong-capacitor network. Close the existing
-D1/C19/C21 qualification work as part of this change:
+D1/C19 qualification work as part of this change:
 
 - Keep a correctly rated flyback diode directly across the K5 coil.
-- Qualify or add separate protection for the raw P4/C19/C21 path.
-- Qualify the raw P4/C19/C21 path with K3 both open and closed; P4 isolation must be safe in either
+- Qualify or add separate protection for the raw P4/C19 path.
+- Qualify the raw P4/C19 path with K3 both open and closed; P4 isolation must be safe in either
   chime state.
-- Verify that reset and reconnection cannot expose C19/C21 or LS1 to a harmful transient.
+- Verify that reset and reconnection cannot expose C19 or LS1 to a harmful transient.
 
 ## 7. Relevant BOM
 

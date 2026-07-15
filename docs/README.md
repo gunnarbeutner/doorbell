@@ -29,9 +29,13 @@ pad map + strapping), **ES8311** codec (`ES8311_datasheet.pdf` + `ES8311.user.Gu
 **Omron G6K** relay (`g6k_datasheet.pdf`), **SUPSiC GAQY412E/EH** PhotoMOS
 (`GAQY412E_EH_datasheet.pdf`), the **SPPJ322300** door switch (`SPPJ322300_datasheet.pdf`), the
 **AO3400A** door/watchdog FETs (`ao3400a_datasheet.pdf`), and the **LMBR01S30ST5G** codec-clamp and
-AVDD reverse-blocking Schottky (`lmbr01s30st5g_datasheet.pdf`).
-Parts reasoned from standard pin conventions (SS14, SMF5.0A, 1N4148W, the JST-SH connector and the
-GAQW/GAQY212GS SSRs) have no local sheet — see `../VERIFICATION.md` §7.
+AVDD reverse-blocking Schottky (`lmbr01s30st5g_datasheet.pdf`). The exact polarised crossover
+capacitor is Panasonic **EEEFK1H220P** (`eeefk1h220p_datasheet.pdf`), and K5's exact flyback/clamp is
+R+O / Zhuhai Hongjiacheng **1N4004W** (`1n4004w_datasheet.pdf`).
+
+Local sheets also cover the **SS14**, **SMF5.0A**, **1N4148W**, **SM04B-SRSS-TB JST-SH** connector,
+and **GAQW212GS/GAQY212GS** SSRs. Not every commodity resistor or MLCC sheet is archived; use the
+exact schematic BOM/LCSC entry rather than inferring an ordered part from this directory.
 
 ## Fab capability (in `ordering/`)
 

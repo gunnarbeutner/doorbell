@@ -12,23 +12,26 @@ antenna lead out of the enclosure instead).
 > Run `./build.sh` first to verify the design and re-export the fab files in `fab/` — the committed
 > gerbers/BOM/CPL are build outputs and may lag the schematic.
 
-## Mechanical fit gate (physically passed on V4.1)
+## Mechanical fit gate (V4.1 passed; current V4.2 still open)
 
 **MECH-1 passed on V4.1:** the assembled PCB fits and operates in the original WF26
 enclosure. The board seats on the bosses, the populated-board height clears the closed lid, the
 speaker and wire entry align, and both original housing buttons actuate that board's switches. The
 V4.2 printed fit test found that the former USB-C connector obstructed the Talk actuator; it has been
-removed. Repeat MECH-1a on the current print before ordering.
+removed. That earlier print does not qualify HEAD: repeat MECH-1/MECH-1a on a current export before
+ordering, using the actual J1 mating plug and cable.
 
 Repeat this gate before ordering only if a revision changes the board outline, mounting pattern,
 switch/speaker/connector placement, or maximum component height. `./build.sh` (or
 `./build.sh step`) exports `fab/doorbell.step`; print it and check it against the original enclosure:
 
 - **Board fits the housing (MECH-1).** Outline clears the housing walls/posts; the mounting holes
-  (H1–H5) line up with the enclosure's bosses; nothing tall (U1, the latch relay K5, the
+  (H1–H2) line up with the enclosure's bosses; nothing tall (U1, the latch relay K5, the
   electrolytics, the screw terminal) fouls a rib or the lid.
-- **Connector access.** The J1 JST-SH plug seats without fouling the housing or actuator, and J2's
-  wire mouths are reachable to land the five bus wires once installed.
+- **Connector access.** Fully seat the actual JST-SH mating plug and intended cable in J1 with the
+  lid closed. Check cable exit, bend radius and strain as well as direct connector clearance; then
+  confirm the Talk actuator still travels fully. J2's wire mouths must remain reachable to land the
+  five bus wires once installed.
 - **Switches fit + actuate (MECH-1a) — the point of the test.** The STEP model **deliberately omits
   SW3/SW4** (the `STEP_Exclude` field; see `tools/step_exclude.py`) — the door-release and talk
   front-panel buttons (`SPPJ322300`) — so you fit-test the printed board against the **real**
@@ -58,13 +61,13 @@ board face).
   add for assembly) and emails it for your approval. **Confirm within 48 h** or it auto-proceeds.
 - **PCB Assembly:** ON
   - **Assembly side:** Top only (the board has no bottom-side parts)
-  - **PCBA Type:** **Standard** — the current BOM is not Economic-eligible. Standard carries the
-    $25/side setup; the specialised parts (RF module, codec, LDO, PhotoMOS SSRs, latch relay,
-    JST-SH service connector and bus terminal) are Extended and add per-type loading fees on top. The
-    free-vs-fee breakdown is in `JLCPCB-BASIC-PARTS.md`.
+  - **PCBA Type:** **Standard** — the current BOM is not Economic-eligible. Standard carries a
+    per-side setup fee; the specialised parts (RF module, codec, LDO, PhotoMOS SSRs, latch relay,
+    JST-SH service connector and bus terminal) may add per-type loading fees.
   - **Stock check:** confirm LCSC stock on the less-common Extended lines (the RF module, codec,
     LDO, SSRs, latch relay, JST-SH connector, screw terminal and door switches) against the current
-    `fab/doorbell-bom-jlcpcb.csv` — `JLCPCB-BASIC-PARTS.md` flags the low-stock ones.
+    `fab/doorbell-bom-jlcpcb.csv` and the live JLCPCB import/quote. Do not carry a previous quote's
+    stock or Basic/Extended classification forward.
   - **Through-hole parts:** J2 is assembled by JLCPCB; confirm THT
     assembly is included when JLCPCB reviews/quotes the order.
   - **Assembly Qty:** `2` — assemble one + a spare. The setup/part fees are already paid, so
@@ -95,23 +98,26 @@ scrutinise:
 
 | Class | Why it matters | If wrong |
 |------|-------|----------|
-| **Opto reverse-clamps** (1N4148W anti-parallel across the bell-sense opto LEDs) | band must point to the LED-anode / bus-line net | **both bell-sense channels dead** — a silent failure until bench test; **scrutinise hardest** |
+| **Opto reverse-clamps D8/D9** (1N4148W anti-parallel across OC1/OC2 LEDs) | band/cathode must point to each opto LED's anode / bus-line net | **both bell-sense channels dead** — a silent failure until bench test; **scrutinise hardest** |
 | **MCU** (ESP32-S3-WROOM-1U-N16R8) | pin 1 / rotation | dead board |
-| **LDO** (SGM2212, SOT-223) | orientation | no 3V3, or damage |
+| **LDOs U2/U4** (SGM2212-3.3 and LP5907MFX-3.3, SOT-23-5) | pin 1 / rotation; do not treat the two pinouts as interchangeable | no 3V3/AVDD, or damage |
 | **Codec** (ES8311, QFN-20, 0.4 mm pitch) | pin-1 dot | codec dead / damage |
 | **USB ESD** (TPD2S017) | pin-1 — channels are in series with D± | USB dead / wrong clamp |
 | **VBUS Schottky / TVS** (SS14 series, SMF5.0A clamp) | band direction | blocks VBUS, or shorts/leaves it unclamped |
-| **PhotoMOS SSRs** (talk/door NO; chime-mute / seal-in-break **NC**) | the NC parts must stay **1-Form-B** | a swapped NO/NC breaks the gong/door fail-safe |
-| **Latch relay** (HJR4102) + its flyback (1N4148W) | orientation / band | seal-in or flyback wrong |
-| **Dual MOSFET** (2N7002DW) | SOT-363 pinout | door break-before-make / watchdog dead |
+| **PhotoMOS SSRs K1/K2/K3/K4/K6** | K1 GAQW212GS and K2 GAQY212GS are NO; K3/K4/K6 GAQY412EH are **NC**; confirm pin 1 and part value at every ref | a swapped NO/NC breaks the gong, door or P4-isolation fail-safe |
+| **Latch relay K5 + flyback D1** | K5 is G6K-2F-Y DC12; confirm pin 1 and both pole mappings. D1 is 1N4004W with A4 top code; its cathode band faces `K5_LATCH` | no seal-in/sense, a defeated K6 interlock, or wrong flyback |
+| **Door FETs Q3/Q4** | each is an AO3400A SOT-23 (1=G, 2=S, 3=D); reconcile rotation separately | door break-before-make or watchdog dead |
+| **Codec clamps D13/D14/D16/D17 and AVDD block D18** | tiny X3-DFN LMBR01S30ST5G; pin 1 is cathode — match each pin-1 mark to its schematic net | codec over/under-rail protection or AVDD feed defeated |
+| **Crossover C19** | EEEFK1H220P is polarised: pin 1 (+) faces `CHIME_C1`/P4 and the negative stripe faces P5 | passive gong/listen path degraded or capacitor overstressed |
+| **Service connector J1** | SM04B-SRSS-TB pin order and side-entry orientation; compare the placement preview with the real mating-plug approach | reversed power/USB wiring or an inaccessible connector |
 | **Power LED** | anode/cathode | just won't light (harmless) |
 
 ## Cost expectations
 
-The PCB itself is the *small* line. On Standard PCBA the cost is the **$25/side setup**, the
-per-type **loading/feeder fee** on each unique **Extended** part (~$3 each — see
-`JLCPCB-BASIC-PARTS.md` for the count), the parts themselves, and the (small) assembly + stencil
-cost. You only pay assembly on the 1–2 boards you choose to populate.
+The PCB itself is the *small* line. On Standard PCBA the setup, loading/feeder fees for Extended
+parts, assembly, stencil and parts dominate. Treat the live import/quote as authoritative for prices
+and classifications; they change independently of the source tree. You only pay assembly on the
+1–2 boards you choose to populate.
 
 ## Why this route (one-liner)
 

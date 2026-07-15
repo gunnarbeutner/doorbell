@@ -7,6 +7,16 @@ Priority rates how important it is to get the item right for V4.2: **10/10** is 
 core function or long-term reliability; **1/10** is optional polish. It does not replace dependency
 order—for example, some firmware work must wait for fabricated hardware regardless of its score.
 
+## Pre-order gates
+
+- [ ] **8/10 — Repeat the current V4.2 enclosure fit with the actual J1 plug and cable.**
+      Export and print `fab/doorbell.step` from the final source, fit the board with real SW3/SW4
+      and the fully seated SM04B-SRSS mating plug/cable, then close the lid. Verify H1/H2 seating,
+      connector and cable clearance/bend/strain, both front-panel actuators' full travel, and J2 wire
+      access. Record the export revision and result before approving the order; the earlier V4.2
+      USB-C interference finding and V4.1 installed-board fit do not qualify HEAD.
+      - **Worst case:** the assembled V4.2 board or service cable obstructs the Talk/door actuator or prevents the enclosure from closing, forcing a respin.
+
 ## Firmware (`firmware/doorbell.yaml`)
 
 - [ ] **9/10 — Implement K5-confirmed P4 isolation only after a fabricated V4.2 board passes passive bring-up.**

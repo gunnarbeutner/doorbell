@@ -6,8 +6,9 @@
 #     and with them the ring-triggered auto-open reflex — house/apartment sense is detection-only here.
 #   - The API client reboot watchdog is disabled so unattended/paused bench runs do not reboot merely
 #     because Home Assistant or a test client remains disconnected; Wi-Fi loss still retains its guard.
-#   - Two debug switches drive the SSR outputs with no user-facing switch: "Debug Chime Suppress" (K3)
-#     and "Debug Door Drive Hold" (unpulsed K2+K4 — the Q3 watchdog still releases K2 after ~6.7 s).
+#   - Three debug switches drive otherwise-hidden hardware: "Debug Chime Suppress" (K3),
+#     "Debug Door Drive Hold" (unpulsed K2+K4 — the Q4 watchdog releases K2 after ~8.4 s nominal),
+#     and "Debug P4 Isolation" (K6 request). "Debug K5 Sense" reports K5's auxiliary contact.
 #   - "Debug Test Tone": a continuous ~1 kHz sine on the DAC/TX path (scope it on P3 with PTT on).
 #     NO microphone here: the mic (I2S RX) and speaker (I2S TX) share one half-duplex I2S bus, and a
 #     declared mic holds the bus so the speaker can't start ("Parent bus is busy") — which breaks
@@ -20,6 +21,8 @@
 #   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO10
 #   suppress_chime_bin (K3 / chime suppress)       : GPIO11
 #   K1                 (PTT SSR, talk=energised)   : GPIO9
+#   K5_SENSE           (K5 auxiliary NO, active-low): GPIO4
+#   ISO_REQ            (K6 request, active-high)   : GPIO48
 #   status LED          (active-low D6)             : GPIO7
 #   I2C_SDA  (ES8311 control)                      : GPIO38
 #   I2C_SCL  (ES8311 control)                      : GPIO39
@@ -468,6 +471,21 @@ binary_sensor:
             id(welcome_not_before_ms) = millis() + 1450;
             id(ring_open_not_before_ms) = millis() + 1750;
             id(gong_mute_until_ms) = millis() + 4200;
+  # Bench-only observation of K5's physical auxiliary NO contact. R35 is the external 10 kΩ pull-up;
+  # do not add an internal pull-up that could hide an assembly fault in that path.
+  - platform: gpio
+    name: "Debug K5 Sense"
+    icon: mdi:electric-switch
+    id: debug_k5_sense
+    entity_category: diagnostic
+    pin:
+      number: GPIO4
+      inverted: true
+      mode:
+        input: true
+    filters:
+      - delayed_on: 5ms
+      - delayed_off: 5ms
   - platform: template
     name: "Chime Enabled"
     id: chime_enabled
@@ -540,7 +558,7 @@ switch:
     restore_mode: RESTORE_DEFAULT_OFF
   # Bench diagnostics (SAFE-6 / Stage-2c): direct drives for the two SSR outputs with no user-facing
   # switch of their own. Only this bench config carries them — the door-hold switch bypasses the
-  # 1.75 s button pulse (the Q3 watchdog still releases K2 after ~6.7 s; K4 stays open while held).
+  # 1.75 s button pulse (the Q4 watchdog releases K2 after ~8.4 s nominal; K4 stays open while held).
   - platform: output
     name: "Debug Chime Suppress"
     icon: mdi:bug
@@ -554,6 +572,16 @@ switch:
     id: debug_door_drive_hold
     entity_category: diagnostic
     output: front_door_buzzer_bin
+    restore_mode: ALWAYS_OFF
+  # Stage-2d only, after Stage-2a has proved unpowered P4 continuity and passive K5 seal-in. This
+  # requests K6 open; K5's auxiliary contact is the independent hardware LED-return interlock, so a
+  # premature/stuck request cannot open the fail-closed P4 path before K5 physically pulls in.
+  - platform: output
+    name: "Debug P4 Isolation"
+    icon: mdi:call-split
+    id: debug_p4_isolation
+    entity_category: diagnostic
+    output: p4_isolation_req
     restore_mode: ALWAYS_OFF
   # Bench tone source — a ~1 kHz sine on the DAC/TX path. Engage "Intercom PTT" so K1 puts it on P2/P3;
   # scope the TX node (mic loopback is gone — the half-duplex bus can't play + capture at once anyway).
@@ -598,6 +626,9 @@ output:
                              # drop the WF26 latch; K2's make is delayed ~38ms (Q3/RC) so the break
                              # leads = S1 break-before-make in hardware (no firmware sequencing)
     id: front_door_buzzer_bin
+  - platform: gpio
+    pin: GPIO48              # ISO_REQ — K6 opens only when K5_SENSE also provides its LED return
+    id: p4_isolation_req
 
 # Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the
 # expected delivery/guest. Options MUST stay in the same order as the greetings registry (esphome:

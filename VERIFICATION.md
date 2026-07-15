@@ -152,7 +152,8 @@ those are §6) can be exercised this way.
 on the P2 feed, an isolated/battery 2-ch scope, a DMM, and the board's own J1 5 V feed (via a current
 meter if available). Flash `firmware/doorbell-bench.yaml` for these stages — the production
 config minus the HA events (a bench ring would fire the real automations) plus direct debug
-switches for K3 and the door drive. **Ground discipline:** P1 is hard-bonded to board GND *and* USB GND, so
+controls for K3, the door drive and K6 isolation, plus a diagnostic K5-contact input. **Ground
+discipline:** P1 is hard-bonded to board GND *and* USB GND, so
 `PSU− = P1 = USB-GND = scope-ground` is **one node** — float the PSU, isolate the scope, grounds on
 P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isolation rule).
 
@@ -164,8 +165,10 @@ continuous; raw P4↔`K5_LATCH` continuous through K6; JP3 open; TP1–TP8 prese
 (after the SS14 drop — there is no 5 V test point), **TP2 ≈ +3.30 V**, quiescent current sane,
 board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
-  **closed** — validating each SSR + driver + GPIO map with no bus voltage present. Record the 5 V,
-  +3V3, codec VMID and idle-output voltages in the run-specific evidence log.
+  **closed** — validating each SSR + driver + GPIO map with no bus voltage present. Leave
+  `Debug P4 Isolation` off; confirm GPIO48/`ISO_REQ` is low and K6 remains closed. Do not exercise
+  K6 until the passive K5 checks in 2a have passed. Record the 5 V, +3V3, codec VMID and idle-output
+  voltages in the run-specific evidence log.
 
 **Stage 2 — emulated bus** (`PSU+ → 100 Ω → P2`, `PSU− → P1`, 12 V, limit ~120 mA):
 - **2a passive seal-in, board UNPOWERED (MODE-1/SAFE-4):** tap 12 V onto P4 ~1 s → K5 pulls in;
@@ -180,14 +183,18 @@ board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   **Cross-stress:** drive P4 high, confirm the idle OC2 cathode stays clamped near 0 (per-opto
   limiter + D9 fix).
 - **2c door open (DOOR-4/5):** seal in, fire a door-open, 2-ch scope the seal-in node vs the P2↔P3
-  bridge — **K4 opens ~20 ms before K2 closes** (latch drops, P4 falls, live P4 never reaches P3);
+  bridge — measure K4 break before K2 make and compare with the current ~38 ms nominal delay
+  (latch drops, P4 falls, live P4 never reaches P3);
   hold the command asserted and measure that the watchdog releases K2 after the minimum normal
   firmware pulse but before the specified maximum fault-on time.
-- **2d K5-confirmed P4 isolation:** with JP3 open, ring K5 in and confirm `K5_SENSE` goes low before
-  asserting `ISO_REQ`. Open K6, remove the raw-P4 drive and confirm K5 remains sealed from P2 while
-  raw P4 is disconnected from `K5_LATCH`. Drop P2 and confirm K5 releases and K6 immediately restores
-  continuity. Assert `ISO_REQ` before K5 pull-in and confirm the hardware interlock keeps K6 closed.
-  Finally bridge JP3 temporarily and confirm it restores permanent P4↔`K5_LATCH` continuity.
+- **2d K5-confirmed P4 isolation:** keep JP3 open and power the bench firmware. Before K5 pull-in,
+  confirm `Debug K5 Sense` is clear, turn on `Debug P4 Isolation` and verify GPIO48/`ISO_REQ` goes
+  high but the hardware interlock keeps K6 closed; turn the request off. Ring K5 in and confirm
+  `Debug K5 Sense` asserts after its 5 ms debounce. Turn on `Debug P4 Isolation`, verify K6 opens,
+  remove the raw-P4 drive and confirm K5 remains sealed from P2 while raw P4 is disconnected from
+  `K5_LATCH`. Drop P2 and confirm K5 releases, the diagnostic clears and K6 immediately restores
+  continuity even while the request remains high; then turn the request off. Finally bridge JP3
+  temporarily and confirm it restores permanent P4↔`K5_LATCH` continuity.
 - **2e chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
   closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
   regardless of mute.
@@ -240,12 +247,11 @@ J2's screws, and component pads. Use an **isolated** scope
 Local copies live in `docs/` so the references don't rot: the ESP32-S3-WROOM-1U-N16R8 module (pad map +
 strapping), ES8311 codec, SGM2212 LDO, TPD2S017 USB ESD, Omron G6K relay, SUPSiC GAQY412E/EH and
 GAQW/GAQY212GS PhotoMOS, the AO3400A door/watchdog FETs, the LMBR01S30ST5G codec-clamp Schottky, the
-Toshiba TLP293 GB low-current sense optocoupler, and the STR
-TV20/S Verdrahtungsplan + Fehlersuchhilfe. SS14, SMF5.0A and 1N4148W are reasoned
-from standard pin conventions, cross-checked against the project's JLCPCB symbol pads.
+Toshiba TLP293 GB low-current sense optocoupler, Panasonic EEEFK1H220P crossover capacitor,
+R+O / Zhuhai Hongjiacheng 1N4004W flyback/clamp, SS14, SMF5.0A, 1N4148W, JST-SH connector, and the
+STR TV20/S Verdrahtungsplan + Fehlersuchhilfe.
 
-
-For every ordered part, use the exact manufacturer PDF corresponding to the BOM/LCSC entry. Record
+For every ordered part, use the exact datasheet corresponding to the BOM/LCSC entry. Record
 the symbol pin, footprint pad, physical package pin and net for each polarity-sensitive or active
 device. Recalculate all timing and threshold claims from the ordered part's guaranteed ranges; do
 not carry a previous board's pinout or measured timing forward as evidence.
