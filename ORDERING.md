@@ -85,6 +85,11 @@ The ~64 × 59 mm board is under the Standard-assembly minimum, so JLCPCB panels 
 rails ("Panel by JLCPCB"). When the production file arrives, check before approving that no rail,
 break-tab or mousebite lands at **J2**; its wire mouths must stay clear.
 
+Confirm the default solder-jumper state survived the production-file conversion: **JP2 and JP4 are
+bridged in copper; JP3 is open**. They are PCB features excluded from the BOM/CPL, so the assembler
+will not populate or correct them. JP4 enables the 200 kΩ TX precharge path and is cut only for a
+diagnostic A/B test.
+
 A tab/cut at J2 → **reject and comment**, and JLCPCB re-prepares it. Small mousebite nubs
 elsewhere on the edges are fine as long as they're clear of parts. (No PCB-antenna edge to worry
 about — the u.FL module's antenna is external.)

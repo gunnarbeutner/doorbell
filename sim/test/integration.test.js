@@ -10,7 +10,8 @@
 //    so /ISO_REQ cannot open K6 until K5 has physically pulled in. JP3 is an open recovery bypass.
 //  - The embedded WF26 core (K5 latch + S1/S2 + C1) remains passive and works unpowered (SAFE-4).
 //  - Audio is transformer-less: RX taps /P2 through C16 to the ES8311 ADC (MICP/MICN); TX runs the
-//    codec DAC (OUTP) through R26 → C14 → /TALK_BRIDGE → R28 → /TX_OUT.
+//    codec DAC (OUTP) through R26 → C14 → /TALK_BRIDGE → R28 → /TX_OUT. Factory-bridged JP4 plus
+//    R38+R39 (200 kΩ total) precharge /TALK_BRIDGE from /P2 before K1-ch1 closes.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { importNetlist } from '../src/import.js';
@@ -588,9 +589,10 @@ test('talk handshake (K1): energised bridges P2 onto P3 through R28; idle lifts 
   assert.ok(!(idle['/P3'] > 6), `K1 idle should lift line 3 off the handshake, got ${idle['/P3']?.toFixed(2)} V`);
 });
 
-test('TX topology: R28/C14 and both K1 contacts match the intended path', () => {
+test('TX topology: handshake, gate and factory-bridged 200 kΩ precharge match the intended path', () => {
   const C = (ref) => netlist.components.find((c) => c.ref === ref);
   const r28 = C('R28'), c14 = C('C14'), k1 = C('K1');
+  const jp4 = C('JP4'), r38 = C('R38'), r39 = C('R39');
   assert.equal(r28.pins['2'], '/TALK_BRIDGE');
   assert.equal(r28.pins['1'], '/TX_OUT');
   assert.equal(c14.pins['2'], '/TALK_BRIDGE');
@@ -598,6 +600,17 @@ test('TX topology: R28/C14 and both K1 contacts match the intended path', () => 
   assert.equal(k1.pins['7'], '/TALK_BRIDGE');
   assert.equal(k1.pins['6'], '/TX_OUT');
   assert.equal(k1.pins['5'], '/P3');
+
+  assert.equal(jp4.value, 'TX_PRECHARGE');
+  assert.equal(defaultSwitchState(netlist).JP4, true, 'JP4 must be factory bridged');
+  assert.equal(jp4.pins['1'], '/P2');
+  assert.equal(jp4.pins['2'], '/TALK_BRIDGE_BIAS');
+  assert.equal(r38.value, '100k');
+  assert.equal(r38.pins['1'], '/TALK_BRIDGE_BIAS');
+  assert.equal(r38.pins['2'], '/TALK_BRIDGE_BIAS_MID');
+  assert.equal(r39.value, '100k');
+  assert.equal(r39.pins['2'], '/TALK_BRIDGE_BIAS_MID');
+  assert.equal(r39.pins['1'], '/TALK_BRIDGE');
 });
 
 // K6 removes raw P4, including its gong, from the latched K5/P2 handshake source. The restored R28

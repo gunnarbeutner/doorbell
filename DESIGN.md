@@ -66,7 +66,7 @@ path. The exact orderable connector is maintained in the schematic and `ORDERING
 | Line | TV20/S role | Role in our circuit |
 |------|-------------|---------------------|
 | **P1** (= board GND) | Common reference (all bell/speech ref to line 1) | Bonded to board GND; opto LED returns (each via 5.1 kΩ to P1); the codec RX/TX reference |
-| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in. **Idles at +12 V vs P1** — a continuous standing bus rail (`captures/runs/`: 12.06–12.11 V at rest), sagging to ~9.4 V under the seal-in load during a session and momentarily to ~2.6 V at session-end before snapping back |
+| **P2** | Listen leg; ÖT pair with line 3 | **K2** door bridge (to P3); **RX tap** (P2 → C16 → codec ADC); SW3; the **P2 supply** that seals the WF26 latch in; the 200 kΩ TX precharge path (`P2 → JP4 → R38 → R39 → TALK_BRIDGE`). **Idles at +12 V vs P1** — a continuous standing bus rail (`captures/runs/`: 12.06–12.11 V at rest), sagging to ~9.4 V under the seal-in load during a session and momentarily to ~2.6 V at session-end before snapping back |
 | **P3** | Talk leg; ÖT pair with line 2 | **K2** door bridge (from P2); **TX inject** (`OUTP → R26 → C14 → TALK_BRIDGE → R28 → TX_OUT → K1-ch2 → P3`); WF26 talk/door switches |
 | **P4** | Türruf — ~12 VDC front-door gong + tone | **OC1** sense; **K3** chime-mute (P4↔C1); **K6** normally-closed bridge to `K5_LATCH` |
 | **P5** | Etagenruf — apartment/floor call (tone) | **OC2** sense; **LS1** speaker (P5↔GND); C19 (the gong cap, P4↔P5) |
@@ -397,7 +397,7 @@ opto collector ──► GPIO + 12 kΩ to +3V3     opto emitter ──► GND  (
 ### Switches (K1/K2/K3/K4/K6 — PhotoMOS SSRs)
 
 ```
-K1 (talk+TX gate, dual NO): ch1 P2↔TALK_BRIDGE (→ R28 2.2 kΩ → TX_OUT), ch2 TX_OUT↔P3
+K1 (talk+TX gate, dual NO): ch1 P2↔TALK_BRIDGE (precharged by JP4+R38+R39 = 200 kΩ), ch2 TX_OUT↔P3
 K2 (door opener, NO): P2 ↔ P3 — energise to bridge the ÖT pair
 K3 (chime mute, NC): P4 ↔ CHIME_C1 — energise to open and mute
 K4 (seal-in break, NC): SW3.6 ↔ K5.3 — energise to drop the latch
@@ -411,7 +411,10 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   unpowered); K3 closed ⇒ the gong rings at boot/unpowered (GONG-3/SAFE-6).
 - **K1 — talk handshake + TX gate (BUS-1).** Ch1 sources P2 onto `TALK_BRIDGE`; R28 provides the
   field-proven 2.2 kΩ handshake to `TX_OUT`; ch2 gates `TX_OUT` onto P3. Codec TX joins
-  `TALK_BRIDGE` through R26/C14. With K1 idle, line 3 is structurally high-impedance.
+  `TALK_BRIDGE` through R26/C14. Factory-bridged JP4 and R38+R39 (100 kΩ + 100 kΩ) span ch1 so
+  C14's bus side follows the standing P2 bias before K1 closes; the closed contact bypasses that
+  high-value path during TX. K1 ch2 still leaves line 3 structurally high-impedance at idle. JP4 is
+  cuttable only for diagnostic A/B testing and is normally restored bridged.
 - **Why TX drives line 3, not line 4.** A WF26 hangs **C1 (22 µF) + the 16 Ω speaker across line 4**
   = a ~20–30 Ω near-short to common across the voice band; injecting there would dump the drive into
   it. Line 3 is light (the TV20/S amp input ∥ the handshake leg's 2.2 kΩ), so the codec drives
@@ -574,8 +577,10 @@ that shared common (the SAFE-3 trade; see "Bus↔logic coupling"):
 - **TX (talk):** dual K1 restores the field-proven V4.1 topology: ch1 connects the always-on P2 supply
   to `TALK_BRIDGE`; R28 (2.2 kΩ) connects `TALK_BRIDGE` to `TX_OUT`; ch2 gates `TX_OUT` onto P3.
   Codec audio joins at `TALK_BRIDGE` through `OUTP → R26 (2.2 kΩ) → C14 (DC-block)`. With K1 open,
-  P3 is high-impedance. During a confirmed ring session, K6 can disconnect raw P4 from `K5_LATCH`,
-  preventing the own-ring gong from reaching the P2-sourced handshake without shunting codec audio.
+  the factory-bridged `P2 → JP4 → R38 (100 kΩ) → R39 (100 kΩ) → TALK_BRIDGE` path precharges C14's
+  bus side while K1 ch2 keeps P3 high-impedance. During a confirmed ring session, K6 can disconnect
+  raw P4 from `K5_LATCH`, preventing the own-ring gong from reaching the P2-sourced handshake without
+  shunting codec audio.
 
 Tapping 1/2/3 (not the WF26 *speaker* pair P1/P5) keeps the smart audio **independent of line 4 / K3 /
 the gong-suppress**, so it works with the gong muted.
@@ -612,6 +617,15 @@ validation.
   the DC talk handshake. The codec leg joins `TALK_BRIDGE` through `OUTP → R26 (2.2 kΩ) → C14
   (1 µF DC-block)`. The DAC drives **single-ended** off OUTP; OUTN is parked through its own
   `R16 (2.2 kΩ) → C15 → GND` termination (OUTN sees no bus path, so it needs no clamp).
+  Factory-bridged **JP4 + R38 + R39** place 200 kΩ from P2 to `TALK_BRIDGE` while K1-ch1 is open.
+  This gives C14's bus side the same DC bias that the closed contact will impose, rather than letting
+  K1 make into a charged coupling network. The nominal charging time constant is
+  `(200 kΩ + R26) × 1 µF ≈ 202 ms`; after any P2 or codec-bias step, the existing 1.45 s
+  ring-to-audio guard is more than seven time constants. C14 blocks steady DC, while at voice
+  frequencies the added branch is about 202 kΩ into the DAC; in parallel with the existing
+  25.3 kΩ RX tap it makes the total smart-layer P2 load about 22.5 kΩ. When K1 closes, ch1 bypasses
+  the two resistors, so neither the 2.2 kΩ handshake nor TX gain changes. JP4 is a diagnostic escape
+  hatch, not a normal assembly option.
   R26 limits current from bus steps coupled back through C14; D13 clamps positive excursions into
   AVDD and D16 clamps negative excursions into GND. Codec output is far above
   the passive handset microphone level, so firmware turns it down rather than adding a buffer. The

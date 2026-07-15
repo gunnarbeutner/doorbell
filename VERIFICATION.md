@@ -90,8 +90,11 @@ input-only or flash-tied pin may be misused. Native USB D±/Serial-JTAG is the f
 
 **Codec + audio coupling** — all pins + EP map to the datasheet; I²S direction correct (ASDOUT→ESP
 DIN, DSDIN←ESP DOUT); CE strap sets the I²C address; the tap is **transformer-less** and
-AC-coupled — TX is `DAC → DC-block → R (2.2 kΩ) → line 3` (the handset's talk-strap value), RX a
-differential sense of line 2; line 3 is high-Z at idle (gated by the dual talk SSR).
+AC-coupled. Trace TX explicitly: `OUTP → R26 (2.2 kΩ) → C14 → TALK_BRIDGE → R28 (2.2 kΩ) →
+TX_OUT → K1-ch2 → P3`; K1-ch1 applies the P2 handshake to `TALK_BRIDGE`. Confirm factory-bridged
+JP4 and R38+R39 (100 kΩ each) form a 200 kΩ P2-to-`TALK_BRIDGE` precharge across K1-ch1, with a
+nominal `(200 kΩ + R26) × C14 ≈ 202 ms` time constant. RX is a differential sense of line 2.
+K1-ch2 must keep line 3 high-Z at idle despite the always-present precharge path.
 
 Check the external codec clamps by pin number, not only by symbol appearance: D13/D14 pin 1
 (cathode) → AVDD and pin 2 (anode) → OUTP/MIC1P; D16/D17 pin 1 → OUTP/MIC1P and pin 2 → GND.
@@ -159,7 +162,8 @@ P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isola
 
 **Stage 0 — power-off continuity (DMM).** P1↔GND ≈ 0 Ω (the deliberate bond); no short P2/P3/P4/P5 to
 each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
-continuous; raw P4↔`K5_LATCH` continuous through K6; JP3 open; TP1–TP8 present; C19 "+" toward P4.
+continuous; raw P4↔`K5_LATCH` continuous through K6; JP3 open; JP4 factory-bridged and, after
+capacitors settle, P2↔`TALK_BRIDGE` ≈ 200 kΩ through R38+R39; TP1–TP8 present; C19 "+" toward P4.
 
 **Stage 1 — local power only, no bus.** J1 VBUS at 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
 (after the SS14 drop — there is no 5 V test point), **TP2 ≈ +3.30 V**, quiescent current sane,
@@ -237,6 +241,12 @@ J2's screws, and component pads. Use an **isolated** scope
   pulse decreases with wait time; a delayed pass is not a substitute for the zero-delay test.
 - **TX-out reach** — confirm the TV20/S forwards line-3 audio to the door station once it sees the
   schematic's talk-handshake resistance, at a usable level (AUDIO-2/AUDIO-6).
+- **TX-precharge transitions** — with JP4 bridged, scope P3 and `TALK_BRIDGE` across repeated K1
+  make/break cycles using a zero-valued digital stream before repeating with the welcome sample.
+  Check both a long-idle first assertion and rapid turnarounds; require the residual step to meet
+  BUS-2, not actuate any bus function and not mask the start of speech. Only if diagnosis requires an
+  A/B comparison, cut JP4, repeat the identical captures, then restore the factory bridge. Record the
+  result as V4.2 evidence; the V4.1 bench board does not prove this changed network.
 - **Hum / RX level** with the P1↔GND bond once RX is live; set the codec digital volume so TX
   doesn't overdrive the TV20/S amp.
 - **Session load** — measure the board's sealed current and bus voltage against the stock WF26,

@@ -65,9 +65,12 @@ shared party line across apartments.
   MUST stay negligible against the stock load:
   - **sense optos** tap high-Z and only on an active line (~2 mA off a ringing line, far below the
     WF26's own ~37 mA Türruf-relay coil);
-  - the **audio tap** is AC-coupled (DC-blocked) and high-Z (AUDIO-4) — no DC load, negligible AC load
+  - the **audio tap** is AC-coupled (DC-blocked) and high-Z (AUDIO-4) — including the 200 kΩ
+    P2-to-`TALK_BRIDGE` precharge branch, it adds no steady DC load and only a negligible AC load
     across the speech pair;
-  - the **SSRs** default open (SAFE-6) — nothing added at rest.
+  - the **bus-actuating NO outputs** default open (SAFE-6): K1-ch2 isolates P3 and K2 does not bridge
+    the door pair; the NC outputs preserve their passive fallback paths. No low-impedance smart-layer
+    bridge is added at rest.
 
   (BUS-1 is about presenting a WF26-equivalent load to the *shared* bus — other apartments share lines
   1/2/3.)
@@ -93,9 +96,10 @@ shared party line across apartments.
   never would (a talk bridge at t = 0 of every ring, when the gong is guaranteed live) — path
   equivalence does not imply timing equivalence. *(Realised by K5-confirmed K6 isolation of raw P4
   (a), the R28 = 2.2 kΩ handshake remaining distinct from a door short (b), and the K4↔K2
-  break-before-make (c); the
-  codec cold-start step (c) is bench-gated — see DESIGN.md "Audio path" ("TX front-end", "Gong ↔ TX
-  handshake") and "Door-open mirrors S1".)*
+  break-before-make (c). The retained I²S path and DAC soft-ramp suppress codec-start discontinuities;
+  factory-bridged JP4 plus R38+R39 precharge C14's bus side to suppress the K1 make/break step (c).
+  The latter is a V4.2 change and remains installed-bus gated — see DESIGN.md "Audio path"
+  ("TX front-end", "Gong ↔ TX handshake") and "Door-open mirrors S1".)*
 
 ## RING — Ring detection
 
@@ -148,14 +152,18 @@ shared party line across apartments.
   test of the TV20/S before it could be committed (see Open questions / full-duplex feasibility).
 - **AUDIO-4 (MUST)** The bus audio tap MUST NOT DC-load the bus: **AC-coupled** (a series DC-block, so
   no DC flows) and presenting a **high AC impedance** so it does not appreciably attenuate other
-  handsets on the shared speech pair (the speech-pair case of BUS-1). *(Met by series DC-block caps +
-  the differential high-Z RX tap; the original isolation-transformer coupling was dropped — see AUDIO-5.)*
+  handsets on the shared speech pair (the speech-pair case of BUS-1). *(Met by series DC-block caps,
+  the differential high-Z RX tap and the 200 kΩ P2-to-`TALK_BRIDGE` precharge path. That path ends at
+  C14, so it does not DC-load P2 or P3; K1-ch2 still isolates P3 at idle. The original
+  isolation-transformer coupling was dropped — see AUDIO-5.)*
 - **AUDIO-5 (SHOULD)** The audio path SHOULD be galvanically isolated from the bus (see SAFE-3).
   **Deviation:** the design drops the isolation transformer for an active, AC-coupled front-end with
   **P1 bonded to board GND** — a measurement-justified SHOULD deviation (P1 ≈ earth), so SAFE-3 is
   *not met* and containment falls to SAFE-7.
 - **AUDIO-6 (SHOULD)** RX and TX SHOULD carry intelligible voice-band speech at a usable level — a
-  clean half-duplex turnaround, no speech-masking pops — not merely "a signal is present".
+  clean half-duplex turnaround, no speech-masking pops — not merely "a signal is present". *(The
+  retained I²S path/DAC soft-ramp address codec startup; JP4+R38+R39 precharge the C14/K1 boundary.
+  The complete V4.2 transition remains an installed-bus commissioning check.)*
 - **AUDIO-7 (MAY)** Privacy (optional, **firmware-gated**): the firmware MAY restrict bus-audio
   capture to active sessions / explicit user action and auto-time-out talk, so the board is not a
   silently-always-on mic on the shared bus. Not a hardware requirement.

@@ -35,8 +35,10 @@ order—for example, some firmware work must wait for fabricated hardware regard
 
 - [ ] **5/10 — Calibrate the V4.2 audio path on the installed board.** Confirm RX headroom and choose the final
       mic PGA; set TX to a natural handset level; and listen for hum or an objectionable first-welcome
-      onset transient. The committed
-      divider and output protection are already bounded by simulation and bench measurements, so
-      these checks tune firmware rather than decide the PCB. If the DAC cold-start is audible, keep K1
-      open until the output settles; `docs/scope/welcome-chime-p3.png` records the V4.1 observation.
+      onset transient. The retained I²S path and DAC soft-ramp have removed the codec-start transient
+      on the V4.1 bench board; on V4.2, verify that factory-bridged JP4 plus R38+R39 also remove the
+      remaining K1/C14 bias step on the real bus. Cut and re-bridge JP4 only if an A/B diagnosis is
+      needed. The divider and output protection are already bounded by simulation and bench
+      measurements, so the remaining checks tune firmware and validate the changed V4.2 analog path.
+      `docs/scope/welcome-chime-p3.png` records the earlier V4.1 observation.
       - **Worst case:** installed speech or welcome audio is too quiet, clipped, noisy or unpleasant to use.
