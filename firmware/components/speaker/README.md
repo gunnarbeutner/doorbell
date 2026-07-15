@@ -1,6 +1,6 @@
 # Patched ESPHome speaker component
 
-This is the `speaker` component from ESPHome 2026.6.4, carried locally so the doorbell firmware can
+This is the `speaker` component from ESPHome 2026.6.5, carried locally so the doorbell firmware can
 apply the stale announcement-pipeline state workaround proposed in
 [esphome/esphome#15692](https://github.com/esphome/esphome/issues/15692).
 The vendored files retain ESPHome's licensing; see `LICENSE` in this directory.
