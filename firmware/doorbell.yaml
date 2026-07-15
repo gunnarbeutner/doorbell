@@ -164,6 +164,7 @@ audio_dac:
   - platform: es8311
     id: es8311_codec
     address: 0x18          # CE → R20 (10k) → GND on U3 → I2C addr 0x18
+    sample_rate: 32000     # Match the embedded assets and I2S speaker; 16 kHz would discard their upper band.
     use_microphone: false  # false = the analog MIC1P/MIC1N path (true would select a PDM digital mic —
                            # misleading name). Moot now that no microphone: is declared, but keep it false.
     mic_gain: 0DB          # the input divider (R30/R31 22k + R32/R33 3.3k→VMID, ~-18dB) already drops the
@@ -176,6 +177,7 @@ speaker:
     dac_type: external
     audio_dac: es8311_codec
     i2s_dout_pin: GPIO1
+    sample_rate: 32000
 
 # NO `microphone:` here. The mic (I2S RX) and the speaker (I2S TX) share one half-duplex I2S bus; a
 # declared mic holds the bus and makes the speaker fail to start ("Parent bus is busy"), silently
@@ -191,7 +193,7 @@ media_player:
     announcement_pipeline:
       speaker: intercom_speaker
       format: WAV
-      sample_rate: 16000
+      sample_rate: 32000
       num_channels: 1
     # Greeting files — the single spot for embedding audio into the image. Keep each SHORT (a few
     # seconds): the buzzer is sequenced AFTER the welcome, so a file's length adds to door-open
@@ -200,15 +202,15 @@ media_player:
     # plays whatever pointer is staged, via C++ play_file().
     files:
       - id: welcome_chime
-        file: "sounds/welcome-chime.wav"   # 16 kHz mono, peak -3 dBFS
+        file: "sounds/chime.wav"           # 32 kHz mono, peak -0.5 dBTP
       - id: welcome_silent
-        file: "sounds/welcome-silent.wav"  # 10 s digital silence — exercises greet/open timing inaudibly
+        file: "sounds/silent.wav"          # 32 kHz mono, 10 s digital silence — exercises timing inaudibly
       - id: welcome_hello
-        file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
+        file: "sounds/weird_hello.wav"      # 32 kHz mono, peak -0.5 dBTP
       - id: welcome_secret
-        file: "sounds/secret.wav"          # 1.36 s Zelda "secret" chime, leading silence trimmed
+        file: "sounds/secret.wav"          # 32 kHz mono; 1.36 s Zelda chime; peak -0.5 dBTP
       - id: welcome_windows
-        file: "sounds/windows.wav"         # 6.14 s Windows sound, leading silence trimmed, peak -3 dBFS
+        file: "sounds/windows.wav"         # 32 kHz mono; 6.12 s Windows 95 startup; peak -0.5 dBTP
     # K1 (off-hook handshake + TX route) and the welcome_playing gong-mute FOLLOW the player state —
     # engage while announcing/playing, release when idle/paused. Event-driven so a transient IDLE blip
     # at announcement start can't tear K1 down mid-play: the old scheme (play_welcome raised K1

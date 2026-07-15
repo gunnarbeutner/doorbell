@@ -183,6 +183,7 @@ audio_dac:
   - platform: es8311
     id: es8311_codec
     address: 0x18          # CE → R20 (10k) → GND on U3 → I2C addr 0x18
+    sample_rate: 32000     # Match the embedded assets and I2S speaker; 16 kHz would discard their upper band.
     use_microphone: false  # MUST be false for the analog MIC1P/MIC1N inputs: this option selects a
                            # PDM DIGITAL mic (REG14 DMIC_ON) — true switches the ADC away from the
                            # analog PGA and yields pure digital silence. The analog ADC path is
@@ -197,6 +198,7 @@ speaker:
     dac_type: external
     audio_dac: es8311_codec
     i2s_dout_pin: GPIO1    # I2S_DOUT / DSDIN (ESP→codec, playback)
+    sample_rate: 32000
 
 # NOTE: no `microphone:` here (nor in prod). The mic (I2S RX) and the speaker (I2S TX) share one
 # half-duplex I2S bus; a declared mic holds the bus and makes the speaker fail to start ("Parent bus
@@ -212,7 +214,7 @@ media_player:
     announcement_pipeline:
       speaker: intercom_speaker
       format: WAV
-      sample_rate: 16000
+      sample_rate: 32000
       num_channels: 1
     # Greeting files — the single spot for embedding audio into the image. Keep each SHORT (a few
     # seconds): the buzzer is sequenced AFTER the welcome, so a file's length adds to door-open
@@ -221,15 +223,15 @@ media_player:
     # plays whatever pointer is staged, via C++ play_file().
     files:
       - id: welcome_chime
-        file: "sounds/welcome-chime.wav"   # 16 kHz mono, peak -3 dBFS
+        file: "sounds/chime.wav"           # 32 kHz mono, peak -0.5 dBTP
       - id: welcome_silent
-        file: "sounds/welcome-silent.wav"  # 10 s digital silence — exercises greet/open timing inaudibly
+        file: "sounds/silent.wav"          # 32 kHz mono, 10 s digital silence — exercises timing inaudibly
       - id: welcome_hello
-        file: "sounds/weird_hello.wav"      # 16 kHz mono, peak -3 dBFS
+        file: "sounds/weird_hello.wav"      # 32 kHz mono, peak -0.5 dBTP
       - id: welcome_secret
-        file: "sounds/secret.wav"          # 1.36 s Zelda "secret" chime, leading silence trimmed
+        file: "sounds/secret.wav"          # 32 kHz mono; 1.36 s Zelda chime; peak -0.5 dBTP
       - id: welcome_windows
-        file: "sounds/windows.wav"         # 6.14 s Windows sound, leading silence trimmed, peak -3 dBFS
+        file: "sounds/windows.wav"         # 32 kHz mono; 6.12 s Windows 95 startup; peak -0.5 dBTP
     # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute FOLLOW the
     # player's playback state — engage while announcing/playing, release when idle/paused. Event-driven
     # so K1 can't be dropped mid-play by a transient IDLE blip (the earlier bug where play_welcome
@@ -378,15 +380,15 @@ script:
 
 # Bench loopback tone: while "Debug Test Tone" is on, top up the speaker ring buffer every 50 ms with
 # a phase-continuous ~1 kHz sine (advancing phase only by samples actually accepted — no boundary
-# clicks). fs assumes the default 16 kHz I2S rate; a different rate just shifts the pitch, irrelevant
-# for a level test. Shares intercom_speaker with the welcome-audio media_player — use one at a time.
+# clicks). fs matches the configured 32 kHz I2S rate. Shares intercom_speaker with the welcome-audio
+# media_player — use one at a time.
 interval:
   - interval: 50ms
     then:
       - lambda: |-
           if (!id(debug_test_tone).state) return;
           static double phase = 0.0;
-          const double fs = 16000.0;
+          const double fs = 32000.0;
           const double tone_hz = 1000.0;
           const double amp = 0.5;                       // -6 dBFS — headroom, never clips the DAC
           const double TWO_PI = 6.283185307179586;
