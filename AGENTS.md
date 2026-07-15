@@ -40,6 +40,9 @@ cd sim && npm test      # simulator tests directly
 `./build.sh` with no argument performs the complete release build and regenerates order-ready
 artifacts. Run it only when release outputs are intentionally in scope. Validate firmware changes
 against both ESPHome YAML files with `esphome config` when the local ESPHome environment is available.
+Before using the bench DHO804, follow the wiring, MAIN/non-ROLL trigger, pre-trigger timing and capture
+procedure in [`captures/DHO804-SETUP.md`](captures/DHO804-SETUP.md); do not rely on retained scope
+settings after a power cycle or flat battery.
 The build currently expects the macOS KiCad paths embedded in `build.sh`; if that toolchain is absent,
 report the unavailable check rather than changing project paths merely to make the local run pass.
 

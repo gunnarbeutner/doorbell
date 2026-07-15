@@ -18,6 +18,9 @@ the `.csv.zst` on the fly and has no dependencies. See [`viewer/README.md`](view
 
 ## Setup
 
+For the exact bench wiring, trigger, MAIN/non-ROLL, pre-trigger timing and recovery procedure used for
+welcome-audio onset captures, see [`DHO804-SETUP.md`](DHO804-SETUP.md).
+
 ```sh
 cd captures
 python3 -m venv .venv

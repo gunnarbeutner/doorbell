@@ -10,9 +10,9 @@
 #     "Debug Door Drive Hold" (unpulsed K2+K4 — the Q4 watchdog releases K2 after ~8.4 s nominal),
 #     and "Debug P4 Isolation" (K6 request). "Debug K5 Sense" reports K5's auxiliary contact.
 #   - "Debug Test Tone": a continuous ~1 kHz sine on the DAC/TX path (scope it on P3 with PTT on).
-#     "Debug DAC Warmup" feeds digital zeros into the same speaker without asserting K1, allowing the
-#     codec to settle before PTT is engaged or a real welcome announcement starts. The warmup hands
-#     off without stopping I2S; warmup and the test tone are exclusive.
+#     "Debug DAC Warmup" feeds digital zeros into the same speaker without asserting K1. At boot it
+#     primes the local `i2s_audio` keep-alive channel once, after which welcome playback reuses
+#     the configured channel; warmup and the test tone are exclusive.
 #     NO microphone here: the mic (I2S RX) and speaker (I2S TX) share one half-duplex I2S bus, and a
 #     declared mic holds the bus so the speaker can't start ("Parent bus is busy") — which breaks
 #     welcome-audio playback. RX / the mic-loopback meter is dropped; verify audio with the scope.
@@ -54,14 +54,16 @@
 # between them; flash the production doorbell.yaml before the board goes in the wall. Keep this in
 # sync with doorbell.yaml — it is a copy of it plus the bench deltas listed above.
 
-# Local copy of ESPHome's speaker component with the announcement-pipeline state reset described in
-# https://github.com/esphome/esphome/issues/15692. Remove this override once the upstream fix lands.
+# Local ESPHome 2026.6.5 component copies: `speaker` carries the announcement-pipeline state reset
+# described in https://github.com/esphome/esphome/issues/15692; `i2s_audio` carries the keep-alive
+# experiment from https://github.com/esphome/esphome/pull/15565. See each component's README.md.
 external_components:
   - source:
       type: local
       path: components
     components:
       - speaker
+      - i2s_audio
 
 esphome:
   name: doorbell2
@@ -96,6 +98,27 @@ esphome:
           uint8_t reg37[2] = {0x37, 0x48};
           id(codec_i2c)->write(0x18, reg37, 2);
           ESP_LOGI("es8311", "DAC soft-ramp enabled (REG0x37 = 0x48)");
+      # Prime the retained I2S channel once with K1 open. Stopping the speaker leaves the PR's
+      # allocated/configured channel ready for same-format welcome playback without a cold rebuild.
+      - switch.turn_on: debug_dac_warmup
+      - wait_until:
+          condition:
+            speaker.is_playing: intercom_speaker
+          timeout: 2s
+      - lambda: |-
+          if (!id(intercom_speaker).is_running())
+            ESP_LOGE("audio", "I2S keep-alive prime never reached RUNNING");
+      - delay: 100ms
+      - switch.turn_off: debug_dac_warmup
+      - wait_until:
+          condition:
+            speaker.is_stopped: intercom_speaker
+          timeout: 2s
+      - lambda: |-
+          if (id(intercom_speaker).is_stopped())
+            ESP_LOGI("audio", "I2S keep-alive channel primed");
+          else
+            ESP_LOGE("audio", "I2S keep-alive prime did not stop cleanly");
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
@@ -205,6 +228,7 @@ speaker:
     audio_dac: es8311_codec
     i2s_dout_pin: GPIO1    # I2S_DOUT / DSDIN (ESP→codec, playback)
     sample_rate: 32000
+    keep_alive: true       # local port of esphome/esphome#15565, pinned to ESPHome 2026.6.5
 
 # NOTE: no `microphone:` here (nor in prod). The mic (I2S RX) and the speaker (I2S TX) share one
 # half-duplex I2S bus; a declared mic holds the bus and makes the speaker fail to start ("Parent bus
@@ -240,9 +264,9 @@ media_player:
         file: "sounds/windows.wav"         # 32 kHz mono; 6.12 s Windows 95 startup; peak -0.5 dBTP
     # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute normally FOLLOW
     # the player's playback state. The sequenced welcome path below is the exception: it owns K1 across
-    # a zero-fill pre-roll, the real file and cleanup. Raw writes to the shared speaker can make the
-    # media player temporarily report ANNOUNCING/IDLE even though no media pipeline is active, so those
-    # state changes must not tear down the pre-roll or operate K1.
+    # the real file and cleanup. Boot-time keep-alive priming uses raw speaker writes, which can make
+    # the media player temporarily report ANNOUNCING/IDLE even though no media pipeline is active, so
+    # those state changes must not operate K1.
     on_announcement:
       - if:
           condition:
@@ -285,9 +309,8 @@ media_player:
             - globals.set: { id: welcome_playing, value: "false" }
 
 globals:
-  # Bench-only ownership guard for the pop-free real-file sequence. While true, raw zero-fill can
-  # make the speaker media player report ANNOUNCING/IDLE without letting those synthetic state changes
-  # operate K1; play_welcome below owns K1 and welcome_playing explicitly instead.
+  # Ownership guard for the pop-free real-file sequence. While true, media-player state changes cannot
+  # race the scripted K1 timing; play_welcome owns K1 and welcome_playing explicitly.
   - id: welcome_sequence_active
     type: bool
     restore_value: no
@@ -330,10 +353,10 @@ globals:
     initial_value: "0"
 
 # Door-station playback: play the embedded file, blocking until it finishes. On the bench this script
-# owns the zero-fill pre-roll, K1 (off-hook handshake + TX route) and K3 gong-mute state so synthetic
-# speaker-media state transitions cannot interrupt the sequence. Direct media-player use still falls
-# back to the on_announcement/on_idle triggers above. Also the instrument for the AUDIO-2/AUDIO-6
-# TX-reach test — trigger from the HA app while standing at the door station.
+# owns K1 (off-hook handshake + TX route) and K3 gong-mute state so speaker-media state transitions
+# cannot interrupt the sequence. The I2S channel was primed at boot and is retained between plays by
+# the local keep-alive component. Direct media-player use still falls back to the
+# on_announcement/on_idle triggers above. Also the instrument for the AUDIO-2/AUDIO-6 TX-reach test.
 script:
   - id: play_welcome
     mode: single
@@ -365,32 +388,21 @@ script:
             - media_player.volume_set:
                 id: intercom_media
                 volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
-            # Pop-free pre-roll: keep the TX route open while the media-player volume command, I2S and
-            # ES8311 settle under digital zero. The ownership guard is set BEFORE zero-fill starts,
-            # because raw speaker activity itself can make speaker_media_player report ANNOUNCING.
+            # The ownership guard is set before K1 and playback so media-player state callbacks cannot
+            # race the scripted route timing. I2S/ES8311 were primed once at boot with K1 open.
             - globals.set: { id: welcome_sequence_active, value: "true" }
-            - switch.turn_on: debug_dac_warmup
-            # The ES8311/I2S path was ready without a measurable P3 event after 100 ms on the bench.
-            # Start this before honouring the ring guard so its settling time is hidden inside the
-            # existing 1.45 s ring-to-audio interval; direct/no-ring playback pays only these 100 ms.
-            - delay: 100ms
             # Defer ring-triggered TX until the measured V4.1 door-station suppression has ended.
             - delay: !lambda |-
                 uint32_t remaining = id(welcome_not_before_ms) - millis();
                 return remaining <= 5000 ? remaining : 0;
-            # Connect the already-settled, zero-valued TX path, then give the AC-coupled output and K1
-            # time to settle before handing the running speaker to the real media pipeline.
+            # Connect the settled codec output, then give the AC-coupled output and K1 20 ms before
+            # starting the file. Same-format playback reuses the retained channel instead of rebuilding it.
             - switch.turn_on: intercom_ptt
             - globals.set: { id: welcome_playing, value: "true" }
             - delay: 20ms
-            # Stop producing debug zeros without running debug_dac_warmup's turn-off action: speaker.stop
-            # here would throw away the pre-roll. The I2S task continues emitting zero until the decoder
-            # supplies the file. play_file uses the C++ speaker API — no name-branching; files: is the one embed.
-            - lambda: 'id(debug_dac_warmup).publish_state(false);'
+            # play_file uses the C++ speaker API — no name-branching; files: is the one embed spot.
             - lambda: 'id(intercom_media).play_file(id(welcome_file), true, false);'
-            # Raw pre-roll may already have made speaker_media_player report ANNOUNCING, so a separate
-            # start-state wait would not prove that the file pipeline started. The fixed delay crosses
-            # the decoder handoff; the final IDLE still marks the real file plus speaker drain ending.
+            # The fixed delay crosses the decoder handoff; final IDLE marks file plus speaker drain ending.
             - delay: 400ms
             - wait_until:
                 condition:

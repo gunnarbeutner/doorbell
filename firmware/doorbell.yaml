@@ -30,14 +30,16 @@
 # device names), but after any device-name change run `esphome clean` — a stale dependency graph
 # fails the build, and a piped `compile && upload` can then silently re-flash the previous binary.
 
-# Local copy of ESPHome's speaker component with the announcement-pipeline state reset described in
-# https://github.com/esphome/esphome/issues/15692. Remove this override once the upstream fix lands.
+# Local ESPHome 2026.6.5 component copies: `speaker` carries the announcement-pipeline state reset
+# described in https://github.com/esphome/esphome/issues/15692; `i2s_audio` carries the keep-alive
+# change from https://github.com/esphome/esphome/pull/15565. See each component's README.md.
 external_components:
   - source:
       type: local
       path: components
     components:
       - speaker
+      - i2s_audio
 
 esphome:
   name: doorbell
@@ -72,6 +74,30 @@ esphome:
           uint8_t reg37[2] = {0x37, 0x48};
           id(codec_i2c)->write(0x18, reg37, 2);
           ESP_LOGI("es8311", "DAC soft-ramp enabled (REG0x37 = 0x48)");
+      # Prime the retained I2S channel once with K1 open. Stopping the speaker leaves the allocated,
+      # configured channel ready for same-format welcome playback without a cold rebuild.
+      - lambda: |-
+          id(intercom_speaker).set_audio_stream_info(audio::AudioStreamInfo(16, 1, 32000));
+          id(i2s_prime_active) = true;
+      - wait_until:
+          condition:
+            speaker.is_playing: intercom_speaker
+          timeout: 2s
+      - lambda: |-
+          if (!id(intercom_speaker).is_running())
+            ESP_LOGE("audio", "I2S keep-alive prime never reached RUNNING");
+      - delay: 100ms
+      - lambda: 'id(i2s_prime_active) = false;'
+      - speaker.stop: intercom_speaker
+      - wait_until:
+          condition:
+            speaker.is_stopped: intercom_speaker
+          timeout: 2s
+      - lambda: |-
+          if (id(intercom_speaker).is_stopped())
+            ESP_LOGI("audio", "I2S keep-alive channel primed");
+          else
+            ESP_LOGE("audio", "I2S keep-alive prime did not stop cleanly");
 
 esp32:
   board: esp32-s3-devkitc-1     # generic ESP32-S3 board def; U1 = ESP32-S3-WROOM-1U-N16R8
@@ -178,6 +204,7 @@ speaker:
     audio_dac: es8311_codec
     i2s_dout_pin: GPIO1
     sample_rate: 32000
+    keep_alive: true       # local port of esphome/esphome#15565, pinned to ESPHome 2026.6.5
 
 # NO `microphone:` here. The mic (I2S RX) and the speaker (I2S TX) share one half-duplex I2S bus; a
 # declared mic holds the bus and makes the speaker fail to start ("Parent bus is busy"), silently
@@ -211,26 +238,53 @@ media_player:
         file: "sounds/secret.wav"          # 32 kHz mono; 1.36 s Zelda chime; peak -0.5 dBTP
       - id: welcome_windows
         file: "sounds/windows.wav"         # 32 kHz mono; 6.12 s Windows 95 startup; peak -0.5 dBTP
-    # K1 (off-hook handshake + TX route) and the welcome_playing gong-mute FOLLOW the player state —
-    # engage while announcing/playing, release when idle/paused. Event-driven so a transient IDLE blip
-    # at announcement start can't tear K1 down mid-play: the old scheme (play_welcome raised K1
-    # explicitly + an on_idle backstop) let that pre-announcement blip drop K1, so the chime played
-    # into an OPEN contact — only off-cap bleed reached P3, nothing on a loaded bus. At idle K1 is
-    # already off, so the startup blip is a no-op; on_announcement then raises it for the audio.
+    # K1 (off-hook handshake + TX route) and the welcome_playing gong-mute normally FOLLOW player
+    # state. The sequenced welcome path below is the exception: it owns K1 across the real file and
+    # cleanup. Boot priming uses raw speaker writes, which can make this media player temporarily
+    # report ANNOUNCING/IDLE even though no media pipeline is active, so those state changes must not
+    # operate K1.
     on_announcement:
-      - switch.turn_on: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "true" }
+      - if:
+          condition:
+            lambda: 'return !id(welcome_sequence_active) && !id(i2s_prime_active);'
+          then:
+            - switch.turn_on: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "true" }
     on_play:
-      - switch.turn_on: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "true" }
+      - if:
+          condition:
+            lambda: 'return !id(welcome_sequence_active) && !id(i2s_prime_active);'
+          then:
+            - switch.turn_on: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "true" }
     on_idle:
-      - switch.turn_off: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "false" }
+      - if:
+          condition:
+            lambda: 'return !id(welcome_sequence_active) && !id(i2s_prime_active);'
+          then:
+            - switch.turn_off: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "false" }
     on_pause:
-      - switch.turn_off: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "false" }
+      - if:
+          condition:
+            lambda: 'return !id(welcome_sequence_active) && !id(i2s_prime_active);'
+          then:
+            - switch.turn_off: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "false" }
 
 globals:
+  # The boot-prime zero-fill source and callback guard. Raw speaker writes can make the media player
+  # report synthetic ANNOUNCING/IDLE transitions; those must not operate K1 while the prime is active.
+  - id: i2s_prime_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  # While true, play_welcome owns K1 and welcome_playing; media-player state callbacks cannot race
+  # the scripted route timing or tear K1 down during the file handoff.
+  - id: welcome_sequence_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
   - id: welcome_playing
     type: bool
     restore_value: no
@@ -267,10 +321,10 @@ globals:
     restore_value: no
     initial_value: "0"
 
-# Door-station playback: mute the own speaker (K3, via the chime_enabled guard), present
-# the off-hook handshake (K1), play the embedded file, then restore everything. Also the
-# instrument for the AUDIO-2/AUDIO-6 TX-reach test — trigger from the HA app while standing at
-# the door station.
+# Door-station playback: mute the own speaker (K3, via the chime_enabled guard), present the off-hook
+# handshake (K1), play the embedded file, then restore everything. The I2S channel was primed at boot
+# and is retained between plays by the local keep-alive component. Also the instrument for the
+# AUDIO-2/AUDIO-6 TX-reach test — trigger from the HA app while standing at the door station.
 script:
   - id: play_welcome
     mode: single
@@ -299,33 +353,34 @@ script:
           condition:
             lambda: 'return id(welcome_file) != nullptr;'
           then:
-            # On V4.1, defer ring-triggered TX until the measured door-station gain suppression has
-            # ended. Greeting assets have no leading padding (except the intentionally all-silent test
-            # file), so the media start is also the audible start. The bounded unsigned difference is
-            # wrap-safe and returns 0 when the deadline is expired or no ring is recent.
-            - delay: !lambda |-
-                uint32_t remaining = id(welcome_not_before_ms) - millis();
-                return remaining <= 5000 ? remaining : 0;
             - media_player.volume_set:
                 id: intercom_media
                 volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
-            # Play the staged file as an announcement. K1 (TX route) and the welcome_playing gong-mute
-            # are NOT managed here — they follow the media_player state (on_announcement/on_idle). This
-            # script only SEQUENCES: play, then block until the announcement ends, so welcome_and_open
-            # opens after K1 has released (K2 must not short the TX tail).
+            # The ownership guard is set before the ring guard, K1 and playback so media-player state
+            # callbacks cannot race the scripted route timing. I2S/ES8311 were primed at boot with K1 open.
+            - globals.set: { id: welcome_sequence_active, value: "true" }
+            # Defer ring-triggered TX until the measured V4.1 door-station suppression has ended.
+            - delay: !lambda |-
+                uint32_t remaining = id(welcome_not_before_ms) - millis();
+                return remaining <= 5000 ? remaining : 0;
+            # Connect the settled codec output, then give the AC-coupled output and K1 20 ms before
+            # starting the file. Same-format playback reuses the retained channel instead of rebuilding it.
+            - switch.turn_on: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "true" }
+            - delay: 20ms
+            # Play the staged file as an announcement. The script owns K1 and gong mute until the real
+            # file plus speaker drain have ended, so synthetic media-player state changes cannot race it.
             - lambda: 'id(intercom_media).play_file(id(welcome_file), true, false);'
-            # Wait for the announcement to START (5 s also covers the i2s "bus busy" ~1 s retry), settle
-            # 400 ms past the ANNOUNCING startup blip, then wait for the real END. Timeouts are backstops.
-            - wait_until:
-                condition:
-                  media_player.is_announcing: intercom_media
-                timeout: 5s
+            # Cross the decoder handoff, then use final IDLE as the file/drain completion marker.
             - delay: 400ms
             - wait_until:
                 condition:
                   not:
                     media_player.is_announcing: intercom_media
                 timeout: 30s
+            - switch.turn_off: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "false" }
+            - globals.set: { id: welcome_sequence_active, value: "false" }
 
   # Greet, THEN open the door — strictly sequential, never concurrent: K1 (TX) must be fully
   # released before the buzzer's K2 bridges P2↔P3, or K2 shorts out the audio tail. play_welcome
@@ -354,6 +409,20 @@ script:
           auto idx = id(next_greeting).active_index();
           id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
                                ? id(greetings)[idx.value()] : nullptr;
+
+# Internal boot-prime source: while `i2s_prime_active` is true, keep the 32 kHz speaker ring buffer
+# topped up with digital zeros. K1 remains open, so the one cold I2S/codec start cannot reach P3. The
+# source is inactive after boot; normal welcome playback reuses the retained, configured channel.
+interval:
+  - interval: 50ms
+    then:
+      - lambda: |-
+          if (!id(i2s_prime_active)) return;
+          static const int16_t zeros[512] = {};
+          while (true) {
+            size_t wrote = id(intercom_speaker).play((const uint8_t *) zeros, sizeof(zeros));
+            if (wrote < sizeof(zeros)) break;
+          }
 
 bluetooth_proxy:
   active: false
@@ -475,9 +544,9 @@ binary_sensor:
     entity_category: diagnostic
 
 switch:
-  # K1 (talk handshake + TX gate) follows the media_player state (on_announcement/on_idle) and is read
-  # by two policy lambdas — not a user control. Kept off HA (id, no name): a stray toggle would only
-  # assert the handshake pedestal onto the live bus (no audio) or cut K1 mid-greeting.
+  # K1 (talk handshake + TX gate) is owned by play_welcome for scripted greetings; direct media-player
+  # use falls back to on_announcement/on_idle. It is read by two policy lambdas, not a user control.
+  # Kept off HA (id, no name): a stray toggle could assert a pedestal or cut K1 mid-greeting.
   - platform: output
     id: intercom_ptt
     output: ptt_relay_bin
