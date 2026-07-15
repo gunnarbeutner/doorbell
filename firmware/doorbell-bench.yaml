@@ -10,10 +10,13 @@
 #     "Debug Door Drive Hold" (unpulsed K2+K4 — the Q4 watchdog releases K2 after ~8.4 s nominal),
 #     and "Debug P4 Isolation" (K6 request). "Debug K5 Sense" reports K5's auxiliary contact.
 #   - "Debug Test Tone": a continuous ~1 kHz sine on the DAC/TX path (scope it on P3 with PTT on).
+#     "Debug DAC Warmup" feeds digital zeros into the same speaker without asserting K1, allowing the
+#     codec to settle before PTT is engaged or a real welcome announcement starts. The warmup hands
+#     off without stopping I2S; warmup and the test tone are exclusive.
 #     NO microphone here: the mic (I2S RX) and speaker (I2S TX) share one half-duplex I2S bus, and a
 #     declared mic holds the bus so the speaker can't start ("Parent bus is busy") — which breaks
 #     welcome-audio playback. RX / the mic-loopback meter is dropped; verify audio with the scope.
-#     The welcome-audio media_player and the tone share one speaker — use one at a time.
+#     The welcome-audio media_player, warmup and tone share one speaker — use one at a time.
 #
 # GPIO map (S3-WROOM-1U; USB on the north edge, the ES8311 I2C/I2S bus ascending down the codec edge):
 #   House Doorbell     (OC1 / Türruf sense)        : GPIO12
@@ -235,29 +238,60 @@ media_player:
         file: "sounds/secret.wav"          # 32 kHz mono; 1.36 s Zelda chime; peak -0.5 dBTP
       - id: welcome_windows
         file: "sounds/windows.wav"         # 32 kHz mono; 6.12 s Windows 95 startup; peak -0.5 dBTP
-    # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute FOLLOW the
-    # player's playback state — engage while announcing/playing, release when idle/paused. Event-driven
-    # so K1 can't be dropped mid-play by a transient IDLE blip (the earlier bug where play_welcome
-    # raised K1 explicitly and the pre-announcement IDLE blip's backstop tore it back down). At idle K1
-    # is already off, so the startup IDLE blip is a no-op; on_announcement then raises it for the audio.
+    # K1 (off-hook handshake + TX route to the bus) and the welcome_playing gong-mute normally FOLLOW
+    # the player's playback state. The sequenced welcome path below is the exception: it owns K1 across
+    # a zero-fill pre-roll, the real file and cleanup. Raw writes to the shared speaker can make the
+    # media player temporarily report ANNOUNCING/IDLE even though no media pipeline is active, so those
+    # state changes must not tear down the pre-roll or operate K1.
     on_announcement:
-      - logger.log: { format: "media_player ANNOUNCING -> K1 on", level: INFO, tag: mp }
-      - switch.turn_on: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "true" }
+      - if:
+          condition:
+            lambda: |-
+              return !id(welcome_sequence_active) && !id(debug_dac_warmup).state &&
+                     !id(debug_test_tone).state;
+          then:
+            - logger.log: { format: "media_player ANNOUNCING -> K1 on", level: INFO, tag: mp }
+            - switch.turn_on: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "true" }
     on_play:
-      - logger.log: { format: "media_player PLAYING -> K1 on", level: INFO, tag: mp }
-      - switch.turn_on: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "true" }
+      - if:
+          condition:
+            lambda: |-
+              return !id(welcome_sequence_active) && !id(debug_dac_warmup).state &&
+                     !id(debug_test_tone).state;
+          then:
+            - logger.log: { format: "media_player PLAYING -> K1 on", level: INFO, tag: mp }
+            - switch.turn_on: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "true" }
     on_idle:
-      - logger.log: { format: "media_player IDLE -> K1 off", level: INFO, tag: mp }
-      - switch.turn_off: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "false" }
+      - if:
+          condition:
+            lambda: |-
+              return !id(welcome_sequence_active) && !id(debug_dac_warmup).state &&
+                     !id(debug_test_tone).state;
+          then:
+            - logger.log: { format: "media_player IDLE -> K1 off", level: INFO, tag: mp }
+            - switch.turn_off: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "false" }
     on_pause:
-      - logger.log: { format: "media_player PAUSED -> K1 off", level: INFO, tag: mp }
-      - switch.turn_off: intercom_ptt
-      - globals.set: { id: welcome_playing, value: "false" }
+      - if:
+          condition:
+            lambda: |-
+              return !id(welcome_sequence_active) && !id(debug_dac_warmup).state &&
+                     !id(debug_test_tone).state;
+          then:
+            - logger.log: { format: "media_player PAUSED -> K1 off", level: INFO, tag: mp }
+            - switch.turn_off: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "false" }
 
 globals:
+  # Bench-only ownership guard for the pop-free real-file sequence. While true, raw zero-fill can
+  # make the speaker media player report ANNOUNCING/IDLE without letting those synthetic state changes
+  # operate K1; play_welcome below owns K1 and welcome_playing explicitly instead.
+  - id: welcome_sequence_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
   - id: welcome_playing
     type: bool
     restore_value: no
@@ -295,9 +329,10 @@ globals:
     restore_value: no
     initial_value: "0"
 
-# Door-station playback: play the embedded file, blocking until it finishes. K1 (off-hook handshake +
-# TX route) and the K3 gong-mute (welcome_playing) follow the player state via the media_player
-# on_announcement/on_idle triggers, not this script. Also the instrument for the AUDIO-2/AUDIO-6
+# Door-station playback: play the embedded file, blocking until it finishes. On the bench this script
+# owns the zero-fill pre-roll, K1 (off-hook handshake + TX route) and K3 gong-mute state so synthetic
+# speaker-media state transitions cannot interrupt the sequence. Direct media-player use still falls
+# back to the on_announcement/on_idle triggers above. Also the instrument for the AUDIO-2/AUDIO-6
 # TX-reach test — trigger from the HA app while standing at the door station.
 script:
   - id: play_welcome
@@ -327,32 +362,44 @@ script:
           condition:
             lambda: 'return id(welcome_file) != nullptr;'
           then:
-            # Defer ring-triggered TX until the measured V4.1 door-station suppression has ended.
-            # Greeting assets have no leading padding except the intentionally all-silent test file.
-            - delay: !lambda |-
-                uint32_t remaining = id(welcome_not_before_ms) - millis();
-                return remaining <= 5000 ? remaining : 0;
             - media_player.volume_set:
                 id: intercom_media
                 volume: 75%                 # = 0 dB, the clean ceiling — above this is digital gain (clips)
-            # Play the staged file as an announcement. K1 (TX route) and the welcome_playing gong-mute
-            # are NOT managed here — they follow the media_player state via on_announcement/on_idle (see
-            # the media_player triggers). This script only SEQUENCES: play, then block until the
-            # announcement ends, so welcome_and_open opens after K1 has released (K2 must not short the
-            # TX tail). play_file uses the C++ speaker API — no name-branching; files: is the one embed.
+            # Pop-free pre-roll: keep the TX route open while the media-player volume command, I2S and
+            # ES8311 settle under digital zero. The ownership guard is set BEFORE zero-fill starts,
+            # because raw speaker activity itself can make speaker_media_player report ANNOUNCING.
+            - globals.set: { id: welcome_sequence_active, value: "true" }
+            - switch.turn_on: debug_dac_warmup
+            # The ES8311/I2S path was ready without a measurable P3 event after 100 ms on the bench.
+            # Start this before honouring the ring guard so its settling time is hidden inside the
+            # existing 1.45 s ring-to-audio interval; direct/no-ring playback pays only these 100 ms.
+            - delay: 100ms
+            # Defer ring-triggered TX until the measured V4.1 door-station suppression has ended.
+            - delay: !lambda |-
+                uint32_t remaining = id(welcome_not_before_ms) - millis();
+                return remaining <= 5000 ? remaining : 0;
+            # Connect the already-settled, zero-valued TX path, then give the AC-coupled output and K1
+            # time to settle before handing the running speaker to the real media pipeline.
+            - switch.turn_on: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "true" }
+            - delay: 20ms
+            # Stop producing debug zeros without running debug_dac_warmup's turn-off action: speaker.stop
+            # here would throw away the pre-roll. The I2S task continues emitting zero until the decoder
+            # supplies the file. play_file uses the C++ speaker API — no name-branching; files: is the one embed.
+            - lambda: 'id(debug_dac_warmup).publish_state(false);'
             - lambda: 'id(intercom_media).play_file(id(welcome_file), true, false);'
-            # Wait for the announcement to START (5 s also covers the i2s "bus busy" ~1 s retry), settle
-            # 400 ms past the ANNOUNCING startup blip, then wait for the real END. Timeouts are backstops.
-            - wait_until:
-                condition:
-                  media_player.is_announcing: intercom_media
-                timeout: 5s
+            # Raw pre-roll may already have made speaker_media_player report ANNOUNCING, so a separate
+            # start-state wait would not prove that the file pipeline started. The fixed delay crosses
+            # the decoder handoff; the final IDLE still marks the real file plus speaker drain ending.
             - delay: 400ms
             - wait_until:
                 condition:
                   not:
                     media_player.is_announcing: intercom_media
                 timeout: 30s
+            - switch.turn_off: intercom_ptt
+            - globals.set: { id: welcome_playing, value: "false" }
+            - globals.set: { id: welcome_sequence_active, value: "false" }
 
   # Greet, THEN open the door — strictly sequential, never concurrent: K1 (TX) must be fully
   # released before the buzzer's K2 bridges P2↔P3, or K2 shorts out the audio tail. play_welcome
@@ -381,15 +428,18 @@ script:
           id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
                                ? id(greetings)[idx.value()] : nullptr;
 
-# Bench loopback tone: while "Debug Test Tone" is on, top up the speaker ring buffer every 50 ms with
-# a phase-continuous ~1 kHz sine (advancing phase only by samples actually accepted — no boundary
-# clicks). fs matches the configured 32 kHz I2S rate. Shares intercom_speaker with the welcome-audio
-# media_player — use one at a time.
+# Bench DAC sources: "Debug DAC Warmup" continuously feeds digital zeros so I2S and the ES8311 can
+# settle while K1 remains open; "Debug Test Tone" instead feeds a phase-continuous ~1 kHz sine
+# (advancing phase only by samples actually accepted — no boundary clicks). Both top up the same
+# 32 kHz speaker ring buffer every 50 ms and are mutually exclusive. They share intercom_speaker with
+# the welcome-audio media_player — use one source at a time.
 interval:
   - interval: 50ms
     then:
       - lambda: |-
-          if (!id(debug_test_tone).state) return;
+          const bool warmup = id(debug_dac_warmup).state;
+          const bool tone = id(debug_test_tone).state && !warmup;
+          if (!warmup && !tone) return;
           static double phase = 0.0;
           const double fs = 32000.0;
           const double tone_hz = 1000.0;
@@ -400,14 +450,20 @@ interval:
           while (true) {
             double ph = phase;
             for (int i = 0; i < 512; i++) {
-              double v = amp * 32767.0 * sin(ph);
-              block[i] = (int16_t) (v >= 0.0 ? v + 0.5 : v - 0.5);
-              ph += dphase;
+              if (warmup) {
+                block[i] = 0;                           // run DAC/I2S without an audible source
+              } else {
+                double v = amp * 32767.0 * sin(ph);
+                block[i] = (int16_t) (v >= 0.0 ? v + 0.5 : v - 0.5);
+                ph += dphase;
+              }
             }
             size_t wrote = id(intercom_speaker).play((const uint8_t *) block, sizeof(block));
             size_t accepted = wrote / 2;
-            phase += dphase * (double) accepted;
-            while (phase >= TWO_PI) phase -= TWO_PI;
+            if (tone) {
+              phase += dphase * (double) accepted;
+              while (phase >= TWO_PI) phase -= TWO_PI;
+            }
             if (accepted < 512) break;                  // ring buffer full — resume next tick
           }
 
@@ -592,6 +648,31 @@ switch:
     entity_category: diagnostic
     optimistic: true
     restore_mode: ALWAYS_OFF
+    turn_on_action:
+      # Change source without running warmup's turn-off action: stopping the speaker here would
+      # restart I2S/the DAC and defeat the pop-free handoff this diagnostic is meant to exercise.
+      - lambda: |-
+          id(intercom_speaker).set_audio_stream_info(audio::AudioStreamInfo(16, 1, 32000));
+          id(debug_dac_warmup).publish_state(false);
+    turn_off_action:
+      - speaker.stop: intercom_speaker
+  # Pop sequencing: start this with PTT OFF, wait for I2S/OUTP to settle, then engage PTT. Because the
+  # speaker receives only zero samples, P3 then shows the K1 event without a simultaneous DAC-start or
+  # waveform-phase step. Keep it on until after the PTT capture; turning it off stops the speaker.
+  - platform: template
+    name: "Debug DAC Warmup"
+    icon: mdi:volume-mute
+    id: debug_dac_warmup
+    entity_category: diagnostic
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      # As above, keep the speaker running while replacing a live tone with zero-fill.
+      - lambda: |-
+          // Raw speaker.play() otherwise uses ESPHome's 16 kHz default, while the codec and assets
+          // are 32 kHz. Set the format before the first zero sample starts the speaker task.
+          id(intercom_speaker).set_audio_stream_info(audio::AudioStreamInfo(16, 1, 32000));
+          id(debug_test_tone).publish_state(false);
     turn_off_action:
       - speaker.stop: intercom_speaker
   # POP A/B: flip the ES8311 DAC soft-ramp live so we can scope P3 with it off vs on in one session.
@@ -652,6 +733,8 @@ select:
     initial_option: "None"
 
 button:
+  - platform: restart
+    name: "Restart"
   - platform: output
     name: "Front Door Buzzer"
     icon: mdi:lock-open-variant
