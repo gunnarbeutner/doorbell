@@ -16,13 +16,13 @@ Completed in `kicad/doorbell.kicad_sch`:
 - Connected K5's auxiliary NO contact as the direct K6 hardware interlock and `K5_SENSE_N` source.
 - Added R34, R35 and R12 for K6 LED drive, sense pull-up and request pull-down respectively.
 - Connected GPIO48 (U1 pin 25) to `P4_ISO` and GPIO4 (U1 pin 4) to `K5_SENSE_N`.
-- Added normally-open JP3 directly across K6's P4-to-`K5_LATCH` output as a recovery bypass.
-- Synchronized, placed and routed K6, JP3, R12, R28, R34 and R35 on the PCB; connectivity reports no
+- Added normally-open JP2 directly across K6's P4-to-`K5_LATCH` output as a recovery bypass.
+- Synchronized, placed and routed K6, JP2, R12, R28, R34 and R35 on the PCB; connectivity reports no
   unrouted connections.
 - Updated K5 and R35 descriptions for the auxiliary-contact circuit and corrected R12/R35 to the
   0402 `C25744` part metadata.
 - Added integration coverage for K6 fail-safe continuity, the K5 hardware interlock, seal-in,
-  release, gong isolation, JP3 and the R28/C14/K1 TX path.
+  release, gong isolation, JP2 and the R28/C14/K1 TX path.
 
 Still pending:
 
@@ -67,7 +67,7 @@ K6, a normally-closed PhotoMOS, connects the two nets:
 P4 ── P4_ISO (NC) ── K5_LATCH
 ```
 
-At rest and without board power, `P4_ISO` is closed so the passive handset remains stock. JP3 is a
+At rest and without board power, `P4_ISO` is closed so the passive handset remains stock. JP2 is a
 normally-open solder-jumper bypass across the output contact. Bridging it permanently restores the
 original P4 topology if the isolator fails open or isolation must be disabled.
 
@@ -226,7 +226,7 @@ D1/C19 qualification work as part of this change:
 | `K5_SENSE_N` pull-up           |   1 | 10 kΩ, 0402            | C25744   | Defines released/high state |
 | `P4_ISO` pull-down          |   1 | 10 kΩ, 0402            | C25744   | Keeps K6 closed during boot/reset |
 | Handshake resistor           |   1 | R28, 2.2 kΩ, 0603      | C4190    | Field-proven talk assertion |
-| P4-isolator bypass (JP3)     |   1 | Open solder jumper     | No BOM   | Field recovery if K6 fails open |
+| P4-isolator bypass (JP2)     |   1 | Open solder jumper     | No BOM   | Field recovery if K6 fails open |
 
 ## 8. Simulation and structural coverage
 
@@ -248,13 +248,13 @@ The simulator's K5 model exposes both poles and makes them follow the same mecha
 
 ## 9. PCB implementation
 
-- K6 is placed at `(69.25, 39.75)`, with R34, R35 and R12 beside its LED/control side. JP3 is at
+- K6 is placed at `(69.25, 39.75)`, with R34, R35 and R12 beside its LED/control side. JP2 is at
   `(63.925, 33.5)`, and R28 is beside K1/TX_OUT at `(70.5, 50.68)`. The placement-constraint check
   passes with all footprints inside the board outline.
 - U1 pin 25 (GPIO48) is routed on `P4_ISO`, and U1 pin 4 (GPIO4) is routed on `K5_SENSE_N`. The external
   default resistors provide a deterministic logic interface without consuming a strapping or PSRAM
   pin.
-- JP3 is routed directly across K6's `P4` and `K5_LATCH` output nets and remains open by default.
+- JP2 is routed directly across K6's `P4` and `K5_LATCH` output nets and remains open by default.
 - Keep raw `P4` and `K5_LATCH` visibly distinct in both schematic and PCB net names.
 - Route the auxiliary contact only on the logic side; do not compromise the relay's galvanic
   isolation geometry.

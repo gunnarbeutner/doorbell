@@ -27308,7 +27308,7 @@
 				)
 			)
 		)
-		(property "Description" "Second 100 kΩ half of the 200 kΩ TX precharge path: P2 → JP4 → R38 → R39 → TALK_BRIDGE. Pre-biases C14's bus side while K1 is open to reduce the K1 make/break transient without DC-loading P3."
+		(property "Description" "Second 100 kΩ half of the 200 kΩ TX precharge path: P2 → JP3 → R38 → R39 → TALK_BRIDGE. Pre-biases C14's bus side while K1 is open to reduce the K1 make/break transient without DC-loading P3."
 			(at 383.54 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -29884,7 +29884,7 @@
 		(in_pos_files no)
 		(dnp no)
 		(uuid "590c630f-3cb6-431c-bf17-75184ba96676")
-		(property "Reference" "JP2"
+		(property "Reference" "JP1"
 			(at 34.29 269.24 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29946,7 +29946,7 @@
 		(instances
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "JP2")
+					(reference "JP1")
 					(unit 1)
 				)
 			)
@@ -33158,7 +33158,7 @@
 		(in_pos_files no)
 		(dnp no)
 		(uuid "81facdb2-de84-449a-a26d-684c2e205807")
-		(property "Reference" "JP3"
+		(property "Reference" "JP2"
 			(at 335.788 186.69 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33200,7 +33200,7 @@
 				)
 			)
 		)
-		(property "Description" "Normally-open K6 recovery bypass: bridging JP3 directly reconnects raw P4 to K5_LATCH, disables P4 isolation and restores the original passive topology if K6 fails open or isolation must be disabled. Leave open for normal operation."
+		(property "Description" "Normally-open K6 recovery bypass: bridging JP2 directly reconnects raw P4 to K5_LATCH, disables P4 isolation and restores the original passive topology if K6 fails open or isolation must be disabled. Leave open for normal operation."
 			(at 342.9 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -33220,7 +33220,7 @@
 		(instances
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "JP3")
+					(reference "JP2")
 					(unit 1)
 				)
 			)
@@ -38697,7 +38697,7 @@
 		(in_pos_files no)
 		(dnp no)
 		(uuid "ceba5839-b386-4565-891e-13d174d5b959")
-		(property "Reference" "JP4"
+		(property "Reference" "JP3"
 			(at 372.11 32.004 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38759,7 +38759,7 @@
 		(instances
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
-					(reference "JP4")
+					(reference "JP3")
 					(unit 1)
 				)
 			)
@@ -41231,7 +41231,7 @@
 				)
 			)
 		)
-		(property "Description" "First 100 kΩ half of the 200 kΩ TX precharge path: P2 → JP4 → R38 → R39 → TALK_BRIDGE. Pre-biases C14's bus side while K1 is open to reduce the K1 make/break transient without DC-loading P3."
+		(property "Description" "First 100 kΩ half of the 200 kΩ TX precharge path: P2 → JP3 → R38 → R39 → TALK_BRIDGE. Pre-biases C14's bus side while K1 is open to reduce the K1 make/break transient without DC-loading P3."
 			(at 383.54 34.29 0)
 			(hide yes)
 			(show_name no)

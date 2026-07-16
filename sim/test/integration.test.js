@@ -7,10 +7,10 @@
 //    (door opener); K3 (NC) bridges /P4↔/CHIME_POS (chime); K4 (NC) breaks K5's seal-in for a
 //    board-driven door release.
 //  - K6 (NC) bridges raw /P4 to /K5_LATCH at rest. Its LED return passes through K5's spare NO pole,
-//    so /P4_ISO cannot open K6 until K5 has physically pulled in. JP3 is an open recovery bypass.
+//    so /P4_ISO cannot open K6 until K5 has physically pulled in. JP2 is an open recovery bypass.
 //  - The embedded WF26 core (K5 latch + S1/S2 + C1) remains passive and works unpowered (SAFE-4).
 //  - Audio is transformer-less: RX taps /P2 through C16 to the ES8311 ADC (MICP/MICN); TX runs the
-//    codec DAC (OUTP) through R26 → C14 → /TALK_BRIDGE → R28 → /TX_OUT. Factory-bridged JP4 plus
+//    codec DAC (OUTP) through R26 → C14 → /TALK_BRIDGE → R28 → /TX_OUT. Factory-bridged JP3 plus
 //    R38+R39 (200 kΩ total) precharge /TALK_BRIDGE from /P2 before K1-ch1 closes.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -201,8 +201,8 @@ test('chime suppress fail-safe: line 4 stays bridged to C1 when the ESP is unpow
   assert.ok(near(V['/CHIME_POS'], 12), `unpowered, K3 NC must bridge line 4 → /CHIME_POS, got ${V['/CHIME_POS']?.toFixed(2)} V`);
 });
 
-const chimePhase = ({ mute, sources, T, seed, observe = false, step = 20e-6, jp2 = true }) => {
-    const switchState = { ...defaultSwitchState(netlist), JP2: jp2 };
+const chimePhase = ({ mute, sources, T, seed, observe = false, step = 20e-6, jp1 = true }) => {
+    const switchState = { ...defaultSwitchState(netlist), JP1: jp1 };
     const els = buildElements(netlist, { switchState, program: { U1: { '/MUTE_DRV': mute ? 3.3 : 0 } } });
     const sim = createStepper(
       els,
@@ -223,18 +223,18 @@ const chimePhase = ({ mute, sources, T, seed, observe = false, step = 20e-6, jp2
     return { state: sim.extractState(), peakP4, relatched };
 };
 
-const trappedChimeCharge = ({ jp2 = true } = {}) => {
+const trappedChimeCharge = ({ jp1 = true } = {}) => {
   // Charge the gong coupling capacitors from a real ring with K3 closed, then open K3 while the
   // ring is still present. Ending the session with P2 low drops K5 but leaves CHIME_POS isolated and
   // charged. Reclosing the NC contact later must not turn that stored charge into another pull-in.
-  const ringing = chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.02, jp2 });
-  return chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.005, seed: ringing.state, jp2 }).state;
+  const ringing = chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.02, jp1 });
+  return chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.005, seed: ringing.state, jp1 }).state;
 };
 
-const endAndRecloseChime = ({ charged, wait, jp2 = true }) => {
-  const ended = chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 0 }, T: wait, step: wait > 0.1 ? 5e-3 : 20e-6, seed: charged, jp2 });
+const endAndRecloseChime = ({ charged, wait, jp1 = true }) => {
+  const ended = chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 0 }, T: wait, step: wait > 0.1 ? 5e-3 : 20e-6, seed: charged, jp1 });
   assert.equal(ended.state.relays.K5, false, 'the original ring/session must be over before the reclose check');
-  return chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, T: 0.05, seed: ended.state, observe: true, jp2 });
+  return chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, T: 0.05, seed: ended.state, observe: true, jp1 });
 };
 
 test('chime suppress transition: immediate K3 reclose cannot accumulate enough K5 pickup force', () => {
@@ -243,8 +243,8 @@ test('chime suppress transition: immediate K3 reclose cannot accumulate enough K
   assert.ok(reclosed.peakP4 > 9.6, `expected a K5-operate-level P4 pulse, got ${reclosed.peakP4.toFixed(2)} V`);
 });
 
-test('chime suppress transition: JP2 cut retains charge but still cannot re-latch K5', () => {
-  const reclosed = endAndRecloseChime({ charged: trappedChimeCharge({ jp2: false }), wait: 12, jp2: false });
+test('chime suppress transition: JP1 cut retains charge but still cannot re-latch K5', () => {
+  const reclosed = endAndRecloseChime({ charged: trappedChimeCharge({ jp1: false }), wait: 12, jp1: false });
   assert.equal(reclosed.relatched, false, 'stored C1 charge must not operate K5 even with the bleed deliberately cut');
   assert.ok(reclosed.peakP4 > 9.6, `the diagnostic control should retain a pickup-level pulse, got ${reclosed.peakP4.toFixed(2)} V`);
 });
@@ -284,14 +284,14 @@ test('Etagenruf is structurally non-suppressible: K3 energised mutes the Türruf
 // ── K5-confirmed P4 isolation (V4.2 hardware; firmware remains intentionally deferred) ──
 
 test('K6 fail-safe: an unpowered board connects raw P4 to K5_LATCH', () => {
-  const { V } = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 }, switches: { JP3: false }, T: 10e-3 });
+  const { V } = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 }, switches: { JP2: false }, T: 10e-3 });
   assert.ok(near(V['/K5_LATCH'], 12, 0.5),
     `K6 is NC and must pass a ring without board power, got K5_LATCH=${V['/K5_LATCH']?.toFixed(2)} V`);
 });
 
 test('K6 interlock: isolation opens only after K5 pulls in, preserves seal-in, and restores on release', () => {
   const els = buildElements(netlist, {
-    switchState: { ...defaultSwitchState(netlist), JP3: false },
+    switchState: { ...defaultSwitchState(netlist), JP2: false },
     program: { U1: { '/P4_ISO': 3.3 } },
   });
   const dt = 20e-6;
@@ -323,11 +323,11 @@ test('K6 interlock: isolation opens only after K5 pulls in, preserves seal-in, a
   assert.equal(released.ssrs.K6, false, 'loss of K5 must interrupt K6 LED current and restore its NC output');
 });
 
-test('JP3 recovery bypass is open by default and directly spans K6 output', () => {
-  const jp3 = netlist.components.find((c) => c.ref === 'JP3');
-  assert.equal(defaultSwitchState(netlist).JP3, undefined, 'JP3 must not be factory bridged');
-  assert.equal(jp3.pins['1'], '/K5_LATCH');
-  assert.equal(jp3.pins['2'], '/P4');
+test('JP2 recovery bypass is open by default and directly spans K6 output', () => {
+  const jp2 = netlist.components.find((c) => c.ref === 'JP2');
+  assert.equal(defaultSwitchState(netlist).JP2, undefined, 'JP2 must not be factory bridged');
+  assert.equal(jp2.pins['1'], '/K5_LATCH');
+  assert.equal(jp2.pins['2'], '/P4');
   const k6 = netlist.components.find((c) => c.ref === 'K6');
   assert.equal(k6.pins['3'], '/K5_LATCH');
   assert.equal(k6.pins['4'], '/P4');
@@ -592,7 +592,7 @@ test('talk handshake (K1): energised bridges P2 onto P3 through R28; idle lifts 
 test('TX topology: handshake, gate and factory-bridged 200 kΩ precharge match the intended path', () => {
   const C = (ref) => netlist.components.find((c) => c.ref === ref);
   const r28 = C('R28'), c14 = C('C14'), k1 = C('K1');
-  const jp4 = C('JP4'), r38 = C('R38'), r39 = C('R39');
+  const jp3 = C('JP3'), r38 = C('R38'), r39 = C('R39');
   assert.equal(r28.pins['2'], '/TALK_BRIDGE');
   assert.equal(r28.pins['1'], '/TX_OUT');
   assert.equal(c14.pins['2'], '/TALK_BRIDGE');
@@ -601,10 +601,10 @@ test('TX topology: handshake, gate and factory-bridged 200 kΩ precharge match t
   assert.equal(k1.pins['6'], '/TX_OUT');
   assert.equal(k1.pins['5'], '/P3');
 
-  assert.equal(jp4.value, 'TX_PRECHARGE');
-  assert.equal(defaultSwitchState(netlist).JP4, true, 'JP4 must be factory bridged');
-  assert.equal(jp4.pins['1'], '/P2');
-  assert.equal(jp4.pins['2'], '/PRECHG_IN');
+  assert.equal(jp3.value, 'TX_PRECHARGE');
+  assert.equal(defaultSwitchState(netlist).JP3, true, 'JP3 must be factory bridged');
+  assert.equal(jp3.pins['1'], '/P2');
+  assert.equal(jp3.pins['2'], '/PRECHG_IN');
   assert.equal(r38.value, '100k');
   assert.equal(r38.pins['1'], '/PRECHG_IN');
   assert.equal(r38.pins['2'], '/PRECHG_MID');

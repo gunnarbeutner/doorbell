@@ -92,7 +92,7 @@ input-only or flash-tied pin may be misused. Native USB D±/Serial-JTAG is the f
 DIN, DSDIN←ESP DOUT); CE strap sets the I²C address; the tap is **transformer-less** and
 AC-coupled. Trace TX explicitly: `OUTP → R26 (2.2 kΩ) → C14 → TALK_BRIDGE → R28 (2.2 kΩ) →
 TX_OUT → K1-ch2 → P3`; K1-ch1 applies the P2 handshake to `TALK_BRIDGE`. Confirm factory-bridged
-JP4 and R38+R39 (100 kΩ each) form a 200 kΩ P2-to-`TALK_BRIDGE` precharge across K1-ch1, with a
+JP3 and R38+R39 (100 kΩ each) form a 200 kΩ P2-to-`TALK_BRIDGE` precharge across K1-ch1, with a
 nominal `(200 kΩ + R26) × C14 ≈ 202 ms` time constant. RX is a differential sense of line 2.
 K1-ch2 must keep line 3 high-Z at idle despite the always-present precharge path.
 
@@ -112,7 +112,7 @@ and distinguish guaranteed datasheet limits from engineering estimates based on 
 
 **Passive WF26 core** — the `WF26_*` parts reproduce the handset's door-release / talk / gong /
 seal-in topology, so the board behaves like a plain WF26 unpowered (the SSRs/codec/optos are
-additive on top). Confirm K6 is normally closed without board power and JP3 is open by default, then
+additive on top). Confirm K6 is normally closed without board power and JP2 is open by default, then
 compare the underlying handset behaviour against `wf26/wf26.kicad_sch`.
 
 ## 4. Cross-checks against external references
@@ -162,7 +162,7 @@ P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isola
 
 **Stage 0 — power-off continuity (DMM).** P1↔GND ≈ 0 Ω (the deliberate bond); no short P2/P3/P4/P5 to
 each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
-continuous; raw P4↔`K5_LATCH` continuous through K6; JP3 open; JP4 factory-bridged and, after
+continuous; raw P4↔`K5_LATCH` continuous through K6; JP2 open; JP3 factory-bridged and, after
 capacitors settle, P2↔`TALK_BRIDGE` ≈ 200 kΩ through R38+R39; TP1–TP8 present; C19 "+" toward P4.
 
 **Stage 1 — local power only, no bus.** J1 VBUS at 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
@@ -191,13 +191,13 @@ board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   (latch drops, P4 falls, live P4 never reaches P3);
   hold the command asserted and measure that the watchdog releases K2 after the minimum normal
   firmware pulse but before the specified maximum fault-on time.
-- **2d K5-confirmed P4 isolation:** keep JP3 open and power the bench firmware. Before K5 pull-in,
+- **2d K5-confirmed P4 isolation:** keep JP2 open and power the bench firmware. Before K5 pull-in,
   confirm `Debug K5 Sense` is clear, turn on `Debug P4 Isolation` and verify GPIO48/`P4_ISO` goes
   high but the hardware interlock keeps K6 closed; turn the request off. Ring K5 in and confirm
   `Debug K5 Sense` asserts after its 5 ms debounce. Turn on `Debug P4 Isolation`, verify K6 opens,
   remove the raw-P4 drive and confirm K5 remains sealed from P2 while raw P4 is disconnected from
   `K5_LATCH`. Drop P2 and confirm K5 releases, the diagnostic clears and K6 immediately restores
-  continuity even while the request remains high; then turn the request off. Finally bridge JP3
+  continuity even while the request remains high; then turn the request off. Finally bridge JP2
   temporarily and confirm it restores permanent P4↔`K5_LATCH` continuity.
 - **2e chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
   closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
@@ -241,11 +241,11 @@ J2's screws, and component pads. Use an **isolated** scope
   pulse decreases with wait time; a delayed pass is not a substitute for the zero-delay test.
 - **TX-out reach** — confirm the TV20/S forwards line-3 audio to the door station once it sees the
   schematic's talk-handshake resistance, at a usable level (AUDIO-2/AUDIO-6).
-- **TX-precharge transitions** — with JP4 bridged, scope P3 and `TALK_BRIDGE` across repeated K1
+- **TX-precharge transitions** — with JP3 bridged, scope P3 and `TALK_BRIDGE` across repeated K1
   make/break cycles using a zero-valued digital stream before repeating with the welcome sample.
   Check both a long-idle first assertion and rapid turnarounds; require the residual step to meet
   BUS-2, not actuate any bus function and not mask the start of speech. Only if diagnosis requires an
-  A/B comparison, cut JP4, repeat the identical captures, then restore the factory bridge. Record the
+  A/B comparison, cut JP3, repeat the identical captures, then restore the factory bridge. Record the
   result as V4.2 evidence; the V4.1 bench board does not prove this changed network.
 - **Hum / RX level** with the P1↔GND bond once RX is live; set the codec digital volume so TX
   doesn't overdrive the TV20/S amp.

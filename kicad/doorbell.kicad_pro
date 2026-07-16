@@ -621,7 +621,7 @@
       },
       {
         "netclass": "WF26 Bus",
-        "pattern": "/OC?_K"
+        "pattern": "/OC?_CATH"
       },
       {
         "netclass": "WF26 Bus",
@@ -641,7 +641,7 @@
       },
       {
         "netclass": "WF26 Bus",
-        "pattern": "/CHIME_POS"
+        "pattern": "/CHIME_C1"
       },
       {
         "netclass": "WF26 Bus",
@@ -777,7 +777,7 @@
         "uuid": "959c5810-086a-4a51-98b0-f68b22907a4f"
       }
     ],
-    "used_designators": "JP3-4,D4,D15,#PWR15,#PWR18,#PWR59-67,R12,R27,R34-35,R38-39,K6",
+    "used_designators": "K6,R12,R27,R34-35,R38-39,#PWR15,#PWR18,#PWR59-67,D4,D15,JP3-4",
     "variants": []
   },
   "sheets": [

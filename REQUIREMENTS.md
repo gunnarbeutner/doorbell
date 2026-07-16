@@ -97,7 +97,7 @@ shared party line across apartments.
   equivalence does not imply timing equivalence. *(Realised by K5-confirmed K6 isolation of raw P4
   (a), the R28 = 2.2 kΩ handshake remaining distinct from a door short (b), and the K4↔K2
   break-before-make (c). The retained I²S path and DAC soft-ramp suppress codec-start discontinuities;
-  factory-bridged JP4 plus R38+R39 precharge C14's bus side to suppress the K1 make/break step (c).
+  factory-bridged JP3 plus R38+R39 precharge C14's bus side to suppress the K1 make/break step (c).
   The latter is a V4.2 change and remains installed-bus gated — see DESIGN.md "Audio path"
   ("TX front-end", "Gong ↔ TX handshake") and "Door-open mirrors S1".)*
 
@@ -162,7 +162,7 @@ shared party line across apartments.
   *not met* and containment falls to SAFE-7.
 - **AUDIO-6 (SHOULD)** RX and TX SHOULD carry intelligible voice-band speech at a usable level — a
   clean half-duplex turnaround, no speech-masking pops — not merely "a signal is present". *(The
-  retained I²S path/DAC soft-ramp address codec startup; JP4+R38+R39 precharge the C14/K1 boundary.
+  retained I²S path/DAC soft-ramp address codec startup; JP3+R38+R39 precharge the C14/K1 boundary.
   The complete V4.2 transition remains an installed-bus commissioning check.)*
 - **AUDIO-7 (MAY)** Privacy (optional, **firmware-gated**): the firmware MAY restrict bus-audio
   capture to active sessions / explicit user action and auto-time-out talk, so the board is not a

@@ -23,7 +23,7 @@ order—for example, some firmware work must wait for fabricated hardware regard
       Keep the deployed V4.1 safeguards meanwhile: OC1 remains its session/ring input, the 1.45 s
       ring-to-audio `welcome_not_before_ms` guard remains enabled, and ring-to-open remains at least
       1.75 s. After confirming unpowered P4↔
-      `K5_LATCH` continuity, K5 seal-in and JP3-open operation on V4.2, add GPIO4 `K5_SENSE_N` (active
+      `K5_LATCH` continuity, K5 seal-in and JP2-open operation on V4.2, add GPIO4 `K5_SENSE_N` (active
       low) and GPIO48 `P4_ISO` (active high, forced low at boot). Debounce `K5_SENSE_N` for 5–10 ms,
       request isolation, wait K6's maximum opening time, reconfirm K5, then allow K1/playback. Loss of
       K5 must stop playback, release K1 and clear `P4_ISO`; keep raw OC1 for ring diagnostics. Only
@@ -36,8 +36,8 @@ order—for example, some firmware work must wait for fabricated hardware regard
 - [ ] **5/10 — Calibrate the V4.2 audio path on the installed board.** Confirm RX headroom and choose the final
       mic PGA; set TX to a natural handset level; and listen for hum or an objectionable first-welcome
       onset transient. The retained I²S path and DAC soft-ramp have removed the codec-start transient
-      on the V4.1 bench board; on V4.2, verify that factory-bridged JP4 plus R38+R39 also remove the
-      remaining K1/C14 bias step on the real bus. Cut and re-bridge JP4 only if an A/B diagnosis is
+      on the V4.1 bench board; on V4.2, verify that factory-bridged JP3 plus R38+R39 also remove the
+      remaining K1/C14 bias step on the real bus. Cut and re-bridge JP3 only if an A/B diagnosis is
       needed. The divider and output protection are already bounded by simulation and bench
       measurements, so the remaining checks tune firmware and validate the changed V4.2 analog path.
       `docs/scope/welcome-chime-p3.png` records the earlier V4.1 observation.
