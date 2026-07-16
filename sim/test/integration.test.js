@@ -160,7 +160,73 @@ test('Etagenruf detection: a hot line 5 pulls P5_SENSE_N low; D9 blocks a revers
   assert.ok(rev['/P5_SENSE_N'] > 3.0, `reverse polarity must not trigger OC2 (LED protected by D9), got ${rev['/P5_SENSE_N']?.toFixed(2)} V`);
 });
 
-// ── actuators (PhotoMOS SSRs, energised via /PTT_DRV /DOOR_DRV /MUTE_DRV through the 300 Ω LED resistor) ──
+// ── actuators (PhotoMOS SSRs, energised via /PTT_DRV /DOOR_DRV /MUTE_DRV through 220 Ω LED resistors) ──
+
+test('FW-3: V4.2 PhotoMOS drives retain 220 Ω fanout, operate-current margin and GPIO headroom', () => {
+  const paths = {
+    '/PTT_DRV': [['R4', '/K1A_A'], ['R24', '/K1B_A']],
+    '/DOOR_DRV': [['R5', '/K2_A'], ['R21', '/K4_A']],
+    '/MUTE_DRV': [['R6', '/K3_A']],
+    '/P4_ISO': [['R34', '/K6_A']],
+  };
+  for (const [drive, resistors] of Object.entries(paths)) {
+    for (const [ref, ledAnode] of resistors) {
+      const r = netlist.components.find((c) => c.ref === ref);
+      assert.equal(r.value, '220', `${ref} must remain 220 Ω`);
+      assert.deepEqual(new Set(Object.values(r.pins)), new Set([drive, ledAnode]),
+        `${ref} must connect ${drive} to ${ledAnode}`);
+    }
+  }
+
+  const settle = ({ program, sources = {}, T = 0.1 }) => {
+    const els = buildElements(netlist, { switchState: defaultSwitchState(netlist), program: { U1: program } });
+    const sim = createStepper(els, Object.entries({ '/VBUS': 5, '/P1': 0, ...sources }).map(([net, v]) => ({
+      net,
+      vf: typeof v === 'function' ? v : () => v,
+    })), gndOf(netlist), 20e-6);
+    for (let t = 0; t < T; t += 20e-6) sim.step(t);
+    return sim;
+  };
+  const ledCurrent = (sim, ref) => Math.abs(
+    sim.padInjections().find((p) => p.ref === ref && p.pin === '2')?.I || 0,
+  );
+  const gpioLoad = (sim, net) => -sim.padInjections()
+    .filter((p) => p.net === net && p.I < 0)
+    .reduce((sum, p) => sum + p.I, 0);
+  const assertOperateMargin = (sim, refs) => {
+    for (const ref of refs) {
+      const current = ledCurrent(sim, ref);
+      assert.ok(current >= 5e-3,
+        `${ref} LED must receive at least the 5 mA recommended floor, got ${(current * 1e3).toFixed(2)} mA`);
+    }
+  };
+
+  const ptt = settle({ program: { '/PTT_DRV': 3.3 } });
+  assertOperateMargin(ptt, ['R4', 'R24']);
+  assert.ok(ptt.extractState().ssrs.K1, 'both K1 channels must operate from PTT_DRV');
+  assert.ok(gpioLoad(ptt, '/PTT_DRV') <= 18e-3,
+    `PTT_DRV must stay within its ~18 mA design load, got ${(gpioLoad(ptt, '/PTT_DRV') * 1e3).toFixed(2)} mA`);
+
+  const door = settle({ program: { '/DOOR_DRV': 3.3 } });
+  assertOperateMargin(door, ['R5', 'R21']);
+  assert.ok(door.extractState().ssrs.K2 && door.extractState().ssrs.K4,
+    'DOOR_DRV must operate both the delayed K2 make and immediate K4 break');
+  assert.ok(gpioLoad(door, '/DOOR_DRV') <= 18e-3,
+    `DOOR_DRV must stay within its ~18 mA design load, got ${(gpioLoad(door, '/DOOR_DRV') * 1e3).toFixed(2)} mA`);
+
+  const mute = settle({ program: { '/MUTE_DRV': 3.3 } });
+  assertOperateMargin(mute, ['R6']);
+  assert.ok(mute.extractState().ssrs.K3, 'MUTE_DRV must operate K3');
+
+  const isolate = settle({
+    program: { '/P4_ISO': 3.3 },
+    sources: { '/P2': 12, '/P4': (t) => (t >= 5e-3 && t < 17e-3 ? 12 : 0) },
+    T: 0.05,
+  });
+  assert.ok(isolate.extractState().relays.K5, 'the K5 auxiliary contact must close the K6 LED return');
+  assertOperateMargin(isolate, ['R34']);
+  assert.ok(isolate.extractState().ssrs.K6, 'P4_ISO must operate K6 once K5 is confirmed');
+});
 
 test('K2 door opener: DOOR_DRV = 3.3 V bridges P2 onto P3; idle does not', () => {
   // R17·C18 delays K2's make ~31 ms behind DOOR_DRV (vth-dependent); T=0.1 s leaves ample settling headroom
@@ -199,6 +265,15 @@ test('chime suppress fail-safe: line 4 stays bridged to C1 when the ESP is unpow
   // no VBUS → the ESP can never open K3, so the gong path (line 4 → /CHIME_POS) must stay made
   const { V } = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 } });
   assert.ok(near(V['/CHIME_POS'], 12), `unpowered, K3 NC must bridge line 4 → /CHIME_POS, got ${V['/CHIME_POS']?.toFixed(2)} V`);
+});
+
+test('JP1 chime bleed is factory bridged and connects R36 to GND', () => {
+  const jp1 = netlist.components.find((c) => c.ref === 'JP1');
+  assert.equal(defaultSwitchState(netlist).JP1, true, 'JP1 must be factory bridged');
+  assert.deepEqual(new Set(Object.values(jp1.pins)), new Set(['GND', '/CHIME_BLEED_RET']));
+  const r36 = netlist.components.find((c) => c.ref === 'R36');
+  assert.deepEqual(new Set(Object.values(r36.pins)), new Set(['/CHIME_POS', '/CHIME_BLEED_RET']),
+    'R36 must bleed CHIME_POS through factory-bridged JP1');
 });
 
 const chimePhase = ({ mute, sources, T, seed, observe = false, step = 20e-6, jp1 = true }) => {

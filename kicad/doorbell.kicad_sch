@@ -20833,13 +20833,23 @@
 	)
 	(wire
 		(pts
-			(xy 327.66 219.71) (xy 327.66 227.33)
+			(xy 309.88 220.98) (xy 309.88 228.6)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "1bd7bdcc-9d8b-435b-845d-a582f692f46f")
+	)
+	(wire
+		(pts
+			(xy 377.19 220.98) (xy 377.19 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1cbc0b23-6427-497b-b944-a71f986d9ea1")
 	)
 	(wire
 		(pts
@@ -20883,7 +20893,7 @@
 	)
 	(wire
 		(pts
-			(xy 314.96 219.71) (xy 314.96 227.33)
+			(xy 297.18 220.98) (xy 297.18 228.6)
 		)
 		(stroke
 			(width 0)
@@ -21373,7 +21383,7 @@
 	)
 	(wire
 		(pts
-			(xy 295.91 219.71) (xy 295.91 224.79)
+			(xy 278.13 220.98) (xy 278.13 226.06)
 		)
 		(stroke
 			(width 0)
@@ -21470,6 +21480,16 @@
 			(type default)
 		)
 		(uuid "4f992f54-3383-4774-980c-533a26b5aa8a")
+	)
+	(wire
+		(pts
+			(xy 364.49 220.98) (xy 364.49 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5102c566-621e-4ae6-977a-993f5b332123")
 	)
 	(wire
 		(pts
@@ -21793,7 +21813,7 @@
 	)
 	(wire
 		(pts
-			(xy 370.84 219.71) (xy 370.84 227.33)
+			(xy 353.06 220.98) (xy 353.06 228.6)
 		)
 		(stroke
 			(width 0)
@@ -22033,7 +22053,7 @@
 	)
 	(wire
 		(pts
-			(xy 359.41 219.71) (xy 359.41 227.33)
+			(xy 341.63 220.98) (xy 341.63 228.6)
 		)
 		(stroke
 			(width 0)
@@ -22403,7 +22423,7 @@
 	)
 	(wire
 		(pts
-			(xy 306.07 218.44) (xy 306.07 223.52)
+			(xy 288.29 219.71) (xy 288.29 224.79)
 		)
 		(stroke
 			(width 0)
@@ -22583,7 +22603,17 @@
 	)
 	(wire
 		(pts
-			(xy 339.09 219.71) (xy 339.09 227.33)
+			(xy 388.62 220.98) (xy 388.62 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ad38b32c-cd15-4a33-bfc4-9ecefc6619b5")
+	)
+	(wire
+		(pts
+			(xy 321.31 220.98) (xy 321.31 228.6)
 		)
 		(stroke
 			(width 0)
@@ -23363,7 +23393,7 @@
 	)
 	(wire
 		(pts
-			(xy 349.25 219.71) (xy 349.25 227.33)
+			(xy 331.47 220.98) (xy 331.47 228.6)
 		)
 		(stroke
 			(width 0)
@@ -23831,6 +23861,16 @@
 		)
 		(uuid "2552d066-ecba-43b0-9d2c-ac395528ed55")
 	)
+	(label "K5_LATCH"
+		(at 377.19 228.6 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify top)
+		)
+		(uuid "25d993a5-76c0-48ee-b8d8-37cb546cd235")
+	)
 	(label "ES_ADCVREF"
 		(at 252.73 232.41 0)
 		(effects
@@ -24018,6 +24058,16 @@
 		)
 		(uuid "3c6b1b04-c517-4cdd-81cd-8c2b91eb40d9")
 	)
+	(label "AVDD"
+		(at 388.62 228.6 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify top)
+		)
+		(uuid "3d948133-02c6-4016-b31a-026b097df1dc")
+	)
 	(label "GND"
 		(at 93.98 265.43 0)
 		(effects
@@ -24029,7 +24079,7 @@
 		(uuid "3fce26b2-eaf6-45d3-b59c-cbe9c955abc4")
 	)
 	(label "ES_OUTP"
-		(at 339.09 227.33 0)
+		(at 321.31 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -24079,7 +24129,7 @@
 		(uuid "461a082f-8327-4aed-9fdc-e10854a4de95")
 	)
 	(label "ES_MICP"
-		(at 349.25 227.33 0)
+		(at 331.47 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -24263,6 +24313,16 @@
 			(justify right bottom)
 		)
 		(uuid "6b5d0ad3-1666-44cc-b0a1-e0d2fde13f17")
+	)
+	(label "TALK_BRIDGE"
+		(at 364.49 228.6 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify top)
+		)
+		(uuid "6b9aea72-ae75-4dd2-a1a8-8f9069e2145c")
 	)
 	(label "AVDD"
 		(at 248.92 203.2 0)
@@ -24638,7 +24698,7 @@
 		(uuid "a7560f15-bb22-4b41-8990-5c866f735ae7")
 	)
 	(label "WD_GATE"
-		(at 314.96 227.33 0)
+		(at 297.18 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -24747,7 +24807,7 @@
 		(uuid "b52f8834-e647-4440-b0d6-6e48e29ccfa1")
 	)
 	(label "ES_MICN"
-		(at 359.41 227.33 0)
+		(at 341.63 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -24991,7 +25051,7 @@
 		(uuid "e074b554-25cd-40ac-8907-120a41dfbbfe")
 	)
 	(label "ES_VMID"
-		(at 370.84 227.33 0)
+		(at 353.06 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -25021,7 +25081,7 @@
 		(uuid "e688399f-938c-480c-8498-d9ec134a25bb")
 	)
 	(label "AVDD_PRE"
-		(at 327.66 227.33 0)
+		(at 309.88 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -25182,7 +25242,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 327.66 219.71 0)
+		(at 309.88 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -25192,7 +25252,7 @@
 		(dnp no)
 		(uuid "031577c3-eb07-41b5-82b1-fec0b09a32c1")
 		(property "Reference" "TP4"
-			(at 327.66 212.09 0)
+			(at 309.88 213.36 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25202,7 +25262,7 @@
 			)
 		)
 		(property "Value" "AVDD_PRE"
-			(at 330.2 219.71 0)
+			(at 312.42 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25213,7 +25273,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 327.66 219.71 0)
+			(at 309.88 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25224,7 +25284,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 327.66 219.71 0)
+			(at 309.88 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25235,7 +25295,7 @@
 			)
 		)
 		(property "Description" "AVDD_PRE commissioning test point"
-			(at 327.66 219.71 0)
+			(at 309.88 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25259,7 +25319,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 295.91 219.71 0)
+		(at 278.13 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -25269,7 +25329,7 @@
 		(dnp no)
 		(uuid "06ade135-77a1-4286-a520-1c90e6c076b3")
 		(property "Reference" "TP1"
-			(at 295.91 212.09 0)
+			(at 278.13 213.36 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -25279,7 +25339,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 298.45 219.71 0)
+			(at 280.67 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25290,7 +25350,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 295.91 219.71 0)
+			(at 278.13 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25301,7 +25361,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 295.91 219.71 0)
+			(at 278.13 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25312,7 +25372,7 @@
 			)
 		)
 		(property "Description" "GND commissioning test point"
-			(at 295.91 219.71 0)
+			(at 278.13 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26762,6 +26822,83 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 377.19 220.98 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "2695b897-2f91-4557-8ac3-42159bed1923")
+		(property "Reference" "TP10"
+			(at 377.19 213.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "K5_LATCH"
+			(at 379.73 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 377.19 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 377.19 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "K5 latch and P4-isolation commissioning test point"
+			(at 377.19 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c3bc7fce-ca09-4bc8-909f-10a8090c0ef6")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "TP10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 288.29 102.87 0)
 		(mirror y)
@@ -27757,7 +27894,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 339.09 219.71 0)
+		(at 321.31 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -27767,7 +27904,7 @@
 		(dnp no)
 		(uuid "36736b9f-e968-4252-bb0f-a0c57c056fce")
 		(property "Reference" "TP5"
-			(at 339.09 212.09 0)
+			(at 321.31 213.36 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -27777,7 +27914,7 @@
 			)
 		)
 		(property "Value" "ES_OUTP"
-			(at 341.63 219.71 0)
+			(at 323.85 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27788,7 +27925,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 339.09 219.71 0)
+			(at 321.31 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27799,7 +27936,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 339.09 219.71 0)
+			(at 321.31 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27810,7 +27947,7 @@
 			)
 		)
 		(property "Description" "ES_OUTP commissioning test point"
-			(at 339.09 219.71 0)
+			(at 321.31 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28672,6 +28809,83 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "#PWR11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 364.49 220.98 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "46e5e3b3-a67b-4758-bbba-c7d70e9822ca")
+		(property "Reference" "TP9"
+			(at 364.49 213.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TALK_BRIDGE"
+			(at 367.03 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 364.49 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 364.49 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TX precharge and talk-bridge commissioning test point"
+			(at 364.49 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "6fbb58bf-5379-412a-bdea-2c4e9dd85156")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "TP9")
 					(unit 1)
 				)
 			)
@@ -29798,7 +30012,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 359.41 219.71 0)
+		(at 341.63 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -29808,7 +30022,7 @@
 		(dnp no)
 		(uuid "5695a42e-f641-4c56-a957-35705b7b24cc")
 		(property "Reference" "TP7"
-			(at 359.41 212.09 0)
+			(at 341.63 213.36 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29818,7 +30032,7 @@
 			)
 		)
 		(property "Value" "ES_MICN"
-			(at 361.95 219.71 0)
+			(at 344.17 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29829,7 +30043,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 359.41 219.71 0)
+			(at 341.63 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29840,7 +30054,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 359.41 219.71 0)
+			(at 341.63 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29851,7 +30065,7 @@
 			)
 		)
 		(property "Description" "ES_MICN commissioning test point"
-			(at 359.41 219.71 0)
+			(at 341.63 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30158,7 +30372,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 306.07 218.44 0)
+		(at 288.29 219.71 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -30168,7 +30382,7 @@
 		(dnp no)
 		(uuid "5f61e513-bfbd-47fb-b876-99d1b44b90d7")
 		(property "Reference" "#PWR54"
-			(at 306.07 222.25 0)
+			(at 288.29 223.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30179,7 +30393,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 305.816 212.852 0)
+			(at 288.036 214.122 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -30189,7 +30403,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 306.07 218.44 0)
+			(at 288.29 219.71 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -30199,7 +30413,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 306.07 218.44 0)
+			(at 288.29 219.71 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -30209,7 +30423,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 306.07 218.44 0)
+			(at 288.29 219.71 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33473,7 +33687,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 295.91 224.79 0)
+		(at 278.13 226.06 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -33483,7 +33697,7 @@
 		(dnp no)
 		(uuid "87c51dce-a8a3-4225-9be1-9ccf80829abb")
 		(property "Reference" "#PWR52"
-			(at 295.91 228.6 0)
+			(at 278.13 229.87 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33494,7 +33708,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 295.91 229.29 0)
+			(at 278.13 230.56 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33504,7 +33718,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 295.91 224.79 0)
+			(at 278.13 226.06 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33514,7 +33728,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 295.91 224.79 0)
+			(at 278.13 226.06 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33524,7 +33738,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 295.91 224.79 0)
+			(at 278.13 226.06 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33621,7 +33835,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 370.84 219.71 0)
+		(at 353.06 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -33631,7 +33845,7 @@
 		(dnp no)
 		(uuid "886d16c6-4e74-47cd-990f-6aaf84a2aa95")
 		(property "Reference" "TP8"
-			(at 370.84 212.09 0)
+			(at 353.06 213.36 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33641,7 +33855,7 @@
 			)
 		)
 		(property "Value" "ES_VMID"
-			(at 373.38 219.71 0)
+			(at 355.6 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33652,7 +33866,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 370.84 219.71 0)
+			(at 353.06 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33663,7 +33877,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 370.84 219.71 0)
+			(at 353.06 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33674,7 +33888,7 @@
 			)
 		)
 		(property "Description" "ES_VMID commissioning test point"
-			(at 370.84 219.71 0)
+			(at 353.06 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35908,6 +36122,83 @@
 			(project "doorbell"
 				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
 					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 388.62 220.98 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "a905e7be-8649-4b67-8a4c-e54f469be4a0")
+		(property "Reference" "TP11"
+			(at 388.62 213.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "AVDD"
+			(at 391.16 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 388.62 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 388.62 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Codec AVDD clamp-rail and D18 commissioning test point"
+			(at 388.62 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f3e1505a-d70c-448b-84f6-6d10131c094b")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "TP11")
 					(unit 1)
 				)
 			)
@@ -40157,7 +40448,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 306.07 223.52 180)
+		(at 288.29 224.79 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -40167,7 +40458,7 @@
 		(dnp no)
 		(uuid "e3e6a27f-5920-48de-ae03-142c739e650b")
 		(property "Reference" "TP2"
-			(at 306.07 229.616 0)
+			(at 288.29 230.886 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -40177,7 +40468,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 303.53 223.52 0)
+			(at 285.75 224.79 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40188,7 +40479,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 306.07 223.52 0)
+			(at 288.29 224.79 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40199,7 +40490,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 306.07 223.52 0)
+			(at 288.29 224.79 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40210,7 +40501,7 @@
 			)
 		)
 		(property "Description" "+3V3 commissioning test point"
-			(at 306.07 223.52 0)
+			(at 288.29 224.79 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41103,7 +41394,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 349.25 219.71 0)
+		(at 331.47 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -41113,7 +41404,7 @@
 		(dnp no)
 		(uuid "f2b201a0-60c3-4444-914f-3ba36e494929")
 		(property "Reference" "TP6"
-			(at 349.25 212.09 0)
+			(at 331.47 213.36 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -41123,7 +41414,7 @@
 			)
 		)
 		(property "Value" "ES_MICP"
-			(at 351.79 219.71 0)
+			(at 334.01 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41134,7 +41425,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 349.25 219.71 0)
+			(at 331.47 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41145,7 +41436,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 349.25 219.71 0)
+			(at 331.47 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41156,7 +41447,7 @@
 			)
 		)
 		(property "Description" "ES_MICP commissioning test point"
-			(at 349.25 219.71 0)
+			(at 331.47 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41792,7 +42083,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 314.96 219.71 0)
+		(at 297.18 220.98 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -41802,7 +42093,7 @@
 		(dnp no)
 		(uuid "faad5c0a-9b1e-49da-a1ea-acd3bed2cd9d")
 		(property "Reference" "TP3"
-			(at 314.96 212.09 0)
+			(at 297.18 213.36 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -41812,7 +42103,7 @@
 			)
 		)
 		(property "Value" "WD_GATE"
-			(at 317.5 219.71 0)
+			(at 299.72 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41823,7 +42114,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 314.96 219.71 0)
+			(at 297.18 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41834,7 +42125,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 314.96 219.71 0)
+			(at 297.18 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41845,7 +42136,7 @@
 			)
 		)
 		(property "Description" "WD_GATE commissioning test point"
-			(at 314.96 219.71 0)
+			(at 297.18 220.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
