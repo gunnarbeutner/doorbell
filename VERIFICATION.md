@@ -87,6 +87,9 @@ peak; C_in/C_out within the LDO's stable range.
 **MCU** — check **every module pad against the datasheet pinout and the GPIO map in DESIGN.md**
 (power/USB/I²S/I²C/SSR-drive/sense). Strapping pins must sit at valid levels at reset; no
 input-only or flash-tied pin may be misused. Native USB D±/Serial-JTAG is the flash+log path.
+Confirm IO5 is ADC1_CH4 and not a strapping pin. Trace the post-fuse monitor as
+`+5V → R40 100 kΩ → VBUS_F_ADC → R41 10 kΩ → GND`, with C25 (100 nF) from the ADC node to GND;
+the 11:1 ratio must keep the ADC node below 0.84 V even at D10's 9.2 V maximum clamp voltage.
 
 **Codec + audio coupling** — all pins + EP map to the datasheet; I²S direction correct (ASDOUT→ESP
 DIN, DSDIN←ESP DOUT); CE strap sets the I²C address; the tap is **transformer-less** and
@@ -163,11 +166,14 @@ P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isola
 **Stage 0 — power-off continuity (DMM).** P1↔GND ≈ 0 Ω (the deliberate bond); no short P2/P3/P4/P5 to
 each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
 continuous; raw P4↔`K5_LATCH` continuous through K6; JP2 open; JP3 factory-bridged and, after
-capacitors settle, P2↔`TALK_BRIDGE` ≈ 200 kΩ through R38+R39; TP1–TP8 present; C19 "+" toward P4.
+capacitors settle, P2↔`TALK_BRIDGE` ≈ 200 kΩ through R38+R39; `VBUS_F_ADC`↔GND ≈ 10 kΩ through
+R41; TP1–TP8 present; C19 "+" toward P4.
 
 **Stage 1 — local power only, no bus.** J1 VBUS at 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
-(after the SS14 drop — there is no 5 V test point), **TP2 ≈ +3.30 V**, quiescent current sane,
-board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
+(after the SS14 drop — there is no 5 V test point), `VBUS_F_ADC ≈ +5V / 11` (about 0.41–0.45 V),
+and the firmware's **Post-Fuse 5 V Supply** reading agrees with a DMM on +5V within ADC/resistor
+tolerance. A complete supply or fuse loss cannot be reported because it also powers down the ESP32.
+**TP2 ≈ +3.30 V**, quiescent current sane, board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
   **closed** — validating each SSR + driver + GPIO map with no bus voltage present. Leave
   `Debug P4 Isolation` off; confirm GPIO48/`P4_ISO` is low and K6 remains closed. Do not exercise

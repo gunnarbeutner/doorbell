@@ -26,6 +26,7 @@
 #   K1                 (PTT SSR, talk=energised)   : GPIO9
 #   K5_SENSE_N           (K5 auxiliary NO, active-low): GPIO4
 #   P4_ISO            (K6 request, active-high)   : GPIO48
+#   post-fuse +5 V monitor (VBUS_F_ADC / ADC1_CH4) : GPIO5
 #   status LED          (active-low D6)             : GPIO7
 #   I2C_SDA  (ES8311 control)                      : GPIO38
 #   I2C_SCL  (ES8311 control)                      : GPIO39
@@ -773,6 +774,21 @@ button:
         - script.execute: welcome_and_open
 
 sensor:
+  # R40/R41 divide the post-fuse +5 V rail by 11. C25 filters the ADC input. This
+  # is useful for sag diagnostics, but cannot report a complete loss of board power.
+  - platform: adc
+    pin: GPIO5
+    name: "Post-Fuse 5 V Supply"
+    id: vbus_f_voltage
+    device_class: voltage
+    state_class: measurement
+    entity_category: diagnostic
+    attenuation: 0db
+    samples: 16
+    update_interval: 10s
+    accuracy_decimals: 2
+    filters:
+      - multiply: 11.0
   - platform: wifi_signal
     name: WiFi Signal Strength
     update_interval: 60s

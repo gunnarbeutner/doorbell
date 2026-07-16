@@ -325,6 +325,9 @@ this purely a placement choice: any function routes to any pad.
   bus deliberately lands SCL/MCLK/BCLK/DIN on IO39–42 = the MTCK/MTDO/MTDI/MTMS JTAG group — none of
   those are S3 strapping pins, so it only forgoes pin-JTAG (debug runs over USB-Serial-JTAG) with no
   boot-time effect. EN has the 10 k (R10) + 1 µF (C5) RC + SW2 (Espressif EN-RC spec).
+- **Supply diagnostic on ADC1:** unrestricted IO5/ADC1_CH4 monitors the post-fuse +5 V rail through
+  the R40/R41 divider. ADC1 avoids the Wi-Fi contention associated with ADC2, and IO5 is not a
+  strapping pin, so the monitor has no reset-state effect.
 - **No USB-UART bridge:** flashing + logs run over the native USB-Serial-JTAG (IO19/IO20 → D5 → J1).
 ### Bell / session sense front-end
 
@@ -470,11 +473,20 @@ no flyback; D1 exists only for the passive electromechanical latch.
 ```
 J1 VBUS ──[D4 SS14]── VBUS_PROTECTED ── F1 1A fast fuse ── +5V ─┬─ main 3.3V LDO ── +3V3 ── digital loads
                                                                   └─ low-noise 3.3V LDO ── D18 ── codec AVDD
++5V ── R40 100k ── VBUS_F_ADC ──┬─ R41 10k ── GND
+                                 ├─ C25 100nF ── GND
+                                 └─ IO5 / ADC1_CH4
 J1 D± ── D5 ── IO19/IO20 (native USB)         +3V3: 10µF + 10µF + 100nF; AVDD_PRE: 10µF out (C24)
 D4 blocks a reversed J1 supply and prevents VBUS_PROTECTED from feeding back out through the service connector
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from +5V (post-fuse); +5V TVS: SMF5.0A (D10)
 VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all downstream protection — a clamping D10 blows it, isolating J1 (fail-safe)
 ```
+R40/R41 scale the rail by 11:1, so the ADC sees about 0.41–0.45 V across the normal +5 V range and
+about 0.84 V at D10's 9.2 V maximum clamp voltage. Their Thevenin resistance is about 9.1 kΩ; with
+C25 that gives a ~0.91 ms input time constant and a local charge reservoir for the ADC. Firmware
+multiplies the reading by 11 and exposes it as a diagnostic. It can reveal a sagging live supply,
+but a blown fuse or complete J1 power loss also powers down the ESP32, so it cannot report that outage.
+
 > No bulk electrolytic: the local LDO actively regulates the ~350 mA WiFi-TX burst
 > (modeled droop ≈ 90 mV across 20 µF of ceramic on +3V3), so a bulk cap buys nothing.
 > VBUS cable sag is a dropout-headroom question covered by the selected low-dropout regulator.

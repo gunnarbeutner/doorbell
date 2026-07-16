@@ -945,6 +945,31 @@ test('J1 power input regulates +5V and +3V3', () => {
     `J1: +5V should sit just below the input, got ${V['+5V']?.toFixed(3)}`);
 });
 
+test('post-fuse supply monitor scales +5V safely into GPIO5 ADC1', () => {
+  const byRef = Object.fromEntries(netlist.components.map((component) => [component.ref, component]));
+
+  assert.equal(byRef.R40.value, '100k');
+  assert.deepEqual(byRef.R40.pins, { '1': '+5V', '2': '/VBUS_F_ADC' });
+  assert.equal(byRef.R41.value, '10k');
+  assert.deepEqual(byRef.R41.pins, { '1': '/VBUS_F_ADC', '2': 'GND' });
+  assert.equal(byRef.C25.value, '100nF');
+  assert.deepEqual(byRef.C25.pins, { '1': '/VBUS_F_ADC', '2': 'GND' });
+  assert.equal(byRef.U1.pins['5'], '/VBUS_F_ADC');
+  assert.equal(byRef.U1.pinfn['5'], 'IO5_5');
+
+  const powered = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 } }).V;
+  assert.ok(near(powered['/VBUS_F_ADC'], powered['+5V'] / 11, 0.01),
+    `VBUS_F_ADC should be +5V/11, got ${powered['/VBUS_F_ADC']?.toFixed(3)} V from +5V=${powered['+5V']?.toFixed(3)} V`);
+
+  const unpowered = runDC(netlist, { sources: {} }).V;
+  assert.ok(Math.abs(unpowered['/VBUS_F_ADC']) < 0.05,
+    `R41 should hold VBUS_F_ADC near 0 V unpowered, got ${unpowered['/VBUS_F_ADC']?.toFixed(3)} V`);
+
+  const clamped = runDC(netlist, { sources: { '+5V': 9.2, '/P1': 0 } }).V;
+  assert.ok(near(clamped['/VBUS_F_ADC'], 9.2 / 11, 0.02),
+    `VBUS_F_ADC should remain about 0.84 V at D10's maximum clamp voltage, got ${clamped['/VBUS_F_ADC']?.toFixed(3)} V`);
+});
+
 test('unpowered board: rails rest at 0, no phantom voltage', () => {
   const { V, floating } = runDC(netlist, { sources: {} });
   // the IC supply loads (ESP32/codec) tie +3V3 toward GND, so unpowered the rail rests at a hard 0
