@@ -190,7 +190,7 @@ test('classify: recognized by footprint alone (blank lib/value)', () => {
 test('classify: GAQW212GS is the dual NO PhotoMOS — two channels (LED 1/2→7/8, LED 3/4→5/6)', () => {
   // K1: ch1 sources the handshake (P2↔TALK_BRIDGE), ch2 gates the TX output (TX_OUT↔P3)
   const raw = { ref: 'K1', lib: 'gaqw212gs:GAQW212GS', value: 'GAQW212GS', footprint: 'gaqw212gs:SOP-8_L9.8-W4.4-P2.54-LS6.8-BL',
-    pins: { 1: '/K1_LED_A', 2: 'GND', 3: '/K1_LED_B', 4: 'GND', 5: '/P3', 6: '/TX_OUT', 7: '/TALK_BRIDGE', 8: '/P2' } };
+    pins: { 1: '/K1A_A', 2: 'GND', 3: '/K1B_A', 4: 'GND', 5: '/P3', 6: '/TX_OUT', 7: '/TALK_BRIDGE', 8: '/P2' } };
   const c = classify(raw);
   assert.equal(c.constructor.name, 'Photomos', 'GAQW212GS should classify as Photomos');
   const els = c.elements();
@@ -198,6 +198,6 @@ test('classify: GAQW212GS is the dual NO PhotoMOS — two channels (LED 1/2→7/
   assert.ok(els.every((e) => e.type === 'SSR' && e.closedWhenOn === true), 'both channels are 1-Form-A (NO)');
   // ch1 = LED pins 1/2 → contact 7/8 ; ch2 = LED pins 3/4 → contact 5/6
   assert.deepEqual(els.map((e) => [e.pa, e.pb, e.pc, e.pd]), [['1', '2', '7', '8'], ['3', '4', '5', '6']]);
-  assert.deepEqual(els[0] && [els[0].a, els[0].b, els[0].c, els[0].d], ['/K1_LED_A', 'GND', '/TALK_BRIDGE', '/P2']);
-  assert.deepEqual(els[1] && [els[1].a, els[1].b, els[1].c, els[1].d], ['/K1_LED_B', 'GND', '/P3', '/TX_OUT']);
+  assert.deepEqual(els[0] && [els[0].a, els[0].b, els[0].c, els[0].d], ['/K1A_A', 'GND', '/TALK_BRIDGE', '/P2']);
+  assert.deepEqual(els[1] && [els[1].a, els[1].b, els[1].c, els[1].d], ['/K1B_A', 'GND', '/P3', '/TX_OUT']);
 });

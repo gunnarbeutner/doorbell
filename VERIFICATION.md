@@ -64,7 +64,7 @@ schematic, read them from it.
   SSR off while the GPIO floats at boot.
 - The on-board latch relay (K5) replicates the handset's seal-in: coil across **P1↔K5_LATCH**, with
   normally-closed K6 passing raw P4 at rest; the primary NO contact seals `K5_LATCH` from P2. Confirm
-  the auxiliary NO contact grounds `K5_SENSE`, gates K6's LED return and cannot open K6 before K5
+  the auxiliary NO contact grounds `K5_SENSE_N`, gates K6's LED return and cannot open K6 before K5
   physically pulls in. Confirm contact mapping and flyback-diode orientation.
 - Confirm the door pair reproduces S1's **break-before-make**: the NC seal-in-break opens before
   the door bridge closes (RC-delayed), and the max-on-time one-shot releases the bridge in bounded
@@ -98,7 +98,7 @@ K1-ch2 must keep line 3 high-Z at idle despite the always-present precharge path
 
 Check the external codec clamps by pin number, not only by symbol appearance: D13/D14 pin 1
 (cathode) → AVDD and pin 2 (anode) → OUTP/MIC1P; D16/D17 pin 1 → OUTP/MIC1P and pin 2 → GND.
-D18 pin 2 (anode) faces U4 `AU_3V3`, pin 1 (cathode) faces AVDD, and R37 is 220 Ω AVDD→GND.
+D18 pin 2 (anode) faces U4 `AVDD_PRE`, pin 1 (cathode) faces AVDD, and R37 is 220 Ω AVDD→GND.
 Confirm the exact diode sheet covers reverse voltage and the actual injection current; distinguish
 its guaranteed 25 °C VF limit from any 0–50 °C estimate. Simulate both polarities of the full bus
 envelope with the board unpowered, including sustained C14-short, and require AVDD to remain below
@@ -170,7 +170,7 @@ capacitors settle, P2↔`TALK_BRIDGE` ≈ 200 kΩ through R38+R39; TP1–TP8 pre
 board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
   **closed** — validating each SSR + driver + GPIO map with no bus voltage present. Leave
-  `Debug P4 Isolation` off; confirm GPIO48/`ISO_REQ` is low and K6 remains closed. Do not exercise
+  `Debug P4 Isolation` off; confirm GPIO48/`P4_ISO` is low and K6 remains closed. Do not exercise
   K6 until the passive K5 checks in 2a have passed. Record the 5 V, +3V3, codec VMID and idle-output
   voltages in the run-specific evidence log.
 
@@ -192,7 +192,7 @@ board boots/joins WiFi/logs clean. **SAFE-6:** idle, then
   hold the command asserted and measure that the watchdog releases K2 after the minimum normal
   firmware pulse but before the specified maximum fault-on time.
 - **2d K5-confirmed P4 isolation:** keep JP3 open and power the bench firmware. Before K5 pull-in,
-  confirm `Debug K5 Sense` is clear, turn on `Debug P4 Isolation` and verify GPIO48/`ISO_REQ` goes
+  confirm `Debug K5 Sense` is clear, turn on `Debug P4 Isolation` and verify GPIO48/`P4_ISO` goes
   high but the hardware interlock keeps K6 closed; turn the request off. Ring K5 in and confirm
   `Debug K5 Sense` asserts after its 5 ms debounce. Turn on `Debug P4 Isolation`, verify K6 opens,
   remove the raw-P4 drive and confirm K5 remains sealed from P2 while raw P4 is disconnected from
@@ -230,7 +230,7 @@ J2's screws, and component pads. Use an **isolated** scope
   across R_lim). A wrong guess is a silent non-detect, not damage; swap the LED's two bus
   connections for that channel.
 - **Door pulse / chime suppress / session sense** — confirm the opener fires, the gong mutes with
-  line 4 / the latch / the Etagenruf untouched, OC1 reports raw P4, and `K5_SENSE` reports actual
+  line 4 / the latch / the Etagenruf untouched, OC1 reports raw P4, and `K5_SENSE_N` reports actual
   relay pull-in/release.
 - **Break-before-make** — confirm a board door-open drops the latch (line 4 falls, P2 rises) as on
   the genuine S1; hold the command and verify the watchdog timeout against the requirements.

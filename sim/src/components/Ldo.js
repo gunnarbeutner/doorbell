@@ -47,7 +47,7 @@ export default class Ldo extends Component {
 
     if (vin == null || vout == null || gnd == null) return [];
 
-    // regulated output (target from the output net name, e.g. "AU_3V3"/"+3V3" -> 3.3 V); 0.3 V dropout.
+    // regulated output (target from the output net name, e.g. "AVDD_PRE"/"+3V3" -> 3.3 V); 0.3 V dropout.
     // pinVin/pinVout let the trace-flow place the LDO's pass-through current (I_in ~ I_out) on the right pads.
     return [{ type: 'LDO', vin, vout, gnd, vreg: netV(vout) || 3.3, drop: 0.3, ref: this.ref, pinVin: pvin, pinVout: pvout }];
   }

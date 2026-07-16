@@ -73,7 +73,7 @@ path. The exact orderable connector is maintained in the schematic and `ORDERING
 
 **Door opener (K2, SSR).** Energising K2 bridges **P2↔P3 directly** (a dead short, no series R) →
 the TV20/S reads the ÖT and fires the opener. **Chime suppress (K3, NC SSR).** K3 sits in the gong's
-**audio path** — between line 4 and the coupling cap C1 (K3: P4↔CHIME_C1, then C1: CHIME_C1↔P5). At
+**audio path** — between line 4 and the coupling cap C1 (K3: P4↔CHIME_POS, then C1: CHIME_POS↔P5). At
 rest (de-energised) it is closed, so the Türruf gong reaches the speaker and OC1 senses line 4;
 energised it opens, muting the gong **without touching line 4, the latch, or the Etagenruf** (which
 reaches LS1 directly on line 5, bypassing C1).
@@ -399,9 +399,9 @@ opto collector ──► GPIO + 12 kΩ to +3V3     opto emitter ──► GND  (
 ```
 K1 (talk+TX gate, dual NO): ch1 P2↔TALK_BRIDGE (precharged by JP4+R38+R39 = 200 kΩ), ch2 TX_OUT↔P3
 K2 (door opener, NO): P2 ↔ P3 — energise to bridge the ÖT pair
-K3 (chime mute, NC): P4 ↔ CHIME_C1 — energise to open and mute
+K3 (chime mute, NC): P4 ↔ CHIME_POS — energise to open and mute
 K4 (seal-in break, NC): SW3.6 ↔ K5.3 — energise to drop the latch
-K6 (P4 isolator, NC): P4 ↔ K5_LATCH — opens only when ISO_REQ and K5 auxiliary NO are both active
+K6 (P4 isolator, NC): P4 ↔ K5_LATCH — opens only when P4_ISO and K5 auxiliary NO are both active
 LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21→K4 LED (each Rn = 220 Ω)
 ```
 
@@ -422,13 +422,13 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
 - **K2 — door opener.** Energise to bridge **P2↔P3** directly (dead short) — the ÖT the TV20/S reads
   as "open". Paired with **K4 + the Q3 delay lead** to mirror S1's break-before-make — see "Door-open
   mirrors S1".
-- **K3 — chime mute.** In the gong's audio path (`P4 ↔ CHIME_C1 ↔ C1 ↔ P5 → LS1`). NC ⇒ de-energised
+- **K3 — chime mute.** In the gong's audio path (`P4 ↔ CHIME_POS ↔ C1 ↔ P5 → LS1`). NC ⇒ de-energised
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
   = gong muted, with **line 4, the latch and the Etagenruf all untouched** (Etagenruf reaches LS1
   directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4). **R36 (100 kΩ) + JP2
-  (factory-bridged)** bleed `CHIME_C1` to GND while K3 is open, discharging C19's 22 µF
+  (factory-bridged)** bleed `CHIME_POS` to GND while K3 is open, discharging C19's 22 µF
   coupling capacitance (τ≈2.2 s). It is a passive robustness measure: on the V4.1 bench board,
-  `CHIME_C1` held about 10 V for tens of seconds, yet an immediate K3 reclose neither latched K5 nor
+  `CHIME_POS` held about 10 V for tens of seconds, yet an immediate K3 reclose neither latched K5 nor
   asserted even unfiltered OC1. A subsequent ten-cycle sweep with reclose waits from 0 to 5 s showed
   a brief P4 discharge pulse on every cycle and zero K5 re-latches. The always-connected K5 coil
   (P4→P1) loads the transient before its contacts move. Therefore firmware need not impose a 5τ/12 s
@@ -443,7 +443,7 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~38 ms (Q3 · R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
 - **K6 — P4 isolator.** NC at rest and unpowered, so raw P4 reaches `K5_LATCH` and the passive handset
-  behaves normally. K5's auxiliary NO contact is the K6 LED return: even a stuck-high `ISO_REQ`
+  behaves normally. K5's auxiliary NO contact is the K6 LED return: even a stuck-high `P4_ISO`
   cannot open K6 until K5 has physically pulled in, and K5 release immediately removes LED current.
   JP3 is an open recovery jumper directly across K6's output.
 - K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
@@ -470,7 +470,7 @@ no flyback; D1 exists only for the passive electromechanical latch.
 ```
 J1 VBUS ──[D4 SS14]── VBUS_PROTECTED ── F1 1A fast fuse ── +5V ─┬─ main 3.3V LDO ── +3V3 ── digital loads
                                                                   └─ low-noise 3.3V LDO ── D18 ── codec AVDD
-J1 D± ── D5 ── IO19/IO20 (native USB)         +3V3: 10µF + 10µF + 100nF; AU_3V3: 10µF out (C24)
+J1 D± ── D5 ── IO19/IO20 (native USB)         +3V3: 10µF + 10µF + 100nF; AVDD_PRE: 10µF out (C24)
 D4 blocks a reversed J1 supply and prevents VBUS_PROTECTED from feeding back out through the service connector
 USB D± ESD: TPD2S017 flow-through clamp (D5), VCC biased from +5V (post-fuse); +5V TVS: SMF5.0A (D10)
 VBUS fuse: F1 (0466001.NRHF, 1A fast) ahead of all downstream protection — a clamping D10 blows it, isolating J1 (fail-safe)
@@ -529,7 +529,7 @@ KiCad**; `./build.sh` verifies the inner copper-fill planes and fails if any net
 - **Fine-pitch clearance.** The ES8311's 0.40 mm pitch won't take the default net-class clearance, so
   routing clearance is set globally to JLCPCB's published 0.127 mm capability (hole-to-copper 0.2 mm),
   pinned in `kicad/doorbell.kicad_dru`. Trade-off: the board routes at the fab limit, not with margin.
-- **Bus-width policy.** Nets at WF26-bus potential (P1–P5, K5_LATCH, TALK_BRIDGE, TX_OUT, CHIME_C1) and +5V are routed
+- **Bus-width policy.** Nets at WF26-bus potential (P1–P5, K5_LATCH, TALK_BRIDGE, TX_OUT, CHIME_POS) and +5V are routed
   wider than signal nets — the bus carries the Türruf and the door currents, +5V feeds the LDO and the
   ESP32's WiFi-TX peak (via +3V3). KiCad's DRC does not enforce this; it's a routing rule.
 - **Pin assignment exploits the S3 GPIO matrix** (any function routes to any pad) so U1's and U3's escape fans
@@ -592,13 +592,13 @@ Consequences:
 - **Sequencing, not mixing:** assert direction → settle → stream → release → stream the other
   (walkie-talkie cadence).
 
-**"Can we send?" — session sense.** V4.2 adds `K5_SENSE`, pulled low by K5's auxiliary NO contact,
+**"Can we send?" — session sense.** V4.2 adds `K5_SENSE_N`, pulled low by K5's auxiliary NO contact,
 so firmware can distinguish raw P4 activity from a relay that has actually pulled in and sealed.
 OC1 remains on raw P4 for ring detection and diagnostics. K3 control remains independent: it may mute
 the local gong while K6 controls only the raw-P4-to-latch connection. Audio direction is selected by
 K1:
 
-| Session (`K5_SENSE`) | K1 | State |
+| Session (`K5_SENSE_N`) | K1 | State |
 |---|---|---|
 | inactive | – | no session — neither RX nor TX |
 | active | open | listen → **capture (RX)** |
@@ -643,7 +643,7 @@ validation.
 - **Clamp rail + supplies:** all five protection diodes use LMBR01S30ST5G (30 V; maximum 0.30 V at
   10 mA at 25 °C). The exact C383224 X3-DFN0603 footprint and 3D model are project-local; its
   external pin-1 silk dot remains readable while the microscopic package outline stays on F.Fab.
-  U4 generates `AU_3V3`; D18 then feeds AVDD while blocking reverse current toward
+  U4 generates `AVDD_PRE`; D18 then feeds AVDD while blocking reverse current toward
   the unpowered regulator. R37 (220 Ω) gives AVDD a defined discharge and injection-current sink.
   The D18 drop still leaves the codec comfortably above its 1.7 V minimum operating voltage at the
   combined codec/bleeder load. Under the simulated sustained ±17 V C14-short fault, R26 plus the
@@ -703,7 +703,7 @@ inactive/transparent when unpowered (SSRs off, optos passive, codec quiet).
 These reproduce the handset (see "WF26 internal circuit") and run with zero board power:
 - **LS1** — 16 Ω speaker/mic across **P1↔P5** (doubles as the mic for talk).
 - **C19** — the 22 µF/50 V polarized gong/audio crossover across **P5↔P4**, matching the original
-  WF26 topology; pin 1 (+) faces `CHIME_C1`/P4 and pin 2 (−) faces P5.
+  WF26 topology; pin 1 (+) faces `CHIME_POS`/P4 and pin 2 (−) faces P5.
 - **K5** — the **latch relay**, coil across **P1↔K5_LATCH**; normally-closed K6 passes the ring's
   ~12 V raw-P4 pulse at rest, after which K5 is **sealed in from P2** (see "Bell signals"). Its primary
   NO contact routes listen **line 2 → S1 → K1_COM → K5_LATCH → K6 → P4 → C1 → speaker**.

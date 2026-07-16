@@ -24,8 +24,8 @@
 #   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO10
 #   suppress_chime_bin (K3 / chime suppress)       : GPIO11
 #   K1                 (PTT SSR, talk=energised)   : GPIO9
-#   K5_SENSE           (K5 auxiliary NO, active-low): GPIO4
-#   ISO_REQ            (K6 request, active-high)   : GPIO48
+#   K5_SENSE_N           (K5 auxiliary NO, active-low): GPIO4
+#   P4_ISO            (K6 request, active-high)   : GPIO48
 #   status LED          (active-low D6)             : GPIO7
 #   I2C_SDA  (ES8311 control)                      : GPIO38
 #   I2C_SCL  (ES8311 control)                      : GPIO39
@@ -712,7 +712,7 @@ output:
     pin: GPIO9               # K1 — PTT SSR (energised = talk: P2↔TALK_BRIDGE handshake + TX_OUT↔P3 gate, codec→C14→R26→P3)
     id: ptt_relay_bin
   - platform: gpio
-    pin: GPIO11              # K3 — chime suppress (open C1: P4↔CHIME_C1)
+    pin: GPIO11              # K3 — chime suppress (open C1: P4↔CHIME_POS)
     id: suppress_chime_bin
   - platform: gpio
     pin: GPIO10              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
@@ -720,7 +720,7 @@ output:
                              # leads = S1 break-before-make in hardware (no firmware sequencing)
     id: front_door_buzzer_bin
   - platform: gpio
-    pin: GPIO48              # ISO_REQ — K6 opens only when K5_SENSE also provides its LED return
+    pin: GPIO48              # P4_ISO — K6 opens only when K5_SENSE_N also provides its LED return
     id: p4_isolation_req
 
 # Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the

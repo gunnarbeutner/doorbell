@@ -13,9 +13,9 @@ Completed in `kicad/doorbell.kicad_sch`:
 - Defined R28 as 2.2 kΩ, `PCM_JLCPCB:R_0603`, LCSC `C4190`, MPN `0603WAF2201T5E`.
 - Updated the TALK annotation and the C14, R28 and R29 descriptions.
 - Split raw `P4` from `K5_LATCH` and inserted K6 as the normally-closed bridge.
-- Connected K5's auxiliary NO contact as the direct K6 hardware interlock and `K5_SENSE` source.
+- Connected K5's auxiliary NO contact as the direct K6 hardware interlock and `K5_SENSE_N` source.
 - Added R34, R35 and R12 for K6 LED drive, sense pull-up and request pull-down respectively.
-- Connected GPIO48 (U1 pin 25) to `ISO_REQ` and GPIO4 (U1 pin 4) to `K5_SENSE`.
+- Connected GPIO48 (U1 pin 25) to `P4_ISO` and GPIO4 (U1 pin 4) to `K5_SENSE_N`.
 - Added normally-open JP3 directly across K6's P4-to-`K5_LATCH` output as a recovery bypass.
 - Synchronized, placed and routed K6, JP3, R12, R28, R34 and R35 on the PCB; connectivity reports no
   unrouted connections.
@@ -78,15 +78,15 @@ state while also completing the K6 LED circuit:
 
 ```text
 K5 pin 6, auxiliary COM ── GND
-K5 pin 5, auxiliary NO  ── K5_SENSE
+K5 pin 5, auxiliary NO  ── K5_SENSE_N
 K5 pin 7, auxiliary NC  ── unconnected
 
-K5_SENSE ── 10 kΩ ── +3V3
-K5_SENSE ── U1 pin 4 / GPIO4 input (active low)
+K5_SENSE_N ── 10 kΩ ── +3V3
+K5_SENSE_N ── U1 pin 4 / GPIO4 input (active low)
 
-U1 pin 25 / GPIO48 output (ISO_REQ) ── 220 Ω ── K6 LED anode
-K6 LED cathode ── K5_SENSE
-ISO_REQ ── 10 kΩ ── GND
+U1 pin 25 / GPIO48 output (P4_ISO) ── 220 Ω ── K6 LED anode
+K6 LED cathode ── K5_SENSE_N
+P4_ISO ── 10 kΩ ── GND
 ```
 
 GPIO4 and GPIO48 are suitable for this module and placement:
@@ -96,13 +96,13 @@ GPIO4 and GPIO48 are suitable for this module and placement:
 - GPIO4 is a free general-purpose input close to the K5/K6 routing corridor; GPIO48 is a free
   general-purpose output suitable for the isolation request.
 - GPIO35–37 are not alternatives on the N16R8 because its Octal PSRAM uses them.
-- R12 holds GPIO48/`ISO_REQ` low while the pin is high-impedance at reset, and R35 holds
-  GPIO4/`K5_SENSE` high until K5 physically closes its auxiliary contact.
+- R12 holds GPIO48/`P4_ISO` low while the pin is high-impedance at reset, and R35 holds
+  GPIO4/`K5_SENSE_N` high until K5 physically closes its auxiliary contact.
 
 The effective hardware logic is:
 
 ```text
-P4_ISO_OPEN = ISO_REQ high AND K5 auxiliary contact closed
+P4_ISO_OPEN = P4_ISO high AND K5 auxiliary contact closed
 ```
 
 This direct-contact arrangement provides the hardware interlock without MOSFETs or delay logic:
@@ -114,10 +114,10 @@ This direct-contact arrangement provides the hardware interlock without MOSFETs 
 - The K6 LED load is approximately 9.5 mA, matching the board's existing direct GPIO-driven PhotoMOS
   channels.
 
-Apply approximately 5–10 ms of firmware debounce to `K5_SENSE` before raising `ISO_REQ`. The hardware
+Apply approximately 5–10 ms of firmware debounce to `K5_SENSE_N` before raising `P4_ISO`. The hardware
 interlock proves armature position, not electrical continuity of K5's primary seal-in pole. Make the
 first isolation attempt while the original P4 pulse is still present. If the primary pole fails to
-hold and `K5_SENSE` returns high, the fast-closing isolator can reconnect the still-live P4 source;
+hold and `K5_SENSE_N` returns high, the fast-closing isolator can reconnect the still-live P4 source;
 firmware must then clear the request and abandon early TX rather than retrying.
 
 ## 3. Firmware state machine
@@ -138,10 +138,10 @@ and K6 validation.
 
 For a greeting following a ring:
 
-1. Wait for `K5_SENSE` to remain asserted low for approximately 5–10 ms.
+1. Wait for `K5_SENSE_N` to remain asserted low for approximately 5–10 ms.
 2. Request P4 isolation.
 3. Wait for the PhotoMOS's specified maximum opening time.
-4. Confirm that `K5_SENSE` remains asserted. If it returns high, close the isolator and abandon early
+4. Confirm that `K5_SENSE_N` remains asserted. If it returns high, close the isolator and abandon early
    TX.
 5. Assert K1.
 6. Apply a calibrated PTT pre-roll.
@@ -151,10 +151,10 @@ For a greeting following a ring:
 10. Close P4 isolation and restore RX.
 
 K3 gong muting is an independent policy. It may remain open or closed throughout this sequence: K3
-only controls raw `P4 → CHIME_C1 → C19 → LS1`, whereas `P4_ISO` only separates raw P4 from
+only controls raw `P4 → CHIME_POS → C19 → LS1`, whereas `P4_ISO` only separates raw P4 from
 `K5_LATCH`. The P4-isolation safety argument must not rely on K3's state.
 
-At any point, loss of `K5_SENSE` must stop playback, open K1 and clear the isolation request. The
+At any point, loss of `K5_SENSE_N` must stop playback, open K1 and clear the isolation request. The
 hardware interlock independently restores the P4 path.
 
 If the primary K5 seal-in contact does not conduct, K5 will drop immediately after isolation opens.
@@ -166,7 +166,7 @@ For the first implementation, retain both signals:
 
 ```text
 OC1         Raw external P4 activity and diagnostics
-K5_SENSE    Authoritative ring/session state (active low)
+K5_SENSE_N    Authoritative ring/session state (active low)
 ```
 
 This distinguishes `P4 present but K5 failed to pull in` from a successfully latched session. After
@@ -180,7 +180,7 @@ The schematic and PCB use the field-proven topology:
 
 - R28 is the single 2.2 kΩ talk-handshake resistor.
 - C14's bus side connects to `TALK_BRIDGE`.
-- R34 drives K6's LED, and R35 pulls up `K5_SENSE`.
+- R34 drives K6's LED, and R35 pulls up `K5_SENSE_N`.
 - PCB routing is complete; final parity and fabrication checks remain.
 
 The restored topology is:
@@ -223,8 +223,8 @@ D1/C19 qualification work as part of this change:
 |------------------------------|----:|------------------------|----------|-------|
 | K6 P4 isolator               |   1 | GAQY412EH, NC PhotoMOS | C7435135 | Same part and footprint as K3 |
 | K6 LED resistor              |   1 | 220 Ω, 0603            | C22962   | Approximately 9.5 mA from GPIO |
-| `K5_SENSE` pull-up           |   1 | 10 kΩ, 0402            | C25744   | Defines released/high state |
-| `ISO_REQ` pull-down          |   1 | 10 kΩ, 0402            | C25744   | Keeps K6 closed during boot/reset |
+| `K5_SENSE_N` pull-up           |   1 | 10 kΩ, 0402            | C25744   | Defines released/high state |
+| `P4_ISO` pull-down          |   1 | 10 kΩ, 0402            | C25744   | Keeps K6 closed during boot/reset |
 | Handshake resistor           |   1 | R28, 2.2 kΩ, 0603      | C4190    | Field-proven talk assertion |
 | P4-isolator bypass (JP3)     |   1 | Open solder jumper     | No BOM   | Field recovery if K6 fails open |
 
@@ -251,7 +251,7 @@ The simulator's K5 model exposes both poles and makes them follow the same mecha
 - K6 is placed at `(69.25, 39.75)`, with R34, R35 and R12 beside its LED/control side. JP3 is at
   `(63.925, 33.5)`, and R28 is beside K1/TX_OUT at `(70.5, 50.68)`. The placement-constraint check
   passes with all footprints inside the board outline.
-- U1 pin 25 (GPIO48) is routed on `ISO_REQ`, and U1 pin 4 (GPIO4) is routed on `K5_SENSE`. The external
+- U1 pin 25 (GPIO48) is routed on `P4_ISO`, and U1 pin 4 (GPIO4) is routed on `K5_SENSE_N`. The external
   default resistors provide a deterministic logic interface without consuming a strapping or PSRAM
   pin.
 - JP3 is routed directly across K6's `P4` and `K5_LATCH` output nets and remains open by default.
@@ -259,7 +259,7 @@ The simulator's K5 model exposes both poles and makes them follow the same mecha
 - Route the auxiliary contact only on the logic side; do not compromise the relay's galvanic
   isolation geometry.
 - Do not add dedicated test-point footprints: J2 pin 4, K5 pins 1/4 and K5 pin 5 provide access to raw
-  P4, `K5_LATCH` and `K5_SENSE`. Add small bare pads only if those pins prove inaccessible.
+  P4, `K5_LATCH` and `K5_SENSE_N`. Add small bare pads only if those pins prove inaccessible.
 - Keep all assembled components on the top side. Use the empty bottom only for routing and vias, not
   double-sided assembly.
 - Move or remove TP3 if its pad or silkscreen obstructs K6; its former test is no longer required.

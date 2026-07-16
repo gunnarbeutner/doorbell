@@ -113,7 +113,7 @@ scrutinise:
 | **Latch relay K5 + flyback D1** | K5 is G6K-2F-Y DC12; confirm pin 1 and both pole mappings. D1 is 1N4004W with A4 top code; its cathode band faces `K5_LATCH` | no seal-in/sense, a defeated K6 interlock, or wrong flyback |
 | **Door FETs Q3/Q4** | each is an AO3400A SOT-23 (1=G, 2=S, 3=D); reconcile rotation separately | door break-before-make or watchdog dead |
 | **Codec clamps D13/D14/D16/D17 and AVDD block D18** | tiny X3-DFN LMBR01S30ST5G; pin 1 is cathode — match each pin-1 mark to its schematic net | codec over/under-rail protection or AVDD feed defeated |
-| **Crossover C19** | EEEFK1H220P is polarised: pin 1 (+) faces `CHIME_C1`/P4 and the negative stripe faces P5 | passive gong/listen path degraded or capacitor overstressed |
+| **Crossover C19** | EEEFK1H220P is polarised: pin 1 (+) faces `CHIME_POS`/P4 and the negative stripe faces P5 | passive gong/listen path degraded or capacitor overstressed |
 | **Service connector J1** | SM04B-SRSS-TB pin order and side-entry orientation; compare the placement preview with the real mating-plug approach | reversed power/USB wiring or an inaccessible connector |
 | **Power LED** | anode/cathode | just won't light (harmless) |
 

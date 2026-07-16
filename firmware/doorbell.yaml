@@ -587,7 +587,7 @@ output:
     pin: GPIO9               # K1 — PTT SSR (energised = talk: P2↔TALK_BRIDGE handshake + TX_OUT↔P3 gate, codec→C14→R26→P3)
     id: ptt_relay_bin
   - platform: gpio
-    pin: GPIO11              # K3 — chime suppress (open C1: P4↔CHIME_C1)
+    pin: GPIO11              # K3 — chime suppress (open C1: P4↔CHIME_POS)
     id: suppress_chime_bin
   - platform: gpio
     pin: GPIO10              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to

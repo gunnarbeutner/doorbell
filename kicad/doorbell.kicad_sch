@@ -20101,7 +20101,7 @@
 		)
 		(uuid "a63a6625-5276-47a2-a274-5b6b0df154ac")
 	)
-	(text "CHIME SUPPRESS (K3, NC SSR)\nopens the C1 path (P4<->CHIME_C1);\nmutes gong; line 4 + latch intact"
+	(text "CHIME SUPPRESS (K3, NC SSR)\nopens the C1 path (P4<->CHIME_POS);\nmutes gong; line 4 + latch intact"
 		(exclude_from_sim no)
 		(at 357.378 121.666 0)
 		(effects
@@ -23631,7 +23631,7 @@
 		)
 		(uuid "01e62801-fd17-4146-944d-36a16e66f21d")
 	)
-	(label "CHIME_C1"
+	(label "CHIME_POS"
 		(at 340.36 134.62 0)
 		(effects
 			(font
@@ -23761,7 +23761,7 @@
 		)
 		(uuid "16b6b5a5-6779-480a-b6f2-9ac46a49f12a")
 	)
-	(label "K5_COM_RLY"
+	(label "K5_COM"
 		(at 129.54 242.57 0)
 		(effects
 			(font
@@ -23781,7 +23781,7 @@
 		)
 		(uuid "198a3638-f64f-41cc-bf29-e61a29fae9e9")
 	)
-	(label "ISO_REQ"
+	(label "P4_ISO"
 		(at 168.91 72.39 0)
 		(effects
 			(font
@@ -23959,7 +23959,7 @@
 		)
 		(uuid "348b0c54-8526-4ef9-a057-626bd0479058")
 	)
-	(label "OC2_OUT"
+	(label "P5_SENSE_N"
 		(at 134.62 179.07 0)
 		(effects
 			(font
@@ -23979,7 +23979,7 @@
 		)
 		(uuid "3606a611-f360-4dc5-bc0b-bb5cbf31df3a")
 	)
-	(label "K5_COM"
+	(label "SEAL_IN"
 		(at 340.36 151.13 0)
 		(effects
 			(font
@@ -24008,7 +24008,7 @@
 		)
 		(uuid "3c62e701-e796-4a8c-8d95-494347d8fb8e")
 	)
-	(label "STATUS_LED"
+	(label "LED_K"
 		(at 231.14 73.66 180)
 		(effects
 			(font
@@ -24068,7 +24068,7 @@
 		)
 		(uuid "4558c91f-9bc0-4f64-8d20-d622ba7425ff")
 	)
-	(label "K1_LED_A"
+	(label "K1A_A"
 		(at 307.34 29.21 90)
 		(effects
 			(font
@@ -24098,7 +24098,7 @@
 		)
 		(uuid "480a592c-7bc2-4cc5-a3f2-d3122582b46e")
 	)
-	(label "TALK_BRIDGE_BIAS_MID"
+	(label "PRECHG_MID"
 		(at 387.35 38.1 180)
 		(effects
 			(font
@@ -24176,7 +24176,7 @@
 		)
 		(uuid "4e9688b5-32a9-4902-bdf0-f989554427a3")
 	)
-	(label "K5_SENSE"
+	(label "K5_SENSE_N"
 		(at 142.24 215.9 0)
 		(effects
 			(font
@@ -24195,7 +24195,7 @@
 		)
 		(uuid "519bca77-633a-49c6-b9ec-dfa12ce10d39")
 	)
-	(label "K2_LED"
+	(label "K2_A"
 		(at 332.74 74.93 90)
 		(effects
 			(font
@@ -24225,7 +24225,7 @@
 		)
 		(uuid "63da59b8-0285-4154-932e-fb0ce56f7f39")
 	)
-	(label "K5_SENSE"
+	(label "K5_SENSE_N"
 		(at 304.8 194.31 180)
 		(effects
 			(font
@@ -24254,7 +24254,7 @@
 		)
 		(uuid "6902b88d-626e-465a-8284-bde263df3902")
 	)
-	(label "R29_BRIDGE"
+	(label "TALK_SW"
 		(at 87.63 257.81 180)
 		(effects
 			(font
@@ -24293,7 +24293,7 @@
 		)
 		(uuid "6df66dfd-e1e5-429c-ac1c-4e638b610ff2")
 	)
-	(label "OC2_OUT"
+	(label "P5_SENSE_N"
 		(at 123.19 64.77 180)
 		(effects
 			(font
@@ -24391,16 +24391,6 @@
 		)
 		(uuid "78387ac6-aacb-4651-957c-8a8973e86361")
 	)
-	(label "OC2_EMIT"
-		(at 134.62 184.15 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-			(justify bottom)
-		)
-		(uuid "7d93fd03-dd8f-4e58-a19d-8c9c95c0025f")
-	)
 	(label "+3V3"
 		(at 186.69 185.42 0)
 		(effects
@@ -24410,7 +24400,7 @@
 		)
 		(uuid "7e20bee1-feb2-48b4-85b4-c17a585521eb")
 	)
-	(label "K4_LED"
+	(label "K4_A"
 		(at 307.34 151.13 90)
 		(effects
 			(font
@@ -24420,7 +24410,7 @@
 		)
 		(uuid "800c8760-0e65-4bc5-8d6a-970da230f497")
 	)
-	(label "K5_SENSE"
+	(label "K5_SENSE_N"
 		(at 139.7 269.24 0)
 		(effects
 			(font
@@ -24469,7 +24459,7 @@
 		)
 		(uuid "88c15125-2637-46de-8826-d869df52cc39")
 	)
-	(label "K3_LED"
+	(label "K3_A"
 		(at 307.34 119.38 90)
 		(effects
 			(font
@@ -24518,7 +24508,7 @@
 		)
 		(uuid "915c551f-950b-4066-9725-5004ea748e4e")
 	)
-	(label "OC2_CATH"
+	(label "OC2_K"
 		(at 114.3 194.31 0)
 		(effects
 			(font
@@ -24528,7 +24518,7 @@
 		)
 		(uuid "946e12d3-bace-40ec-8baa-df16bb10865c")
 	)
-	(label "CHIME_C1"
+	(label "CHIME_POS"
 		(at 40.64 247.65 0)
 		(effects
 			(font
@@ -24597,7 +24587,7 @@
 		)
 		(uuid "a09529f3-4da3-43ac-bf8f-e1a99ce0f3b5")
 	)
-	(label "STATUS_LED"
+	(label "LED_K"
 		(at 123.19 49.53 180)
 		(effects
 			(font
@@ -24617,7 +24607,7 @@
 		)
 		(uuid "a3a49f08-1797-471a-85ab-9d3a87a1b095")
 	)
-	(label "K6_LED"
+	(label "K6_A"
 		(at 307.34 179.07 90)
 		(effects
 			(font
@@ -24667,7 +24657,7 @@
 		)
 		(uuid "aa17d87b-c5c6-47b9-b44c-6386558c7b1c")
 	)
-	(label "ISO_REQ"
+	(label "P4_ISO"
 		(at 285.75 179.07 180)
 		(effects
 			(font
@@ -24726,7 +24716,7 @@
 		)
 		(uuid "b19ae453-fe9a-4a8c-b979-e949f26a1582")
 	)
-	(label "K5_COM_RLY"
+	(label "K5_COM"
 		(at 340.36 166.37 0)
 		(effects
 			(font
@@ -24746,7 +24736,7 @@
 		)
 		(uuid "b5222200-4e6f-4853-8e9c-5898ab8ec3e9")
 	)
-	(label "OC1_OUT"
+	(label "P4_SENSE_N"
 		(at 134.62 128.27 0)
 		(effects
 			(font
@@ -24795,7 +24785,7 @@
 		)
 		(uuid "bcd6f4fd-d333-4ac8-bb58-6f9e27353e7b")
 	)
-	(label "K2_CATH"
+	(label "K2_K"
 		(at 331.47 90.17 180)
 		(effects
 			(font
@@ -24825,7 +24815,7 @@
 		)
 		(uuid "be9e2df4-9acb-4f8b-b7f7-830d26169342")
 	)
-	(label "K5_COM"
+	(label "SEAL_IN"
 		(at 52.07 229.87 180)
 		(effects
 			(font
@@ -24863,7 +24853,7 @@
 		)
 		(uuid "c9d8a199-1c57-474d-a68e-4f50b1acf14f")
 	)
-	(label "OC1_OUT"
+	(label "P4_SENSE_N"
 		(at 123.19 62.23 180)
 		(effects
 			(font
@@ -24873,7 +24863,7 @@
 		)
 		(uuid "ca373d2a-4657-4f30-bd27-00ad7651c2f9")
 	)
-	(label "TALK_BRIDGE_BIAS"
+	(label "PRECHG_IN"
 		(at 378.46 34.29 0)
 		(effects
 			(font
@@ -24893,7 +24883,7 @@
 		)
 		(uuid "ce2b7bc6-7b91-4463-aeb0-6b0359a96078")
 	)
-	(label "AU_3V3"
+	(label "AVDD_PRE"
 		(at 254 148.59 0)
 		(effects
 			(font
@@ -24903,7 +24893,7 @@
 		)
 		(uuid "cf766f17-0616-4859-96c5-24d0a94d8a52")
 	)
-	(label "K1_LED_B"
+	(label "K1B_A"
 		(at 307.34 44.45 90)
 		(effects
 			(font
@@ -24962,7 +24952,7 @@
 		)
 		(uuid "dc848077-121b-433b-bc7a-ba8621eba3c6")
 	)
-	(label "K5_SENSE"
+	(label "K5_SENSE_N"
 		(at 123.19 41.91 180)
 		(effects
 			(font
@@ -25030,17 +25020,7 @@
 		)
 		(uuid "e688399f-938c-480c-8498-d9ec134a25bb")
 	)
-	(label "OC1_EMIT"
-		(at 134.62 133.35 0)
-		(effects
-			(font
-				(size 1 1)
-			)
-			(justify bottom)
-		)
-		(uuid "f9cdd5a6-3bac-44d8-b672-0b7cb2d1474d")
-	)
-	(label "AU_3V3"
+	(label "AVDD_PRE"
 		(at 327.66 227.33 0)
 		(effects
 			(font
@@ -25050,7 +25030,7 @@
 		)
 		(uuid "fe6602f5-ef12-445d-bb2c-b2eddaf78248")
 	)
-	(label "OC1_CATH"
+	(label "OC1_K"
 		(at 114.3 142.24 0)
 		(effects
 			(font
@@ -25124,7 +25104,7 @@
 				)
 			)
 		)
-		(property "Description" "P4 isolation PhotoMOS (1-Form-B NC): bridges raw P4 to K5_LATCH at rest and without board power. Once K5's auxiliary contact proves the relay has pulled in, ISO_REQ energises K6 to open that bridge, preventing this apartment's P4 gong from feeding back onto P2 while K5 remains sealed from P2. Loss of K5 immediately interrupts the LED return and restores the normally-closed P4 path."
+		(property "Description" "P4 isolation PhotoMOS (1-Form-B NC): bridges raw P4 to K5_LATCH at rest and without board power. Once K5's auxiliary contact proves the relay has pulled in, P4_ISO energises K6 to open that bridge, preventing this apartment's P4 gong from feeding back onto P2 while K5 remains sealed from P2. Loss of K5 immediately interrupts the LED return and restores the normally-closed P4 path."
 			(at 321.31 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -25221,7 +25201,7 @@
 				)
 			)
 		)
-		(property "Value" "AU_3V3"
+		(property "Value" "AVDD_PRE"
 			(at 330.2 219.71 0)
 			(hide yes)
 			(show_name no)
@@ -25254,7 +25234,7 @@
 				)
 			)
 		)
-		(property "Description" "AU_3V3 commissioning test point"
+		(property "Description" "AVDD_PRE commissioning test point"
 			(at 327.66 219.71 0)
 			(hide yes)
 			(show_name no)
@@ -26209,7 +26189,7 @@
 				)
 			)
 		)
-		(property "Description" "CHIME_C1 trapped-charge bleed; discharges C19 while K3 is open so reclosing cannot phantom-pulse or re-latch K5"
+		(property "Description" "CHIME_POS trapped-charge bleed; discharges C19 while K3 is open so reclosing cannot phantom-pulse or re-latch K5"
 			(at 31.75 255.27 0)
 			(hide yes)
 			(show_name no)
@@ -26507,7 +26487,7 @@
 				)
 			)
 		)
-		(property "Description" "Audio LDO output capacitor: 10 µF from LP5907 VOUT/AU_3V3 to GND ahead of D18; retains the effective capacitance required for regulator stability."
+		(property "Description" "Audio LDO output capacitor: 10 µF from LP5907 VOUT/AVDD_PRE to GND ahead of D18; retains the effective capacitance required for regulator stability."
 			(at 254 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -27709,7 +27689,7 @@
 				)
 			)
 		)
-		(property "Description" "Omron G6K-2F-Y DC12 SMD DPDT latch relay, 12V coil ~1.315k. Coil pin1=K5_LATCH (+), pin8=P1/GND; primary pole COM3=K5_COM_RLY, NO4=K5_LATCH, NC2 unused; auxiliary pole COM6=GND, NO5=K5_SENSE, NC7 unused. Raw P4 reaches K5_LATCH through normally-closed K6; after a Türruf pulse the primary pole seals the coil from P2. D1 is the coil flyback clamp."
+		(property "Description" "Omron G6K-2F-Y DC12 SMD DPDT latch relay, 12V coil ~1.315k. Coil pin1=K5_LATCH (+), pin8=P1/GND; primary pole COM3=K5_COM, NO4=K5_LATCH, NC2 unused; auxiliary pole COM6=GND, NO5=K5_SENSE_N, NC7 unused. Raw P4 reaches K5_LATCH through normally-closed K6; after a Türruf pulse the primary pole seals the coil from P2. D1 is the coil flyback clamp."
 			(at 129.54 228.6 0)
 			(hide yes)
 			(show_name no)
@@ -28753,7 +28733,7 @@
 				)
 			)
 		)
-		(property "Description" "P4-isolation request pull-down: holds ISO_REQ low while the ESP32 GPIO floats during boot, reset or power loss, keeping K6's LED off and its normally-closed P4-to-K5_LATCH contact closed."
+		(property "Description" "P4-isolation request pull-down: holds P4_ISO low while the ESP32 GPIO floats during boot, reset or power loss, keeping K6's LED off and its normally-closed P4-to-K5_LATCH contact closed."
 			(at 292.1 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -29122,7 +29102,7 @@
 				)
 			)
 		)
-		(property "Description" "K5 auxiliary-contact sense pull-up: holds K5_SENSE high while K5 is released. After armature pull-in, K5 auxiliary NO pin5 connects through COM pin6 to GND, providing the active-low session/latch signal and the hardware-gated return for K6's LED."
+		(property "Description" "K5 auxiliary-contact sense pull-up: holds K5_SENSE_N high while K5 is released. After armature pull-in, K5 auxiliary NO pin5 connects through COM pin6 to GND, providing the active-low session/latch signal and the hardware-gated return for K6's LED."
 			(at 139.7 262.89 0)
 			(hide yes)
 			(show_name no)
@@ -29946,7 +29926,7 @@
 				)
 			)
 		)
-		(property "Description" "Factory-bridged enable for the R36 CHIME_C1 trapped-charge bleed; cut only for diagnostic A/B testing"
+		(property "Description" "Factory-bridged enable for the R36 CHIME_POS trapped-charge bleed; cut only for diagnostic A/B testing"
 			(at 31.75 269.24 0)
 			(hide yes)
 			(show_name no)
@@ -32336,7 +32316,7 @@
 				)
 			)
 		)
-		(property "Description" "K6 P4-isolator LED series resistor: ISO_REQ -> R34 -> K6 LED -> K5_SENSE -> K5 auxiliary NO -> GND. Approximately 9.5mA flows only when K5 has physically pulled in and firmware asserts ISO_REQ."
+		(property "Description" "K6 P4-isolator LED series resistor: P4_ISO -> R34 -> K6 LED -> K5_SENSE_N -> K5 auxiliary NO -> GND. Approximately 9.5mA flows only when K5 has physically pulled in and firmware asserts P4_ISO."
 			(at 300.99 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -34385,7 +34365,7 @@
 				)
 			)
 		)
-		(property "Description" "22uF 50V SMD aluminium electrolytic; WF26 audio crossover with pin 1 positive toward CHIME_C1/P4; 123.8mA ripple at 120Hz"
+		(property "Description" "22uF 50V SMD aluminium electrolytic; WF26 audio crossover with pin 1 positive toward CHIME_POS/P4; 123.8mA ripple at 120Hz"
 			(at 54.61 252.73 0)
 			(hide yes)
 			(show_name no)
@@ -35593,7 +35573,7 @@
 				)
 			)
 		)
-		(property "Description" "Audio AVDD LDO: LP5907MFX-3.3 generates AU_3V3 from +5V; EN follows +3V3 so the digital rail precedes AVDD. C23/C24 provide local stability capacitance, D18 blocks reverse current and R37 defines the unpowered AVDD state."
+		(property "Description" "Audio AVDD LDO: LP5907MFX-3.3 generates AVDD_PRE from +5V; EN follows +3V3 so the digital rail precedes AVDD. C23/C24 provide local stability capacitance, D18 blocks reverse current and R37 defines the unpowered AVDD state."
 			(at 241.3 156.21 0)
 			(hide yes)
 			(show_name no)
@@ -39031,7 +39011,7 @@
 				)
 			)
 		)
-		(property "Value" "AU_3V3"
+		(property "Value" "AVDD_PRE"
 			(at 210.82 141.55 0)
 			(show_name no)
 			(do_not_autoplace no)
