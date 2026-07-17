@@ -62,6 +62,16 @@ schematic, read them from it.
   (no talk/door at boot; gong rings at boot; latch stays sealed) — see SAFE-6 / GONG-3 / DOOR-4.
 - SSR LED drive: series R sets I_F into the part's datasheet window; gate pull-downs hold every
   SSR off while the GPIO floats at boot.
+- Trace SW4 by physical pad number and switch state. Released, dry pole COM1 pin 2 must connect NC1
+  pin 3 (`K1_LED_RET`) to GND; pressed, it must instead connect NO1 pin 1 (`PTT_SW_N`) to GND.
+  The independent passive pole must connect COM2 pin 5 (`TALK_SW`) to NO2 pin 4 (P3) only while
+  pressed; NC2 pin 6 is intentionally unconnected. Confirm R29 feeds `TALK_SW` from `K5_LATCH`,
+  while R42 pulls `PTT_SENSE_N` to +3V3 and R43 alone joins it to `PTT_SW_N`. No bus net may reach
+  the dry pole or GPIO47.
+- Check SW4 loading against its own datasheet: the R42/R43 pressed current must exceed the switch's
+  minimum resistive load, the combined K1 LED return must stay below its maximum, and the sense LOW
+  must meet IO47 V_IL. Treat “non-shorting” as a within-pole guarantee only; it does not prove the
+  relative timing of the two poles.
 - The on-board latch relay (K5) replicates the handset's seal-in: coil across **P1↔K5_LATCH**, with
   normally-closed K6 passing raw P4 at rest; the primary NO contact seals `K5_LATCH` from P2. Confirm
   the auxiliary NO contact grounds `K5_SENSE_N`, gates K6's LED return and cannot open K6 before K5
@@ -90,6 +100,9 @@ input-only or flash-tied pin may be misused. Native USB D±/Serial-JTAG is the f
 Confirm IO5 is ADC1_CH4 and not a strapping pin. Trace the post-fuse monitor as
 `+5V → R40 100 kΩ → VBUS_F_ADC → R41 10 kΩ → GND`, with C25 (100 nF) from the ADC node to GND;
 the 11:1 ratio must keep the ADC node below 0.84 V even at D10's 9.2 V maximum clamp voltage.
+Confirm U1 pad 24 is IO47 and available on the exact N16R8 module: it is not a strap, is not one of
+IO35–37 occupied by octal PSRAM, and operates at 3.3 V on this variant. Do not carry that conclusion
+to an ESP32-S3R16V-based module, whose IO47/IO48 domain is 1.8 V.
 
 **Codec + audio coupling** — all pins + EP map to the datasheet; I²S direction correct (ASDOUT→ESP
 DIN, DSDIN←ESP DOUT); CE strap sets the I²C address; the tap is **transformer-less** and
@@ -115,8 +128,9 @@ and distinguish guaranteed datasheet limits from engineering estimates based on 
 
 **Passive WF26 core** — the `WF26_*` parts reproduce the handset's door-release / talk / gong /
 seal-in topology, so the board behaves like a plain WF26 unpowered (the SSRs/codec/optos are
-additive on top). Confirm K6 is normally closed without board power and JP2 is open by default, then
-compare the underlying handset behaviour against `wf26/wf26.kicad_sch`.
+additive on top). Confirm K6 is normally closed without board power, JP2 is open by default and
+SW4's pins 4/5 still make the R29 passive Talk path without any logic supply; then compare the
+underlying handset behaviour against `wf26/wf26.kicad_sch`.
 
 ## 4. Cross-checks against external references
 
@@ -167,7 +181,10 @@ P1 only; never tether a mains-earthed PC scope and PC-USB at once (the §6 isola
 each other or P1 (**P4↔P1 reads the K5 coil**, not a fault); USB VBUS↔GND not a dead short; F1
 continuous; raw P4↔`K5_LATCH` continuous through K6; JP2 open; JP3 factory-bridged and, after
 capacitors settle, P2↔`TALK_BRIDGE` ≈ 200 kΩ through R38+R39; `VBUS_F_ADC`↔GND ≈ 10 kΩ through
-R41; TP1–TP8 present; C19 "+" toward P4.
+R41; TP1–TP8 present; C19 "+" toward P4. With SW4 released, verify pins 2↔3 are closed and pins
+5↔4 are open; pressed, verify 2↔1 and 5↔4 close while 2↔3 opens. Confirm SW4 pin 6 is unconnected,
+the dry pole has no continuity to P2/P3/P4/P5, and the passive R29 Talk path does not require local
+power.
 
 **Stage 1 — local power only, no bus.** J1 VBUS at 5 V → the 5 V rail **≈ +4.5–5 V at D4's cathode**
 (after the SS14 drop — there is no 5 V test point), `VBUS_F_ADC ≈ +5V / 11` (about 0.41–0.45 V),
@@ -177,8 +194,10 @@ tolerance. A complete supply or fuse loss cannot be reported because it also pow
   toggle each SSR from HA and confirm the contact flips at the pads — K1/K2 (NO) **open**, K3/K4 (NC)
   **closed** — validating each SSR + driver + GPIO map with no bus voltage present. Leave
   `Debug P4 Isolation` off; confirm GPIO48/`P4_ISO` is low and K6 remains closed. Do not exercise
-  K6 until the passive K5 checks in 2a have passed. Record the 5 V, +3V3, codec VMID and idle-output
-  voltages in the run-specific evidence log.
+  K6 until the passive K5 checks in 2a have passed. Measure GPIO47/`PTT_SENSE_N` at about +3.3 V
+  released and about 0.30 V pressed. While commanding K1 on, press SW4 and verify both K1 contacts
+  open even though `PTT_DRV` remains asserted; release returns control to the drive. Record the 5 V,
+  +3V3, codec VMID, PTT-sense and idle-output voltages in the run-specific evidence log.
 
 **Stage 2 — emulated bus** (`PSU+ → 100 Ω → P2`, `PSU− → P1`, 12 V, limit ~120 mA):
 - **2a passive seal-in, board UNPOWERED (MODE-1/SAFE-4):** tap 12 V onto P4 ~1 s → K5 pulls in;
@@ -208,7 +227,13 @@ tolerance. A complete supply or fuse loss cannot be reported because it also pow
 - **2e chime-mute (GONG-1/4):** inject an AC tone on P4 → present at the speaker (P5↔P1) with K3
   closed, gone when mute asserts, P4/latch/sense untouched; a tone on P5 reaches the speaker
   regardless of mute.
-- **2f audio (partial):** RX — inject P2↔P1 and confirm the codec ADC sees it through the −18 dB divider,
+- **2f physical Talk transition (FW-4/BUS-2):** seal in K5, assert smart K1, then scope repeated
+  physical SW4 press/release cycles at the K1 handshake/output and R29/passive-Talk paths. Confirm
+  the K1 outputs open despite a held-high drive and require no interval in which R28 and R29 conduct
+  in parallel. Measure both assertion and release timing; the schematic steady-state check and the
+  switch's per-pole non-shorting rating do not establish cross-pole timing. Repeat through the real
+  housing actuator, not only by pressing the bare switch.
+- **2g audio (partial):** RX — inject P2↔P1 and confirm the codec ADC sees it through the −18 dB divider,
   that a gong-level drive stays inside the codec rail [0, AVDD] (abs-max), and the signal lands on MICP
   with MICN held at VMID; TX — assert talk, drive a DAC tone, scope it on P3 through the TX resistor,
   confirm the populated reference and net from the schematic rather than assuming a revision-specific
@@ -253,6 +278,10 @@ J2's screws, and component pads. Use an **isolated** scope
   BUS-2, not actuate any bus function and not mask the start of speech. Only if diagnosis requires an
   A/B comparison, cut JP3, repeat the identical captures, then restore the factory bridge. Record the
   result as V4.2 evidence; the V4.1 bench board does not prove this changed network.
+- **Physical Talk sense/interlock** — repeat the Stage 2f SW4 transition capture on the real bus,
+  including the housing actuator. Confirm GPIO47 polarity/levels, passive speech reach and that K1
+  drops before the R29 path makes; a steady-state pass or the V4.1 switch does not prove the changed
+  V4.2 routing and cross-pole timing.
 - **Hum / RX level** with the P1↔GND bond once RX is live; set the codec digital volume so TX
   doesn't overdrive the TV20/S amp.
 - **Session load** — measure the board's sealed current and bus voltage against the stock WF26,
@@ -264,8 +293,8 @@ Local copies live in `docs/` so the references don't rot: the ESP32-S3-WROOM-1U-
 strapping), ES8311 codec, SGM2212 LDO, TPD2S017 USB ESD, Omron G6K relay, SUPSiC GAQY412E/EH and
 GAQW/GAQY212GS PhotoMOS, the AO3400A door/watchdog FETs, the LMBR01S30ST5G codec-clamp Schottky, the
 Toshiba TLP293 GB low-current sense optocoupler, Panasonic EEEFK1H220P crossover capacitor,
-R+O / Zhuhai Hongjiacheng 1N4004W flyback/clamp, SS14, SMF5.0A, 1N4148W, JST-SH connector, and the
-STR TV20/S Verdrahtungsplan + Fehlersuchhilfe.
+R+O / Zhuhai Hongjiacheng 1N4004W flyback/clamp, SS14, SMF5.0A, 1N4148W, JST-SH connector,
+ALPS SPPJ322300 momentary DPDT switch, and the STR TV20/S Verdrahtungsplan + Fehlersuchhilfe.
 
 For every ordered part, use the exact datasheet corresponding to the BOM/LCSC entry. Record
 the symbol pin, footprint pad, physical package pin and net for each polarity-sensitive or active

@@ -346,12 +346,6 @@ globals:
     type: uint32_t
     restore_value: no
     initial_value: "0"
-  # OC1 starts with the Türruf and stays high for the K5-sealed session. Keep K3 open through the
-  # measured ~3.9 s gong, then release it so the stock WF26 transducer works during the call.
-  - id: gong_mute_until_ms
-    type: uint32_t
-    restore_value: no
-    initial_value: "0"
 
 # Door-station playback: play the embedded file, blocking until it finishes. On the bench this script
 # owns K1 (off-hook handshake + TX route) and K3 gong-mute state so speaker-media state transitions
@@ -539,7 +533,6 @@ binary_sensor:
         - lambda: |-
             id(welcome_not_before_ms) = millis() + 1450;
             id(ring_open_not_before_ms) = millis() + 1750;
-            id(gong_mute_until_ms) = millis() + 4200;
   # Bench-only observation of K5's physical auxiliary NO contact. R35 is the external 10 kΩ pull-up;
   # do not add an internal pull-up that could hide an assembly fault in that path.
   - platform: gpio
@@ -563,14 +556,13 @@ binary_sensor:
       // K3 (NC SSR) opens C1 to mute the front-door gong. It sits in the C1 audio path (P4↔C1), NOT
       // in line 4 — so it does NOT break the session, and the board's codec RX/TX (on the speech pair,
       // lines 2/3) is independent of it. (It does mute the handset's own LS1 listen, which rides C1.)
-      // OC1 rises with the Türruf and remains high for the K5-sealed session. Honour chime suppression
-      // through the measured gong, then release K3 for the rest of the session so the stock WF26
-      // transducer can listen/talk normally. OC1 alone cannot distinguish those two phases.
+      // Keep this bench twin aligned with production's interim V4.1 policy: effective suppression
+      // holds K3 open for the whole session so a later neighbour gong on shared P2 cannot reach LS1.
+      // The deliberate trade-off is no passive LS1 listen or physical SW4 microphone while suppression
+      // is active; codec RX/TX and door operation remain available. The V4.2 candidate's dry GPIO47
+      // input + K1 inhibit are not consumed here until first-board validation. Smart TX does not need
+      // K3 closed.
       if (id(welcome_playing)) return false;  // door-station playback: hold K3 = own speaker muted
-      if (id(intercom_ptt).state) return true;
-      if (id(house_doorbell).state && id(gong_mute_until_ms) != 0 &&
-          static_cast<int32_t>(millis() - id(gong_mute_until_ms)) >= 0)
-        return true;
       // The gong is suppressed by default (rings are announced via Alexa). Fail SAFE to ring so a
       // doorbell is never silently missed: suppress ONLY while HA is connected AND actively requests
       // it. HA clears suppress_chime when the announcement path is down (internet/Alexa), and a

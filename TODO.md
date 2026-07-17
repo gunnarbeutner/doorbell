@@ -1,7 +1,8 @@
 # TODO
 
 Open work before ordering and commissioning V4.2. Canonical handset numbering is Pₙ = line n;
-see `DESIGN.md` and `wf26/wf26-schematic.md` for the circuit model.
+see `DESIGN.md` and `wf26/wf26-schematic.md` for the circuit model. The current KiCad sources are a
+candidate, not a finalized or fabricated V4.2 board.
 
 Priority rates how important it is to get the item right for V4.2: **10/10** is essential to safety,
 core function or long-term reliability; **1/10** is optional polish. It does not replace dependency
@@ -13,8 +14,10 @@ order—for example, some firmware work must wait for fabricated hardware regard
       Export and print `fab/doorbell.step` from the final source, fit the board with real SW3/SW4
       and the fully seated SM04B-SRSS mating plug/cable, then close the lid. Verify H1/H2 seating,
       connector and cable clearance/bend/strain, both front-panel actuators' full travel, and J2 wire
-      access. Record the export revision and result before approving the order; the earlier V4.2
-      USB-C interference finding and V4.1 installed-board fit do not qualify HEAD.
+      access. Record the export revision and result before approving the order. V4.1 seats in the
+      enclosure, but its fitted USB-C connector prevents SW4 from fully engaging; the current V4.2
+      candidate removes that connector, yet neither that change nor the earlier printed fit qualifies
+      the current HEAD.
       - **Worst case:** the assembled V4.2 board or service cable obstructs the Talk/door actuator or prevents the enclosure from closing, forcing a respin.
 
 ## Firmware (`firmware/doorbell.yaml`)
@@ -31,7 +34,41 @@ order—for example, some firmware work must wait for fabricated hardware regard
       1.75 s minimum ring-to-open deadline regardless of greeting selection.
       - **Worst case:** incorrect isolation sequencing drops the session or leaves welcome TX contaminated by P4 gong energy.
 
+- [ ] **8/10 — Add and qualify GPIO47 physical-PTT sensing after the V4.2 hardware check below passes.**
+      The candidate now implements active-low `PTT_SENSE_N` with R42/R43 and SW4 pins 1/2/3; it is
+      independent of P4/K5 and mechanically opens K1's LED return while pressed. After validating
+      the fabricated circuit, add the input to production and bench firmware using the fitted
+      external pull-up (leave the MCU's internal pulls disabled), explicit active-low polarity and
+      measured assertion/release debounce. Expose a bench diagnostic, command K1 off whenever
+      physical Talk is asserted even though the hardware already inhibits it, and require a stable
+      release before allowing smart PTT again. Do not treat this switch state as proof of a session
+      or as a neighbour-gong detector.
+      - **Worst case:** wrong polarity/debounce defeats manual-conversation policy, chatters K3/K1, or re-enables smart Talk during the physical switch transition.
+
+- [ ] **8/10 — Replace the interim full-session K3 mute after a PTT-capable V4.2 board is fabricated and validated.**
+      Production and bench firmware currently keep K3 open whenever chime suppression is effectively
+      requested. This prevents a later neighbour gong on shared P2 from reaching LS1 through our
+      sealed K5, but deliberately disables passive LS1 listen and the physical SW4 microphone in
+      suppression mode. Keep smart TX independent of K3. Once the resulting board passes K5/K6 and
+      SW4-sense/interlock bring-up and the GPIO47 input above is qualified, define and validate a
+      manual-conversation state: decide when passive listening is intentionally restored, whether it
+      persists for a bounded window after Talk is released, and how K1/K3/K6 transition without
+      forwarding a gong. Keep K1 commanded off across the entire physical-Talk window and release
+      debounce even though SW4 also inhibits it in hardware.
+      - **Worst case:** restoring passive audio recreates the neighbour-gong leak or a transition presents an unqualified ~1.1 kΩ P2↔P3 bridge.
+
 ## First-board commissioning (not fabrication gates)
+
+- [ ] **8/10 — Validate SW4 physical-PTT sense and the K1 hardware interlock on fabricated V4.2 hardware.**
+      Confirm the fitted switch orientation and actual housing actuator first. With logic power off,
+      verify the passive pins 5↔4 Talk contact and R29 path still work. With local power on, measure
+      `PTT_SENSE_N` high when released and about 0.30 V when pressed. Hold `PTT_DRV` asserted and
+      prove that pressing SW4 opens both K1 output contacts even if the GPIO remains high. Finally,
+      with K5 sealed, scope repeated press/release transitions at the K1 and R29 paths: the switch is
+      non-shorting within each pole, but its datasheet does not guarantee relative pole timing, so
+      require no interval in which the smart R28 and passive R29 handshakes conduct in parallel.
+      Record voltages, debounce times and the worst transition before enabling the firmware policy.
+      - **Worst case:** a wrong switch orientation or cross-pole overlap defeats sensing/interlock, loses passive Talk, or briefly presents ~1.1 kΩ instead of the intended 2.2 kΩ handshake.
 
 - [ ] **5/10 — Calibrate the V4.2 audio path on the installed board.** Confirm RX headroom and choose the final
       mic PGA; set TX to a natural handset level; and listen for hum or an objectionable first-welcome

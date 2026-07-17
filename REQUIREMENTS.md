@@ -99,7 +99,10 @@ shared party line across apartments.
   break-before-make (c). The retained I²S path and DAC soft-ramp suppress codec-start discontinuities;
   factory-bridged JP3 plus R38+R39 precharge C14's bus side to suppress the K1 make/break step (c).
   The latter is a V4.2 change and remains installed-bus gated — see DESIGN.md "Audio path"
-  ("TX front-end", "Gong ↔ TX handshake") and "Door-open mirrors S1".)*
+  ("TX front-end", "Gong ↔ TX handshake") and "Door-open mirrors S1". The V4.2 candidate also
+  opens K1's LED return mechanically whenever the physical Talk switch is pressed, preventing a
+  sustained smart-plus-passive talk composition; its cross-pole transition timing remains a
+  first-board verification item.)*
 
 ## RING — Ring detection
 
@@ -249,7 +252,14 @@ provides them.
   never the 5/10 mA settings, which would droop VOH and starve the LEDs; with the 220 Ω series Rs even
   the guaranteed-VOH corner holds every LED at ≥~5.6 mA (≥ the SUPSiC 5 mA recommended floor, ~2.8× the
   ~2 mA must-operate; ~8–9 mA typ dual-load). *(Met by the default — a don't-reduce
-  constraint; 40 mA is optional margin. See DESIGN.md "Switches K1–K4".)*
+  constraint; 40 mA is optional margin. See DESIGN.md "Switches".)*
+- **FW-4 (MUST)** Provide an independent physical-Talk indication that does not depend on P4, K5
+  pull-in or any bus voltage. It MUST use a dry contact, keep every GPIO isolated from the bus-side
+  Talk contact, preserve the unpowered passive Talk path, and mechanically inhibit the smart K1
+  talk gate while the physical switch is engaged. The input MUST have a defined released/boot state
+  and enough wetting current for the specified switch. *(The current V4.2 candidate uses SW4's
+  second pole, GPIO47/`PTT_SENSE_N`, R42/R43 and the `K1_LED_RET` interlock; this changed circuit is
+  not field-proven until a fabricated board passes the checks in VERIFICATION.md.)*
 
 ## SAFE — Safety & robustness
 

@@ -89,6 +89,38 @@ test('SW4 (talk) pressed bridges line 4 onto line 3 through R1 (the handshake)',
   assert.ok(!near(off['/P3'], 12, 1.0), `S2 released should leave P3 clear of line 4, got ${off['/P3']?.toFixed(3)}`);
 });
 
+test('SW4 dry pole provides named active-low PTT sense without a bus-line connection', () => {
+  const byRef = Object.fromEntries(netlist.components.map((c) => [c.ref, c]));
+  assert.equal(byRef.SW4.pins['1'], '/PTT_SW_N', 'SW4 NO1 must feed only the protected sense stub');
+  assert.equal(byRef.SW4.pins['2'], 'GND', 'SW4 COM1 must be the logic-side ground reference');
+  assert.equal(byRef.SW4.pins['3'], '/K1_LED_RET', 'SW4 NC1 must provide the smart-K1 LED return');
+  assert.equal(byRef.U1.pins['24'], '/PTT_SENSE_N', 'GPIO47 must receive the protected PTT sense');
+  assert.deepEqual(new Set(Object.values(byRef.R43.pins)), new Set(['/PTT_SENSE_N', '/PTT_SW_N']),
+    'R43 must be the only series connection between GPIO47 and SW4 NO1');
+
+  const power = { '/VBUS': 5, '/P1': 0 };
+  const released = runDC(netlist, { sources: power, switches: { SW4: false } }).V;
+  const pressed = runDC(netlist, { sources: power, switches: { SW4: true } }).V;
+  assert.ok(released['/PTT_SENSE_N'] > 2.475,
+    `released PTT sense must exceed GPIO47 VIH, got ${released['/PTT_SENSE_N']?.toFixed(3)} V`);
+  assert.ok(pressed['/PTT_SENSE_N'] < 0.825,
+    `pressed PTT sense must stay below GPIO47 VIL through R43, got ${pressed['/PTT_SENSE_N']?.toFixed(3)} V`);
+});
+
+test('SW4 pressed hardware-inhibits smart K1 even if PTT_DRV remains high', () => {
+  const scenario = {
+    sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 },
+    program: { U1: { '/PTT_DRV': 3.3 } },
+    T: 0.1,
+  };
+  const released = runDC(netlist, { ...scenario, switches: { SW4: false } }).V;
+  const pressed = runDC(netlist, { ...scenario, switches: { SW4: true } }).V;
+  assert.ok(released['/P3'] > 10,
+    `released SW4 must let K1 assert the smart handshake, got P3=${released['/P3']?.toFixed(3)} V`);
+  assert.ok(pressed['/P3'] < 1,
+    `pressed SW4 must open K1's LED return despite PTT_DRV high, got P3=${pressed['/P3']?.toFixed(3)} V`);
+});
+
 // ── bus rings heard at the loudspeaker. The acoustic path is passive, so it works powered or not. ──
 const POWER = [
   ['powered (VBUS = 5 V)', { '/VBUS': 5 }],

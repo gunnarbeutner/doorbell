@@ -12,9 +12,12 @@ handset it replaces; to Home Assistant it looks like a doorbell, an intercom and
   HA binary sensors and events: phone notifications, presence-aware automations, "someone rang
   while you were out" history.
 - **Gong suppression** — a solid-state switch in the chime path mutes the mechanical gong under
-  firmware policy (occupancy, quiet hours, do-not-disturb) without touching ring detection or the
-  intercom session. The switch is normally-closed: if the smart layer dies, the doorbell rings
-  like a stock handset.
+  firmware policy (occupancy, quiet hours, do-not-disturb) without touching ring detection, the
+  latch/session, codec audio or the door opener. The current interim policy holds that switch open
+  for all of suppression mode so a later neighbour gong on shared line 2 cannot reach LS1; this also
+  disables physical LS1 listen/talk until the PTT-capable V4.2 hardware and firmware policy are
+  fabricated and validated. The switch is normally-closed: if the smart layer dies, the doorbell
+  returns to the stock passive path.
 - **Door opener from HA** — with the safety in hardware, not firmware: the door relay pair
   replicates the WF26's break-before-make sequence with an RC delay, and an independent hardware
   watchdog releases the door bridge after ~6.7 s no matter what the firmware does. A crashed ESP
@@ -74,7 +77,11 @@ The JLCPCB-assembled PCB needs four things it doesn't ship with:
 **Status:** the V4.1 board (JLCPCB-fabbed and -assembled) is bench-verified and deployed —
 installed in the wall in place of the WF26, running `firmware/doorbell.yaml`. The smart layer
 is powered by a USB wall-wart through its J3 connector; the TV20/S bus powers only the passive
-handset core, so the electronics draw nothing from the shared intercom supply.
+handset core, so the electronics draw nothing from the shared intercom supply. The installed V4.1
+USB-C connector mechanically prevents the housing's Talk actuator from fully engaging SW4; the
+current V4.2 candidate removes that connector and adds a dry GPIO47 physical-Talk input plus a
+mechanical K1 inhibit on SW4's spare pole. Those changed circuits are not field-proven and must pass
+the full actuator/cable fit and first-board electrical/timing gates.
 
 ## Repository layout
 

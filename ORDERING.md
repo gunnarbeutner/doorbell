@@ -12,14 +12,14 @@ antenna lead out of the enclosure instead).
 > Run `./build.sh` first to verify the design and re-export the fab files in `fab/` — the committed
 > gerbers/BOM/CPL are build outputs and may lag the schematic.
 
-## Mechanical fit gate (V4.1 passed; current V4.2 still open)
+## Mechanical fit gate (V4.1 seating passed, Talk actuation failed; current V4.2 still open)
 
-**MECH-1 passed on V4.1:** the assembled PCB fits and operates in the original WF26
-enclosure. The board seats on the bosses, the populated-board height clears the closed lid, the
-speaker and wire entry align, and both original housing buttons actuate that board's switches. The
-V4.2 printed fit test found that the former USB-C connector obstructed the Talk actuator; it has been
-removed. That earlier print does not qualify HEAD: repeat MECH-1/MECH-1a on a current export before
-ordering, using the actual J1 mating plug and cable.
+**MECH-1 seating passed on V4.1, but MECH-1a did not:** the assembled PCB fits the original WF26
+enclosure, seats on the bosses, clears the closed lid, and aligns the speaker and wire entry. The
+door control works, but the housing's Talk actuator hits the fitted USB-C connector before SW4 fully
+engages. The current V4.2 candidate removes that connector. The earlier printed fit does not qualify
+HEAD: repeat MECH-1/MECH-1a on a current export before ordering, using the actual J1 mating plug and
+cable.
 
 Repeat this gate before ordering only if a revision changes the board outline, mounting pattern,
 switch/speaker/connector placement, or maximum component height. `./build.sh` (or
@@ -110,6 +110,7 @@ scrutinise:
 | **USB ESD** (TPD2S017) | pin-1 — channels are in series with D± | USB dead / wrong clamp |
 | **VBUS Schottky / TVS** (SS14 series, SMF5.0A clamp) | band direction | blocks VBUS, or shorts/leaves it unclamped |
 | **PhotoMOS SSRs K1/K2/K3/K4/K6** | K1 GAQW212GS and K2 GAQY212GS are NO; K3/K4/K6 GAQY412EH are **NC**; confirm pin 1 and part value at every ref | a swapped NO/NC breaks the gong, door or P4-isolation fail-safe |
+| **Physical Talk switch SW4 + R42/R43** | confirm the SPPJ322300 orientation/pin numbers: released 2↔3 grounds `K1_LED_RET`; pressed 2↔1 grounds `PTT_SW_N`, while 5↔4 makes the passive P3 Talk path. R42 is 10 kΩ and R43 is 1 kΩ | reversed switch action can disable K1 at rest, lose passive Talk, or invert/defeat physical-PTT sensing |
 | **Latch relay K5 + flyback D1** | K5 is G6K-2F-Y DC12; confirm pin 1 and both pole mappings. D1 is 1N4004W with A4 top code; its cathode band faces `K5_LATCH` | no seal-in/sense, a defeated K6 interlock, or wrong flyback |
 | **Door FETs Q3/Q4** | each is an AO3400A SOT-23 (1=G, 2=S, 3=D); reconcile rotation separately | door break-before-make or watchdog dead |
 | **Codec clamps D13/D14/D16/D17 and AVDD block D18** | tiny X3-DFN LMBR01S30ST5G; pin 1 is cathode — match each pin-1 mark to its schematic net | codec over/under-rail protection or AVDD feed defeated |

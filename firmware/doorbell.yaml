@@ -314,13 +314,6 @@ globals:
     type: uint32_t
     restore_value: no
     initial_value: "0"
-  # Chime suppression and session detection share OC1, but need different timing. OC1 rises at the
-  # start of the Türruf and then stays high while K5 is sealed in. Keep K3 open through the measured
-  # ~3.9 s gong, then release it so the stock WF26 transducer works for the rest of the call.
-  - id: gong_mute_until_ms
-    type: uint32_t
-    restore_value: no
-    initial_value: "0"
 
 # Door-station playback: mute the own speaker (K3, via the chime_enabled guard), present the off-hook
 # handshake (K1), play the embedded file, then restore everything. The I2S channel was primed at boot
@@ -486,7 +479,6 @@ binary_sensor:
         - lambda: |-
             id(welcome_not_before_ms) = millis() + 1450;
             id(ring_open_not_before_ms) = millis() + 1750;
-            id(gong_mute_until_ms) = millis() + 4200;
         # Autonomous open reflex — runs locally so a ring still opens even when HA is slow or down.
         # HA arms it via switch.auto_open_front_door (PERSISTENT; HA owns on/off) and primes which
         # greeting plays via the next_greeting select. welcome_and_open sequences greet-then-open; the
@@ -513,15 +505,14 @@ binary_sensor:
       // K3 (NC SSR) opens C1 to mute the front-door gong. It sits in the C1 audio path (P4↔C1), NOT
       // in line 4 — so it does NOT break the session, and the board's codec RX/TX (on the speech pair,
       // lines 2/3) is independent of it. (It does mute the handset's own LS1 listen, which rides C1.)
-      // OC1 rises with the Türruf and remains high for the K5-sealed session. Honour chime suppression
-      // through the measured gong, then release K3 for the rest of the session so the stock WF26
-      // transducer can listen/talk normally. The deadline distinguishes those two phases; OC1 alone
-      // cannot, because it is asserted during both.
+      // Interim V4.1 policy: while suppression is effectively requested, keep K3 open for the whole
+      // session. A later neighbour ring can put its gong on shared P2 and, while our K5 is sealed,
+      // feed it into LS1 if K3 is reclosed. This deliberately disables passive LS1 listen and the
+      // physical SW4 microphone in suppression mode; smart codec RX/TX and the door actuator remain.
+      // V4.1's installed SW4 is mechanically obstructed. The V4.2 candidate has a dry GPIO47 PTT
+      // input + K1 hardware inhibit, but its firmware policy awaits fabricated-board validation
+      // (TODO.md). Smart TX is independent of K3, so it is not a reason to reclose K3.
       if (id(welcome_playing)) return false;  // door-station playback: hold K3 = own speaker muted
-      if (id(intercom_ptt).state) return true;
-      if (id(house_doorbell).state && id(gong_mute_until_ms) != 0 &&
-          static_cast<int32_t>(millis() - id(gong_mute_until_ms)) >= 0)
-        return true;
       // The gong is suppressed by default (rings are announced via Alexa). Fail SAFE to ring so a
       // doorbell is never silently missed: suppress ONLY while HA is connected AND actively requests
       // it. HA clears suppress_chime when the announcement path is down (internet/Alexa), and a
@@ -546,7 +537,7 @@ binary_sensor:
 
 switch:
   # K1 (talk handshake + TX gate) is owned by play_welcome for scripted greetings; direct media-player
-  # use falls back to on_announcement/on_idle. It is read by two policy lambdas, not a user control.
+  # use falls back to on_announcement/on_idle. It is read by the OC2 masking policy, not a user control.
   # Kept off HA (id, no name): a stray toggle could assert a pedestal or cut K1 mid-greeting.
   - platform: output
     id: intercom_ptt

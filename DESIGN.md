@@ -294,6 +294,10 @@ only the AC tone on to LS1. Same line, two views: DC at the opto, audio at the s
   flashing/logging, and flexible pin placement. Wi-Fi is the only network interface.
 - **PhotoMOS switching:** talk and door contacts default open; chime-mute and seal-in-break contacts
   default closed. This preserves passive handset behavior with the smart layer unpowered.
+- **Dry physical-Talk sense plus a hard K1 inhibit:** one SW4 pole remains the passive 2.2 kΩ Talk
+  contact; the other reports the switch independently of the bus and opens K1's LED return while
+  the physical contact is engaged. Firmware can therefore distinguish manual Talk without relying
+  on P4/K5, while the switch itself prevents a sustained smart-plus-manual handshake.
 - **Transformer-less, half-duplex audio:** the codec taps lines 2/3 and shares P1 with logic ground.
   This deliberately trades galvanic isolation for a compact, direct audio path.
 - **One protected 5 V/USB inlet:** the JST-SH service connector carries VBUS and native USB data;
@@ -328,6 +332,11 @@ this purely a placement choice: any function routes to any pad.
 - **Supply diagnostic on ADC1:** unrestricted IO5/ADC1_CH4 monitors the post-fuse +5 V rail through
   the R40/R41 divider. ADC1 avoids the Wi-Fi contention associated with ADC2, and IO5 is not a
   strapping pin, so the monitor has no reset-state effect.
+- **Physical Talk sense on IO47:** U1 pad 24 is an unrestricted input on the specified
+  **ESP32-S3-WROOM-1U-N16R8**. R42 pulls `PTT_SENSE_N` to +3V3 at boot/release and R43 limits fault
+  current if firmware accidentally configures the pad as an output. IO47 is neither a strapping pin
+  nor one of IO35–37 consumed by this module's octal PSRAM. This 3.3 V connection is variant-specific:
+  ESP32-S3R16V-based WROOM variants run IO47/IO48 at 1.8 V and are not drop-in substitutions for U1.
 - **No USB-UART bridge:** flashing + logs run over the native USB-Serial-JTAG (IO19/IO20 → D5 → J1).
 ### Bell / session sense front-end
 
@@ -397,7 +406,7 @@ opto collector ──► GPIO + 12 kΩ to +3V3     opto emitter ──► GND  (
   reaches LS1 via C1, which strips the DC the opto rides on — so OC1's `delayed_off: 2s` also
   bridges the gaps between the three Klang so one ring = one event.
 
-### Switches (K1/K2/K3/K4/K6 — PhotoMOS SSRs)
+### Switches (K1/K2/K3/K4/K6 PhotoMOS; SW4 physical-Talk interlock)
 
 ```
 K1 (talk+TX gate, dual NO): ch1 P2↔TALK_BRIDGE (precharged by JP3+R38+R39 = 200 kΩ), ch2 TX_OUT↔P3
@@ -405,7 +414,8 @@ K2 (door opener, NO): P2 ↔ P3 — energise to bridge the ÖT pair
 K3 (chime mute, NC): P4 ↔ CHIME_POS — energise to open and mute
 K4 (seal-in break, NC): SW3.6 ↔ K5.3 — energise to drop the latch
 K6 (P4 isolator, NC): P4 ↔ K5_LATCH — opens only when P4_ISO and K5 auxiliary NO are both active
-LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21→K4 LED (each Rn = 220 Ω)
+K1 LED return: both cathodes → K1_LED_RET → SW4.3 (NC1) → SW4.2 (COM1) → GND while Talk is released
+Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21→K4 LED (each Rn = 220 Ω)
 ```
 
 - **PhotoMOS, bidirectional.** K2/K3/K4 are single-pole; K1 contains two independent NO contacts.
@@ -418,6 +428,28 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   C14's bus side follows the standing P2 bias before K1 closes; the closed contact bypasses that
   high-value path during TX. K1 ch2 still leaves line 3 structurally high-impedance at idle. JP3 is
   cuttable only for diagnostic A/B testing and is normally restored bridged.
+- **SW4 — passive Talk, dry sense and K1 hardware inhibit (FW-4/BUS-2).** The two poles deliberately
+  have different jobs, and every involved net is named in the schematic:
+  - **Passive pole, pins 4/5/6:** pin 5 (`TALK_SW`, COM) is fed from `K5_LATCH` through R29 = 2.2 kΩ;
+    pressing the momentary switch connects it to pin 4 (NO, P3). Pin 6 (NC) is intentionally not
+    connected. This is the stock manual Talk path and remains functional with logic power absent.
+  - **Dry logic pole, pins 1/2/3:** pin 2 (COM) is GND. Released, 2↔3 (NC) grounds `K1_LED_RET`, so
+    firmware may energise both K1 channels. Pressed, 2↔1 (NO) grounds `PTT_SW_N` through the switch,
+    pulling GPIO47/`PTT_SENSE_N` active-low through R43 = 1 kΩ; opening 2↔3 simultaneously removes
+    both K1 LED cathode returns. Thus even a stuck-high `PTT_DRV` cannot sustain K1 while manual Talk
+    is held, and no bus-potential contact reaches the GPIO pole.
+
+  R42 = 10 kΩ holds the input at about 3.3 V released; pressed, R42/R43 form a divider at about
+  0.30 V and draw about 0.30 mA, comfortably above the SPPJ322300's 50 µA at 3 V minimum load. R43
+  also limits a mistaken GPIO-high-against-pressed-switch condition to about 3.3 mA. The K1 return
+  carries roughly 16–18 mA total, below the switch's 0.2 A rating and above its minimum load; its
+  specified contact resistance is negligible beside each 220 Ω LED resistor.
+
+  The switch is specified **non-shorting within each pole**, but the datasheet does not bound the
+  relative transition timing of the two poles. The first fabricated V4.2 board must therefore be
+  scoped to prove K1 has opened before the passive 2.2 kΩ path makes on press, and firmware must keep
+  K1 commanded off until a debounced release. The schematic/simulator proves steady states, not this
+  mechanical cross-pole timing.
 - **Why TX drives line 3, not line 4.** A WF26 hangs **C1 (22 µF) + the 16 Ω speaker across line 4**
   = a ~20–30 Ω near-short to common across the voice band; injecting there would dump the drive into
   it. Line 3 is light (the TV20/S amp input ∥ the handshake leg's 2.2 kΩ), so the codec drives
@@ -428,7 +460,24 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
 - **K3 — chime mute.** In the gong's audio path (`P4 ↔ CHIME_POS ↔ C1 ↔ P5 → LS1`). NC ⇒ de-energised
   = closed = gong rings (and OC1, on line 4, still senses — K3 doesn't touch line 4); energise = open
   = gong muted, with **line 4, the latch and the Etagenruf all untouched** (Etagenruf reaches LS1
-  directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4). **R36 (100 kΩ) + JP1
+  directly on line 5, bypassing C1 — structurally non-suppressible, GONG-4). K3 also lies in the
+  passive speech crossover: while it is open, LS1 cannot receive P2 speech through the sealed K5 or
+  send microphone audio through R29/SW4. The codec speech-pair tap, ring/session sensing, latch, door
+  actuator and Etagenruf remain available.
+
+  **Interim V4.1 firmware policy:** while HA-connected chime suppression is requested (and Force
+  Chime is off), firmware now holds K3 open continuously instead of reclosing it 4.2 s after the
+  initial gong. The former reclose restored passive speech but also let a later neighbour's gong on
+  shared P2 travel through our sealed K5 into LS1; field history showed exactly that composition.
+  Suppression mode is therefore deliberately automation-only for now: smart codec TX/RX and
+  greet/open continue, but physical LS1 listen/talk do not. This adds no practical Talk loss on the
+  installed V4.1 because its USB-C connector already obstructs SW4 before full engagement. API loss,
+  power loss or Force Chime still returns the normally-closed K3 to the stock passive path. The
+  current V4.2 candidate now includes the dry SW4/PTT sense and K1 inhibit above; implementing its
+  firmware input and restoring deliberate manual-conversation behavior remain gated on first-board
+  electrical and mechanical validation in `TODO.md`.
+
+  **R36 (100 kΩ) + JP1
   (factory-bridged)** bleed `CHIME_POS` to GND while K3 is open, discharging C19's 22 µF
   coupling capacitance (τ≈2.2 s). It is a passive robustness measure: on the V4.1 bench board,
   `CHIME_POS` held about 10 V for tens of seconds, yet an immediate K3 reclose neither latched K5 nor
@@ -449,24 +498,28 @@ LED drive: PTT_DRV → R4 (K1 ch1 LED) + R24 (K1 ch2 LED); MUTE_DRV → R6; DOOR
   behaves normally. K5's auxiliary NO contact is the K6 LED return: even a stuck-high `P4_ISO`
   cannot open K6 until K5 has physically pulled in, and K5 release immediately removes LED current.
   JP2 is an open recovery jumper directly across K6's output.
-- K1/K2/K3 are independent (no interlock); **K4 is ganged with K2 on DOOR_DRV** — the break-before-make
-  door pair. Firmware holds **K3 de-energised whenever a ring should be heard**. V4.1 field operation
+- K2/K3 remain independent; K1's GPIO drive is independent but its LED return is mechanically gated
+  by SW4. **K4 is ganged with K2 on DOOR_DRV** — the break-before-make door pair. Firmware holds
+  **K3 de-energised whenever a ring should be heard**. V4.1 field operation
   proves that the TV20/S forwards codec audio on line 3 after a 2.2 kΩ handshake. V4.2 retains that
-  topology; first-board validation now concentrates on K5-confirmed K6 isolation.
+  topology; first-board validation now concentrates on K5-confirmed K6 isolation and SW4's new dry
+  sense/interlock timing.
 
 ### SSR LED drive (per channel)
 
 ```
-GPIO ── R4/R5/R6 (220Ω) ── SSR LED anode │ LED │ cathode ── GND
-GPIO ── R7/R8/R9 (10kΩ) ── GND   (pull-down: SSR off while the GPIO floats at boot)
+PTT_DRV ── R4/R24 (220Ω each) ── K1 LEDs ── K1_LED_RET ── SW4 NC ── GND
+other DRV ── 220Ω ── SSR LED ── GND or its documented hardware-gated return
+each DRV ── 10kΩ ── GND   (pull-down: SSR off while the GPIO floats at boot)
 ```
 The 220 Ω resistors give each SSR LED adequate operate current even at the GPIO's guaranteed-low
 output-high voltage. IO9 and IO10 each drive two LEDs, so firmware must retain the ESP32-S3's normal
 drive strength. V4.1 field operation proves the same direct-drive topology with higher 300 Ω LED
 resistors; V4.2's 220 Ω values increase PhotoMOS operate-current margin, so no buffer stage is needed.
-The 10 kΩ pull-downs hold every smart actuator inactive while GPIOs float at boot: talk and door
-remain open, while the normally-closed chime and seal-in paths remain intact. PhotoMOS contacts need
-no flyback; D1 exists only for the passive electromechanical latch.
+SW4's NC contact is in series only with K1's common LED return; K5's auxiliary contact similarly
+gates K6. The 10 kΩ drive pull-downs hold every smart actuator inactive while GPIOs float at boot:
+talk and door remain open, while the normally-closed chime, seal-in and P4 paths remain intact.
+PhotoMOS contacts need no flyback; D1 exists only for the passive electromechanical latch.
 
 ### Power tree
 
@@ -728,15 +781,19 @@ These reproduce the handset (see "WF26 internal circuit") and run with zero boar
   remains the guaranteed must-operate limit. The real ring bus is approximately 12 V, and the
   100 kΩ R36 load draws only about 0.1 mA, so pull-in has comfortable design margin; retain a
   normal 12 V latch/seal-in check at first-board bring-up, not a low-voltage fabrication gate.
-- **R29** — 2.2 kΩ talk resistor (`P4 → R1 → R1_BRIDGE`).
-- **SW3 (door, DPDT) and SW4 (talk, DPDT)** — SPPJ322300 slide switches wired as in the
-  handset, so a person can open the door / talk by hand with the board dead.
+- **R29** — 2.2 kΩ passive Talk resistor (`K5_LATCH → R29 → TALK_SW`), connected to P3 by
+  SW4 pins 5↔4 only while the physical button is pressed.
+- **SW3 (door, DPDT) and SW4 (talk, DPDT)** — SPPJ322300 momentary switches. SW3 retains both
+  handset door-transfer poles. SW4 retains the handset's passive Talk contact on pins 4/5, so manual
+  Talk still works with the board dead; its otherwise-spare pins 1/2/3 are the logic-power-only dry
+  sense/K1 interlock described above and do not gate that fallback path.
 
 ### Smart layer defaults (additive, off at rest)
 - **K3** (NC SSR) is closed de-energised → the gong rings unpowered / at boot; chime-suppress acts
   only when the ESP energises it.
-- **K1/K2** (NO SSRs) default open (gate pull-downs) → they parallel the passive S2/S1 paths; powered
-  they add app talk/door, unpowered they vanish.
+- **K1/K2** (NO SSRs) default open (gate pull-downs) → they parallel the passive S2/S1 functions;
+  powered they add app talk/door, unpowered they vanish. SW4 additionally opens K1's LED return
+  during a physical Talk press; that interlock does not sit in the passive bus path.
 - **OC1/OC2** sense and the **codec speech-pair tap** (lines 2/3) are high-Z, AC-coupled, and
   independent of the gong-suppress — so the smart RX/TX path works with the gong muted, and the board
   adds only negligible load beyond a stock WF26 (BUS-1).
@@ -760,12 +817,13 @@ not a tweak of the current board:
   an existing aperture, or an added hole) — the bus can't supply it.
 - **Antenna:** U1 (WROOM-1U) uses a **u.FL external antenna** — route the antenna lead out of the
   housing; no RF-transparent PCB-antenna region is needed (unlike the old WROOM-1).
-- **Physical fit is verified:** the JLCPCB-assembled **V4.1 PCB was installed in the original WF26
-  enclosure** with the lid closed and the handset operating. Its outline, boss pattern, switch
-  plunger positions, transducer/grille position, wire entry and assembled component Z-height all
-  fit the real housing. The current mechanical interface and component envelope inherit that
-  proven layout; repeat the housing fit test only after changing the outline, mounting holes,
-  enclosure-pinned parts, or maximum component height.
+- **V4.1 enclosure seating is verified, with one actuator failure:** the JLCPCB-assembled PCB was
+  installed in the original WF26 enclosure with the lid closed. Its outline, boss pattern,
+  transducer/grille position, wire entry and assembled component Z-height fit, and the door button
+  works. The Talk actuator, however, hits the fitted USB-C connector before SW4 fully engages; direct
+  bench actuation of SW4 does not qualify the installed control. The current V4.2 candidate removes
+  that connector, but its actual J1 cable and both controls still require the current fit gate in
+  `TODO.md` / `ORDERING.md`.
 - Use the current **64.2 × 59.2 mm** outline; still take the **mounting pattern** and the
   **speaker / button / wire-entry positions** from the **real WF26** (and `wf26/wf26.kicad_pcb`
   where it captures them).
@@ -780,5 +838,5 @@ copy warning counts or tool versions into this document because they become stal
 `VERIFICATION.md` defines the repeatable pre-fab review and bench procedure. `TODO.md` owns the
 remaining measurements and design gates. Established evidence relevant to the architecture is kept
 next to the decision it supports—for example, V4.1 field operation proves enclosure fit, watchdog
-release, the 2.2 kΩ talk handshake and end-to-end TX reach. The remaining V4.2-specific TX work is
-first-board validation of K5-confirmed K6 isolation.
+release, the 2.2 kΩ talk handshake and end-to-end TX reach. The changed V4.2 K5/K6 isolation and
+SW4 dry-sense/K1-interlock circuits still require first-board validation.
