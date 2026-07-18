@@ -24,9 +24,17 @@ order—for example, some firmware work must wait for fabricated hardware regard
 
 The deterministic host adapter implements the expected versions of the V4.2 policies below so they
 can be exercised against the live HEAD circuit. These tasks remain open for production/bench enablement
-because the installed target is V4.1 and the changed GPIO4/GPIO47/GPIO48 hardware is not fabricated or
-qualified. Gating host scenarios cover those candidate policies; the open checkboxes keep the separate
-fabricated-board and production-enablement boundary visible.
+because the installed target is V4.1 and the changed GPIO4/GPIO5/GPIO47/GPIO48 hardware is not
+fabricated or qualified. Gating host scenarios cover those candidate policies; the open checkboxes
+keep the separate fabricated-board and production-enablement boundary visible.
+
+- [ ] **4/10 — Enable the post-fuse supply diagnostic after V4.2 power bring-up.**
+      The installed V4.1 board has no R40/R41/C25 divider, so production must leave GPIO5 unused and
+      must not expose a meaningless `Post-Fuse 5 V Supply` entity. Keep the ADC sensor in the V4.2
+      bench firmware for bring-up. After confirming `VBUS_F_ADC` against a DMM and validating its
+      divider, filter and GPIO5 mapping on fabricated hardware, add the diagnostic to production.
+      It can report supply sag but cannot report complete power loss because that also stops the ESP.
+      - **Worst case:** enabling it before the divider exists publishes floating, misleading supply telemetry.
 
 - [ ] **9/10 — Implement K5-confirmed P4 isolation only after a fabricated V4.2 board passes passive bring-up.**
       Keep the deployed V4.1 safeguards meanwhile: OC1 remains its session/ring input, the 1.45 s
