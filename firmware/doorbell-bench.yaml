@@ -55,7 +55,7 @@
 # between them; flash the production doorbell.yaml before the board goes in the wall. Keep this in
 # sync with doorbell.yaml — it is a copy of it plus the bench deltas listed above.
 
-# Local ESPHome 2026.6.5 component copies: `speaker` carries the announcement-pipeline state reset
+# Local ESPHome 2026.7.0 component copies: `speaker` carries the announcement-pipeline state reset
 # described in https://github.com/esphome/esphome/issues/15692; `i2s_audio` carries the keep-alive
 # experiment from https://github.com/esphome/esphome/pull/15565. See each component's README.md.
 external_components:
@@ -68,6 +68,7 @@ external_components:
 
 esphome:
   name: doorbell2
+  min_version: 2026.7.0
   on_boot:
     # Greeting registry — index-aligned with the `next_greeting` select options. The greet /
     # greet_and_open api actions resolve a greeting NAME to an index via the select (index_of), so the
@@ -229,7 +230,7 @@ speaker:
     audio_dac: es8311_codec
     i2s_dout_pin: GPIO1    # I2S_DOUT / DSDIN (ESP→codec, playback)
     sample_rate: 32000
-    keep_alive: true       # local port of esphome/esphome#15565, pinned to ESPHome 2026.6.5
+    keep_alive: true       # local port of esphome/esphome#15565, pinned to ESPHome 2026.7.0
 
 # NOTE: no `microphone:` here (nor in prod). The mic (I2S RX) and the speaker (I2S TX) share one
 # half-duplex I2S bus; a declared mic holds the bus and makes the speaker fail to start ("Parent bus
