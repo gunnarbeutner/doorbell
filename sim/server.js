@@ -69,6 +69,8 @@ class Session {
     this.netlist = object;
     this.clients = new Set();
     this.latest = new Map();
+    this.nextActionId = 0;
+    this.pendingActions = new Map();
     this.ready = null;
     this.lastUsed = Date.now();
   }
@@ -86,6 +88,14 @@ class Session {
     this.worker = worker;
     worker.on('message', (message) => {
       this.lastUsed = Date.now();
+      if (message.type === 'action-complete' || message.type === 'action-error') {
+        const pending = this.pendingActions.get(message.actionId);
+        if (!pending) return;
+        this.pendingActions.delete(message.actionId);
+        if (message.type === 'action-complete') pending.resolve();
+        else pending.reject(Object.assign(new Error(message.message), { stack: message.stack }));
+        return;
+      }
       if (['ready', 'sample', 'firmware', 'status', 'error'].includes(message.type)) this.latest.set(message.type, message);
       if (message.type === 'ready') resolveReady(message);
       if (message.type === 'error' && !this.latest.has('ready')) rejectReady(new Error(message.message));
@@ -93,9 +103,11 @@ class Session {
     });
     worker.on('error', (error) => {
       rejectReady(error);
+      this.rejectPendingActions(error);
       this.broadcast({ type: 'error', message: error.message, stack: error.stack });
     });
     worker.on('exit', (code) => {
+      this.rejectPendingActions(new Error(`simulation worker exited with code ${code}`));
       if (this.worker === worker && code !== 0)
         this.broadcast({ type: 'error', message: `simulation worker exited with code ${code}` });
     });
@@ -120,15 +132,30 @@ class Session {
     this.lastUsed = Date.now();
   }
 
+  rejectPendingActions(error) {
+    for (const pending of this.pendingActions.values()) pending.reject(error);
+    this.pendingActions.clear();
+  }
+
   action(message) {
     this.lastUsed = Date.now();
-    this.worker.postMessage(message);
+    const actionId = ++this.nextActionId;
+    return new Promise((resolvePromise, reject) => {
+      this.pendingActions.set(actionId, { resolve: resolvePromise, reject });
+      try {
+        this.worker.postMessage({ ...message, actionId });
+      } catch (error) {
+        this.pendingActions.delete(actionId);
+        reject(error);
+      }
+    });
   }
 
   async stop() {
     const worker = this.worker;
     if (!worker) return;
     this.worker = null;
+    this.rejectPendingActions(new Error('simulation session stopped'));
     worker.postMessage({ type: 'shutdown' });
     const exited = new Promise((resolvePromise) => worker.once('exit', resolvePromise));
     const timer = new Promise((resolvePromise) => setTimeout(resolvePromise, 1000));
@@ -201,7 +228,7 @@ export function createSimulatorServer() {
         if (request.method === 'POST' && route.tail === 'actions') {
           const action = await jsonBody(request);
           if (action.type === 'reset') await route.session.reset();
-          else route.session.action(action);
+          else await route.session.action(action);
           return sendJson(response, 202, { ok: true });
         }
         if (request.method === 'DELETE' && !route.tail) {
@@ -232,7 +259,8 @@ export function createSimulatorServer() {
         return;
       }
       const data = await readFile(join(ROOT, rel));
-      response.writeHead(200, { 'content-type': MIME[extname(rel)] || 'application/octet-stream' });
+      response.writeHead(200, { 'content-type': MIME[extname(rel)] || 'application/octet-stream',
+        'cache-control': 'no-store' });
       if (request.method === 'HEAD') response.end();
       else response.end(data);
     } catch (error) {

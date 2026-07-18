@@ -58,8 +58,7 @@ export class HeadCircuitFixture {
     this.electricalMs = Number(startMs);
     this.electricalSeconds = 0;
     this.fineUntilMs = this.nowMs;
-    this.dynamicUntilMs = this.nowMs;
-    this.doorRecoveryUntilMs = this.nowMs;
+    this.mediumUntilMs = this.nowMs;
     this.externalToneActive = false;
     this.outputs = { PTT_DRV: false, DOOR_DRV: false, MUTE_DRV: false, P4_ISO: false };
     this.mediaActive = false;
@@ -77,19 +76,17 @@ export class HeadCircuitFixture {
     this.onSample = onSample;
     this.interactiveSources = null;
     this.interactiveExtra = [];
+    this.dcOperatingPoint = null;
     this.rebuild(0.0002, cachedDefaultState);
     if (cachedDefaultState === undefined) {
-      this.fineUntilMs = this.nowMs + 40;
-      this.dynamicUntilMs = this.fineUntilMs;
-      this.stepFor(40, false);
-      cachedDefaultState = this.stepper.extractState();
-      // Rail/codec settling is fixture initialization, not firmware-visible elapsed time.
-      this.electricalMs = this.startMs;
-      this.electricalSeconds = 0;
+      // Fixture initialization represents a board whose standing rails have already reached their
+      // DC operating point. Solve that point directly; do not confuse an arbitrary transient duration
+      // with electrical settling. Every scenario receives its own copy of this immutable seed.
+      cachedDefaultState = this.stepper.operatingPoint(this.electricalSeconds).state;
+      this.rebuild(0.0002, cachedDefaultState);
     }
     this.fineUntilMs = this.nowMs;
-    this.dynamicUntilMs = this.nowMs;
-    this.doorRecoveryUntilMs = this.nowMs;
+    this.mediumUntilMs = this.nowMs;
     this.timeline.length = 0;
     this.lastElectrical = {};
     this.recordElectrical(true);
@@ -218,13 +215,35 @@ export class HeadCircuitFixture {
     this.stepper = createStepper(elements, sources, gndOf(this.netlist), dt, seed);
   }
 
+  invalidateOperatingPoint() {
+    this.dcOperatingPoint = null;
+  }
+
+  atOperatingPoint() {
+    if (this.externalToneActive || this.mediaActive) return false;
+    if (this.dcOperatingPoint == null) {
+      try {
+        this.dcOperatingPoint = this.stepper.operatingPoint(this.electricalSeconds);
+      } catch (error) {
+        // A hard fault can have no numerically solvable DC point in its present discrete topology
+        // (for example, the intact fuse feeding the 50 V clamp test). That is not permission to skip
+        // or to weaken the transient solver: keep stepping adaptively until the topology changes, then
+        // retry the operating-point solve. Non-convergence of the real transient still propagates.
+        if (/nonlinear solve did not converge/.test(error.message)) return false;
+        throw error;
+      }
+    }
+    return this.stepper.atOperatingPoint(this.dcOperatingPoint);
+  }
+
   ensureStepSize() {
-    // Resolve topology edges finely, then the remainder of the bounded physical transient at a
-    // medium step. Tone stimuli retain enough samples per cycle to locate GPIO threshold crossings.
+    // Resolve topology edges finely, use a medium step while threshold timing matters, then continue
+    // at a coarse step until the solved DC operating point is actually reached. These horizons select
+    // numerical resolution only; they never declare the circuit settled.
     const wanted = this.electricalMs < this.fineUntilMs
       ? 0.00002
       : this.externalToneActive ? this.externalStepSeconds
-        : this.electricalMs < this.dynamicUntilMs ? 0.0005
+        : this.electricalMs < this.mediumUntilMs ? 0.0005
           : 0.010;
     if (wanted !== this.dt) this.rebuild(wanted);
   }
@@ -232,20 +251,17 @@ export class HeadCircuitFixture {
   stepFor(milliseconds, detectInputs = true) {
     const target = this.electricalMs + milliseconds;
     while (this.electricalMs + 1e-9 < target) {
-      // Once a bounded transient reaches steady state there is no new electrical information to
-      // solve. Jumping the circuit clock preserves policy timing while avoiding thousands of
-      // identical nonlinear solves during long WAV and 30-second timeout scenarios.
-      const doorNeedsTime = (this.programPresent && this.outputs.DOOR_DRV) ||
-        this.electricalMs < this.doorRecoveryUntilMs;
-      if (!this.externalToneActive && !doorNeedsTime && this.electricalMs >= this.dynamicUntilMs) {
+      // Static intervals may be jumped only after the live storage/discrete state agrees with the
+      // solver's DC operating point. Media is an explicitly bounded representative waveform: once
+      // its medium-resolution exercise is complete, its remaining file duration is policy-only time.
+      const boundedMediaComplete = this.mediaActive && this.electricalMs >= this.mediumUntilMs;
+      if (!this.externalToneActive && (this.atOperatingPoint() || boundedMediaComplete)) {
         this.electricalSeconds += (target - this.electricalMs) / 1000;
         this.electricalMs = target;
         break;
       }
       this.ensureStepSize();
-      const activeTarget = this.externalToneActive || doorNeedsTime
-        ? target : Math.min(target, this.dynamicUntilMs);
-      const requestedMs = Math.min(this.dt * 1000, activeTarget - this.electricalMs);
+      const requestedMs = Math.min(this.dt * 1000, target - this.electricalMs);
       const beforeMs = this.electricalMs;
       const beforeSeconds = this.electricalSeconds;
       const seed = this.stepper.extractState();
@@ -323,9 +339,10 @@ export class HeadCircuitFixture {
     this.externalStepSeconds = dynamic.length
       ? Math.min(0.00025, ...dynamic.map((item) => item.freq > 0 ? 1 / (Number(item.freq) * 8) : 0.00025))
       : 0.00025;
+    this.invalidateOperatingPoint();
     this.rebuild(0.00002);
     this.fineUntilMs = Math.max(this.fineUntilMs, this.nowMs + 8);
-    this.dynamicUntilMs = Math.max(this.dynamicUntilMs, this.nowMs + 100);
+    this.mediumUntilMs = Math.max(this.mediumUntilMs, this.nowMs + 100);
     this.recordSample();
   }
 
@@ -369,29 +386,30 @@ export class HeadCircuitFixture {
     if (!(signal in this.outputs)) throw new Error(`unknown firmware output ${signal}`);
     if (this.outputs[signal] === value) return;
     this.outputs[signal] = value;
+    this.invalidateOperatingPoint();
     if (signal !== 'DOOR_DRV')
       this.fineUntilMs = Math.max(this.fineUntilMs, Number(at) + 2);
-    this.dynamicUntilMs = Math.max(this.dynamicUntilMs, Number(at) + (signal === 'DOOR_DRV' ? 60 : 30));
-    if (signal === 'DOOR_DRV' && !value)
-      this.doorRecoveryUntilMs = Math.max(this.doorRecoveryUntilMs, Number(at) + 500);
+    this.mediumUntilMs = Math.max(this.mediumUntilMs, Number(at) + (signal === 'DOOR_DRV' ? 60 : 30));
   }
 
   setMedia(active, at = this.nowMs) {
     if (this.mediaActive === active) return;
     this.mediaActive = active;
+    this.invalidateOperatingPoint();
     this.fineUntilMs = Math.max(this.fineUntilMs, Number(at) + 5);
     // Exercise the bounded codec tone for longer than the apartment-ring qualification interval;
     // once its masked behavior is established, long file duration is policy-only time.
-    this.dynamicUntilMs = Math.max(this.dynamicUntilMs, Number(at) + (active ? 160 : 20));
+    this.mediumUntilMs = Math.max(this.mediumUntilMs, Number(at) + (active ? 160 : 20));
   }
 
   applyEvent(event) {
     if (event.type === 'source') {
       this.sources[event.line] = source(event.value);
       this.refreshExternalWave();
+      this.invalidateOperatingPoint();
       this.rebuild(0.00002);
       this.fineUntilMs = Math.max(this.fineUntilMs, event.at + 8);
-      this.dynamicUntilMs = Math.max(this.dynamicUntilMs, event.at + 100);
+      this.mediumUntilMs = Math.max(this.mediumUntilMs, event.at + 100);
     } else if (event.type === 'tone') {
       this.sources[event.line] = {
         kind: 'tone',
@@ -400,6 +418,7 @@ export class HeadCircuitFixture {
         frequency: event.frequency,
       };
       this.refreshExternalWave();
+      this.invalidateOperatingPoint();
       this.rebuild(0.00002);
     } else if (event.type === 'pulse') {
       if (!(event.periodMs > 0 && event.widthMs > 0 && event.widthMs < event.periodMs))
@@ -415,6 +434,7 @@ export class HeadCircuitFixture {
         startedSeconds: this.electricalSeconds,
       };
       this.refreshExternalWave();
+      this.invalidateOperatingPoint();
       this.rebuild(0.00002);
     } else if (event.type === 'captured') {
       if (!(event.dtMs > 0) || !Array.isArray(event.values) || event.values.length < 2)
@@ -426,12 +446,14 @@ export class HeadCircuitFixture {
         startedSeconds: this.electricalSeconds,
       };
       this.refreshExternalWave();
+      this.invalidateOperatingPoint();
       this.rebuild(0.00002);
     } else if (event.type === 'switch') {
       this.switches[event.ref] = event.closed;
+      this.invalidateOperatingPoint();
       this.rebuild(0.00002);
       this.fineUntilMs = Math.max(this.fineUntilMs, event.at + 8);
-      this.dynamicUntilMs = Math.max(this.dynamicUntilMs, event.at + 100);
+      this.mediumUntilMs = Math.max(this.mediumUntilMs, event.at + 100);
     }
     const timelineEvent = event.type === 'captured'
       ? { ...event, values: `${event.values.length} samples` }
@@ -481,7 +503,8 @@ export class HeadCircuitFixture {
     else
       this.refreshExternalWave();
     this.fineUntilMs = Math.max(this.fineUntilMs, this.nowMs + 2);
-    this.dynamicUntilMs = Math.max(this.dynamicUntilMs, this.nowMs + 20);
+    this.mediumUntilMs = Math.max(this.mediumUntilMs, this.nowMs + 20);
+    this.invalidateOperatingPoint();
     this.rebuild(0.00002);
     if (settleMs > 0) this.stepFor(settleMs, false);
     else this.stepper.step(this.electricalSeconds);
@@ -493,9 +516,10 @@ export class HeadCircuitFixture {
     this.programPresent = true;
     this.outputs = { PTT_DRV: false, DOOR_DRV: false, MUTE_DRV: false, P4_ISO: false };
     this.mediaActive = false;
+    this.invalidateOperatingPoint();
     this.rebuild(0.00002);
     this.fineUntilMs = Math.max(this.fineUntilMs, this.nowMs + 2);
-    this.dynamicUntilMs = Math.max(this.dynamicUntilMs, this.nowMs + 20);
+    this.mediumUntilMs = Math.max(this.mediumUntilMs, this.nowMs + 20);
     this.recordSample();
   }
 }
@@ -514,6 +538,8 @@ export class FirmwareCircuitRunner extends EventEmitter {
     this.pendingCommands = [];
     this.pendingAdvance = null;
     this.horizonMs = Number(startMs);
+    this.paused = interactive;
+    this.pendingCircuitConfig = null;
     this.failure = null;
     this.connected = false;
   }
@@ -595,26 +621,70 @@ export class FirmwareCircuitRunner extends EventEmitter {
   setHorizon(targetMs) {
     if (!this.interactive) throw new Error('setHorizon is only available in interactive mode');
     this.horizonMs = Math.max(this.horizonMs, Math.trunc(Number(targetMs)));
+    if (this.horizonMs > this.fixture.nowMs) this.applyPendingCircuitConfig();
     this.drainInteractive();
+  }
+
+  setPaused(paused) {
+    if (!this.interactive) throw new Error('setPaused is only available in interactive mode');
+    this.paused = Boolean(paused);
+    if (this.paused) {
+      // Revoke pacing time granted but not yet consumed. A circuit edit must not let firmware spend
+      // stale pacing credit while the UI says paused.
+      this.horizonMs = this.fixture.nowMs;
+    }
+  }
+
+  pauseAtCurrentTime() {
+    this.setPaused(true);
   }
 
   queueCommand(command) {
     if (!this.interactive) throw new Error('queueCommand is only available in interactive mode');
     this.pendingCommands.push(command);
     this.timeline.push({ at: Math.trunc(this.fixture.nowMs), type: 'command', command });
-    if (this.pendingAdvance && this.socket) {
+    if (!this.paused && this.pendingAdvance && this.socket) {
       this.pendingAdvance = null;
       this.sendAt('external');
     }
   }
 
-  configureCircuit(config) {
+  cloneCircuitConfig(config) {
+    return {
+      sources: config.sources.map((item) => ({ ...item })),
+      elements: config.elements.map((item) => ({ ...item })),
+      switches: { ...config.switches },
+    };
+  }
+
+  applyCircuitConfig(config) {
     this.fixture.configureCircuit(config);
     this.emit('update', { reason: 'circuit', at: this.fixture.nowMs });
-    if (this.interactive && this.pendingAdvance && this.socket) {
+    if (this.interactive && !this.paused && this.pendingAdvance && this.socket) {
       this.pendingAdvance = null;
       this.sendAt('external');
     }
+  }
+
+  applyPendingCircuitConfig() {
+    if (this.pendingCircuitConfig == null) return false;
+    const config = this.pendingCircuitConfig;
+    this.pendingCircuitConfig = null;
+    this.applyCircuitConfig(config);
+    return true;
+  }
+
+  configureCircuit(config, { immediate = false } = {}) {
+    if (this.interactive && this.paused && !immediate) {
+      // Paused freezes the complete circuit snapshot, not merely integration time. Keep source and
+      // topology edits as a boundary event until +1 ms or resume grants time. Repeated edits at the
+      // same frozen instant collapse to their final configuration.
+      this.pendingCircuitConfig = this.cloneCircuitConfig(config);
+      this.emit('update', { reason: 'circuit-pending', at: this.fixture.nowMs });
+      return;
+    }
+    this.pendingCircuitConfig = null;
+    this.applyCircuitConfig(config);
   }
 
   drainInteractive() {

@@ -293,7 +293,8 @@ async function initDoorbell() {
   runner.on('disconnect', () => { firmware.connected = false; emitSample(true); });
   await runner.listen();
   runner.server.on('connection', () => { firmware.connected = true; emitSample(true); });
-  runner.configureCircuit({ sources: config.sources, elements: rawElements(config.elements), switches: config.switches });
+  runner.configureCircuit({ sources: config.sources, elements: rawElements(config.elements), switches: config.switches },
+    { immediate: true });
   await spawnHost();
 }
 
@@ -327,6 +328,7 @@ function tick() {
 
 function reportError(error) {
   speed = 0;
+  runner?.setPaused(true);
   post('error', { message: error.message, stack: error.stack });
 }
 
@@ -369,6 +371,7 @@ async function handle(message) {
   if (message.type === 'speed') {
     if (![0, 1, 10, 'max'].includes(message.value)) throw new Error('speed must be 0, 1, 10 or max');
     speed = message.value;
+    runner?.setPaused(speed === 0);
     lastWall = Date.now();
     fractionalMs = 0;
     post('status', { status: speed === 0 ? 'paused' : 'running', speed });
@@ -408,7 +411,22 @@ async function handle(message) {
   } else throw new Error(`unknown worker action ${message.type}`);
 }
 
-parentPort.on('message', (message) => handle(message).catch(reportError));
+let actionQueue = Promise.resolve();
+parentPort.on('message', (message) => {
+  const run = async () => {
+    try {
+      await handle(message);
+      if (message.actionId !== undefined) post('action-complete', { actionId: message.actionId });
+    } catch (error) {
+      reportError(error);
+      if (message.actionId !== undefined)
+        post('action-error', { actionId: message.actionId, message: error.message, stack: error.stack });
+    }
+  };
+  // Actions form a protocol stream. Serialize them so configure cannot overtake pause, and acknowledge
+  // only after the requested state transition has actually completed.
+  actionQueue = actionQueue.then(run, run);
+});
 
 try {
   if (board === 'doorbell') await initDoorbell();

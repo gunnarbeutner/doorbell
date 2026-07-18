@@ -75,6 +75,7 @@ let selectedNets = new Set(),
   pendingBreak = null, // the event that tripped the trigger (seek here after pausing)
   evId = 0,
   lastEvCount = -1; // so the events panel only re-renders when the log changes
+let actionBarrier = Promise.resolve();
 const hideLayers = new Set(NETLIST.config?.hideLayers || []); // default-off layers, per the board's .sim
 const visLayers = new Set((PCB ? PCB.layers : []).filter((L) => !hideLayers.has(L)));
 $('#srcname').textContent = NETLIST.source;
@@ -1066,6 +1067,12 @@ async function action(message) {
   }
 }
 
+function enqueueAction(message) {
+  const run = () => action(message);
+  actionBarrier = actionBarrier.then(run, run);
+  return actionBarrier;
+}
+
 function paintSpeed() {
   document.querySelectorAll('.speed').forEach((button) =>
     button.classList.toggle('primary', running && String(activeSpeed) === button.dataset.speed));
@@ -1078,7 +1085,7 @@ function setSpeed(value) {
   running = value !== 0;
   paintSpeed();
   status();
-  return action({ type: 'speed', value });
+  return enqueueAction({ type: 'speed', value });
 }
 
 function pause() {
@@ -1118,7 +1125,7 @@ async function reset() {
   loadConfig(SESSION.config);
   loadPolicyDefaults();
   status('full reset in progress');
-  await action({ type: 'reset' });
+  await enqueueAction({ type: 'reset' });
 }
 
 function circuitConfig() {
@@ -1127,7 +1134,7 @@ function circuitConfig() {
 }
 
 function applyChange() {
-  action({ type: 'configure', config: circuitConfig() });
+  return enqueueAction({ type: 'configure', config: circuitConfig() });
 }
 
 function appendSample(sample) {
@@ -1238,9 +1245,9 @@ $('#reset').onclick = reset;
 $('#pause').onclick = pause;
 document.querySelectorAll('.speed').forEach((button) => button.onclick = () =>
   setSpeed(button.dataset.speed === 'max' ? 'max' : Number(button.dataset.speed)));
-$('#step').onclick = () => action({ type: 'step' });
-$('#crash').onclick = () => action({ type: 'crash' });
-$('#reboot').onclick = () => action({ type: 'reboot' });
+$('#step').onclick = () => enqueueAction({ type: 'step' });
+$('#crash').onclick = () => enqueueAction({ type: 'crash' });
+$('#reboot').onclick = () => enqueueAction({ type: 'reboot' });
 $('#gnd').onchange = applyChange;
 $('#dt').onchange = applyChange;
 $('#tcur').oninput = (e) => {
@@ -1269,7 +1276,7 @@ window.addEventListener('resize', () => buildStack());
 window.addEventListener('beforeunload', () => fetch(`/api/sessions/${SESSION.id}`, { method: 'DELETE', keepalive: true }));
 
 function firmwareCommand(command) {
-  return action({ type: 'command', command });
+  return enqueueAction({ type: 'command', command });
 }
 $('#fwHa').onchange = (event) => firmwareCommand(`SET:ha:${event.target.checked ? 1 : 0}`);
 $('#fwAuto').onchange = (event) => firmwareCommand(`SET:auto_open:${event.target.checked ? 1 : 0}`);

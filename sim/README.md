@@ -157,12 +157,16 @@ after physical-Talk release while K5 remains confirmed; K5 loss, smart TX or a d
 window sooner. These behaviors are gating host scenarios without claiming that the changed functions
 have passed fabricated-board tests.
 
-The live KiCad import and passive powered-state settling are cached only within one Node test process;
+The live KiCad import and passive powered-state operating point are cached only within one Node test process;
 every scenario still gets a fresh firmware process, socket, preferences directory and independent copy
-of the settled electrical state. The runner solves topology and waveform transients at fine/medium
-steps, then jumps electrically stable intervals directly to the next firmware or stimulus deadline.
-Long greetings and timeout tests therefore retain virtual-time coverage without repeatedly solving an
-unchanged nonlinear circuit.
+of the settled electrical state. The runner solves the DC target directly (capacitors open, inductors at
+DC, discrete devices iterated to a stable topology), follows topology and waveform transients at
+fine/medium/coarse steps, and jumps an interval only when live storage and discrete state agree with that
+operating point within the solver tolerances. Numerical step horizons select resolution; they do not
+declare a static circuit settled. The deliberately bounded representative codec waveform remains a
+separate policy-test abstraction; after its documented exercise window, the remaining media duration
+advances as policy-only time. Long greetings and timeout tests therefore retain virtual-time coverage
+without repeatedly solving an unchanged nonlinear circuit.
 
 `npm run test:firmware` remains the self-contained direct gate: it resolves production/bench and
 incrementally builds the host target. After those inputs are already known-good, use
@@ -195,12 +199,17 @@ fabricated V4.2 board.
 The interactive UI uses the same protocol and HEAD fixture. The server is the sole authority for
 circuit state and ordered firmware writes. At 1×/10× it advances a wall-time-derived virtual horizon;
 `max` advances bounded chunks as quickly as the solver and host scheduler permit. Pause leaves the
-host blocked in `ADVANCE`; a queued firmware command wakes it at the current timestamp, and `+1 ms`
-advances exactly one virtual millisecond. Full reset starts a clean circuit, host and preferences set.
+host blocked in `ADVANCE`, and `+1 ms` advances exactly one virtual millisecond. Firmware commands and
+circuit/source edits made while paused are queued at the frozen boundary; repeated circuit edits collapse
+to the final configuration and are applied only by `+1 ms` or resume. Until then the complete published
+snapshot—including voltages, storage state and floating classification—remains unchanged. Full reset
+starts a clean circuit, host and preferences set.
 Crash removes the U1/U3 program drivers while keeping physical capacitor/relay/SSR/fuse state; reboot
 starts a new host process at that same circuit time and state.
 
-Every source, extra element and switch edit is validated and rebuilt in the worker while carrying
-physical state. Samples, current injections, safety events, firmware entities, media ownership and the
-ordered write timeline stream back over SSE. The UI keeps a bounded display window; detailed
-deterministic assertions remain the job of `npm run test:firmware`.
+Every source, extra element and switch edit is validated in the worker and rebuilt at its permitted
+virtual-time boundary while carrying physical state. HTTP action completion acknowledges worker
+completion, so pause/configure ordering does not depend on wall-clock timing. Samples, current injections,
+safety events, firmware entities, media ownership and the ordered write timeline stream back over SSE.
+The UI keeps a bounded display window; detailed deterministic assertions remain the job of
+`npm run test:firmware`.

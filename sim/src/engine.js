@@ -2,6 +2,9 @@
 // models). Device models live in src/components/. Shared by the UI and the test suite.
 
 const MULT = { p: 1e-12, n: 1e-9, u: 1e-6, m: 1e-3, k: 1e3, K: 1e3, M: 1e6, G: 1e9, R: 1, r: 1 };
+const RELTOL = 1e-3;
+const VNTOL = 1e-6;
+const ABSTOL = 1e-12;
 function parseVal(s) {
   if (s == null) return null;
   s = ('' + s).replace(/µ/g, 'u').replace(/Ω/g, 'R');
@@ -146,7 +149,7 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
   }
 
   // advance one Backward-Euler timestep to time t, Newton-iterating the nonlinear devices
-  function step(t) {
+  function step(t, { steadyState = false } = {}) {
     const mx = hasD ? maxNewtonIterations : 1;
     let converged = !hasD;
     let worstDelta = 0;
@@ -189,11 +192,16 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
           gS(a, c, e.closed ? SW_GON : 1e-15);
         } // open << Gmin so it can't leak source V onto a floating node
         else if (e.type === 'C') {
-          const g = (e.value || 0) / dt;
-          gS(a, c, g);
-          iS(a, c, -g * e.vp);
+          // A capacitor is open at the DC operating point. Transient steps use the usual
+          // Backward-Euler companion conductance and remembered terminal voltage.
+          if (!steadyState) {
+            const g = (e.value || 0) / dt;
+            gS(a, c, g);
+            iS(a, c, -g * e.vp);
+          }
         } else if (e.type === 'L') {
-          const g = (e.value || 1e-9) / dt;
+          // At DC, L/dt and mutual M/dt vanish, leaving only winding DCR (or an ideal short).
+          const g = steadyState ? 0 : (e.value || 1e-9) / dt;
           if (a >= 0) {
             A[a][e.bi] += 1;
             A[e.bi][a] += 1;
@@ -204,7 +212,7 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
           }
           A[e.bi][e.bi] -= g + (e.dcr || 0);
           b[e.bi] += -g * e.ip; // dcr = series winding resistance
-          if (e.coupL) {
+          if (e.coupL && !steadyState) {
             const gm = e.M / dt;
             A[e.bi][e.coupL.bi] -= gm;
             b[e.bi] += -gm * e.coupL.ip;
@@ -330,7 +338,7 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
           worstDelta = delta;
           worstNode = nodes[i];
         }
-        if (delta > 1e-3 * Math.abs(xi) + 1e-6) conv = false;
+        if (delta > RELTOL * Math.abs(xi) + VNTOL) conv = false;
       } // absolute tol limit-cycles on low-current diode nodes)
       // Damped Newton update prevents a forward/off pair of diode states from alternating forever on
       // weakly anchored nodes. Once the raw solve meets tolerance, accept the exact solution.
@@ -349,7 +357,7 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
     for (const e of all) {
       if (e.type === 'C') {
         const vcap = Vof(e.a) - Vof(e.b);
-        e.icur = (e.value / dt) * (vcap - e.vp); // displacement current i = C·dV/dt this step
+        e.icur = steadyState ? 0 : (e.value / dt) * (vcap - e.vp); // displacement current i = C·dV/dt
         e.vp = vcap;
       }
       if (e.type === 'L') e.ip = e.icur;
@@ -367,7 +375,13 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
       }
       if (e.type === 'RC') {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
-        if (e.coilOn) {
+        if (steadyState) {
+          // Resolve the eventual state under a constant coil voltage without inventing a settling time.
+          if (e.coilOn && vc <= e.release) e.coilOn = false;
+          else if (!e.coilOn && vc >= e.pickup) e.coilOn = true;
+          e.pickupElapsed = 0;
+          e.releaseElapsed = 0;
+        } else if (e.coilOn) {
           if (vc <= e.release) {
             e.releaseElapsed += dt;
             if (e.releaseElapsed >= (e.releaseTime || 0)) {
@@ -406,7 +420,11 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
         } else if (Iled >= iOperate) {
           target = true;
         }
-        if (target !== e.targetOn) {
+        if (steadyState) {
+          e.targetOn = target;
+          e.ledOn = target;
+          e.switchElapsed = 0;
+        } else if (target !== e.targetOn) {
           e.targetOn = target;
           e.switchElapsed = 0;
         }
@@ -426,7 +444,8 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
         // open (the SAFE-7 fail-safe — a clamping TVS or a short blows it and disconnects the board).
         const I = e.blown ? 0 : (Vof(e.a) - Vof(e.b)) / (e.ron || 1e-3);
         e.icur = I;
-        e.melt = (e.melt || 0) + (Math.abs(I) > e.irate ? I * I * dt : 0);
+        if (steadyState && Math.abs(I) > e.irate) e.blown = true;
+        else e.melt = (e.melt || 0) + (Math.abs(I) > e.irate ? I * I * dt : 0);
         if (!e.blown && e.melt >= e.i2t) e.blown = true;
       }
     }
@@ -515,6 +534,74 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
     return st;
   }
 
+  const discreteStateKey = (state) => JSON.stringify({
+    relays: state.relays,
+    ssrs: state.ssrs,
+    ssrTargets: Object.fromEntries(Object.entries(state.ssrTimers)
+      .map(([ref, timer]) => [ref, timer.targetOn])),
+    fuses: Object.fromEntries(Object.entries(state.fuses)
+      .map(([ref, fuse]) => [ref, fuse.blown])),
+    ldos: state.ldos,
+  });
+
+  function cloneElements() {
+    const copies = els.map((element) => ({ ...element }));
+    const copyOf = new Map(els.map((element, index) => [element, copies[index]]));
+    for (let index = 0; index < els.length; index++)
+      if (els[index].coupL) copies[index].coupL = copyOf.get(els[index].coupL);
+    return copies;
+  }
+
+  // Solve the eventual operating point for the current constant sources and control state. Storage
+  // elements use their DC equivalents, while relay/SSR/LDO/fuse topology is iterated until its finite
+  // discrete state stops changing. A repeated state means there is no stable DC topology and fails loud
+  // instead of silently declaring a transient settled.
+  function operatingPoint(t) {
+    const dc = createStepper(cloneElements(), sources, gnd, dt, extractState(), {
+      strictConvergence,
+      maxNewtonIterations,
+    });
+    const seen = new Set();
+    while (true) {
+      const before = dc.extractState();
+      const beforeKey = discreteStateKey(before);
+      if (seen.has(beforeKey)) throw new Error('DC operating point has no stable discrete topology');
+      seen.add(beforeKey);
+      dc.step(t, { steadyState: true });
+      const after = dc.extractState();
+      if (discreteStateKey(after) === beforeKey)
+        return { state: after, floating: dc.floatingMap() };
+    }
+  }
+
+  const near = (actual, expected, abstol) =>
+    Math.abs(actual - expected) <= RELTOL * Math.max(Math.abs(actual), Math.abs(expected)) + abstol;
+
+  // Compare a live transient with a previously solved operating point. Floating nodes have no unique
+  // DC voltage and are intentionally excluded; stored inductor current and all discrete/timer state are
+  // still checked so a skipped interval cannot hide pending physical work.
+  function atOperatingPoint(point) {
+    if (!point || !point.state) return false;
+    const current = extractState();
+    const floating = floatingMap();
+    for (const node of nodes) {
+      if (floating[node] || point.floating[node]) continue;
+      if (!near(current.vn[node], point.state.vn[node], VNTOL)) return false;
+    }
+    for (const ref in current.ind)
+      if (!near(current.ind[ref], point.state.ind[ref], ABSTOL)) return false;
+    if (discreteStateKey(current) !== discreteStateKey(point.state)) return false;
+    for (const ref in current.relayTimers) {
+      const a = current.relayTimers[ref], b = point.state.relayTimers[ref];
+      if (!near(a.pickupElapsed, b.pickupElapsed, ABSTOL) ||
+          !near(a.releaseElapsed, b.releaseElapsed, ABSTOL)) return false;
+    }
+    for (const ref in current.ssrTimers)
+      if (!near(current.ssrTimers[ref].switchElapsed,
+        point.state.ssrTimers[ref].switchElapsed, ABSTOL)) return false;
+    return true;
+  }
+
   // current injected into each net's copper at each component pad (sign: + into the net), keyed by
   // {ref, pin, net}. Feeds the trace-mesh solver; 0 Ohm contacts/switches and net-level sources are
   // left out (the solver supplies each net's source/connector residual from KCL).
@@ -585,7 +672,7 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
     return out;
   }
 
-  return { step, floatingMap, extractState, padInjections, vn, ni, nodes, gnd };
+  return { step, floatingMap, extractState, operatingPoint, atOperatingPoint, padInjections, vn, ni, nodes, gnd };
 }
 
 // Batch transient: step from t = 0 to T and collect the full waveforms (used by the tests + batch run).

@@ -147,7 +147,77 @@ async function waitForSse(url, predicate, timeoutMs = 10000) {
 test('HEAD handshake validates the live U1 and P1-P5 mappings', () => {
   const fixture = new HeadCircuitFixture();
   assert.deepEqual(fixture.readInputs(), { mask: 15, adcMv: 425 });
+  assert.ok(fixture.voltage('/TALK_BRIDGE') > 11.98,
+    `the cached powered-state seed must use the DC operating point, got ${fixture.voltage('/TALK_BRIDGE').toFixed(3)} V`);
   assert.throws(() => fixture.validateHello(['PTT_DRV=8']), /mapping mismatch/);
+});
+
+test('interactive P2 edits keep solving C14 until TALK_BRIDGE reaches its DC target', () => {
+  const fixture = new HeadCircuitFixture();
+  const configureP2 = (voltage) => fixture.configureCircuit({
+    sources: [
+      { net: '/VBUS', type: 'dc', v1: 5, v2: 0, freq: 1000, t1: 1, impedance: 0, off: false },
+      { net: '/P2', type: 'dc', v1: voltage, v2: 0, freq: 1000, t1: 1, impedance: 90, off: false },
+    ],
+    elements: [],
+    switches: { JP1: true, JP3: true },
+  });
+
+  configureP2(0);
+  fixture.advanceTo(5000);
+  assert.ok(Math.abs(fixture.voltage('/TALK_BRIDGE')) < 1e-5,
+    `precondition must discharge TALK_BRIDGE, got ${fixture.voltage('/TALK_BRIDGE').toFixed(6)} V`);
+
+  configureP2(12);
+  fixture.advanceTo(5140);
+  assert.ok(fixture.voltage('/TALK_BRIDGE') > 6 && fixture.voltage('/TALK_BRIDGE') < 8,
+    `140 ms must remain an in-progress transient, got ${fixture.voltage('/TALK_BRIDGE').toFixed(3)} V`);
+  assert.equal(fixture.atOperatingPoint(), false);
+
+  fixture.advanceTo(8000);
+  assert.ok(fixture.voltage('/TALK_BRIDGE') > 11.98,
+    `TALK_BRIDGE must continue to its 12 V DC target, got ${fixture.voltage('/TALK_BRIDGE').toFixed(3)} V`);
+  assert.equal(fixture.atOperatingPoint(), true);
+});
+
+test('paused interactive edits preserve C14 state until virtual time is explicitly advanced', () => {
+  const runner = new FirmwareCircuitRunner({ interactive: true });
+  const before = runner.fixture.snapshot();
+
+  // Model unused pacing credit from a preceding run tick, then pause and disconnect the P2 source.
+  runner.horizonMs = 2000;
+  runner.pauseAtCurrentTime();
+  const writes = [];
+  runner.socket = { write(value) { writes.push(value); } };
+  runner.pendingAdvance = { now: 0, deadline: 5000 };
+  const config = {
+    sources: [
+      { net: '/VBUS', type: 'dc', v1: 5, v2: 0, freq: 1000, t1: 1, impedance: 0, off: false },
+      { net: '/P2', type: 'dc', v1: 12, v2: 0, freq: 1000, t1: 1, impedance: 90, off: true },
+    ],
+    elements: [],
+    switches: { JP1: true, JP3: true },
+  };
+  runner.configureCircuit(config);
+  config.sources[1].off = false;
+  runner.configureCircuit(config);
+  config.sources[1].off = true;
+  runner.configureCircuit(config);
+  config.sources[1].off = false;
+  config.sources[1].v1 = 0;
+  runner.configureCircuit(config);
+
+  assert.deepEqual(writes, [], 'paused configure must not release the blocked firmware ADVANCE');
+  assert.deepEqual(runner.pendingAdvance, { now: 0, deadline: 5000 });
+  runner.drainInteractive();
+  assert.equal(runner.fixture.electricalMs, 0, 'paused reconfiguration must not consume stale pacing time');
+  assert.deepEqual(runner.fixture.snapshot(), before,
+    'paused reconfiguration must preserve voltages, storage state, and floating classification');
+
+  runner.setHorizon(1);
+  assert.equal(runner.fixture.electricalMs, 1);
+  assert.ok(runner.fixture.voltage('/TALK_BRIDGE') < before.voltages['/TALK_BRIDGE'],
+    'the transient may move only after an explicit virtual-time step');
 });
 
 test('production keeps the installed V4.1 profile while bench retains documented diagnostics', {
@@ -662,18 +732,50 @@ test('interactive server has one firmware-backed HEAD mode with virtual pause/st
     assert.equal(stepped.firmware.entities.ha_connected, true,
       'the checked default must be applied to the host firmware');
 
+    const pausedConfig = structuredClone(created.config);
+    pausedConfig.sources.find((item) => item.net === '/P2').off = true;
+    const disconnectResponse = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'configure', config: pausedConfig }) });
+    assert.equal(disconnectResponse.status, 202, 'configure response must acknowledge worker completion');
+    const disconnected = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at === 1);
+    assert.deepEqual(disconnected.sample, stepped.sample,
+      'paused P2 disconnect must preserve the complete circuit snapshot');
+
+    pausedConfig.sources.find((item) => item.net === '/P2').off = false;
+    pausedConfig.sources.find((item) => item.net === '/P2').v1 = 0;
+    const reconnectResponse = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'configure', config: pausedConfig }) });
+    assert.equal(reconnectResponse.status, 202, 'configure response must acknowledge worker completion');
+    const reconnected = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at === 1);
+    assert.deepEqual(reconnected.sample, stepped.sample,
+      'repeated paused P2 edits must preserve voltages, storage, and floating classification');
+
+    const changedBeforeStep = reconnected.sample.voltages['/TALK_BRIDGE'];
+    const applyResponse = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
+    assert.equal(applyResponse.status, 202);
+    const changed = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at >= 2);
+    assert.equal(changed.sample.at, 2);
+    assert.ok(changed.sample.voltages['/TALK_BRIDGE'] < changedBeforeStep,
+      'the queued P2 edit must begin affecting TALK_BRIDGE on the explicit step');
+
     await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
       headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'crash' }) });
     const crashed = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
       message.type === 'sample' && message.firmware.crashed);
-    assert.equal(crashed.sample.at, 1, 'crash must preserve virtual circuit time');
+    assert.equal(crashed.sample.at, 2, 'crash must preserve virtual circuit time');
     assert.ok(Object.values(crashed.firmware.outputs).every((value) => value === false));
 
     await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
       headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'reboot' }) });
     const rebooted = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
       message.type === 'sample' && message.firmware.connected && !message.firmware.crashed);
-    assert.equal(rebooted.sample.at, 1, 'reboot must preserve physical circuit time');
+    assert.equal(rebooted.sample.at, 2, 'reboot must preserve physical circuit time');
 
     const overvoltageConfig = { ...created.config, sources: created.config.sources.map((item) =>
       item.net === '/VBUS' ? { ...item, v1: 50 } : item) };
