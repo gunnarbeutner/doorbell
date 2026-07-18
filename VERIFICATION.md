@@ -53,6 +53,25 @@ U1/P1–P5 mapping from the live schematic rather than a generated netlist. Its 
 and connector sources verify the board/firmware contract, not the complete TV20/S central unit. Treat
 all results as HEAD/V4.2 candidate evidence only and still perform §5.5/§6 on fabricated hardware.
 
+### 1.2 Interactive firmware/circuit smoke check
+
+Run `cd sim && npm run dev`; the server must incrementally compile the host target before printing its
+URL. Open the default `doorbell` board and confirm the firmware state becomes connected. There is no
+local-circuit mode: firmware policy controls U1/U3 for every doorbell session. Pause, single-step 1 ms,
+resume at 1× and select 10×/max; virtual time must remain stopped while paused and advance monotonically
+at each selection. Exercise a harmless HA-connected toggle and greeting selection, then confirm the
+ordered command/entity/write entries appear in the firmware timeline.
+
+Confirm P2 defaults to a 90 Ω source while VBUS is ideal. An attempted ideal source on a firmware-owned
+output must fail clearly. Crash the firmware and confirm the program drivers disappear without resetting
+the physical relay/capacitor/fuse state; reboot and confirm a new host reconnects at the preserved virtual
+time. Full reset must instead return circuit, firmware preferences and timelines to power-up state.
+Selecting `wf26` creates only the passive reference-handset simulation and hides firmware controls.
+
+This smoke check is an operator/UI check, not an additional qualification claim. It uses the same HEAD
+fixture and bounded codec stimulus as §1.1 and is still neither a full TV20/S model nor fabricated-board
+validation.
+
 ## 2. Independent schematic review (do it blind)
 
 The strongest check is to reconstruct the board's intent from primary sources **without** reading

@@ -1,12 +1,22 @@
-// ui.js — the browser front-end. Imports the sim engine + component registry and fetches the
-// netlist live from the dev server (which reads the KiCad files); nothing is baked in.
-import { createStepper, makeWave, parseVal, gndOf } from './engine.js';
-import { allComponents, buildElements, defaultSwitchState } from './components/index.js';
+// ui.js — remote browser front-end. It fetches the live KiCad netlist for rendering and creates one
+// server-owned circuit session; all electrical steps and firmware execution stay off the browser.
+import { gndOf } from './engine.js';
+import { allComponents, defaultSwitchState } from './components/index.js';
 import { buildTraceGraph, traceCurrents } from './traceflow.js';
 
 async function boot() {
 const BOARD = new URLSearchParams(location.search).get('board') || 'doorbell';
-const NETLIST = await fetch('/netlist.json?board=' + encodeURIComponent(BOARD)).then((r) => r.json());
+async function requestJson(url, options) {
+  const response = await fetch(url, options);
+  const value = await response.json();
+  if (!response.ok) throw new Error(value.error || `${response.status} ${response.statusText}`);
+  return value;
+}
+const [NETLIST, SESSION] = await Promise.all([
+  requestJson('/netlist.json?board=' + encodeURIComponent(BOARD)),
+  requestJson('/api/sessions', { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ board: BOARD }) }),
+]);
 const PCB = NETLIST.pcb;
 if (PCB) PCB.segments.forEach((s, i) => (s.idx = i)); // segment index for per-segment flow lookup
 // nets with a copper pour/plane: a pad on one of these sinks its current into the plane (which has no
@@ -57,7 +67,6 @@ let sources = [],
 let selectedNets = new Set(),
   hoveredNet = null,
   hoveredRef = null,
-  program = {}, // per-IC behavioural state set by clicking a footprint -> buildElements({ program })
   violByRef = {}, // ref -> [events active at the cursor] (drives the bright badges)
   stickyRefs = new Set(), // refs flagged at any point this run (drives the dimmed "was-flagged" badges)
   eventLog = [], // persistent fault record (survives the rolling window): each checkSafe onset->resolution
@@ -104,7 +113,7 @@ function srcRow(s) {
   const d = document.createElement('div');
   d.className = 'src';
   // line 1: enable toggle + net + delete (the row-level controls); line 2: the wave parameters
-  d.innerHTML = `<div class="srow"><button class="tog"></button><select class="n"></select><span class="x">✕</span></div>
+  d.innerHTML = `<div class="srow"><button class="tog"></button><select class="n"></select><label>Z <input class="z" type="number" min="0" value="${s.impedance ?? 0}">Ω</label><span class="x">✕</span></div>
    <div class="srow"><select class="t"><option>dc</option><option>sine</option><option>square</option><option>step</option><option>pulse</option></select><input class="v1" type="number" value="${s.v1}"><input class="v2" type="number" value="${s.v2}"><input class="f" type="number" value="${s.freq}"><input class="t1" type="number" value="${s.t1}"></div>`;
   netOpts(d.querySelector('.n'), s.net);
   d.querySelector('.t').value = s.type;
@@ -123,6 +132,7 @@ function srcRow(s) {
   }; // off = source disconnected (net floats), not driven to 0
   const sy = () => {
     s.net = d.querySelector('.n').value;
+    s.impedance = d.querySelector('.z').value;
     s.type = d.querySelector('.t').value;
     s.v1 = d.querySelector('.v1').value;
     s.v2 = d.querySelector('.v2').value;
@@ -139,7 +149,7 @@ function srcRow(s) {
   $('#sources').appendChild(d);
 }
 $('#addSrc').onclick = () => {
-  const s = { net: GNDdef, type: 'dc', v1: 5, v2: 0, freq: 1000, t1: 1 };
+  const s = { net: GNDdef, type: 'dc', v1: 5, v2: 0, freq: 1000, t1: 1, impedance: 0 };
   sources.push(s);
   srcRow(s);
 };
@@ -190,8 +200,7 @@ function relayEnergized(ref, k) {
 
   // prefer the actual latched contact state (hysteretic) from the live elements; fall back to a
   // coil-voltage check if this relay has no modeled contacts
-  const rc = els.find((e) => e.ref === ref && e.type === 'RC');
-  if (rc) return !!rc.coilOn;
+  if (remoteState?.relays && ref in remoteState.relays) return !!remoteState.relays[ref];
 
   return c.energized(voltageAt(k));
 }
@@ -319,10 +328,6 @@ function buildStack() {
         drawAll();
       });
       cv.addEventListener('click', (ev) => {
-        if (hoveredRef && isProgrammable(hoveredRef)) {
-          openProgramPanel(hoveredRef, ev); // click an IC footprint -> drive it
-          return;
-        }
         if (hoveredNet) {
           selectedNets.has(hoveredNet) ? selectedNets.delete(hoveredNet) : selectedNets.add(hoveredNet);
           buildScopes();
@@ -841,78 +846,14 @@ function drawScope(cv, net) {
 }
 
 /* ---------- live simulation ---------- */
-// The sim runs continuously: each animation frame advances sim-time (targeting real time, but capped
-// so the UI stays responsive — it slips into slow-motion rather than freezing) and appends to a
-// rolling buffer that the board + scopes draw. Start/Pause/Reset drive it. Editing a source / switch /
-// element rebuilds the stepper *seeded from the current state*, so the change takes effect mid-run
-// (or, while paused, several edits stage up and take effect together on resume).
-let stepper = null,
-  running = false,
+// Electrical state arrives from the isolated server worker. For the doorbell board that worker is
+// paced by ESPHome's ADVANCE requests; the browser never has a second local execution path.
+let running = true,
   simT = 0,
-  els = [],
-  rafId = 0,
-  lastWall = 0,
-  lastDraw = 0,
-  ratio = 1;
-const MAXSTEPS = 150; // per-frame compute cap (~25 ms at this circuit's tick cost)
-
-const dtSec = () => +$('#dt').value / 1e6;
-const winLen = () => Math.max(2, Math.round((+$('#dur').value / 1000) / dtSec())); // rolling window, samples
-
-function buildSrcs() {
-  const byNet = {}; // sources on one net superpose (sum); disabled ones are left out (net floats)
-  for (const s of sources) {
-    if (s.off) continue;
-    (byNet[s.net] = byNet[s.net] || []).push(makeWave(s));
-  }
-  return Object.keys(byNet).map((net) => {
-    const ws = byNet[net];
-    return { net, vf: (t) => ws.reduce((a, w) => a + w(t), 0) };
-  });
-}
-
-function buildEls() {
-  const extra = []; // hand-added "Extra elements" become raw sim elements alongside the modeled parts
-  for (const e of elements) {
-    if (e.kind === 'short') extra.push({ type: 'R', a: e.a, b: e.b, value: 1e-3 });
-    else if (e.kind === 'switch') extra.push({ type: 'SW', a: e.a, b: e.b, closed: !!e.closed });
-    else extra.push({ type: e.kind, a: e.a, b: e.b, value: parseVal(e.value) });
-  }
-  return buildElements(NETLIST, { switchState, extra, program });
-}
-
-// ---- safety-invariant events: per-step edge detection into a persistent log ----
-// Run on EVERY simulation step (from pushSample), so a sub-frame transient is never missed. checkSafe is
-// the event source: a violation that begins opens an event (onset time), its peak is tracked while it
-// persists, and it closes when it clears. The log survives the rolling sample window.
-function trackViolations(t) {
-  if (!stepper) return;
-  const flo = RES.floating || {};
-  const vn = {};
-  for (const net in stepper.ni) vn[net] = flo[net] ? NaN : stepper.vn[stepper.ni[net]]; // skip floating nodes
-  const seen = new Set();
-  for (const ref in COMP) {
-    const fuse = COMP[ref].kind === 'fuse';
-    for (const x of COMP[ref].checkSafe(vn)) {
-      const key = ref + '.' + x.pin;
-      seen.add(key);
-      const exc = Math.max(x.lo - x.v, x.v - x.hi);
-      let ev = activeEv.get(key);
-      if (!ev) {
-        // rising edge -> a new fault
-        ev = { id: ++evId, ref: x.ref, pin: x.pin, net: x.net, kind: fuse ? 'fuse' : 'absmax',
-               lo: x.lo, hi: x.hi, why: x.why, t0: t, peak: x.v, peakT: t, peakExc: exc, end: null };
-        activeEv.set(key, ev);
-        eventLog.push(ev);
-        stickyRefs.add(x.ref);
-        if (breakOnFault && !pendingBreak) pendingBreak = ev; // trip the trigger
-      } else if (exc > ev.peakExc) {
-        ev.peakExc = exc; ev.peak = x.v; ev.peakT = t; // track the worst excursion
-      }
-    }
-  }
-  for (const [key, ev] of activeEv) if (!seen.has(key)) { ev.end = t; activeEv.delete(key); } // falling edge
-}
+  remoteState = null,
+  firmwareState = null,
+  activeSpeed = 1,
+  drawQueued = false;
 
 // badges reflect the cursor: bright = a fault active at the displayed time (from the log); the dimmed
 // "was-flagged" badges come from stickyRefs. Cheap — just a scan of the event list at the cursor time.
@@ -967,7 +908,9 @@ function seekToEvent(ev) {
   $('#status').textContent = `↳ ${ev.ref} ${ev.pin} peaked ${ev.peak.toFixed(2)} V @ ${(ev.peakT * 1e3).toFixed(2)} ms${off}`;
 }
 
-const isProgrammable = (ref) => !!(COMP[ref] && COMP[ref].programSchema && COMP[ref].programSchema());
+// U1 and U3 are never manually programmable in the interactive simulator: their only behavioural
+// drivers come from the host firmware session.
+const isProgrammable = () => false;
 
 // an "asterisk in a triangle" warning marker, drawn at an affected component's centroid.
 function drawWarnBadge(g, x, y, dim) {
@@ -1068,95 +1011,6 @@ function drawBlownFuseBadge(g, x, y, dim) {
   g.restore();
 }
 
-let progPanel = null;
-function closeProgramPanel() {
-  if (progPanel) progPanel.remove();
-  progPanel = null;
-}
-// click a footprint -> a small panel to drive that IC; changes re-solve live (seeded).
-function openProgramPanel(ref, ev) {
-  closeProgramPanel();
-  const schema = COMP[ref].programSchema();
-  if (!schema) return;
-  const d = (progPanel = document.createElement('div'));
-  d.style.cssText =
-    'position:fixed;z-index:20;background:#161b22;border:1px solid #f0b429;border-radius:6px;' +
-    'padding:8px 10px;font-size:12px;color:#e6e9ef;box-shadow:0 6px 20px #000b;min-width:170px;';
-  d.style.left = Math.min(ev.clientX + 10, innerWidth - 230) + 'px';
-  d.style.top = Math.min(ev.clientY + 10, innerHeight - 170) + 'px';
-  let html = `<div style="font-weight:bold;margin-bottom:6px">⚙ Program ${ref}<span class="xp" style="float:right;cursor:pointer;color:#9aa3b2">✕</span></div>`;
-  if (schema.kind === 'esp') {
-    const cur = program[ref] || {};
-    html += `<div class="hint" style="margin-bottom:4px">drive actuator GPIOs</div>`;
-    html += schema.gpios
-      .map(
-        (g) =>
-          `<label style="display:block;margin:3px 0;cursor:pointer"><input type="checkbox" data-net="${g.net}"${cur[g.net] != null ? ' checked' : ''}> ${g.label} <span class="hint">${g.net}</span></label>`,
-      )
-      .join('');
-  } else if (schema.kind === 'codec') {
-    const out = program[ref] && program[ref].out;
-    const mode = out == null ? 'off' : typeof out === 'function' ? 'tone' : 'bias';
-    html += `<div class="hint" style="margin-bottom:4px">DAC output (OUTP)</div>`;
-    html += ['off', 'bias', 'tone']
-      .map(
-        (m) =>
-          `<label style="display:block;margin:3px 0;cursor:pointer"><input type="radio" name="dac" value="${m}"${mode === m ? ' checked' : ''}> ${m}${m === 'tone' ? ' (1 kHz)' : m === 'bias' ? ' (mid-rail)' : ''}</label>`,
-      )
-      .join('');
-  }
-  d.innerHTML = html;
-  document.body.appendChild(d);
-  d.querySelector('.xp').onclick = closeProgramPanel;
-  d.querySelectorAll('input[type=checkbox]').forEach(
-    (cb) =>
-      (cb.onchange = () => {
-        program[ref] = program[ref] || {};
-        if (cb.checked) program[ref][cb.dataset.net] = schema.high;
-        else delete program[ref][cb.dataset.net];
-        applyChange();
-      }),
-  );
-  d.querySelectorAll('input[name=dac]').forEach(
-    (rb) =>
-      (rb.onchange = () => {
-        if (rb.value === 'off') delete program[ref];
-        else if (rb.value === 'bias') program[ref] = { out: 1.65 };
-        else program[ref] = { out: (t) => 1.65 + 0.4 * Math.sin(2 * Math.PI * 1000 * t) };
-        applyChange();
-      }),
-  );
-}
-
-// (re)build the stepper for the current config; `seed` carries the physical state across the change
-function rebuildStepper(seed) {
-  els = buildEls();
-  try {
-    stepper = createStepper(els, buildSrcs(), $('#gnd').value, dtSec(), seed);
-  } catch (err) {
-    $('#status').textContent = 'sim error: ' + err.message;
-    console.error(err);
-    return;
-  }
-  if (!RES) RES = { t: [], v: {}, floating: {} };
-  for (const n of stepper.nodes)
-    if (!RES.v[n]) RES.v[n] = new Array(RES.t.length).fill(stepper.vn[stepper.ni[n]]); // backfill new nets
-  if (!RES.v[stepper.gnd]) RES.v[stepper.gnd] = new Array(RES.t.length).fill(0);
-  RES.floating = stepper.floatingMap();
-}
-
-function pushSample() {
-  RES.t.push(simT);
-  for (const n of stepper.nodes) (RES.v[n] = RES.v[n] || []).push(stepper.vn[stepper.ni[n]]);
-  (RES.v[stepper.gnd] = RES.v[stepper.gnd] || []).push(0);
-  trackViolations(simT); // per-step fault edge detection (before the window trim drops old samples)
-  const drop = RES.t.length - winLen();
-  if (drop > 0) {
-    RES.t.splice(0, drop);
-    for (const n in RES.v) RES.v[n].splice(0, drop);
-  }
-}
-
 // Map each pad object to its (signed) injection current for the per-pad flow animation. +ve = current
 // leaving the pad into the copper net — so a GND/return pad shows its outflow into the pour, which has
 // no trace to animate. Same (ref, pin) / (ref, net) matching that traceCurrents uses.
@@ -1173,14 +1027,15 @@ function padCurrents(inj) {
   return m;
 }
 function redraw() {
+  if (!RES || !RES.t.length) return;
   const tc = $('#tcur');
   tc.max = Math.max(0, RES.t.length - 1);
   if (running) tc.value = tIndex;
   // per-segment flow — but only while something is actually powering the board. With no live source
   // the only currents are decaying transients off charged caps (and an unanchored powered island can
   // drift numerically); the user reasonably expects "no source -> no flow", so suppress it.
-  if (stepper) {
-    const inj = sources.some((s) => !s.off) ? stepper.padInjections() : [];
+  if (remoteState) {
+    const inj = sources.some((s) => !s.off) ? remoteState.injections || [] : [];
     flowSeg = inj.length ? traceCurrents(traceGraph, inj) : {};
     padCur = padCurrents(inj);
   }
@@ -1195,118 +1050,194 @@ function redraw() {
   document.querySelectorAll('#scopes canvas').forEach((cv, i) => drawScope(cv, [...selectedNets][i]));
 }
 
-function status(stepsThisFrame) {
-  const revb = []; // polarized (electrolytic) caps biased backwards anywhere in the window
-  for (const e of els)
-    if (e.polar && RES.v[e.plus] && RES.v[e.minus]) {
-      let mn = 1e9;
-      const vp = RES.v[e.plus],
-        vm = RES.v[e.minus];
-      for (let i = 0; i < vp.length; i++) mn = Math.min(mn, vp[i] - vm[i]);
-      if (mn < -0.3) revb.push(`${e.ref} ${mn.toFixed(1)}V`);
-    }
-  const warn = revb.length ? `⚠ reverse-biased: ${revb.join(', ')} · ` : '';
-  const pace = running
-    ? `· ${stepsThisFrame}/frame · ${ratio >= 0.99 ? 'real time' : '~' + ratio.toFixed(2) + '× (slow-mo)'} `
-    : '';
-  $('#status').textContent =
-    `${warn}${running ? '▶ running' : '⏸ paused'} · t = ${(simT * 1e3).toFixed(1)} ms ${pace}· ${els.length} elements`;
+function status(detail = '') {
+  const pace = activeSpeed === 'max' ? 'max' : `${activeSpeed}×`;
+  const fw = BOARD === 'doorbell' ? ` · firmware ${firmwareState?.crashed ? 'crashed' : firmwareState?.connected ? 'connected' : 'starting'}` : '';
+  $('#status').textContent = `${running ? '▶ running ' + pace : '⏸ paused'} · t = ${(simT * 1e3).toFixed(1)} ms${fw}${detail ? ' · ' + detail : ''}`;
 }
 
-function frame(ts) {
-  if (!running) return;
-  const dt = dtSec();
-  const realEl = lastWall ? (ts - lastWall) / 1000 : dt;
-  lastWall = ts;
-  const want = Math.max(1, Math.round(realEl / dt)); // steps needed to stay at wall-clock speed
-  const n = Math.min(want, MAXSTEPS); // cap → slow-mo instead of a frozen UI when it can't keep up
-  let stepped = 0;
-  for (let i = 0; i < n; i++) {
-    simT += dt;
-    stepper.step(simT);
-    pushSample(); // may trip pendingBreak (a new fault) inside trackViolations
-    stepped++;
-    if (pendingBreak) break; // break-on-fault: stop at the fault, not n steps later
+async function action(message) {
+  try {
+    return await requestJson(`/api/sessions/${SESSION.id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify(message) });
+  } catch (error) {
+    status(`request failed: ${error.message}`);
+    throw error;
   }
-  tIndex = RES.t.length - 1;
-  ratio = (stepped * dt) / Math.max(realEl, 1e-6);
-  RES.floating = stepper.floatingMap();
-  if (pendingBreak) {
-    const ev = pendingBreak;
-    pendingBreak = null;
-    pause();
-    seekToEvent(ev);
-    $('#status').textContent = `⏸ broke on ${ev.kind === 'fuse' ? 'fuse' : 'fault'}: ${ev.ref} ${ev.pin} ${ev.peak.toFixed(2)} V @ ${(ev.peakT * 1e3).toFixed(2)} ms`;
-    return;
-  }
-  if (ts - lastDraw > 32) {
-    redraw(); // throttle the redraw to ~30 Hz; keep stepping on every animation frame
-    status(stepped);
-    lastDraw = ts;
-  }
-  rafId = requestAnimationFrame(frame);
 }
 
-function setPlay() {
-  const b = $('#play');
-  b.textContent = running ? '⏸ Pause' : '▶ Start';
-  b.classList.toggle('primary', !running);
+function paintSpeed() {
+  document.querySelectorAll('.speed').forEach((button) =>
+    button.classList.toggle('primary', running && String(activeSpeed) === button.dataset.speed));
+  $('#pause').classList.toggle('primary', !running);
+  $('#step').disabled = running;
 }
 
-function start() {
-  if (running) return;
-  running = true;
-  lastWall = 0;
-  lastDraw = 0;
-  setPlay();
-  rafId = requestAnimationFrame(frame);
+function setSpeed(value) {
+  activeSpeed = value;
+  running = value !== 0;
+  paintSpeed();
+  status();
+  return action({ type: 'speed', value });
 }
 
 function pause() {
-  running = false;
-  cancelAnimationFrame(rafId);
-  setPlay();
-  status(0);
+  return setSpeed(0);
 }
 
-function reset() {
-  running = false;
-  cancelAnimationFrame(rafId);
-  simT = 0;
+function clearRun() {
   RES = { t: [], v: {}, floating: {} };
-  eventLog = []; // fresh run -> clear the fault log, sticky badges, and the trigger
+  remoteState = null;
+  simT = 0;
+  tIndex = 0;
+  eventLog = [];
   activeEv.clear();
   stickyRefs.clear();
   pendingBreak = null;
   evId = 0;
   lastEvCount = -1;
-  rebuildStepper(null);
-  stepper.step(0); // show the t = 0 operating point
-  pushSample();
-  tIndex = 0;
-  setPlay();
+  timelineRows.length = 0;
+  $('#timeline').innerHTML = '<div class="hint">waiting for firmware…</div>';
+  firmwareState = null;
+  buildEventLog();
   buildScopes();
-  redraw();
-  status(0);
 }
 
-// an edit to a source / switch / element while live: continue from the current state (a mid-run event)
+async function reset() {
+  running = false;
+  activeSpeed = 0;
+  paintSpeed();
+  clearRun();
+  loadConfig(SESSION.config);
+  for (const id of ['fwHa', 'fwAuto', 'fwSuppress', 'fwForce']) $('#' + id).checked = false;
+  $('#fwGreeting').value = 'None';
+  $('#fwFault').value = 'normal';
+  status('full reset in progress');
+  await action({ type: 'reset' });
+}
+
+function circuitConfig() {
+  return { sources, elements, switches: switchState, gnd: $('#gnd').value,
+    dtUs: Number($('#dt').value) };
+}
+
 function applyChange() {
-  rebuildStepper(stepper ? stepper.extractState() : null);
-  if (!running) {
-    redraw(); // paused: floating/topology updates now; the waveform continues when you resume
-    status(0);
+  action({ type: 'configure', config: circuitConfig() });
+}
+
+function appendSample(sample) {
+  remoteState = sample;
+  simT = sample.at / 1000;
+  if (!RES) RES = { t: [], v: {}, floating: {} };
+  const replace = RES.t.length && Math.abs(RES.t.at(-1) - simT) < 1e-12;
+  const oldLength = RES.t.length;
+  if (replace) RES.t[oldLength - 1] = simT;
+  else RES.t.push(simT);
+  for (const [net, value] of Object.entries(sample.voltages || {})) {
+    if (!RES.v[net]) RES.v[net] = new Array(oldLength).fill(value);
+    if (replace) RES.v[net][oldLength - 1] = value;
+    else RES.v[net].push(value);
   }
+  for (const net in RES.v) {
+    if (net in (sample.voltages || {})) continue;
+    const values = RES.v[net];
+    if (!replace) values.push(values.at(-1) ?? Number.NaN);
+  }
+  RES.floating = sample.floating || {};
+  const cutoff = simT - Math.max(0.001, Number($('#dur').value) / 1000);
+  let drop = 0;
+  while (drop < RES.t.length - 2 && RES.t[drop] < cutoff) drop++;
+  if (drop) {
+    RES.t.splice(0, drop);
+    for (const net in RES.v) RES.v[net].splice(0, drop);
+  }
+  if (running || tIndex >= RES.t.length - 2) tIndex = RES.t.length - 1;
+  scheduleDraw();
+}
+
+function scheduleDraw() {
+  if (drawQueued) return;
+  drawQueued = true;
+  requestAnimationFrame(() => {
+    drawQueued = false;
+    redraw();
+    status();
+  });
+}
+
+function receiveFault(fault) {
+  const existing = eventLog.find((item) => item.id === fault.id);
+  if (existing) Object.assign(existing, fault);
+  else {
+    eventLog.push(fault);
+    stickyRefs.add(fault.ref);
+    if (breakOnFault) {
+      pause();
+      status(`broke on ${fault.kind}: ${fault.ref} ${fault.pin}`);
+    }
+  }
+  if (fault.end == null) activeEv.set(fault.id, fault);
+  else activeEv.delete(fault.id);
+  lastEvCount = -1;
+  scheduleDraw();
+}
+
+const timelineRows = [];
+function receiveTimeline(item) {
+  timelineRows.push(item);
+  if (timelineRows.length > 200) timelineRows.shift();
+  const box = $('#timeline');
+  box.innerHTML = '';
+  for (const entry of timelineRows.slice().reverse()) {
+    const row = document.createElement('div');
+    row.className = 'tl';
+    const at = Number(entry.at || 0).toFixed(0);
+    let text = entry.type;
+    if (entry.type === 'write') text = `${entry.signal} = ${entry.value ? 1 : 0}`;
+    else if (entry.type === 'entity') text = `${entry.name} = ${entry.value ? 'on' : 'off'}`;
+    else if (entry.type === 'media') text = `media ${entry.state.toLowerCase()} ${entry.name}`;
+    else if (entry.type === 'command') text = entry.command;
+    row.textContent = `${at} ms · ${text}`;
+    box.appendChild(row);
+  }
+}
+
+function updateFirmware(state) {
+  firmwareState = state;
+  if (BOARD !== 'doorbell') return;
+  const outputs = Object.entries(state.outputs || {}).map(([name, value]) => `${name}=${value ? 1 : 0}`).join(' ');
+  const entities = Object.entries(state.entities || {}).filter(([, value]) => value).map(([name]) => name).join(', ') || 'none';
+  const media = state.media?.active ? `${state.media.name} (${state.media.duration} ms)` : 'idle';
+  $('#fwState').textContent = `${state.crashed ? 'CRASHED' : state.connected ? 'connected' : 'starting'} · ${outputs} · events: ${entities} · media: ${media}`;
+}
+
+function loadConfig(next) {
+  sources = next.sources.map((item) => ({ ...item }));
+  elements = next.elements.map((item) => ({ ...item }));
+  for (const key of Object.keys(switchState)) delete switchState[key];
+  Object.assign(switchState, next.switches);
+  $('#gnd').value = next.gnd;
+  $('#dt').value = next.dtUs;
+  $('#sources').innerHTML = '';
+  $('#elements').innerHTML = '';
+  sources.forEach(srcRow);
+  elements.forEach(elRow);
+  buildRelays();
 }
 
 function updTcur() {
   if (RES && RES.t.length) $('#tcurv').textContent = (RES.t[tIndex] * 1e3).toFixed(2) + ' ms';
 }
 
-$('#play').onclick = () => (running ? pause() : start());
 $('#reset').onclick = reset;
-$('#gnd').onchange = applyChange; // reference change rebuilds the stepper (seeded)
-$('#dt').onchange = applyChange; // dt is baked into the stepper, so a change rebuilds it
+$('#pause').onclick = pause;
+document.querySelectorAll('.speed').forEach((button) => button.onclick = () =>
+  setSpeed(button.dataset.speed === 'max' ? 'max' : Number(button.dataset.speed)));
+$('#step').onclick = () => action({ type: 'step' });
+$('#crash').onclick = () => action({ type: 'crash' });
+$('#reboot').onclick = () => action({ type: 'reboot' });
+$('#gnd').onchange = applyChange;
+$('#dt').onchange = applyChange;
 $('#tcur').oninput = (e) => {
   if (running) return; // the live loop owns the cursor while running; scrub only when paused
   tIndex = +e.target.value;
@@ -1330,17 +1261,62 @@ $('#clrEv').onclick = () => {
   drawAll();
 };
 window.addEventListener('resize', () => buildStack());
+window.addEventListener('beforeunload', () => fetch(`/api/sessions/${SESSION.id}`, { method: 'DELETE', keepalive: true }));
 
-// init: seed the default sources from the board's .sim config, then show the operating point (paused)
-buildRelays();
-for (const c of NETLIST.config?.sources || []) {
-  const s = { net: c.net, type: c.type || 'dc', v1: c.v1 ?? 0, v2: c.v2 ?? 0, freq: c.freq ?? 1000, t1: c.t1 ?? 1 };
-  sources.push(s);
-  srcRow(s);
+function firmwareCommand(command) {
+  return action({ type: 'command', command });
 }
+$('#fwHa').onchange = (event) => firmwareCommand(`SET:ha:${event.target.checked ? 1 : 0}`);
+$('#fwAuto').onchange = (event) => firmwareCommand(`SET:auto_open:${event.target.checked ? 1 : 0}`);
+$('#fwSuppress').onchange = (event) => firmwareCommand(`SET:suppress_chime:${event.target.checked ? 1 : 0}`);
+$('#fwForce').onchange = (event) => firmwareCommand(`SET:force_chime:${event.target.checked ? 1 : 0}`);
+$('#fwGreeting').onchange = (event) => firmwareCommand(`SELECT:${event.target.value}`);
+$('#fwPlay').onclick = () => firmwareCommand('PRESS:play');
+$('#fwWelcomeOpen').onclick = () => firmwareCommand('PRESS:welcome_open');
+$('#fwDoor').onclick = () => firmwareCommand('PRESS:door');
+$('#fwFault').onchange = (event) => {
+  const command = { normal: 'MEDIA_FAULT:normal', delayed: 'MEDIA_FAULT:delayed_start:1000',
+    idle: 'MEDIA_FAULT:synthetic_idle', never: 'MEDIA_FAULT:never' }[event.target.value];
+  firmwareCommand(command);
+};
+
+// Initialize from the worker's authoritative configuration, then subscribe before starting time.
+RES = { t: [], v: {}, floating: {} };
+loadConfig(SESSION.config);
 buildStack();
-reset();
-start(); // run live from the start
+if (BOARD !== 'doorbell') {
+  $('#firmwareControls').style.display = 'none';
+  $('#lifecycle').style.display = 'none';
+  $('#timeline').previousElementSibling.style.display = 'none';
+  $('#timeline').style.display = 'none';
+} else {
+  $('#gnd').disabled = true;
+  $('#gnd').title = 'HEAD firmware sessions require the board GND reference';
+  $('#dt').disabled = true;
+  $('#dt').title = 'HEAD firmware sessions use adaptive electrical timesteps';
+}
+const events = new EventSource(`/api/sessions/${SESSION.id}/events`);
+events.onmessage = ({ data }) => {
+  const message = JSON.parse(data);
+  if (message.type === 'sample') {
+    updateFirmware(message.firmware);
+    appendSample(message.sample);
+  } else if (message.type === 'firmware') updateFirmware(message.firmware);
+  else if (message.type === 'fault') receiveFault(message.fault);
+  else if (message.type === 'timeline') receiveTimeline(message.item);
+  else if (message.type === 'ready' && message.config && !RES.t.length) loadConfig(message.config);
+  else if (message.type === 'status') status(message.detail || message.status);
+  else if (message.type === 'error') {
+    running = false;
+    activeSpeed = 0;
+    paintSpeed();
+    status(`simulation error: ${message.message}`);
+    console.error(message.stack || message.message);
+  }
+};
+events.onerror = () => status('session event stream disconnected');
+paintSpeed();
+setSpeed(1);
 }
 boot().catch((e) => {
   document.body.innerHTML = '<pre style="color:#f85149;padding:16px">sim failed to load:\n' + (e.stack || e) + '</pre>';

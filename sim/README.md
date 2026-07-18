@@ -8,7 +8,7 @@ the KiCad files on demand.
 
 ```sh
 cd sim
-npm run dev      # http://localhost:8080 — serves the UI; reads the KiCad files live for the netlist
+npm run dev      # incrementally builds host firmware, then serves http://localhost:8080
 npm test         # all required circuit + firmware/HEAD tests
 npm run test:circuit  # circuit-only tests against the live schematic
 npm run test:firmware # deterministic ESPHome-host + live-HEAD circuit co-simulation
@@ -16,12 +16,20 @@ npm run test:firmware:scenarios # fastest rerun after config/build; scenarios on
 npm run test:monte-carlo -- 1592639710 250  # optional seeded watchdog sensitivity diagnostic
 ```
 
-`npm run dev` re-imports automatically when a `.kicad_sch` / `.kicad_pcb` changes — just reload.
-Importing needs `kicad-cli` on `PATH` (KiCad's CLI; used for net connectivity).
+`npm run dev` must finish the incremental `doorbell-host.yaml` build before the server listens. It
+re-imports automatically when a `.kicad_sch` / `.kicad_pcb` changes — just reload. Importing needs
+`kicad-cli` on `PATH` (KiCad's CLI; used for net connectivity).
+
+There is deliberately no firmware/no-firmware mode. A `doorbell` browser session always gets its own
+server worker, host firmware process, virtual clock, preferences directory and live HEAD circuit.
+Selecting `wf26` resets into the passive reference-handset circuit, which has no MCU. Closing an idle
+browser session releases its worker and firmware process; abandoned sessions expire server-side.
 
 The page is a 3-column PCB view: `[controls + layer toggles + time cursor] | [selected copper layers,
 stacked] | [scopes]`. Add **Sources** (drive any net with DC/sine/square/step/pulse — each has an on/off
-toggle, off = the net floats; multiple sources on one net superpose), set duration/dt, **Run**. **Hover**
+toggle, off = the net floats, and an editable Thevenin source impedance), then use pause, 1×, 10×,
+maximum-speed or the 1 ms single-step. Ideal sources on the same net conflict, and a source attached to
+a firmware-owned U1/U3 output must have non-zero impedance. **Hover**
 a trace → its net's voltage; **click** a trace → a scope on the right; the time-cursor slider scrubs the
 instant shown on the board and the scope cursors. Colour is by voltage (fixed 0–Vmax scale) or by net.
 Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
@@ -30,10 +38,14 @@ Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
 
 - `src/import.js` — KiCad → netlist object (node; shells out to `kicad-cli`, parses the `.kicad_sch` /
   `.kicad_pcb`, including MPN/LCSC/datasheet fields). Replaces the old `build.py`.
-- `src/engine.js` — the simulation core (device models + MNA transient solver); shared by the UI and tests.
+- `src/engine.js` — the simulation core (MNA transient solver); shared by session workers and tests.
 - `src/corners.js` — fitted-part limits, explicit engineering assumptions and named deterministic corners.
-- `src/ui.js` + `index.html` — the browser front-end (imports `engine.js`, fetches `/netlist.json`).
-- `server.js` — dev server (`npm run dev`); serves the UI and the live netlist.
+- `src/ui.js` + `index.html` — remote browser front-end; renders server samples and submits controls but
+  never creates an electrical stepper or manually programs U1/U3.
+- `src/session-worker.js` — isolated per-browser circuit owner, virtual-time pacer, safety monitor and
+  host-process lifecycle manager. Doorbell sessions reuse the deterministic firmware-test runner;
+  WF26 sessions run only its passive circuit.
+- `server.js` — HTTP/SSE session API, live KiCad import and static dev server (`npm run dev`).
 - `test/` — integration tests + model-coverage and deterministic-corner gates (`npm run test:circuit`).
 - `firmware-test/` — sequential host-firmware/circuit scenarios (`npm run test:firmware`).
 - `diagnostics/` — optional seeded sensitivity tools; these supplement rather than replace the
@@ -92,12 +104,13 @@ resolved nominal/override pairs in `resolvedParams` for auditability.
   **PhotoMOS outputs likewise use operate/recovery current and voltage hysteresis plus switching delay.**
   **Switches & solder bridges** toggle
   manually. No configuration UI.
-- **ICs (ESP32, codec) — supply current (+ codec VMID):** their digital I/O (GPIO, I2S, USB) is **not**
-  modeled, so they still render **red** and signals through their pins aren't trusted; but their power draw
+- **ICs (ESP32, codec) — supply current (+ codec VMID):** generic digital I/O (I2S, USB and internal
+  behavior) is **not** modeled, so they still render **red**; but their power draw
   *is* — each is an equivalent resistive load (`Ic`) from its supply pin to GND at a representative active
   current (ESP32 ~100 mA, ES8311 ~10 mA), which pulls through the LDO → +5V → Schottky → VBUS. The one
   analog exception: the ES8311's **VMID reference** (≈ AVDD/2) is modeled, because the mic front-end's
-  divider/bias depends on it. Use **Extra elements** for anything else you want to add by hand.
+  divider/bias depends on it. In a doorbell session the host firmware exclusively supplies U1's four
+  modeled output drivers and U3's bounded representative codec output; there are no manual IC controls.
 - **Floating vs 0 V:** nets with no DC-conductive path to ground or a source are flagged **floating**
   (dashed grey on the board, "(floating)" in the tooltip) — distinct from a real 0 V net.
 
@@ -165,10 +178,26 @@ The runner imports `kicad/doorbell.kicad_sch` at runtime and checks U1 plus P1�
 P2/P4/P5 DC, tone, pulse and captured-waveform sources use the measured nominal 90 Ω source
 impedance. It carries capacitor, relay, SSR,
 fuse and regulator state across adaptive timestep rebuilds, uses fine steps around topology/input
-edges, and removes U1 program drivers after a simulated crash. The fake media player derives duration
+edges, and retries a hard source/clamp transition on a bounded smaller-timestep ladder before reporting
+strict nonlinear non-convergence. It removes U1 program drivers after a simulated crash. The fake media player derives duration
 from each embedded WAV's actual metadata and drives U3 with a bounded representative tone while it is
 active. Failures print a compact ordered timeline; detailed exploratory traces are not committed.
 
 This fixture validates the electrical contract at the connector and firmware-observable HEAD nets.
 It is not a complete TV20/S model, a substitute for the real captured-bus checks, or validation of a
 fabricated V4.2 board.
+
+### Interactive virtual time
+
+The interactive UI uses the same protocol and HEAD fixture. The server is the sole authority for
+circuit state and ordered firmware writes. At 1×/10× it advances a wall-time-derived virtual horizon;
+`max` advances bounded chunks as quickly as the solver and host scheduler permit. Pause leaves the
+host blocked in `ADVANCE`; a queued firmware command wakes it at the current timestamp, and `+1 ms`
+advances exactly one virtual millisecond. Full reset starts a clean circuit, host and preferences set.
+Crash removes the U1/U3 program drivers while keeping physical capacitor/relay/SSR/fuse state; reboot
+starts a new host process at that same circuit time and state.
+
+Every source, extra element and switch edit is validated and rebuilt in the worker while carrying
+physical state. Samples, current injections, safety events, firmware entities, media ownership and the
+ordered write timeline stream back over SSE. The UI keeps a bounded display window; detailed
+deterministic assertions remain the job of `npm run test:firmware`.

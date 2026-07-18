@@ -3,7 +3,7 @@ import net from 'node:net';
 
 import { importNetlist } from '../src/import.js';
 import { buildElements, defaultSwitchState } from '../src/components/index.js';
-import { createStepper, gndOf } from '../src/engine.js';
+import { createStepper, gndOf, makeWave } from '../src/engine.js';
 
 export const PROTOCOL_VERSION = 1;
 
@@ -49,8 +49,8 @@ function source(value = 0) {
 }
 
 export class HeadCircuitFixture {
-  constructor({ startMs = 0, timeline = [] } = {}) {
-    this.netlist = liveHeadNetlist();
+  constructor({ startMs = 0, timeline = [], netlist, onSample = null } = {}) {
+    this.netlist = netlist || liveHeadNetlist();
     this.validateHeadMapping();
     this.timeline = timeline;
     this.startMs = Number(startMs);
@@ -74,6 +74,9 @@ export class HeadCircuitFixture {
     this.lastInputMask = null;
     this.indeterminateSince = {};
     this.lastElectrical = {};
+    this.onSample = onSample;
+    this.interactiveSources = null;
+    this.interactiveExtra = [];
     this.rebuild(0.0002, cachedDefaultState);
     if (cachedDefaultState === undefined) {
       this.fineUntilMs = this.nowMs + 40;
@@ -91,6 +94,7 @@ export class HeadCircuitFixture {
     this.lastElectrical = {};
     this.recordElectrical(true);
     this.lastInputMask = this.readInputs().mask;
+    this.recordSample();
   }
 
   validateHeadMapping() {
@@ -171,6 +175,31 @@ export class HeadCircuitFixture {
 
   rebuild(dt, seed = this.stepper?.extractState()) {
     this.dt = dt;
+    if (this.interactiveSources !== null) {
+      const extra = [...this.interactiveExtra];
+      const sources = [];
+      for (let index = 0; index < this.interactiveSources.length; index++) {
+        const item = this.interactiveSources[index];
+        if (item.off) continue;
+        const wave = makeWave(item);
+        const impedance = Number(item.impedance || 0);
+        if (impedance > 0) {
+          const sourceNet = `/INTERACTIVE_SOURCE_${index}`;
+          extra.push({ type: 'R', a: sourceNet, b: item.net, value: impedance,
+            ref: `INTERACTIVE_SOURCE_R${index}` });
+          sources.push({ net: sourceNet, vf: () => wave(this.electricalSeconds) });
+        } else {
+          sources.push({ net: item.net, vf: () => wave(this.electricalSeconds) });
+        }
+      }
+      const elements = buildElements(this.netlist, {
+        switchState: this.switches,
+        program: this.program(),
+        extra,
+      });
+      this.stepper = createStepper(elements, sources, gndOf(this.netlist), dt, seed);
+      return;
+    }
     const connectedBusSources = ['P2', 'P4', 'P5'].filter((name) => this.sources[name].kind !== 'off');
     const extra = connectedBusSources.map((name) => ({
       type: 'R',
@@ -216,12 +245,41 @@ export class HeadCircuitFixture {
       this.ensureStepSize();
       const activeTarget = this.externalToneActive || doorNeedsTime
         ? target : Math.min(target, this.dynamicUntilMs);
-      const stepMs = Math.min(this.dt * 1000, activeTarget - this.electricalMs);
-      if (Math.abs(stepMs / 1000 - this.dt) > 1e-12) this.rebuild(stepMs / 1000);
-      this.electricalSeconds += stepMs / 1000;
-      this.electricalMs += stepMs;
-      this.stepper.step(this.electricalSeconds);
+      const requestedMs = Math.min(this.dt * 1000, activeTarget - this.electricalMs);
+      const beforeMs = this.electricalMs;
+      const beforeSeconds = this.electricalSeconds;
+      const seed = this.stepper.extractState();
+      let stepMs = requestedMs;
+      let solved = false;
+      let convergenceError = null;
+      // A hard source edit can put the TVS, fuse and two LDOs on the same discontinuous edge. As in
+      // SPICE, retry that one physical interval with a smaller timestep. Keep a bounded ladder (and
+      // the original strict solver) so a genuinely unsolved topology still fails clearly.
+      for (const scale of [1, 0.8, 0.64, 0.5, 0.32, 0.2, 0.1, 0.04, 0.01]) {
+        stepMs = requestedMs * scale;
+        this.electricalMs = beforeMs;
+        this.electricalSeconds = beforeSeconds;
+        if (Math.abs(stepMs / 1000 - this.dt) > 1e-12 || scale !== 1)
+          this.rebuild(stepMs / 1000, seed);
+        this.electricalSeconds = beforeSeconds + stepMs / 1000;
+        this.electricalMs = beforeMs + stepMs;
+        try {
+          this.stepper.step(this.electricalSeconds);
+          solved = true;
+          break;
+        } catch (error) {
+          if (!/nonlinear solve did not converge/.test(error.message)) throw error;
+          convergenceError = error;
+        }
+      }
+      if (!solved) {
+        this.electricalMs = beforeMs;
+        this.electricalSeconds = beforeSeconds;
+        this.rebuild(requestedMs / 1000, seed);
+        throw convergenceError;
+      }
       this.recordElectrical(false);
+      this.recordSample();
       if (detectInputs) {
         const { mask } = this.readInputs(false);
         if (this.lastInputMask !== null && mask !== this.lastInputMask) {
@@ -232,6 +290,43 @@ export class HeadCircuitFixture {
       }
     }
     return null;
+  }
+
+  recordSample() {
+    if (this.onSample == null || this.stepper == null) return;
+    // Per-electrical-step callbacks exist for safety checks. Current-flow extraction is much more
+    // expensive and only belongs in the UI-rate snapshots emitted at firmware/pacing boundaries.
+    this.onSample(this.snapshot(false));
+  }
+
+  snapshot(detailed = true) {
+    const voltages = { [this.stepper.gnd]: 0 };
+    for (const net of this.stepper.nodes) voltages[net] = this.stepper.vn[this.stepper.ni[net]];
+    const state = this.stepper.extractState();
+    return {
+      at: this.electricalMs,
+      voltages,
+      floating: this.stepper.floatingMap(),
+      relays: state.relays,
+      ssrs: state.ssrs,
+      fuses: state.fuses,
+      injections: detailed ? this.stepper.padInjections() : [],
+    };
+  }
+
+  configureCircuit({ sources, elements, switches }) {
+    this.interactiveSources = sources.map((item) => ({ ...item }));
+    this.interactiveExtra = elements.map((item) => ({ ...item }));
+    this.switches = { ...this.switches, ...switches };
+    const dynamic = this.interactiveSources.filter((item) => !item.off && item.type !== 'dc');
+    this.externalToneActive = dynamic.length !== 0;
+    this.externalStepSeconds = dynamic.length
+      ? Math.min(0.00025, ...dynamic.map((item) => item.freq > 0 ? 1 / (Number(item.freq) * 8) : 0.00025))
+      : 0.00025;
+    this.rebuild(0.00002);
+    this.fineUntilMs = Math.max(this.fineUntilMs, this.nowMs + 8);
+    this.dynamicUntilMs = Math.max(this.dynamicUntilMs, this.nowMs + 100);
+    this.recordSample();
   }
 
   voltage(netName) {
@@ -378,29 +473,47 @@ export class HeadCircuitFixture {
     return { at: target, reason: 'deadline' };
   }
 
-  crash() {
+  crash(settleMs = 100) {
     this.programPresent = false;
     this.mediaActive = false;
-    this.externalToneActive = false;
+    if (this.interactiveSources !== null)
+      this.externalToneActive = this.interactiveSources.some((item) => !item.off && item.type !== 'dc');
+    else
+      this.refreshExternalWave();
     this.fineUntilMs = Math.max(this.fineUntilMs, this.nowMs + 2);
     this.dynamicUntilMs = Math.max(this.dynamicUntilMs, this.nowMs + 20);
     this.rebuild(0.00002);
-    this.stepFor(100, false);
+    if (settleMs > 0) this.stepFor(settleMs, false);
+    else this.stepper.step(this.electricalSeconds);
     this.recordElectrical(true);
+    this.recordSample();
+  }
+
+  rebootProgram() {
+    this.programPresent = true;
+    this.outputs = { PTT_DRV: false, DOOR_DRV: false, MUTE_DRV: false, P4_ISO: false };
+    this.mediaActive = false;
+    this.rebuild(0.00002);
+    this.fineUntilMs = Math.max(this.fineUntilMs, this.nowMs + 2);
+    this.dynamicUntilMs = Math.max(this.dynamicUntilMs, this.nowMs + 20);
+    this.recordSample();
   }
 }
 
 export class FirmwareCircuitRunner extends EventEmitter {
   constructor({ socketPath, startMs = 0, events = [], slowdownMs = 0,
-    responseVersion = PROTOCOL_VERSION } = {}) {
+    responseVersion = PROTOCOL_VERSION, interactive = false, fixtureOptions = {} } = {}) {
     super();
     this.socketPath = socketPath;
     this.events = [...events].sort((a, b) => a.at - b.at);
     this.slowdownMs = slowdownMs;
     this.responseVersion = responseVersion;
+    this.interactive = interactive;
     this.timeline = [];
-    this.fixture = new HeadCircuitFixture({ startMs, timeline: this.timeline });
+    this.fixture = new HeadCircuitFixture({ startMs, timeline: this.timeline, ...fixtureOptions });
     this.pendingCommands = [];
+    this.pendingAdvance = null;
+    this.horizonMs = Number(startMs);
     this.failure = null;
     this.connected = false;
   }
@@ -431,7 +544,12 @@ export class FirmwareCircuitRunner extends EventEmitter {
         this.handleLine(line).catch((error) => this.fail(error));
       }
     });
-    socket.on('close', () => this.emit('disconnect'));
+    socket.on('close', () => {
+      this.connected = false;
+      this.socket = null;
+      this.pendingAdvance = null;
+      this.emit('disconnect');
+    });
     socket.on('error', (error) => this.fail(error));
   }
 
@@ -471,6 +589,60 @@ export class FirmwareCircuitRunner extends EventEmitter {
       this.timeline.push({ at: Math.trunc(this.fixture.nowMs), type: 'at', reason, mask, adcMv });
     const suffix = commands.length ? ` ${commands.join(' ')}` : '';
     this.socket.write(`AT ${this.responseVersion} ${Math.trunc(this.fixture.nowMs)} ${mask} ${adcMv} ${reason} ${commands.length}${suffix}\n`);
+    this.emit('update', { reason, at: this.fixture.nowMs });
+  }
+
+  setHorizon(targetMs) {
+    if (!this.interactive) throw new Error('setHorizon is only available in interactive mode');
+    this.horizonMs = Math.max(this.horizonMs, Math.trunc(Number(targetMs)));
+    this.drainInteractive();
+  }
+
+  queueCommand(command) {
+    if (!this.interactive) throw new Error('queueCommand is only available in interactive mode');
+    this.pendingCommands.push(command);
+    this.timeline.push({ at: Math.trunc(this.fixture.nowMs), type: 'command', command });
+    if (this.pendingAdvance && this.socket) {
+      this.pendingAdvance = null;
+      this.sendAt('external');
+    }
+  }
+
+  configureCircuit(config) {
+    this.fixture.configureCircuit(config);
+    this.emit('update', { reason: 'circuit', at: this.fixture.nowMs });
+    if (this.interactive && this.pendingAdvance && this.socket) {
+      this.pendingAdvance = null;
+      this.sendAt('external');
+    }
+  }
+
+  drainInteractive() {
+    if (!this.interactive || !this.pendingAdvance || !this.socket || this.failure) return;
+    const { deadline } = this.pendingAdvance;
+    if (this.pendingCommands.length) {
+      this.pendingAdvance = null;
+      this.sendAt('external');
+      return;
+    }
+    const boundary = Math.min(deadline, this.nextEventAt(deadline), this.horizonMs);
+    if (boundary <= this.fixture.nowMs) return;
+    const result = this.fixture.advanceTo(boundary);
+    this.pendingAdvance = null;
+    if (result.reason === 'input') {
+      this.sendAt('input');
+      return;
+    }
+    if (this.events.length && this.events[0].at <= boundary) {
+      this.processEventsThrough(boundary);
+      this.sendAt('external');
+    } else if (boundary >= deadline) {
+      this.sendAt('deadline');
+    } else {
+      // The host treats stop reasons as diagnostics. Returning at the pacing horizon lets the
+      // browser pause virtual time without changing ESPHome scheduler semantics.
+      this.sendAt('pace');
+    }
   }
 
   async handleLine(line) {
@@ -479,6 +651,7 @@ export class FirmwareCircuitRunner extends EventEmitter {
     const kind = tokens[0];
     this.parseVersion(tokens);
     if (kind === 'HELLO') {
+      if (this.interactive && !this.fixture.programPresent) this.fixture.rebootProgram();
       this.fixture.validateHello(tokens.slice(2));
       this.processEventsThrough(this.fixture.nowMs);
       this.sendAt('boot');
@@ -493,17 +666,20 @@ export class FirmwareCircuitRunner extends EventEmitter {
       const value = valueText === '1';
       this.fixture.setOutput(signal, value, Number(at));
       this.timeline.push({ at: Number(at), type: 'write', sequence: Number(sequence), signal, value });
+      this.emit('update', { reason: 'write', at: Number(at) });
       return;
     }
     if (kind === 'MEDIA') {
       const [, , at, state, name, duration] = tokens;
       this.fixture.setMedia(state === 'START', Number(at));
       this.timeline.push({ at: Number(at), type: 'media', state, name, duration: Number(duration) });
+      this.emit('update', { reason: 'media', at: Number(at) });
       return;
     }
     if (kind === 'EMIT') {
       const [, , at, name, value] = tokens;
       this.timeline.push({ at: Number(at), type: 'entity', name, value: value === '1' });
+      this.emit('update', { reason: 'entity', at: Number(at) });
       return;
     }
     if (kind === 'ADVANCE') {
@@ -511,6 +687,12 @@ export class FirmwareCircuitRunner extends EventEmitter {
       const deadline = Number(tokens[3]);
       if (now !== this.fixture.nowMs)
         throw new Error(`ADVANCE now mismatch: host=${now}, runner=${this.fixture.nowMs}`);
+      if (this.interactive) {
+        if (this.pendingAdvance) throw new Error('host sent ADVANCE while one was already pending');
+        this.pendingAdvance = { now, deadline };
+        this.drainInteractive();
+        return;
+      }
       const boundary = this.nextEventAt(deadline);
       const result = this.fixture.advanceTo(boundary);
       if (result.reason === 'input') {

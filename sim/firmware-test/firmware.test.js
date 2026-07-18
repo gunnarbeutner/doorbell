@@ -8,6 +8,7 @@ import { before, test } from 'node:test';
 
 import { FirmwareCircuitRunner, HeadCircuitFixture } from './circuit-runner.js';
 import { OWN_RING_ONSET } from '../test-support/fixtures/captured-waveforms.js';
+import { createSimulatorServer, stopAllSessions } from '../server.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
@@ -112,6 +113,35 @@ const media = (timeline, state) => timeline.filter((item) => item.type === 'medi
 function assertNoUnsafeDoorWrites(timeline) {
   assert.equal(writes(timeline, 'DOOR_DRV', true).length, 0,
     'scenario must not assert the opener');
+}
+
+async function waitForSse(url, predicate, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    assert.equal(response.status, 200);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) throw new Error('SSE stream ended before expected event');
+      buffer += decoder.decode(value, { stream: true });
+      let boundary;
+      while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+        const block = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        const line = block.split('\n').find((item) => item.startsWith('data: '));
+        if (!line) continue;
+        const message = JSON.parse(line.slice(6));
+        if (predicate(message)) return message;
+      }
+    }
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+  }
 }
 
 test('HEAD handshake validates the live U1 and P1-P5 mappings', () => {
@@ -501,8 +531,106 @@ test('host rejects an incompatible runner protocol before boot', async () => {
 test('circuit solver failures propagate without an AT response', () => {
   const fixture = new HeadCircuitFixture();
   fixture.applyEvent({ at: fixture.nowMs, type: 'source', line: 'P4', value: 12 });
-  fixture.stepper.step = () => { throw new Error('synthetic non-convergence'); };
+  const rebuild = fixture.rebuild.bind(fixture);
+  const failStep = () => { throw new Error('nonlinear solve did not converge: synthetic non-convergence'); };
+  fixture.rebuild = (...args) => { rebuild(...args); fixture.stepper.step = failStep; };
+  fixture.stepper.step = failStep;
   assert.throws(() => fixture.advanceTo(1), /synthetic non-convergence/);
+});
+
+test('interactive 50 V VBUS edit refines the clamp transition and blows F1', () => {
+  const fixture = new HeadCircuitFixture();
+  fixture.configureCircuit({
+    sources: [
+      { net: '/VBUS', type: 'dc', v1: 50, v2: 0, freq: 1000, t1: 1, impedance: 0, off: false },
+      { net: '/P2', type: 'dc', v1: 12, v2: 0, freq: 1000, t1: 1, impedance: 90, off: false },
+    ],
+    elements: [],
+    switches: { JP1: true, JP3: true },
+  });
+  while (fixture.nowMs < 200) fixture.advanceTo(200);
+  const state = fixture.snapshot();
+  assert.equal(state.fuses.F1.blown, true, 'the strict physical fuse model must clear the downstream rail');
+  assert.ok(state.voltages['+5V'] < 1, `+5V should collapse after F1 opens, got ${state.voltages['+5V']} V`);
+});
+
+test('interactive server has one firmware-backed HEAD mode with virtual pause/step', async () => {
+  const server = createSimulatorServer();
+  await new Promise((resolvePromise, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolvePromise);
+  });
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  let id;
+  try {
+    const createdResponse = await fetch(`${origin}/api/sessions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ board: 'doorbell' }) });
+    assert.equal(createdResponse.status, 201);
+    const created = await createdResponse.json();
+    id = created.id;
+    assert.equal(created.capabilities.firmware, true);
+    assert.equal(created.config.sources.find((item) => item.net === '/P2').impedance, 90);
+
+    const stepResponse = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
+    assert.equal(stepResponse.status, 202);
+    const stepped = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at >= 1 && message.firmware.connected);
+    assert.equal(stepped.sample.at, 1);
+
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'crash' }) });
+    const crashed = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.firmware.crashed);
+    assert.equal(crashed.sample.at, 1, 'crash must preserve virtual circuit time');
+    assert.ok(Object.values(crashed.firmware.outputs).every((value) => value === false));
+
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'reboot' }) });
+    const rebooted = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.firmware.connected && !message.firmware.crashed);
+    assert.equal(rebooted.sample.at, 1, 'reboot must preserve physical circuit time');
+
+    const overvoltageConfig = { ...created.config, sources: created.config.sources.map((item) =>
+      item.net === '/VBUS' ? { ...item, v1: 50 } : item) };
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'configure', config: overvoltageConfig }) });
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
+    const fused = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.fuses.F1.blown);
+    assert.equal(fused.sample.fuses.F1.blown, true);
+
+    const unsafeConfig = { ...created.config, sources: [...created.config.sources, {
+      net: '/PTT_DRV', type: 'dc', v1: 3.3, v2: 0, freq: 1000, t1: 0,
+      impedance: 0, off: false,
+    }] };
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'configure', config: unsafeConfig }) });
+    const rejected = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'error' && /firmware-owned/.test(message.message));
+    assert.match(rejected.message, /PTT_DRV.*firmware-owned/);
+
+    await fetch(`${origin}/api/sessions/${id}`, { method: 'DELETE' });
+    id = null;
+    const wfResponse = await fetch(`${origin}/api/sessions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ board: 'wf26' }) });
+    assert.equal(wfResponse.status, 201);
+    const wf = await wfResponse.json();
+    id = wf.id;
+    assert.equal(wf.capabilities.firmware, false, 'the reference handset must remain passive');
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
+    const wfStepped = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at >= 1);
+    assert.equal(wfStepped.board, 'wf26');
+  } finally {
+    if (id) await fetch(`${origin}/api/sessions/${id}`, { method: 'DELETE' }).catch(() => {});
+    await stopAllSessions();
+    await new Promise((resolvePromise) => server.close(resolvePromise));
+  }
 });
 
 test.todo('production K5-confirmed P4 isolation awaits fabricated V4.2 validation (TODO.md)');

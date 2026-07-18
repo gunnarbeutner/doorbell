@@ -529,6 +529,15 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
   coordinator. This does not enable those paths in installed V4.1 production firmware or satisfy the
   fabricated-board gate.
 
+  The interactive simulator uses that same host target and deterministic circuit runner as its only
+  doorbell execution path. Each browser session owns an isolated server worker, host process, Unix
+  socket and preferences directory; the browser only submits circuit/policy controls and renders SSE
+  samples. ESPHome sleep requests pace a server-controlled virtual horizon (pause, 1×, 10×, maximum or
+  1 ms step), so U1/U3 writes remain ordered with circuit transitions. A crash removes their program
+  drivers while preserving physical reactive/relay/SSR/fuse state; a reboot reconnects at that state,
+  while full reset starts over. The separately selectable WF26 reference remains passive and has no
+  firmware process.
+
   **R36 (100 kΩ) + JP1
   (factory-bridged)** bleed `CHIME_POS` to GND while K3 is open, discharging C19's 22 µF
   coupling capacitance (τ≈2.2 s). It is a passive robustness measure: on the V4.1 bench board,
