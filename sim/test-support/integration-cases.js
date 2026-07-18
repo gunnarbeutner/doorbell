@@ -14,13 +14,18 @@
 //  - Audio is transformer-less: RX taps /P2 through C16 to the ES8311 ADC (MICP/MICN); TX runs the
 //    codec DAC (OUTP) through R26 → C14 → /TALK_BRIDGE → R28 → /TX_OUT. Factory-bridged JP3 plus
 //    R38+R39 (200 kΩ total) precharge /TALK_BRIDGE from /P2 before K1-ch1 closes.
-import { test } from 'node:test';
+import { test as nodeTest } from 'node:test';
 import assert from 'node:assert/strict';
 import { importNetlist } from '../src/import.js';
 import { runDC, buildElements, defaultSwitchState, allComponents } from '../src/components/index.js';
 import { createStepper, gndOf, simulate } from '../src/engine.js';
 
 const netlist = importNetlist();
+const requestedShard = process.env.DOORBELL_TEST_SHARD || 'all';
+let activeShard = 'passive';
+const test = (name, fn) => {
+  if (requestedShard === 'all' || requestedShard === activeShard) nodeTest(name, fn);
+};
 const near = (a, b, tol = 0.5) => Math.abs(a - b) <= tol;
 
 // peak-to-peak swing of (net a − net b) over the second half of a run (after any settling)
@@ -281,6 +286,7 @@ test('K2 door fail-safe: an unpowered board cannot bridge P2→P3 (door stays sh
 
 // chime suppress (K3, NC): at rest it passes the gong AND OC1 keeps detecting (OC1 is on line 4 itself,
 // ahead of K3). Energising K3 opens line 4 → /CHIME_POS, silencing the chime while detection survives.
+activeShard = 'chime-door';
 const gong = (t) => 12 + 1.5 * Math.sin(2 * Math.PI * 1000 * t); // incoming Türruf: 12 V DC + gong tone
 
 test('chime suppress: K3 idle passes the gong to the speaker AND OC1 still detects it', () => {
@@ -398,6 +404,7 @@ test('Etagenruf is structurally non-suppressible: K3 energised mutes the Türruf
 
 // ── K5-confirmed P4 isolation (V4.2 hardware; firmware remains intentionally deferred) ──
 
+activeShard = 'passive';
 test('K6 fail-safe: an unpowered board connects raw P4 to K5_LATCH', () => {
   const { V } = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 }, switches: { JP2: false }, T: 10e-3 });
   assert.ok(near(V['/K5_LATCH'], 12, 0.5),
@@ -553,6 +560,7 @@ test('K5 sense fault: a stuck-high GPIO4 cannot defeat isolation or stress the a
 // ── audio (transformer-less codec front-end). Exact gains are bench-gated; here we assert the path
 // couples (or doesn't), not its level. ──
 
+activeShard = 'audio';
 test('codec record (RX): line 2 reaches the mic inputs, attenuated ~-18 dB by the input divider', () => {
   // RX path per leg: /P2 → C16 → R30 (22k) → MICP, with R33 (3.3k) shunting MICP to VMID (mirror on
   // MICN: GND → C17 → R31 → MICN, R32 to VMID). The 22k/3.3k series+shunt is a divider that drops the
@@ -921,6 +929,7 @@ test('software TX isolation: the passive LS1 microphone stays small relative to 
 // chooses, even with no incoming Türruf). The handshake is sourced from P2 — which the bus keeps
 // energised at all times — not from line 4, so K1 energised drives line 3 with line 4 cold. Policy for
 // *when* to talk lives in firmware, not this hardware gate.
+activeShard = 'passive';
 test('TX is session-independent: K1 energised drives line 3 from P2 with line 4 cold (no Türruf)', () => {
   const { V } = runDC(netlist, {
     sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 },
@@ -975,6 +984,7 @@ test('session seal-in: dropping line 4 does NOT release K5 (P2 holds it); drivin
 // node (P4) is loaded by C19 (22 µF, via the closed K3) so it decays on an ~RC of a few tens of ms
 // — far slower than the bench ~6 ms break-before-make (a model artifact) — so these settle ~100 ms and
 // assert the END state, not the timing.
+activeShard = 'chime-door';
 const latchSettle = (els, srcs, T, seed) => {
   const sim = createStepper(els, srcs.map(([net, v]) => ({ net, vf: () => v })), gndOf(netlist), 20e-6, seed);
   for (let t = 0; t < T; t += 20e-6) sim.step(t);
@@ -1222,6 +1232,7 @@ test('door watchdog timing: /DOOR_DRV stuck high opens the door, then self-relea
 
 // ── power & protection front-end ──
 
+activeShard = 'passive';
 test('J1 power input regulates +5V and +3V3', () => {
   const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0 } });
   assert.ok(near(V['+3V3'], 3.3, 0.1),
