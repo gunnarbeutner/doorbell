@@ -444,6 +444,20 @@ test('JP2 recovery bypass is open by default and directly spans K6 output', () =
   assert.equal(k6.pins['4'], '/P4');
 });
 
+test('JP2 recovery: bridging the jumper restores the passive ring path across a dead K6', () => {
+  // `omit` drops K6 entirely — a failed-open isolator (contact stuck open, LED dark), the fault JP2
+  // exists to recover from. Unpowered (SAFE-4): the ring path is broken until the jumper is bridged.
+  const dead = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 }, omit: ['K6'], T: 10e-3 });
+  assert.ok(!near(dead.V['/K5_LATCH'], 12, 1.0) || dead.floating['/K5_LATCH'],
+    `a failed-open K6 must break raw P4 → K5_LATCH, got ${dead.V['/K5_LATCH']?.toFixed(2)} V`);
+
+  const bridged = runDC(netlist, { sources: { '/P1': 0, '/P4': 12 }, switches: { JP2: true }, omit: ['K6'], T: 10e-3 });
+  assert.ok(near(bridged.V['/K5_LATCH'], 12, 0.5),
+    `bridged JP2 must restore raw P4 → K5_LATCH across the dead K6, got ${bridged.V['/K5_LATCH']?.toFixed(2)} V`);
+  assert.ok(near(bridged.V['/SEAL_IN'], 12, 1.0),
+    `the restored ring must still pull K5 in (COM onto line 4), got ${bridged.V['/SEAL_IN']?.toFixed(2)} V`);
+});
+
 // ── K5 sense decoupling (R44): GPIO4 observes the K6 LED return but can never power it. R35 biases
 // /K6_RET (the LED-cathode / K5-aux node); GPIO4 hangs alone behind R44, so a low GPIO forms only the
 // weak R35:R44 divider — the LED stays under its guaranteed-recovery corner (< 0.5 V / < 0.1 mA). ──
@@ -1020,6 +1034,128 @@ test('door retrigger: 0.5 s minimum off-time restores break-before-make', () => 
   const { releaseGate, retriggered } = retriggerDoorAfter(0.5);
   assert.ok(releaseGate < 0.1, `500 ms off-time should discharge DELAY_GATE, got ${releaseGate.toFixed(2)} V`);
   assert.equal(retriggered.makeBeforeBreak, false, '500 ms off-time must fully re-arm the K4-before-K2 sequence');
+});
+
+// ── Composed door transitions — the hardware facts behind the firmware door coordinator (TODO.md):
+// nothing in hardware serializes door, isolation and TX, so these pin down what each overlap does. ──
+
+test('composed door + isolation: door with P4_ISO held re-pulls K5 from the hot line (the chatter hazard)', () => {
+  const dt = 20e-6;
+  const srcList = [['/VBUS', 5], ['/P1', 0], ['/P2', 12], ['/P4', 12]]; // the gong is still hot
+  const srcs = () => srcList.map(([net, v]) => ({ net, vf: () => v }));
+  const countK5Transitions = (els, seed, T) => {
+    const sim = createStepper(els, srcs(), gndOf(netlist), dt, seed);
+    let transitions = 0;
+    let lastK5 = true;
+    for (let t = 0; t < T; t += dt) {
+      sim.step(t);
+      const k5 = Boolean(sim.extractState().relays.K5);
+      if (k5 !== lastK5) transitions++;
+      lastK5 = k5;
+    }
+    return { transitions, end: sim.extractState() };
+  };
+
+  const elsIso = buildElements(netlist, { switchState: defaultSwitchState(netlist), program: { U1: { '/P4_ISO': 3.3 } } });
+  const iso = latchSettle(elsIso, srcList, 0.04);
+  assert.ok(iso.relays.K5, 'precondition: the hot Türruf must latch K5');
+  assert.ok(iso.ssrs.K6, 'precondition: confirmed K5 must open isolation');
+
+  // door while isolation is held: K4 breaks the seal, K5 drops, K6 recloses onto the hot line,
+  // K5 re-pulls, its auxiliary contact re-opens K6 — alternation until something yields. This is why
+  // the coordinator must clear P4_ISO and wait out K6's close time before DOOR_DRV rises.
+  const elsDoorIso = buildElements(netlist, {
+    switchState: defaultSwitchState(netlist),
+    program: { U1: { '/P4_ISO': 3.3, '/DOOR_DRV': 3.3 } },
+  });
+  const hazard = countK5Transitions(elsDoorIso, iso, 0.3);
+  assert.ok(hazard.transitions >= 2,
+    `door + held isolation over a hot line must chatter K5 (drop, re-pull, …), saw ${hazard.transitions} transitions`);
+
+  // the coordinator's sequence: clear P4_ISO first — K6 recloses and the hot line holds K5 steadily
+  // through the door pulse; no K5/K6 alternation, and the opener still fires.
+  const elsDoorClean = buildElements(netlist, {
+    switchState: defaultSwitchState(netlist),
+    program: { U1: { '/DOOR_DRV': 3.3 } },
+  });
+  const clean = countK5Transitions(elsDoorClean, iso, 0.3);
+  assert.equal(clean.transitions, 0, 'with P4_ISO cleared first, the hot line must hold K5 steadily (no chatter)');
+  assert.ok(near(clean.end.vn['/P3'], 12), `the door must still fire, got P3=${clean.end.vn['/P3']?.toFixed(2)} V`);
+});
+
+test('composed K1 + door: the door bridge replaces the 2.2 k handshake signature on line 3', () => {
+  // Probe line 3 the way the TV20/S sees it: a 1 V tone behind 10 k. Against the K1 talk handshake
+  // (R28 = 2.2 k into the low-Z bus) the probe survives at P3; against K2's door short it collapses —
+  // the door signature masks talk, and nothing in hardware prevents the overlap (BUS-2 b composition).
+  const probe = { type: 'R', a: '/P3~probe', b: '/P3', value: 10000, ref: 'probeZ/P3' };
+  const tone = (t) => 12 + Math.sin(2 * Math.PI * 1000 * t);
+  const measure = (program) => {
+    const { RES, V } = runDC(netlist, {
+      sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P3~probe': tone },
+      program: { U1: program },
+      extra: [probe],
+      T: 0.1, dt: 1 / (1000 * 64), // second half of the run is past K2's ~38 ms make delay
+    });
+    return { swing: swingPP(RES, '/P3', '/P1'), V };
+  };
+
+  const talk = measure({ '/PTT_DRV': 3.3 });
+  const overlap = measure({ '/PTT_DRV': 3.3, '/DOOR_DRV': 3.3 });
+  assert.ok(talk.swing > 0.05,
+    `the probe must survive against the 2.2 k handshake, got ${talk.swing.toFixed(4)} Vpp`);
+  assert.ok(overlap.swing < talk.swing / 5,
+    `the door short must collapse the line-3 signature: talk ${talk.swing.toFixed(4)} vs overlap ${overlap.swing.toFixed(4)} Vpp`);
+  assert.ok(near(overlap.V['/P3'], 12, 0.5),
+    `the door must dominate the composed state (P3 pinned to P2), got ${overlap.V['/P3']?.toFixed(2)} V`);
+});
+
+test('composed rapid door repeat with a mid-gap ring: re-arm behaviour is unchanged by a fresh session', () => {
+  // The pure retrigger tests above prove the C18/Q3 re-arm floor without a session. A ring can land
+  // in the off-time and re-latch K5; the re-arm state and the second pulse's outcome must not change.
+  const dt = 20e-6;
+  const doorPhase = ({ drive, ring = false, T, seed, observe = false }) => {
+    const els = buildElements(netlist, {
+      switchState: defaultSwitchState(netlist),
+      program: { U1: { '/DOOR_DRV': drive ? 3.3 : 0 } },
+    });
+    const srcs = [
+      { net: '/VBUS', vf: () => 5 },
+      { net: '/P1', vf: () => 0 },
+      { net: '/P2', vf: () => 12 },
+    ];
+    if (ring) srcs.push({ net: '/P4', vf: (t) => (t < 8e-3 ? 12 : 0) }); // a Türruf pulse early in the gap
+    const sim = createStepper(els, srcs, gndOf(netlist), dt, seed);
+    let makeBeforeBreak = false;
+    for (let t = 0; t < T; t += dt) {
+      sim.step(t);
+      if (observe) {
+        const { ssrs } = sim.extractState();
+        makeBeforeBreak ||= Boolean(ssrs.K2) && !ssrs.K4;
+      }
+    }
+    return { state: sim.extractState(), makeBeforeBreak };
+  };
+
+  for (const [gap, armed] of [[0.01, true], [0.5, false]]) {
+    const first = doorPhase({ drive: true, T: 0.1 });
+    assert.ok(!first.state.relays.K5, 'no session yet: the first pulse fires without K5');
+    const idleRing = doorPhase({ drive: false, ring: true, T: gap, seed: first.state });
+    assert.ok(idleRing.state.relays.K5, `a ring in the ${gap * 1e3} ms gap must latch a fresh session`);
+    const gate = idleRing.state.vn['/DELAY_GATE'];
+    if (armed) {
+      assert.ok(gate > 0.65, `10 ms off-time must leave DELAY_GATE armed, session or not, got ${gate.toFixed(2)} V`);
+    } else {
+      assert.ok(gate < 0.1, `500 ms off-time must discharge DELAY_GATE, session or not, got ${gate.toFixed(2)} V`);
+    }
+    const second = doorPhase({ drive: true, T: 0.12, seed: idleRing.state, observe: true });
+    if (!armed) {
+      assert.equal(second.makeBeforeBreak, false,
+        'the 500 ms floor must preserve K4-before-K2 with a freshly latched session');
+    }
+    assert.ok(!second.state.relays.K5, `the ${gap * 1e3} ms-gap second pulse must still release the fresh session`);
+    assert.ok(near(second.state.vn['/P3'], 12),
+      `the second pulse must still fire the opener, got ${second.state.vn['/P3']?.toFixed(2)} V`);
+  }
 });
 
 // ── Door-open max-on-time watchdog (Q3 unit 2 + R25/C20/D11) ─────────────────────────────────────

@@ -139,6 +139,41 @@ test('operate threshold: LED current above ~2 mA switches the NO output closed',
   assert.ok(V('OUT') < 0.05, `above-threshold LED must close the NO output, got ${V('OUT').toFixed(4)} V`);
 });
 
+// ── NC operate/recovery corners — the K6 interlock relies on both directions: a sub-threshold LED
+// leak must not open the NC path, and once operated it must reclose when the current is removed. ──
+
+test('operate threshold: sub-threshold LED current leaves the NC output closed', () => {
+  const els = [ssr({ form: 'NC' }), ...ledDrive(2200), ...outLoad()]; // (3.3 - ~1.1)/2200 ~ 1 mA, sub-threshold
+  const { sim, V, driven } = settle(els, { VDR: 3.3, VOUT: 5, GND: 0 });
+  const Iled = -Iat(sim, 'K1', '1');
+  assert.ok(Iled > 1e-4 && Iled < 2e-3, `LED current should be sub-threshold, got ${(Iled * 1e3).toFixed(2)} mA`);
+  assert.ok(V('OUT') < 0.05, `sub-threshold LED must leave the NC output closed, got ${V('OUT').toFixed(4)} V`);
+  assertBalanced(sim, driven);
+});
+
+test('operate hysteresis: the NC output opens above iop, holds between iop/2 and iop, recloses below iop/2', () => {
+  // three-phase LED drive: hard on (~6.7 mA, opens), mid (~1.6 mA — between iop/2 and iop, the
+  // hysteretic latch holds it open), then off (releases -> the NC output recloses)
+  const els = [ssr({ form: 'NC' }), ...ledDrive(330), ...outLoad()];
+  const srcs = [
+    { net: 'VDR', vf: (t) => (t < 6e-3 ? 3.3 : t < 12e-3 ? 1.6 : 0) },
+    { net: 'VOUT', vf: () => 5 },
+    { net: 'GND', vf: () => 0 },
+  ];
+  const sim = createStepper(els, srcs, 'GND', 20e-6);
+  const outAt = {};
+  for (let t = 0; t <= 18e-3; t += 20e-6) {
+    sim.step(t);
+    for (const mark of [5e-3, 11e-3, 17e-3]) {
+      if (Math.abs(t - mark) < 1e-5) outAt[mark] = sim.vn[sim.ni.OUT];
+    }
+  }
+  assert.ok(near(outAt[5e-3], 5, 0.05), `hard drive must open the NC output, got ${outAt[5e-3].toFixed(3)} V`);
+  assert.ok(near(outAt[11e-3], 5, 0.05),
+    `between iop/2 and iop the latch must hold the NC output open, got ${outAt[11e-3].toFixed(3)} V`);
+  assert.ok(outAt[17e-3] < 0.05, `below iop/2 the NC output must reclose, got ${outAt[17e-3].toFixed(3)} V`);
+});
+
 // ── galvanic isolation: input and output share no node; each internal net balances by KCL ──
 
 test('LED and output sides are isolated and each balances by KCL', () => {

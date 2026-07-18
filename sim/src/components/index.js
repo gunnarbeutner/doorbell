@@ -70,10 +70,14 @@ export function defaultSwitchState(netlist) {
 // every simulation element: each part's model + any hand-added extras. `program` lets a test set the
 // behavioural state of the modelled ICs (e.g. { U1: { '/PTT_DRV': vf }, U3: { out: vf } }) so their
 // drivers are emitted from inside the part — the test then injects only the real rails (VBUS/GND/bus).
-export function buildElements(netlist, { switchState = {}, extra = [], program = {} } = {}) {
+// `omit` drops a component's elements entirely (fault injection: a dead part whose pins all dangle,
+// e.g. a failed-open SSR) — the netlist itself stays untouched.
+export function buildElements(netlist, { switchState = {}, extra = [], program = {}, omit = [] } = {}) {
   const els = [];
+  const skip = new Set(omit);
 
   for (const c of allComponents(netlist)) {
+    if (skip.has(c.ref)) continue;
     for (const e of c.elements({ switchState, program })) els.push(e);
   }
 
@@ -86,9 +90,9 @@ export function buildElements(netlist, { switchState = {}, extra = [], program =
 // ({ref: pressed?}), set IC behavioural state via `program` ({ref: {...}}, e.g. an ESP GPIO driven
 // through its real output impedance rather than pinned as an ideal source), inject any hand-built
 // `extra` elements (e.g. a surge through a series resistor); returns the final node voltages + floating flags.
-export function runDC(netlist, { sources = {}, switches = {}, extra = [], program = {}, gnd, T = 0.04, dt = 20e-6 } = {}) {
+export function runDC(netlist, { sources = {}, switches = {}, extra = [], program = {}, omit = [], gnd, T = 0.04, dt = 20e-6 } = {}) {
   const switchState = { ...defaultSwitchState(netlist), ...switches };
-  const els = buildElements(netlist, { switchState, extra, program });
+  const els = buildElements(netlist, { switchState, extra, program, omit });
 
   const srcs = Object.entries(sources).map(([net, v]) => ({
     net,
