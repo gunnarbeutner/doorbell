@@ -102,7 +102,11 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
       e.targetOn = false;
       e.switchElapsed = 0;
     }
-    if (e.type === 'LDO') e.ldoOn = true; // pass element conducting? (gated on input being source-fed, below)
+    if (e.type === 'FUSE') {
+      e.melt = 0;
+      e.blown = false;
+    }
+    if (e.type === 'LDO') e.ldoOn = false; // cold start off; VIN must rise before the pass element conducts
   }
   const vn = new Array(N).fill(0);
   const Vof = (x) => (x === gnd ? 0 : vn[ni[x]] || 0);
@@ -123,15 +127,22 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
         e.targetOn = seed.ssrTimers?.[e.ref]?.targetOn ?? e.ledOn;
         e.switchElapsed = seed.ssrTimers?.[e.ref]?.switchElapsed || 0;
       }
+      if (e.type === 'FUSE' && seed.fuses && e.ref in seed.fuses) {
+        e.blown = Boolean(seed.fuses[e.ref].blown);
+        e.melt = seed.fuses[e.ref].melt || 0;
+      }
       if (e.type === 'LDO' && seed.ldos && e.ref in seed.ldos) e.ldoOn = seed.ldos[e.ref];
     }
   }
-  // settle each LDO's on/off from whether its input is source-fed in the (possibly seeded) initial state,
-  // before the first stamp. Otherwise a stale "on" on a now-dead input sinks for one step and pumps the
-  // input rail above the supply — which then reverse-biases the feed diode and blocks any later re-feed.
+  // A carried LDO state is valid only while its seeded input still has dropout headroom and its output
+  // is not externally overdriven. A cold run starts with the pass element off; the first solved step
+  // establishes VIN, then the normal state update enables regulation without inventing a feed path.
   if (hasLDO) {
-    const sr = reachFrom(sources.map((s) => s.net));
-    for (const e of all) if (e.type === 'LDO') e.ldoOn = sr.has(e.vin);
+    for (const e of all) if (e.type === 'LDO' && e.ldoOn) {
+      const input = Vof(e.vin) - Vof(e.gnd);
+      const target = Math.min(e.vreg, Math.max(0, input - e.drop));
+      e.ldoOn = input > e.drop && Vof(e.vout) - Vof(e.gnd) <= target + 1e-3;
+    }
   }
 
   // advance one Backward-Euler timestep to time t, Newton-iterating the nonlinear devices
@@ -335,10 +346,6 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
     }
     if (!converged && strictConvergence)
       throw new Error(`nonlinear solve did not converge at t=${t.toExponential(6)} s (max |Δv|=${worstDelta.toExponential(3)} V at ${worstNode} after ${mx} iterations)`);
-    // a regulator only works if its input rail is actually fed by a source. On a disconnected input it must
-    // switch OFF, not keep regulating a charged cap — that manufactures energy, and the resulting on/off
-    // feedback oscillates and stalls the Newton solve. So gate each LDO on whether its vin reaches a source.
-    const srcReach = hasLDO ? reachFrom(sources.map((s) => s.net)) : null;
     for (const e of all) {
       if (e.type === 'C') {
         const vcap = Vof(e.a) - Vof(e.b);
@@ -347,8 +354,16 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
       }
       if (e.type === 'L') e.ip = e.icur;
       if (e.type === 'LDO') {
-        e.icur = e.ldoOn ? Math.max(0, -(e.icur || 0)) : 0; // source delivery vin->vout (>= 0)
-        e.ldoOn = srcReach.has(e.vin); // gate next step on the input being source-fed
+        const branchCurrent = e.icur || 0;
+        const delivery = e.ldoOn ? -branchCurrent : 0;
+        e.icur = Math.max(0, delivery); // reported source delivery vin->vout (>= 0)
+        const input = Vof(e.vin) - Vof(e.gnd);
+        const output = Vof(e.vout) - Vof(e.gnd);
+        const target = Math.min(e.vreg, Math.max(0, input - e.drop));
+        // This idealized regulator is one-quadrant: it may source its output, never sink an externally
+        // overdriven rail or conduct backward into VIN. A negative delivery request is the matrix telling
+        // us that holding the target would require sinking, so release the pass branch on the next step.
+        e.ldoOn = input > e.drop && delivery >= -1e-9 && output <= target + 1e-3;
       }
       if (e.type === 'RC') {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
@@ -481,7 +496,7 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
 
   // snapshot the persistent state so a rebuilt stepper can continue from here (live config change)
   function extractState() {
-    const st = { vn: {}, caps: {}, ind: {}, relays: {}, relayTimers: {}, ssrs: {}, ssrTimers: {}, ldos: {} };
+    const st = { vn: {}, caps: {}, ind: {}, relays: {}, relayTimers: {}, ssrs: {}, ssrTimers: {}, fuses: {}, ldos: {} };
     for (const n of nodes) st.vn[n] = vn[ni[n]];
     for (const e of all) {
       if (e.type === 'C' && e.ref != null) st.caps[e.ref] = e.vp;
@@ -494,6 +509,7 @@ function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, 
         st.ssrs[e.ref] = e.ledOn;
         st.ssrTimers[e.ref] = { targetOn: e.targetOn, switchElapsed: e.switchElapsed };
       }
+      if (e.type === 'FUSE' && e.ref != null) st.fuses[e.ref] = { blown: e.blown, melt: e.melt || 0 };
       if (e.type === 'LDO' && e.ref != null) st.ldos[e.ref] = e.ldoOn;
     }
     return st;

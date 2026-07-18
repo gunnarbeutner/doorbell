@@ -276,6 +276,18 @@ export const CORNERS = freeze({
       C17: { valueScale: PART_LIMITS.timingMlcc.effectiveScale.min },
     },
   },
+  audioTransmit: {
+    highCoupling: {
+      R26: { valueScale: 0.99 },
+      R28: { valueScale: 0.99 },
+      C14: { valueScale: PART_LIMITS.timingMlcc.effectiveScale.max },
+    },
+    lowCoupling: {
+      R26: { valueScale: 1.01 },
+      R28: { valueScale: 1.01 },
+      C14: { valueScale: PART_LIMITS.timingMlcc.effectiveScale.min },
+    },
+  },
 });
 
 // Reproducible PRNG used only by the optional Monte Carlo diagnostic. Safety gates use the explicit

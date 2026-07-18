@@ -270,20 +270,27 @@ test('post-fuse voltage monitor remains bounded across 1% divider and ESP leakag
     `monitor corner range ${low['/VBUS_F_ADC'].toFixed(3)}-${high['/VBUS_F_ADC'].toFixed(3)} V is unexpected`);
 });
 
-test('audio receive divider gain remains bounded at resistor and coupling-cap corners', () => {
-  const gain = (params) => {
+test('audio receive divider gain remains bounded across the voice band and component corners', () => {
+  const gain = (params, frequency) => {
     const result = runDC(netlist, {
-      sources: { '/VBUS': 5, '/P1': 0, '/P2': (time) => Math.sin(2 * Math.PI * 1000 * time) },
-      params, T: 10e-3, dt: 5e-6,
+      sources: { '/VBUS': 5, '/P1': 0, '/P2': (time) => Math.sin(2 * Math.PI * frequency * time) },
+      params, T: 24 / frequency, dt: 1 / (frequency * 64),
     }).RES;
     const start = Math.floor(result.t.length / 2);
     const diff = result.v['/ES_MICP'].slice(start).map((value, index) => value - result.v['/ES_VMID'][start + index]);
     return (Math.max(...diff) - Math.min(...diff)) / 2; // input amplitude is 1 V
   };
-  const high = gain(CORNERS.audioReceive.highGain);
-  const low = gain(CORNERS.audioReceive.lowGain);
-  assert.ok(high > low, `audio high corner ${high} must exceed low corner ${low}`);
-  assert.ok(low > 0.12 && high < 0.14, `audio receive gain ${low.toFixed(3)}-${high.toFixed(3)} must remain near -18 dB`);
+  const frequencies = [300, 1000, 3400];
+  const high = frequencies.map((frequency) => gain(CORNERS.audioReceive.highGain, frequency));
+  const low = frequencies.map((frequency) => gain(CORNERS.audioReceive.lowGain, frequency));
+  for (let index = 0; index < frequencies.length; index++) {
+    assert.ok(high[index] > low[index],
+      `${frequencies[index]} Hz high corner ${high[index]} must exceed low corner ${low[index]}`);
+    assert.ok(low[index] > 0.13 && high[index] < 0.16,
+      `${frequencies[index]} Hz receive gain ${low[index].toFixed(3)}-${high[index].toFixed(3)} must remain near -18 dB`);
+  }
+  assert.ok(Math.max(...high) / Math.min(...low) < 1.15,
+    `voice-band RX corner spread must stay below 1.15x, got ${(Math.max(...high) / Math.min(...low)).toFixed(3)}x`);
 });
 
 test('fitted 0466 fuse uses its real resistance and nominal melting I2t', () => {

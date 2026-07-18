@@ -68,13 +68,15 @@ resolved nominal/override pairs in `resolvedParams` for auditability.
 - **Auto-modeled from value + refdes:** R, C (including tolerance/effective-value overrides and optional
   capacitor leakage; polarized caps, `Device:C_Polarized` etc., are flagged in the
   status bar if they're ever reverse-biased — pin 1 = +), L, diode (KiCad `Device:D`: pin 1 = cathode, pin 2 = anode),
-  speaker (→ R), fitted 0466 fuse (→ 75 mΩ + 0.0423 A²s melting model), **optocoupler** (standard 4-pin: LED diode 1→2 + CTR/dark-current source
+  speaker (→ R), fitted 0466 fuse (→ 75 mΩ + 0.0423 A²s melting model whose blown state remains
+  latched across seeded scenario changes), **optocoupler** (standard 4-pin: LED diode 1→2 + CTR/dark-current source
   4→3 with a saturation clamp), **MOSFET/transistor** (gate-controlled switch, using the symbol's
   `G/D/S` pin functions), **regulator/LDO** (an IC with `VIN/VOUT/GND` pin functions → regulated
   output, floored at 0; target voltage parsed from the output net name, e.g. `+3V3` → 3.3 V; draws its
   output current back out of the input pin so the input rail loads down rather than supplying free power,
-  and only regulates while its input is actually fed by a source — pull the supply and the board
-  de-energizes instead of running forever off a charged cap), **transformer** (two coupled inductors + series winding Rdc),
+  and operates as a one-quadrant source only while VIN has dropout headroom — it neither back-drives a
+  dead input nor sinks an externally overdriven output; pull the supply and the board de-energizes
+  instead of running forever off a charged cap), **transformer** (two coupled inductors + series winding Rdc),
   **ESD/TVS protection array** (e.g. `TPD2S017`: each channel passes IN↔OUT, with steering diodes that
   clamp the line to VCC/GND and a ~6 V VCC↔GND rail clamp — so a realistic surge through a source
   impedance clamps to ≈ VCC + Vf; an ideal 0 Ω source can't be clamped, as in reality).
@@ -107,8 +109,11 @@ browser front-end.
 
 `src/corners.js` separates guaranteed fitted-part limits from named engineering bounds. Permanent tests
 cover the watchdog fast/nominal/slow envelope, break-before-make timing, PhotoMOS drive and switching
-delay, K5/K6 interlock and GPIO pin faults, optocoupler CTR/dark current, the supply monitor, audio input
-gain, timestep refinement and convergence failure. The timing-MLCC 0.65–1.10 effective-capacitance scale
+delay, K5/K6 interlock and GPIO pin faults, powered boot/brownout fallback, dynamic fuse isolation,
+bounded bus faults, LDO passivity, optocoupler CTR/dark current, the supply monitor, RX/TX voice-band
+gain, captured-waveform replay, the welded-K1 door discriminator, timestep refinement and convergence
+failure. The compact replay fixtures under `test-support/fixtures/` record the exact source capture and time
+window from which they were decimated. The timing-MLCC 0.65–1.10 effective-capacitance scale
 and the K6 temperature guard are explicitly labelled engineering assumptions because the vendors expose
 typical curves rather than guaranteed production extrema.
 
