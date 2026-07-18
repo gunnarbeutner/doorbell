@@ -334,12 +334,16 @@ const chimePhase = ({ mute, sources, T, seed, observe = false, step = 20e-6, jp1
     return { state: sim.extractState(), peakP4, relatched };
 };
 
+const trappedChimeChargeCache = new Map();
 const trappedChimeCharge = ({ jp1 = true } = {}) => {
+  if (trappedChimeChargeCache.has(jp1)) return trappedChimeChargeCache.get(jp1);
   // Charge the gong coupling capacitors from a real ring with K3 closed, then open K3 while the
   // ring is still present. Ending the session with P2 low drops K5 but leaves CHIME_POS isolated and
   // charged. Reclosing the NC contact later must not turn that stored charge into another pull-in.
   const ringing = chimePhase({ mute: false, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.02, jp1 });
-  return chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.005, seed: ringing.state, jp1 }).state;
+  const charged = chimePhase({ mute: true, sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 12 }, T: 0.005, seed: ringing.state, jp1 }).state;
+  trappedChimeChargeCache.set(jp1, charged); // extractState() is immutable input to later steppers
+  return charged;
 };
 
 const endAndRecloseChime = ({ charged, wait, jp1 = true }) => {
@@ -749,9 +753,11 @@ const TALK = {
   },
   T: 3.5e-3, dt: 2e-6,
 };
+let cachedTalkRES;
+const talkRES = () => (cachedTalkRES ||= scenarioRES(TALK));
 
 test('codec talk (TX): K1 make stays within abs-max (B1) and the V4.1 handshake asserts promptly', () => {
-  const RES = scenarioRES(TALK);
+  const RES = talkRES();
   // SAFETY INVARIANT (B1) — C14's bus side lives on /TX_OUT: a PTT make (and a door bridge yanking P3
   // to the rail — the sweep below) steps that node, and C14 couples the edge back toward OUTP. R26 +
   // D13 must hold OUTP inside the ES8311 analog abs-max. U3 reports this about ITSELF (limit in Ic).
@@ -769,7 +775,7 @@ test('codec talk (TX): K1 make stays within abs-max (B1) and the V4.1 handshake 
 test('safety invariants: every component stays within its abs-max across the scenario sweep', () => {
   const gong = (t) => 8.8 * Math.sin(2 * Math.PI * 1000 * t);
   const scenarios = [
-    ['talk (PTT make)', scenarioRES(TALK)],
+    ['talk (PTT make)', talkRES()],
     ['house ring', scenarioRES({ sources: { '/VBUS': 5, '/P1': 0 }, bus: { '/P2': 12, '/P4': 12 }, program: { U3: { out: 1.65 } }, T: 3e-3, dt: 5e-6 })],
     ['RX gong ±8.8 V', scenarioRES({ sources: { '/VBUS': 5, '/P1': 0 }, bus: { '/P2': gong }, program: { U3: { out: 1.65 } }, T: 40 / 1000, dt: 1 / (1000 * 64) })],
     // the new C14 worst case: a door bridge (K2 makes ~38 ms after DOOR_DRV via the Q3 lead delay)
@@ -842,49 +848,59 @@ test('K6 isolation: a raw-P4 gong stays off P3 while the restored handshake DC p
 // K1 active with manual SW4 released: LS1 can still feed P4 through the gong capacitor and, while K5
 // is latched, P2 through the seal-in. K6 must break that path before K1 transmits. Exercise both K3
 // states because K3 independently controls whether the local transducer is connected to raw P4.
-const softwareTxSwing = ({ mute, speakerTone, codecTone }) => {
-  const switches = { ...defaultSwitchState(netlist), SW4: false };
-  const tone = (t) => 1.65 + 0.4 * Math.sin(2 * Math.PI * 1000 * t); // 0.8 Vpp, centred like OUTP
-  const els = buildElements(netlist, {
-    switchState: switches,
-    extra: [{ type: 'R', a: '/P2~bus', b: '/P2', value: BUS_Z, ref: 'busZ/P2' }],
-    program: {
-      U1: { '/PTT_DRV': 3.3, '/MUTE_DRV': mute ? 3.3 : 0, '/P4_ISO': 3.3 },
-      U3: { out: codecTone ? tone : 1.65 },
-    },
-  });
-  const dt = 20e-6;
-  const run = (sources, T, seed, observe = false) => {
-    const sim = createStepper(
-      els,
-      Object.entries(sources).map(([net, vf]) => ({ net, vf: typeof vf === 'function' ? vf : () => vf })),
-      gndOf(netlist),
-      dt,
-      seed,
-    );
-    let lo = Infinity, hi = -Infinity;
-    for (let t = 0; t < T; t += dt) {
-      sim.step(t);
-      if (observe && t >= T / 2) {
-        const p3 = sim.vn[sim.ni['/P3']] ?? 0;
-        lo = Math.min(lo, p3);
-        hi = Math.max(hi, p3);
-      }
+const softwareTxTone = (t) => 1.65 + 0.4 * Math.sin(2 * Math.PI * 1000 * t); // 0.8 Vpp, centred like OUTP
+const softwareTxElements = ({ mute, codecTone }) => buildElements(netlist, {
+  switchState: { ...defaultSwitchState(netlist), SW4: false },
+  extra: [{ type: 'R', a: '/P2~bus', b: '/P2', value: BUS_Z, ref: 'busZ/P2' }],
+  program: {
+    U1: { '/PTT_DRV': 3.3, '/MUTE_DRV': mute ? 3.3 : 0, '/P4_ISO': 3.3 },
+    U3: { out: codecTone ? softwareTxTone : 1.65 },
+  },
+});
+const runSoftwareTx = (els, sources, T, seed, observe = false) => {
+  const sim = createStepper(
+    els,
+    Object.entries(sources).map(([net, vf]) => ({ net, vf: typeof vf === 'function' ? vf : () => vf })),
+    gndOf(netlist),
+    20e-6,
+    seed,
+  );
+  let lo = Infinity, hi = -Infinity;
+  for (let t = 0; t < T; t += 20e-6) {
+    sim.step(t);
+    if (observe && t >= T / 2) {
+      const p3 = sim.vn[sim.ni['/P3']] ?? 0;
+      lo = Math.min(lo, p3);
+      hi = Math.max(hi, p3);
     }
-    return { state: sim.extractState(), swing: observe ? hi - lo : 0 };
-  };
+  }
+  return { state: sim.extractState(), swing: observe ? hi - lo : 0 };
+};
+
+const softwareTxLatchCache = new Map();
+const softwareTxLatch = (mute) => {
+  if (softwareTxLatchCache.has(mute)) return softwareTxLatchCache.get(mute);
 
   // Pull K5 in from a real Türruf, then remove the P4 source: P2 must seal the call in while the
-  // measurement drives LS1 (/P5↔/P1). This preserves the exact unintended path under test.
-  const latched = run({ '/VBUS': 5, '/P1': 0, '/P2~bus': 12, '/P4': 12 }, 0.02).state;
+  // measurement drives LS1 (/P5↔/P1). The relay/SSR/capacitor snapshot is reusable for the wanted
+  // and leakage measurements because each rebuilt stepper reads but never mutates its seed object.
+  const els = softwareTxElements({ mute, codecTone: false });
+  const latched = runSoftwareTx(els, { '/VBUS': 5, '/P1': 0, '/P2~bus': 12, '/P4': 12 }, 0.02).state;
   assert.ok(latched.relays.K5, 'precondition: the software-TX isolation scenario must have K5 latched');
   assert.ok(latched.ssrs.K6, 'precondition: K5 must complete the K6 LED return and open isolation');
+  softwareTxLatchCache.set(mute, latched);
+  return latched;
+};
+
+const softwareTxSwing = ({ mute, speakerTone, codecTone }) => {
+  const els = softwareTxElements({ mute, codecTone });
+  const latched = softwareTxLatch(mute);
   const speaker = speakerTone ? (t) => 0.4 * Math.sin(2 * Math.PI * 1000 * t) : undefined;
   const sources = { '/VBUS': 5, '/P1': 0, '/P2~bus': 12 };
   if (speaker) sources['/P5'] = speaker;
   // Sixty periods of the 1 kHz stimulus are ample for a stable peak-to-peak ratio; observe the
   // second half (30 complete periods) without spending 600 periods on an unchanged steady state.
-  return run(sources, 60e-3, latched, true).swing;
+  return runSoftwareTx(els, sources, 60e-3, latched, true).swing;
 };
 
 test('software TX isolation: the passive LS1 microphone stays small relative to codec TX', () => {

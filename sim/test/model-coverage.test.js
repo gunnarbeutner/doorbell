@@ -18,6 +18,7 @@ import { importNetlist } from '../src/import.js';
 import { allComponents } from '../src/components/index.js';
 
 const GATED_KINDS = new Set(['diode', 'optocoupler', 'mosfet', 'protection', 'ic']);
+const netlist = importNetlist();
 
 // Each entry: { kind, match } where `match` is tested against "<lib> <value>" (the MPN often lives
 // in the value, e.g. the LDO). Keep `match` specific enough to pin the variant whose parameters were
@@ -53,7 +54,6 @@ const KNOWN_ACTIVE_PARTS = [
 ];
 
 test('model coverage: every active part matches a reviewed model entry (no silent heuristic fallback)', () => {
-  const netlist = importNetlist();
   const offenders = [];
 
   for (const c of allComponents(netlist)) {
@@ -85,7 +85,6 @@ const KNOWN_UNMODELED_PARTS = [
 ];
 
 test('model coverage: no part silently falls to the Unmodeled fallback', () => {
-  const netlist = importNetlist();
   const offenders = [];
 
   for (const c of allComponents(netlist)) {
