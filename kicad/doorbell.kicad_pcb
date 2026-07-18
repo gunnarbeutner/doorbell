@@ -25756,7 +25756,7 @@
 				)
 			)
 		)
-		(property "Description" "Door watchdog N-FET (R25·C20·D11): releases K2 ~10s nominal, qualified 2-35s (DOOR-5/6); logic-level, Vgs(th) 0.65-1.45V"
+		(property "Description" "Door watchdog N-FET (R25·C20·D11): releases K2 ~8.4s after assertion (DOOR-5); logic-level, Vgs(th) 0.65-1.45V"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
