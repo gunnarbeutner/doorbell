@@ -52,9 +52,18 @@ export default class Relay extends Component {
     return { R: (Vr * Vr) / P, nominal: Vr, pickup: 0.75 * Vr, release: 0.1 * Vr, operate: 0 };
   }
 
-  elements() {
+  elements(ctx) {
     const po = this.pinout();
-    const cm = this.coil();
+    const nominal = this.coil();
+    const cm = {
+      ...nominal,
+      R: this.param(ctx, 'coilResistance', nominal.R) * this.param(ctx, 'coilResistanceScale', 1),
+      pickup: this.param(ctx, 'pickup', nominal.pickup),
+      release: this.param(ctx, 'release', nominal.release),
+      operate: this.param(ctx, 'operateTime', nominal.operate),
+      releaseTime: this.param(ctx, 'releaseTime', /g6k/i.test(`${this.lib} ${this.value}`) ? 3e-3 : 0),
+      contactRon: this.param(ctx, 'contactRon', /g6k/i.test(`${this.lib} ${this.value}`) ? 0.1 : 0.05),
+    };
     const N = (p) => this.pins[p];
 
     const coilA = po.coil && N(po.coil[0]);
@@ -68,10 +77,10 @@ export default class Relay extends Component {
 
     for (const ct of po.contacts || []) {
       if (N(ct.com) && N(ct.no)) {
-        els.push({ type: 'RC', a: N(ct.com), b: N(ct.no), coilA, coilB, nominal: cm.nominal, pickup: cm.pickup, release: cm.release, operate: cm.operate, when: 'on', ref: this.ref, pa: ct.com, pb: ct.no });
+        els.push({ type: 'RC', a: N(ct.com), b: N(ct.no), coilA, coilB, nominal: cm.nominal, pickup: cm.pickup, release: cm.release, operate: cm.operate, releaseTime: cm.releaseTime, ron: cm.contactRon, when: 'on', ref: this.ref, pa: ct.com, pb: ct.no });
       }
       if (N(ct.com) && N(ct.nc)) {
-        els.push({ type: 'RC', a: N(ct.com), b: N(ct.nc), coilA, coilB, nominal: cm.nominal, pickup: cm.pickup, release: cm.release, operate: cm.operate, when: 'off', ref: this.ref, pa: ct.com, pb: ct.nc });
+        els.push({ type: 'RC', a: N(ct.com), b: N(ct.nc), coilA, coilB, nominal: cm.nominal, pickup: cm.pickup, release: cm.release, operate: cm.operate, releaseTime: cm.releaseTime, ron: cm.contactRon, when: 'off', ref: this.ref, pa: ct.com, pb: ct.nc });
       }
     }
 

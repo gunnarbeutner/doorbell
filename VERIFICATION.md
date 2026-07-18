@@ -77,8 +77,10 @@ schematic, read them from it.
   the auxiliary NO contact directly grounds `K6_RET` and gates K6's LED return, R35 = 10 kΩ pulls up
   that physical node, and R44 = 100 kΩ is the only connection from it to GPIO4/`K5_SENSE_N`. Check
   the worst-case R35/R44 divider against K6's recovery limits and GPIO4's V_IH/V_IL/leakage limits;
-  no GPIO4 state may open K6 before K5 physically pulls in. Confirm contact mapping and flyback-diode
-  orientation.
+  no GPIO4 state may open K6 before K5 physically pulls in. Cross-check `sim/src/corners.js` and its
+  permanent qualification test: it applies the maximum/minimum +3V3 values, opposing 1% resistor
+  tolerances, ±50 nA GPIO leakage, GPIO thresholds and a 20% guard below K6's 25 °C recovery limits.
+  Confirm contact mapping and flyback-diode orientation.
 - Confirm the door pair reproduces S1's **break-before-make**: the NC seal-in-break opens before
   the door bridge closes (RC-delayed), and the max-on-time one-shot releases the bridge in bounded
   time (DOOR-4 / DOOR-5). Cross-check the timing in `sim/test`.

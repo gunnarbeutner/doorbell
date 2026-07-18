@@ -45,10 +45,16 @@ export default class Diode extends Component {
     return { Is: 1e-14, n: 1 }; // general silicon diode (~0.6-0.7 V)
   }
 
-  elements() {
+  elements(ctx) {
     if (this.pins['1'] == null || this.pins['2'] == null) return [];
 
-    const m = this.model();
+    const nominal = this.model();
+    const m = {
+      ...nominal,
+      Is: this.param(ctx, 'Is', nominal.Is),
+      n: this.param(ctx, 'n', nominal.n),
+      vbr: this.param(ctx, 'vbr', nominal.vbr),
+    };
     const a = this.pins['2'],
       b = this.pins['1']; // KiCad Device:D pin 1 = cathode, pin 2 = anode
 

@@ -25,13 +25,17 @@ export default class DiodeArray extends Component {
       : { Is: 1e-14, n: 1 }; // silicon
   }
 
-  elements() {
+  elements(ctx) {
     const A = this.byFn(/^A/i) || this.pins['1']; // anode   -> low rail
     const K = this.byFn(/^K/i) || this.pins['2']; // cathode -> high rail
     const COM = this.byFn(/COM/i) || this.pins['3']; // shared midpoint = protected node
     if (A == null || K == null || COM == null) return [];
 
-    const m = this.model();
+    const nominal = this.model();
+    const m = {
+      Is: this.param(ctx, 'Is', nominal.Is),
+      n: this.param(ctx, 'n', nominal.n),
+    };
     return [
       { type: 'D', a: A, b: COM, value: null, Is: m.Is, n: m.n, ref: this.ref + 'a' }, // A  ─▶├ COM
       { type: 'D', a: COM, b: K, value: null, Is: m.Is, n: m.n, ref: this.ref + 'b' }, // COM ─▶├ K

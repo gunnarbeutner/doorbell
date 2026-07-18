@@ -46,7 +46,7 @@ export default class Mosfet extends Component {
     return { vth: 2, ron: 1 };
   }
 
-  elements() {
+  elements(ctx) {
     // One MOS per FET. A single FET exposes G/D/S; a dual (e.g. 2N7002DW) exposes G1/D1/S1 +
     // G2/D2/S2 — group the pins by the unit index trailing the role letter and emit a MOS for each,
     // so both halves are modelled instead of one franken-FET mixed from byFn across the units.
@@ -57,7 +57,14 @@ export default class Mosfet extends Component {
       (fets[mm[2] || '0'] ??= {})[mm[1].toLowerCase()] = this.pins[p];
     }
 
-    const m = this.model();
+    const nominal = this.model();
+    const m = {
+      vth: this.param(ctx, 'vth', nominal.vth),
+      ron: this.param(ctx, 'ron', nominal.ron),
+      gateLeakage: this.param(ctx, 'gateLeakage', 0),
+    };
+    if (!(m.vth > 0) || !(m.ron > 0) || !Number.isFinite(m.gateLeakage))
+      throw new RangeError(`${this.ref} MOS parameters must be finite with positive vth/ron`);
     const keys = Object.keys(fets);
 
     // Keep ref = the footprint refdes for every FET (no per-unit suffix): MOS is stateless, so the
@@ -66,7 +73,10 @@ export default class Mosfet extends Component {
     return keys.flatMap((k) => {
       const { g, d, s } = fets[k];
       if (g == null || d == null || s == null) return [];
-      return [{ type: 'MOS', g, d, s, vth: m.vth, ron: m.ron, ref: this.ref }];
+      const out = [{ type: 'MOS', g, d, s, vth: m.vth, ron: m.ron, ref: this.ref }];
+      // Positive gate leakage flows gate -> source; use a negative value for the opposite polarity.
+      if (m.gateLeakage) out.push({ type: 'I', a: g, b: s, value: m.gateLeakage, ref: `${this.ref}~iggs` });
+      return out;
     });
   }
 }

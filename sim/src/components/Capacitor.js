@@ -8,9 +8,16 @@ export default class Capacitor extends Component {
     return cat.includes('capacitor') || name === 'c' || name.startsWith('c_') || Component.refPre(c.ref) === 'C';
   }
 
-  elements() {
-    const v = this.val();
-    if (v == null) return [];
+  elements(ctx) {
+    const nominal = this.val();
+    if (nominal == null) return [];
+    const value = this.param(ctx, 'value', nominal);
+    const scale = this.param(ctx, 'valueScale', 1);
+    const leakResistance = this.param(ctx, 'leakResistance', null);
+    const v = value * scale;
+    if (!(v > 0)) throw new RangeError(`${this.ref} capacitance must be positive`);
+    if (leakResistance != null && !(leakResistance > 0))
+      throw new RangeError(`${this.ref} leakResistance must be positive`);
 
     const p = this.connectedPins();
     if (p.length !== 2) return [];
@@ -25,7 +32,10 @@ export default class Capacitor extends Component {
       e.minus = this.pins['2'];
     }
 
-    return [e];
+    const els = [e];
+    if (leakResistance != null)
+      els.push({ type: 'R', a: p[0], b: p[1], value: leakResistance, ref: `${this.ref}~leak`, pa: k[0], pb: k[1] });
+    return els;
   }
 
   // voltage rating (parsed from a "…/50V" value) and, for electrolytics, reverse-polarity.

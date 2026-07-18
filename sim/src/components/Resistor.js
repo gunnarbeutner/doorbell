@@ -14,7 +14,12 @@ export default class Resistor extends Component {
     );
   }
 
-  elements() {
-    return twoTerminal(this, 'R');
+  elements(ctx) {
+    const nominal = this.val();
+    if (nominal == null) return [];
+    const value = this.param(ctx, 'value', nominal);
+    const scale = this.param(ctx, 'valueScale', 1);
+    if (!(value > 0) || !(scale > 0)) throw new RangeError(`${this.ref} resistance must be positive`);
+    return twoTerminal(this, 'R', value * scale);
   }
 }

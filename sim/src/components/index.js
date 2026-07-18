@@ -1,5 +1,6 @@
 // Component registry: classify a raw component to its class, and assemble simulation elements.
 import { simulate, gndOf } from '../engine.js';
+import { ParameterOverrides } from '../parameters.js';
 
 import EsdArray from './EsdArray.js';
 import Relay from './Relay.js';
@@ -72,16 +73,21 @@ export function defaultSwitchState(netlist) {
 // drivers are emitted from inside the part — the test then injects only the real rails (VBUS/GND/bus).
 // `omit` drops a component's elements entirely (fault injection: a dead part whose pins all dangle,
 // e.g. a failed-open SSR) — the netlist itself stays untouched.
-export function buildElements(netlist, { switchState = {}, extra = [], program = {}, omit = [] } = {}) {
+export function buildElements(netlist, { switchState = {}, extra = [], program = {}, omit = [], params = {} } = {}) {
   const els = [];
   const skip = new Set(omit);
+  const components = allComponents(netlist);
+  const resolved = new ParameterOverrides(params, components.map((c) => c.ref));
 
-  for (const c of allComponents(netlist)) {
+  for (const c of components) {
     if (skip.has(c.ref)) continue;
-    for (const e of c.elements({ switchState, program })) els.push(e);
+    for (const e of c.elements({ switchState, program, params: resolved })) els.push(e);
   }
 
   for (const e of extra) els.push(e);
+
+  resolved.assertConsumed();
+  els.resolvedParams = resolved.snapshot();
 
   return els;
 }
@@ -90,9 +96,9 @@ export function buildElements(netlist, { switchState = {}, extra = [], program =
 // ({ref: pressed?}), set IC behavioural state via `program` ({ref: {...}}, e.g. an ESP GPIO driven
 // through its real output impedance rather than pinned as an ideal source), inject any hand-built
 // `extra` elements (e.g. a surge through a series resistor); returns the final node voltages + floating flags.
-export function runDC(netlist, { sources = {}, switches = {}, extra = [], program = {}, omit = [], gnd, T = 0.04, dt = 20e-6 } = {}) {
+export function runDC(netlist, { sources = {}, switches = {}, extra = [], program = {}, omit = [], params = {}, gnd, T = 0.04, dt = 20e-6 } = {}) {
   const switchState = { ...defaultSwitchState(netlist), ...switches };
-  const els = buildElements(netlist, { switchState, extra, program, omit });
+  const els = buildElements(netlist, { switchState, extra, program, omit, params });
 
   const srcs = Object.entries(sources).map(([net, v]) => ({
     net,
@@ -104,5 +110,5 @@ export function runDC(netlist, { sources = {}, switches = {}, extra = [], progra
   const V = {};
   for (const n in r.v) V[n] = r.v[n][r.v[n].length - 1];
 
-  return { V, floating: r.floating, RES: r };
+  return { V, floating: r.floating, RES: r, resolvedParams: els.resolvedParams };
 }

@@ -39,33 +39,56 @@ export default class Photomos extends Component {
     return Photomos.isDual(c) ? has(1, 2, 3, 4, 5, 6, 7, 8) : has(1, 2, 3, 4);
   }
 
-  // form / on-resistance / LED operate threshold by part type (lib nickname, Value, or footprint)
+  // Form, output resistance, LED operate/recovery thresholds and switching time by exact part.
+  // Nominal runs use the fitted part's typical timing/resistance and conservative switching thresholds;
+  // deterministic qualification corners explicitly apply maximum Vf/Ron/switching-time limits.
   model() {
     const tag = Photomos.tag(this);
 
     // GAQW212GS: dual 1-Form-A (normally open). Ron ~0.8 Ω/ch (datasheet typ; max 2 Ω) — immaterial in the
     // talk path vs the 2.2 k series R28 anyway; operate ≤2 mA (each LED is driven at ~7 mA from a 300 Ω R).
-    if (Photomos.isDual(this)) return { form: 'NO', ron: 0.8, iop: 2e-3, dual: true };
+    if (Photomos.isDual(this)) return {
+      form: 'NO', ron: 0.8, iOperate: 2e-3, iRelease: 0.35e-3, vRelease: 0.7,
+      tOperate: 0.2e-3, tRelease: 0.05e-3, dual: true,
+    };
 
     // GAQY412EH: 1-Form-B (normally closed), Ron ~1 Ω, operate ~3 mA (footprint SMD-4 ...-W6.4-...-LS9.6)
-    if (/gaqy412/.test(tag) || /smd-4_l[\d.]+-w6\.4-p2\.54-ls9\.6/.test(tag)) return { form: 'NC', ron: 1, iop: 3e-3 };
+    if (/gaqy412/.test(tag) || /smd-4_l[\d.]+-w6\.4-p2\.54-ls9\.6/.test(tag)) return {
+      form: 'NC', ron: 1, iOperate: 3e-3, iRelease: 0.1e-3, vRelease: 0.5,
+      tOperate: 0.5e-3, tRelease: 0.25e-3,
+    };
 
     // GAQY212GS: 1-Form-A (normally open), Ron ~0.24 Ω (datasheet typ), operate ≤2 mA
-    return { form: 'NO', ron: 0.24, iop: 2e-3 };
+    return {
+      form: 'NO', ron: 0.24, iOperate: 2e-3, iRelease: 0.35e-3, vRelease: 0.7,
+      tOperate: 0.2e-3, tRelease: 0.05e-3,
+    };
   }
 
-  elements() {
+  elements(ctx) {
     const P = this.pins;
-    const m = this.model();
+    const nominal = this.model();
+    const m = {
+      ...nominal,
+      ron: this.param(ctx, 'ron', nominal.ron),
+      iOperate: this.param(ctx, 'iOperate', nominal.iOperate),
+      iRelease: this.param(ctx, 'iRelease', nominal.iRelease),
+      vRelease: this.param(ctx, 'vRelease', nominal.vRelease),
+      tOperate: this.param(ctx, 'tOperate', nominal.tOperate),
+      tRelease: this.param(ctx, 'tRelease', nominal.tRelease),
+      ledIs: this.param(ctx, 'ledIs', 1e-13),
+      ledN: this.param(ctx, 'ledN', 1.9),
+    };
 
     // closedWhenOn = does the output conduct when the LED is energized? (NO yes, NC no). LED diode
-    // params mirror the optocoupler's IR LED (~1.1 V forward). iop = the LED forward operate current.
+    // params mirror the optocoupler's IR LED; iOperate/iRelease are the forward-current hysteresis.
     const ch = (a, b, c, d) => ({
       type: 'SSR',
       a: P[a], b: P[b], c: P[c], d: P[d],
       pa: a, pb: b, pc: c, pd: d,
       closedWhenOn: m.form !== 'NC',
-      ron: m.ron, iop: m.iop, Is: 1e-13, n: 1.9,
+      ron: m.ron, iOperate: m.iOperate, iRelease: m.iRelease, vRelease: m.vRelease,
+      tOperate: m.tOperate, tRelease: m.tRelease, Is: m.ledIs, n: m.ledN,
       ref: this.ref,
     });
 

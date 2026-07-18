@@ -6,6 +6,7 @@
   "description": "Schematic-importing circuit simulator and PCB viewer for the doorbell controller.",
   "scripts": {
     "dev": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "test:monte-carlo": "node diagnostics/corner-monte-carlo.js"
   }
 }

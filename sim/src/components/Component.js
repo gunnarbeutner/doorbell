@@ -15,6 +15,9 @@ export class Component {
     this.lib = c.lib || '';
     this.value = c.value || '';
     this.footprint = c.footprint || '';
+    this.fields = c.fields || {};
+    this.description = c.description || '';
+    this.datasheet = c.datasheet || '';
     this.pins = c.pins || {};
     this.pinfn = c.pinfn || {};
   }
@@ -44,6 +47,14 @@ export class Component {
   // Default: none. (Most parts realise their drivers as V+bleed elements in elements() instead.)
   sources(ctx) {
     return [];
+  }
+
+  // Read a strict, per-reference corner override. `buildElements()` supplies the resolver; direct
+  // model inspection without a build context retains the nominal value.
+  param(ctx, name, nominal) {
+    return ctx && ctx.params && typeof ctx.params.get === 'function'
+      ? ctx.params.get(this.ref, name, nominal)
+      : nominal;
   }
 
   // ---- safety invariants ----

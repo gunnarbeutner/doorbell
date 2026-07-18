@@ -223,13 +223,15 @@ shared party line across apartments.
   open; and **(b)** the held latch **bridges the live line 4 onto line 3** (P4→K1_COM→line 2→line 3).
   Mirroring S1's transfer removes both. *(Met: **K4** — an NC SSR in series in the seal-in — drops the
   latch on a door-open, and **Q3** (an AO3400A logic-level N-FET) **+ R17·C18 RC** delays K2's make
-  ~38 ms behind K4's break for a hardware break-before-make; see DESIGN.md "Door-open mirrors S1".
+  ~38 ms nominal behind K4's break for a hardware break-before-make. The deterministic fitted-part
+  corner gate requires at least 12 ms break lead and a K2 make by 75 ms; see DESIGN.md "Door-open mirrors S1".
   Verified in `sim/test`.)*
 - **DOOR-5 (SHOULD)** A board door-open SHOULD **self-terminate in bounded time even if the firmware
   hangs** with the drive asserted: a stuck-high door line MUST NOT hold the opener indefinitely (the
   TV20/S is passive — it does not time-limit the bridge). *(Met: a hardware **max-on-time watchdog** —
   an RC one-shot, R25 (10 MΩ) · C20 (2.2 µF) (τ ≈ 22 s), whose FET (**Q4**) gates the K2 drive off
-  ~8.4 s typ after assertion (fast corner ~3.1 s, clear of the 1.75 s pulse — DOOR-6) regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
+  ~10.1 s in the nominal simulator after assertion (fast corner ~2.47 s, clear of the 1.75 s pulse
+  plus the required margin — DOOR-6) regardless of the GPIO, releasing the P2↔P3 bridge; D11 re-arms it when the
   line drops. Reset/brownout already drops the opener via the gate pull-downs (DOOR-3 / SAFE-6), and the
   ESPHome task watchdog reboots a hang — so this is defense-in-depth. See DESIGN.md "Door-open
   max-on-time watchdog". Verified in `sim/test`.)*
@@ -237,9 +239,13 @@ shared party line across apartments.
   the AO3400A Vgs(th) (0.65–1.45 V) × R/C tolerance × MLCC bias/temperature derating, its release time MUST
   stay **above the firmware door pulse + margin** at the fast corner (so a legitimate open is never
   truncated) and **below a stated upper bound** at the slow corner (so a hung drive is bounded).
-  *(Met by R25 (10 MΩ) · C20 (2.2 µF): fast corner ~3.1 s > the 1.75 s pulse; ~8.4 s typ; ~18 s slow
-  corner — and the logic-level Vgs(th) keeps the watchdog provable even at the worst-case VOH/leakage
-  plateau — see DESIGN.md "Door-open max-on-time watchdog".)*
+  The stated qualification window is **2.0–35 s**: the lower limit is the 1.75 s firmware pulse plus
+  0.25 s margin, and the upper limit bounds a hung command. *(Met by R25 (10 MΩ) · C20 (2.2 µF):
+  the deterministic fitted-part model gives ~2.47 s fast, ~10.1 s nominal and ~32.4 s slow. It
+  combines R tolerance, an explicit 0.65–1.10 effective-MLCC engineering bound, AO3400A
+  Vgs(th)=0.65–1.45 V and full ±100 nA gate leakage, plus SGM2212/GPIO drive corners. Samsung's
+  public DC-bias curves are typical rather than guaranteed, so the effective-capacitance bound remains
+  an explicit design assumption. See DESIGN.md "Door-open max-on-time watchdog" and `sim/src/corners.js`.)*
 
 ## FW — Firmware host & control
 

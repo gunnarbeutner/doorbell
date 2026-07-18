@@ -33,7 +33,7 @@ export default class Ldo extends Component {
     return 22; // SGM2212 (main +3V3 LDO): VIN abs-max 22 V
   }
 
-  elements() {
+  elements(ctx) {
     const pinOf = (re) => {
       for (const p in this.pinfn) if (re.test(this.pinfn[p])) return p;
       return null;
@@ -49,7 +49,9 @@ export default class Ldo extends Component {
 
     // regulated output (target from the output net name, e.g. "AVDD_PRE"/"+3V3" -> 3.3 V); 0.3 V dropout.
     // pinVin/pinVout let the trace-flow place the LDO's pass-through current (I_in ~ I_out) on the right pads.
-    return [{ type: 'LDO', vin, vout, gnd, vreg: netV(vout) || 3.3, drop: 0.3, ref: this.ref, pinVin: pvin, pinVout: pvout }];
+    const vreg = this.param(ctx, 'vreg', netV(vout) || 3.3);
+    const drop = this.param(ctx, 'drop', 0.3);
+    return [{ type: 'LDO', vin, vout, gnd, vreg, drop, ref: this.ref, pinVin: pvin, pinVout: pvout }];
   }
 
   // VIN abs-max is per part (SGM2212 22 V, LP5907 6 V); the output must never sit above the input.

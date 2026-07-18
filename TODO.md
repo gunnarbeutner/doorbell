@@ -20,20 +20,6 @@ order—for example, some firmware work must wait for fabricated hardware regard
       the current HEAD.
       - **Worst case:** the assembled V4.2 board or service cable obstructs the Talk/door actuator or prevents the enclosure from closing, forcing a respin.
 
-- [ ] **9/10 — Close the remaining GPIO4/K6-return corner qualification before ordering V4.2.**
-      The current candidate now keeps K5 auxiliary NO pin 5, K6's LED cathode and R35 = 10 kΩ on the
-      physical `K6_RET` net. R44 = 100 kΩ is the only connection from that node to active-low
-      `K5_SENSE_N`/GPIO4. Thus K5 still grounds K6's LED directly, R35 retains the auxiliary-contact
-      wetting current, and a low or faulted GPIO forms a weak R35/R44 divider instead of bypassing the
-      contact. Permanent simulator regressions now assert the two net memberships, normal active-low
-      sensing, continued ring pickup with GPIO4 hard-low, normal K6 operation with GPIO4 hard-high,
-      and the nominal 0.5 V / 0.1 mA recovery limits. Before ordering, complete and record the corner
-      calculation for maximum +3V3, 1% resistor tolerances, ESP32 input leakage and V_IH/V_IL, and
-      review K6's temperature-characterization trend because its tabulated recovery guarantees are at
-      25 °C. Extend the regression if the simulator can represent those corners cleanly, then rerun
-      schematic/PCB parity and the full simulator gate.
-      - **Worst case:** one GPIO configuration or pin fault suppresses the raw-P4 ring path, so K5 never pulls in and the passive handset misses a call while locally powered.
-
 ## Firmware (`firmware/doorbell.yaml`)
 
 - [ ] **9/10 — Implement K5-confirmed P4 isolation only after a fabricated V4.2 board passes passive bring-up.**

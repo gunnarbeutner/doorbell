@@ -1,7 +1,9 @@
 import { Component } from './Component.js';
 
-const FUSE_RON = 1e-3; // intact: a milliohm
-const FUSE_I2T = 0.3; // melting I²t (A²·s of over-rating current) at which it opens — a representative fast fuse
+// Littelfuse 0466001.NRHF: nominal cold resistance 75 mΩ, nominal melting I²t 0.0423 A²s
+// (docs/datasheets/littelfuse_0466_datasheet.pdf, electrical-characteristics table).
+const FUSE_RON = 0.075;
+const FUSE_I2T = 0.0423;
 
 export default class Fuse extends Component {
   static kind = 'fuse';
@@ -17,19 +19,22 @@ export default class Fuse extends Component {
     return m ? +m[1] : 1; // "1A fast (466)" -> 1 A
   }
 
-  // A behavioural fuse: a near-short that integrates over-rating current (melting I²t) and latches OPEN
+  // A behavioural fuse: its fitted cold resistance integrates over-rating current (melting I²t) and latches OPEN
   // once it melts — the SAFE-7 fail-safe. The engine carries the melt/blown state across steps (type 'FUSE').
-  elements() {
+  elements(ctx) {
     const p = this.connectedPins();
     if (p.length !== 2) return [];
 
     const k = Object.keys(this.pins);
+    const ron = this.param(ctx, 'ron', FUSE_RON);
+    const irate = this.param(ctx, 'irate', this.rating());
+    const i2t = this.param(ctx, 'i2t', FUSE_I2T);
     return [
-      { type: 'FUSE', a: p[0], b: p[1], ron: FUSE_RON, irate: this.rating(), i2t: FUSE_I2T, melt: 0, blown: false, ref: this.ref, pa: k[0], pb: k[1] },
+      { type: 'FUSE', a: p[0], b: p[1], ron, irate, i2t, melt: 0, blown: false, ref: this.ref, pa: k[0], pb: k[1] },
     ];
   }
 
-  // an intact fuse drops ~0 V (≈1 mΩ); a large drop ⇒ it has melted open (a fault drove it past its rating).
+  // an intact fuse has 75 mΩ nominal cold resistance; a large drop means it has melted open.
   checkSafe(vn) {
     const out = [];
     const k = Object.keys(this.pins);

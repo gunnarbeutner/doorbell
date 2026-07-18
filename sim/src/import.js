@@ -272,7 +272,7 @@ export function importNetlist(project = 'doorbell') {
   // take all three from the same record so a part can be classified by its footprint — e.g. the PhotoMOS
   // SSRs — and not only by lib_id / value.) `recorded` tracks which refs came from a record so a dropped
   // part is caught loudly below rather than modelled as nothing.
-  const fps = {}, values = {}, libmap = {}, recorded = new Set();
+  const fps = {}, values = {}, libmap = {}, fieldmap = {}, descriptions = {}, datasheets = {}, recorded = new Set();
   for (const body of sexprComps(nl)) {
     const rm = body.match(/\(ref "([^"]+)"\)/);
     if (!rm) continue;
@@ -282,6 +282,13 @@ export function importNetlist(project = 'doorbell') {
     if (fm) fps[ref] = fm[1];
     const vm = body.match(/\(value "([^"]*)"\)/);
     if (vm) values[ref] = vm[1];
+    const dm = body.match(/\(description "([^"]*)"\)/);
+    if (dm) descriptions[ref] = dm[1];
+    const dsm = body.match(/\(datasheet "([^"]*)"\)/);
+    if (dsm) datasheets[ref] = dsm[1];
+    const fields = {};
+    for (const fm of body.matchAll(/\(field\s+\(name "([^"]+)"\)\s+"([^"]*)"\)/g)) fields[fm[1]] = fm[2];
+    fieldmap[ref] = fields;
     const lm = body.match(/\(libsource\s+\(lib "([^"]*)"\)\s+\(part "([^"]*)"\)/);
     if (lm) libmap[ref] = lm[1] + ':' + lm[2];
   }
@@ -318,7 +325,15 @@ export function importNetlist(project = 'doorbell') {
   return {
     source: P.sch,
     config: readConfig(P.dir, P.sch),
-    components: Object.keys(comps).sort().map((r) => ({ ref: r, lib: libmap[r] || '', footprint: fps[r] || '', ...comps[r] })),
+    components: Object.keys(comps).sort().map((r) => ({
+      ref: r,
+      lib: libmap[r] || '',
+      footprint: fps[r] || '',
+      fields: fieldmap[r] || {},
+      description: descriptions[r] || '',
+      datasheet: datasheets[r] || '',
+      ...comps[r],
+    })),
     nets: [...nets].sort(),
     pcb: parsePcb(pcb),
   };

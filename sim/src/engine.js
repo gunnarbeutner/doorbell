@@ -54,7 +54,9 @@ function pnjlim(vnew, vold, vt, vcrit) {
 // (node voltages, cap charges, inductor currents) persisting across step() calls. An optional `seed`
 // carries that state over from a prior configuration, so a live change continues mid-run instead of
 // restarting from t = 0. `simulate()` below is just the batch driver over this.
-function createStepper(els, sources, gnd, dt, seed) {
+function createStepper(els, sources, gnd, dt, seed, { strictConvergence = true, maxNewtonIterations = 250 } = {}) {
+  if (!Number.isInteger(maxNewtonIterations) || maxNewtonIterations < 1)
+    throw new RangeError('maxNewtonIterations must be a positive integer');
   const vsrc = sources.map((s, i) => ({ type: 'V', a: s.net, b: gnd, vf: s.vf, name: 'S' + i }));
   const all = els.concat(vsrc);
   const enets = (e) =>
@@ -74,13 +76,12 @@ function createStepper(els, sources, gnd, dt, seed) {
   nodes.forEach((n, i) => (ni[n] = i));
   const N = nodes.length;
   const idx = (x) => (x === gnd ? -1 : ni[x]);
-  const branches = all.filter((e) => e.type === 'L' || e.type === 'V');
+  const branches = all.filter((e) => e.type === 'L' || e.type === 'V' || e.type === 'LDO');
   branches.forEach((e, i) => (e.bi = N + i));
   const M = N + branches.length,
     Vt = 0.025852,
     Gmin = 1e-12,
-    LDO_GM = 1e4, // LDO pass-element transconductance: vout tracks tgt to ~icur/g (a few µV); stiff but stable
-    SW_GON = 20; // closed switch / made relay contact = 50 mΩ (realistic contact R, not an ideal 0 Ω short):
+    SW_GON = 20; // closed manual switch = 50 mΩ (realistic contact R, not an ideal 0 Ω short):
   // negligible in load-limited paths, but it keeps a near-short between two stiff sources from drawing kA
   const hasD = all.some(
     (e) => e.type === 'D' || e.type === 'OPTO' || e.type === 'MOS' || e.type === 'LDO' || e.type === 'RC' || e.type === 'SSR',
@@ -94,8 +95,13 @@ function createStepper(els, sources, gnd, dt, seed) {
     if (e.type === 'RC') {
       e.coilOn = false; // relay contact latch state (hysteretic)
       e.pickupElapsed = 0;
+      e.releaseElapsed = 0;
     }
-    if (e.type === 'SSR') e.ledOn = false; // PhotoMOS LED energized latch (hysteretic, like the relay)
+    if (e.type === 'SSR') {
+      e.ledOn = false; // PhotoMOS LED energized latch (hysteretic, like the relay)
+      e.targetOn = false;
+      e.switchElapsed = 0;
+    }
     if (e.type === 'LDO') e.ldoOn = true; // pass element conducting? (gated on input being source-fed, below)
   }
   const vn = new Array(N).fill(0);
@@ -107,8 +113,16 @@ function createStepper(els, sources, gnd, dt, seed) {
     for (const e of all) {
       if (e.type === 'C' && seed.caps && e.ref in seed.caps) e.vp = seed.caps[e.ref];
       if (e.type === 'L' && seed.ind && e.ref in seed.ind) e.ip = seed.ind[e.ref];
-      if (e.type === 'RC' && seed.relays && e.ref in seed.relays) e.coilOn = seed.relays[e.ref]; // keep latch
-      if (e.type === 'SSR' && seed.ssrs && e.ref in seed.ssrs) e.ledOn = seed.ssrs[e.ref]; // keep PhotoMOS latch
+      if (e.type === 'RC' && seed.relays && e.ref in seed.relays) {
+        e.coilOn = seed.relays[e.ref]; // keep latch
+        e.releaseElapsed = seed.relayTimers?.[e.ref]?.releaseElapsed || 0;
+        e.pickupElapsed = seed.relayTimers?.[e.ref]?.pickupElapsed || 0;
+      }
+      if (e.type === 'SSR' && seed.ssrs && e.ref in seed.ssrs) {
+        e.ledOn = seed.ssrs[e.ref]; // keep PhotoMOS latch
+        e.targetOn = seed.ssrTimers?.[e.ref]?.targetOn ?? e.ledOn;
+        e.switchElapsed = seed.ssrTimers?.[e.ref]?.switchElapsed || 0;
+      }
       if (e.type === 'LDO' && seed.ldos && e.ref in seed.ldos) e.ldoOn = seed.ldos[e.ref];
     }
   }
@@ -122,7 +136,10 @@ function createStepper(els, sources, gnd, dt, seed) {
 
   // advance one Backward-Euler timestep to time t, Newton-iterating the nonlinear devices
   function step(t) {
-    const mx = hasD ? 100 : 1;
+    const mx = hasD ? maxNewtonIterations : 1;
+    let converged = !hasD;
+    let worstDelta = 0;
+    let worstNode = '';
     for (let it = 0; it < mx; it++) {
       const A = Array.from({ length: M }, () => new Array(M).fill(0)),
         b = new Array(M).fill(0);
@@ -141,11 +158,20 @@ function createStepper(els, sources, gnd, dt, seed) {
         if (a >= 0) b[a] -= I;
         if (c >= 0) b[c] += I;
       };
+      const vccsS = (op, on, ip, inn, gm) => {
+        if (op >= 0 && ip >= 0) A[op][ip] += gm;
+        if (op >= 0 && inn >= 0) A[op][inn] -= gm;
+        if (on >= 0 && ip >= 0) A[on][ip] -= gm;
+        if (on >= 0 && inn >= 0) A[on][inn] += gm;
+      };
       for (const e of all) {
         const a = idx(e.a),
           c = idx(e.b);
         if (e.type === 'R') {
           gS(a, c, 1 / (e.value || 1e12));
+        } else if (e.type === 'I') {
+          e.icur = typeof e.vf === 'function' ? e.vf(t) : e.value || 0;
+          iS(a, c, e.icur);
         } else if (e.type === 'FUSE') {
           gS(a, c, e.blown ? 1e-12 : 1 / (e.ron || 1e-3)); // a near-short until it melts open, then ~open
         } else if (e.type === 'SW') {
@@ -184,26 +210,24 @@ function createStepper(els, sources, gnd, dt, seed) {
           }
           b[e.bi] += e.vf(t);
         } else if (e.type === 'LDO') {
-          // Unidirectional pass element: it SOURCES current vin->vout to pull vout up to tgt, drawing the
-          // same current from vin (I_in ~ I_out), but it can never SINK (vout->vin). Modeled as a one-sided
-          // transconductance icur = g*max(0, tgt - (vout-vgnd)) >= 0, so it is always passive. A stiff ideal
-          // source instead would sink when the output cap overshoots tgt, pumping charge uphill into the
-          // input and manufacturing energy — that ran a disconnected input rail away to ~100 kV.
+          // Regulating pass branch: constrain VOUT-GND to min(vreg, VIN-drop) while transferring the
+          // output branch current back to VIN. Including the branch in both KCL equations conserves power
+          // flow (the regulator does not create load current at its output). `ldoOn` is gated by a real
+          // source-fed path to VIN, so a disconnected input cannot regulate a charged output forever.
           const tgt = Math.min(e.vreg, Math.max(0, Vof(e.vin) - e.drop)),
             o = idx(e.vout),
             gp = idx(e.gnd),
-            vi = idx(e.vin),
-            g = LDO_GM;
-          if (e.ldoOn && tgt > Vof(e.vout) - Vof(e.gnd)) {
-            // conducting: transconductance g between vin and vout, referenced to vgnd (vout -> tgt, drawing
-            // the same current from vin). Gated above on the input being source-fed AND vout below tgt.
-            if (o >= 0) A[o][o] += g;
-            if (o >= 0 && gp >= 0) A[o][gp] -= g;
-            if (vi >= 0 && o >= 0) A[vi][o] -= g;
-            if (vi >= 0 && gp >= 0) A[vi][gp] += g;
-            if (o >= 0) b[o] += g * tgt;
-            if (vi >= 0) b[vi] -= g * tgt;
-          } // else off: vout left to its load/cap (no sinking back into vin)
+            vi = idx(e.vin);
+          if (e.ldoOn) {
+            if (o >= 0) A[o][e.bi] += 1;
+            if (gp >= 0) A[gp][e.bi] -= 1;
+            if (vi >= 0) A[vi][e.bi] -= 1; // draw from VIN exactly what the output branch delivers
+            if (o >= 0) A[e.bi][o] += 1;
+            if (gp >= 0) A[e.bi][gp] -= 1;
+            b[e.bi] += tgt;
+          } else {
+            A[e.bi][e.bi] += 1; // off branch: zero current, output left to its load/cap
+          }
         } else if (e.type === 'D') {
           const Is = e.Is,
             nVt = e.n * Vt,
@@ -226,7 +250,7 @@ function createStepper(els, sources, gnd, dt, seed) {
         } else if (e.type === 'RC') {
           // contact follows the latched coil state (set once per step with hysteresis), not the
           // instantaneous coil voltage -> models the relay's mechanical lag and avoids chatter
-          gS(a, c, e.when === 'always' || (e.when === 'on') === e.coilOn ? SW_GON : 1e-15);
+          gS(a, c, e.when === 'always' || (e.when === 'on') === e.coilOn ? 1 / (e.ron || 0.05) : 1e-15);
         } // open << Gmin
         else if (e.type === 'OPTO') {
           const Is = e.Is,
@@ -236,10 +260,18 @@ function createStepper(els, sources, gnd, dt, seed) {
           e.vl = vd;
           const ex = Math.exp(Math.min(vd / nVt, 40)),
             Id = Is * (ex - 1),
-            gd = (Is / nVt) * ex + Gmin;
+            dId = (Is / nVt) * ex,
+            gd = dId + Gmin;
           gS(a, c, gd);
           iS(a, c, Id - gd * vd);
-          iS(idx(e.c), idx(e.e), e.ctr * Math.max(0, Id)); // collector sinks CTR*Iled
+          // Linearize the CTR-controlled collector current against LED voltage as a VCCS. Treating it
+          // as a fixed current from the previous Newton iterate can produce a two-state limit cycle.
+          const oc = idx(e.c), oe = idx(e.e);
+          if (Id > 0) {
+            vccsS(oc, oe, a, c, e.ctr * dId);
+            iS(oc, oe, e.ctr * (Id - dId * vd));
+          }
+          iS(oc, oe, e.darkCurrent || 0);
 
           // Anti-saturation clamp: a stiff diode from emitter to collector. Once the collector is
           // dragged down to the emitter it conducts hard, pinning Vce ~ 0 (a real phototransistor
@@ -276,16 +308,33 @@ function createStepper(els, sources, gnd, dt, seed) {
       }
       const x = solve(A, b);
       let conv = true; // SPICE-style |Δv| < reltol·|v| + vntol (a pure
+      worstDelta = 0;
+      worstNode = '';
+      const nextV = new Array(N);
       for (let i = 0; i < N; i++) {
         const xi = x[i] || 0;
-        if (Math.abs(xi - vn[i]) > 1e-3 * Math.abs(xi) + 1e-6) conv = false;
-        vn[i] = xi;
+        nextV[i] = xi;
+        const delta = Math.abs(xi - vn[i]);
+        if (delta > worstDelta) {
+          worstDelta = delta;
+          worstNode = nodes[i];
+        }
+        if (delta > 1e-3 * Math.abs(xi) + 1e-6) conv = false;
       } // absolute tol limit-cycles on low-current diode nodes)
+      // Damped Newton update prevents a forward/off pair of diode states from alternating forever on
+      // weakly anchored nodes. Once the raw solve meets tolerance, accept the exact solution.
+      const alpha = !hasD || conv ? 1 : 0.5;
+      for (let i = 0; i < N; i++) vn[i] += alpha * (nextV[i] - vn[i]);
       all.forEach((e) => {
-        if (e.type === 'L' || e.type === 'V') e.icur = x[e.bi] || 0; // branch current
+        if (e.type === 'L' || e.type === 'V' || e.type === 'LDO') e.icur = x[e.bi] || 0; // branch current
       });
-      if (!hasD || conv) break;
+      if (!hasD || conv) {
+        converged = true;
+        break;
+      }
     }
+    if (!converged && strictConvergence)
+      throw new Error(`nonlinear solve did not converge at t=${t.toExponential(6)} s (max |Δv|=${worstDelta.toExponential(3)} V at ${worstNode} after ${mx} iterations)`);
     // a regulator only works if its input rail is actually fed by a source. On a disconnected input it must
     // switch OFF, not keep regulating a charged cap — that manufactures energy, and the resulting on/off
     // feedback oscillates and stalls the Newton solve. So gate each LDO on whether its vin reaches a source.
@@ -298,16 +347,22 @@ function createStepper(els, sources, gnd, dt, seed) {
       }
       if (e.type === 'L') e.ip = e.icur;
       if (e.type === 'LDO') {
-        const tgt = Math.min(e.vreg, Math.max(0, Vof(e.vin) - e.drop)),
-          head = tgt - (Vof(e.vout) - Vof(e.gnd));
-        e.icur = e.ldoOn && head > 0 ? LDO_GM * head : 0; // current sourced vin->vout this step (>= 0)
+        e.icur = e.ldoOn ? Math.max(0, -(e.icur || 0)) : 0; // source delivery vin->vout (>= 0)
         e.ldoOn = srcReach.has(e.vin); // gate next step on the input being source-fed
       }
       if (e.type === 'RC') {
         const vc = e.coilA && e.coilB ? Math.abs(Vof(e.coilA) - Vof(e.coilB)) : 0;
         if (e.coilOn) {
-          e.coilOn = vc >= e.release; // released contacts return once the coil falls below its hold voltage
-          if (!e.coilOn) e.pickupElapsed = 0;
+          if (vc <= e.release) {
+            e.releaseElapsed += dt;
+            if (e.releaseElapsed >= (e.releaseTime || 0)) {
+              e.coilOn = false;
+              e.pickupElapsed = 0;
+              e.releaseElapsed = 0;
+            }
+          } else {
+            e.releaseElapsed = 0;
+          }
         } else if (vc >= e.pickup) {
           // Must-operate is a *static* voltage.  A coil close to that threshold has almost no excess
           // magnetic force above its return spring, so it cannot complete an operation in the same time
@@ -319,22 +374,44 @@ function createStepper(els, sources, gnd, dt, seed) {
           const drive = den > 0 ? Math.max(0, (vc ** 2 - e.pickup ** 2) / den) : 1;
           e.pickupElapsed += dt * drive;
           e.coilOn = e.pickupElapsed >= (e.operate || 0);
+          if (e.coilOn) e.releaseElapsed = 0;
         } else {
           e.pickupElapsed = 0;
         }
       }
       if (e.type === 'SSR') {
-        // latch the LED-energized state from its forward current (operate at >= iop, release at < iop/2),
-        // mirroring the relay's hysteretic mechanical lag so the output doesn't chatter near threshold
-        const Iled = e.Is * (Math.exp(Math.min((Vof(e.a) - Vof(e.b)) / (e.n * Vt), 40)) - 1);
-        e.ledOn = e.ledOn ? Iled >= 0.5 * e.iop : Iled >= e.iop;
+        // Guaranteed LED operate/recovery hysteresis plus optically specified turn-on/off delays.
+        const vLed = Vof(e.a) - Vof(e.b);
+        const Iled = e.Is * (Math.exp(Math.min(vLed / (e.n * Vt), 40)) - 1);
+        const iOperate = e.iOperate ?? e.iop;
+        const iRelease = e.iRelease ?? 0.5 * iOperate;
+        let target = e.ledOn;
+        if (e.ledOn) {
+          if (Iled <= iRelease || (e.vRelease != null && vLed <= e.vRelease)) target = false;
+        } else if (Iled >= iOperate) {
+          target = true;
+        }
+        if (target !== e.targetOn) {
+          e.targetOn = target;
+          e.switchElapsed = 0;
+        }
+        if (target !== e.ledOn) {
+          e.switchElapsed += dt;
+          const delay = target ? (e.tOperate || 0) : (e.tRelease || 0);
+          if (e.switchElapsed >= delay) {
+            e.ledOn = target;
+            e.switchElapsed = 0;
+          }
+        } else {
+          e.switchElapsed = 0;
+        }
       }
       if (e.type === 'FUSE') {
         // melting-I²t fuse: integrate the over-rating current; once the melt energy is reached it latches
         // open (the SAFE-7 fail-safe — a clamping TVS or a short blows it and disconnects the board).
         const I = e.blown ? 0 : (Vof(e.a) - Vof(e.b)) / (e.ron || 1e-3);
         e.icur = I;
-        e.melt = (e.melt || 0) + Math.max(0, I * I - e.irate * e.irate) * dt;
+        e.melt = (e.melt || 0) + (Math.abs(I) > e.irate ? I * I * dt : 0);
         if (!e.blown && e.melt >= e.i2t) e.blown = true;
       }
     }
@@ -404,13 +481,19 @@ function createStepper(els, sources, gnd, dt, seed) {
 
   // snapshot the persistent state so a rebuilt stepper can continue from here (live config change)
   function extractState() {
-    const st = { vn: {}, caps: {}, ind: {}, relays: {}, ssrs: {}, ldos: {} };
+    const st = { vn: {}, caps: {}, ind: {}, relays: {}, relayTimers: {}, ssrs: {}, ssrTimers: {}, ldos: {} };
     for (const n of nodes) st.vn[n] = vn[ni[n]];
     for (const e of all) {
       if (e.type === 'C' && e.ref != null) st.caps[e.ref] = e.vp;
       if (e.type === 'L' && e.ref != null) st.ind[e.ref] = e.ip;
-      if (e.type === 'RC' && e.ref != null) st.relays[e.ref] = e.coilOn;
-      if (e.type === 'SSR' && e.ref != null) st.ssrs[e.ref] = e.ledOn;
+      if (e.type === 'RC' && e.ref != null) {
+        st.relays[e.ref] = e.coilOn;
+        st.relayTimers[e.ref] = { pickupElapsed: e.pickupElapsed, releaseElapsed: e.releaseElapsed };
+      }
+      if (e.type === 'SSR' && e.ref != null) {
+        st.ssrs[e.ref] = e.ledOn;
+        st.ssrTimers[e.ref] = { targetOn: e.targetOn, switchElapsed: e.switchElapsed };
+      }
       if (e.type === 'LDO' && e.ref != null) st.ldos[e.ref] = e.ldoOn;
     }
     return st;
@@ -430,16 +513,21 @@ function createStepper(els, sources, gnd, dt, seed) {
         const I = (Vof(e.a) - Vof(e.b)) / (e.value || 1e12);
         push(e.ref, e.pa, e.a, -I);
         push(e.ref, e.pb, e.b, I);
+      } else if (e.type === 'I') {
+        const I = e.icur || 0;
+        push(e.ref, e.pa, e.a, -I);
+        push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'FUSE') {
         const I = e.blown ? 0 : (Vof(e.a) - Vof(e.b)) / (e.ron || 1e-3);
         push(e.ref, e.pa, e.a, -I);
         push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'SW' || e.type === 'RC') {
-        // a closed switch / made relay contact is a low-R link (G = SW_GON); its current is otherwise
+        // a closed switch / made relay contact is a low-R link; its current is otherwise
         // invisible to the trace flow, so a net reached only through a contact (e.g. /P4 through K3)
         // shows nothing. Conduction state matches the stamp: SW -> e.closed; RC -> latched coil state.
         const on = e.type === 'SW' ? e.closed : e.when === 'always' || (e.when === 'on') === e.coilOn;
-        const I = on ? (Vof(e.a) - Vof(e.b)) * SW_GON : 0;
+        const gon = e.type === 'RC' ? 1 / (e.ron || 0.05) : SW_GON;
+        const I = on ? (Vof(e.a) - Vof(e.b)) * gon : 0;
         push(e.ref, e.pa, e.a, -I);
         push(e.ref, e.pb, e.b, I);
       } else if (e.type === 'L' || e.type === 'C') {
@@ -460,7 +548,7 @@ function createStepper(els, sources, gnd, dt, seed) {
         // collector–emitter current = the CTR current source minus the anti-saturation clamp diode (e->c,
         // Is = 1e-6) that pins Vce once the collector bottoms out; omitting the clamp left the collector and
         // emitter nets up to ~mA out of balance when the phototransistor saturates.
-        const Ic = e.ctr * Math.max(0, Id);
+        const Ic = e.ctr * Math.max(0, Id) + (e.darkCurrent || 0);
         const Iclamp = 1e-6 * (Math.exp(Math.min((Vof(e.e) - Vof(e.c)) / Vt, 40)) - 1);
         push(e.ref, undefined, e.c, -Ic + Iclamp);
         push(e.ref, undefined, e.e, Ic - Iclamp);

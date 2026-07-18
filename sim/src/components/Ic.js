@@ -89,12 +89,13 @@ export default class Ic extends Component {
         const ag = this.pins[pinByFn(/AGND/)] || this.pins[pinByFn(/GND/)];
         const av = this.pins[pinByFn(/AVDD/)];
         const o = prog.out; // scalar/vf -> both legs; { p, n } -> per-leg
+        const codecRout = this.param(ctx, 'codecRout', ROUT);
         const driveOut = (tag, pin, vf) => {
           if (!pin || !ag) return;
           const core = `${this.ref}~${tag}`;
           els.push({ type: 'V', a: core, b: ag, vf, ref: `${this.ref}~${tag}_v` });
           els.push({ type: 'R', a: core, b: ag, value: BLEED, ref: `${this.ref}~${tag}_bl` });
-          els.push({ type: 'R', a: core, b: pin, value: ROUT, ref: `${this.ref}~${tag}_r` });
+          els.push({ type: 'R', a: core, b: pin, value: codecRout, ref: `${this.ref}~${tag}_r` });
           if (av) els.push({ type: 'D', a: pin, b: av, Is: 1e-14, n: 1, ref: `${this.ref}~${tag}_ch` }); // ESD clamp -> AVDD
           els.push({ type: 'D', a: ag, b: pin, Is: 1e-14, n: 1, ref: `${this.ref}~${tag}_cl` }); // ESD clamp -> AGND
         };
@@ -104,6 +105,9 @@ export default class Ic extends Component {
 
       if (/esp32/i.test(this.lib)) {
         const g = this.pins[pinByFn(/^GND/)];
+        const gpioHigh = this.param(ctx, 'gpioHigh', 3.3);
+        const gpioLow = this.param(ctx, 'gpioLow', 0);
+        const gpioRout = this.param(ctx, 'gpioRout', RGPIO);
         for (const net in prog) {
           if (net[0] !== '/') continue; // a GPIO net to drive (e.g. '/PTT_DRV')
           let pin = null;
@@ -112,10 +116,25 @@ export default class Ic extends Component {
           for (const p in this.pins) if (this.pins[p] === net && /IO\d/.test(this.pinfn[p] || '')) pin = p;
           if (!pin || !g) continue;
           const core = `${this.ref}~g${pin}`;
-          els.push({ type: 'V', a: core, b: g, vf: asVf(prog[net]), ref: `${this.ref}~g${pin}_v` });
+          const requested = prog[net];
+          const mapLevel = (value) => value === 3.3 ? gpioHigh : value === 0 ? gpioLow : value;
+          const driven = typeof requested === 'function' ? (time) => mapLevel(requested(time)) : mapLevel(requested);
+          els.push({ type: 'V', a: core, b: g, vf: asVf(driven), ref: `${this.ref}~g${pin}_v` });
           els.push({ type: 'R', a: core, b: g, value: BLEED, ref: `${this.ref}~g${pin}_bl` });
-          els.push({ type: 'R', a: core, b: this.pins[pin], value: RGPIO, ref: `${this.ref}~g${pin}_r` });
+          els.push({ type: 'R', a: core, b: this.pins[pin], value: gpioRout, ref: `${this.ref}~g${pin}_r` });
         }
+      }
+    }
+
+    if (/esp32/i.test(this.lib)) {
+      const g = this.pins[pinByFn(/^GND/)];
+      const inputLeakage = this.param(ctx, 'inputLeakage', {});
+      if (inputLeakage == null || typeof inputLeakage !== 'object' || Array.isArray(inputLeakage))
+        throw new TypeError(`${this.ref}.inputLeakage must map net names to signed amperes`);
+      for (const [net, current] of Object.entries(inputLeakage)) {
+        if (!Object.values(this.pins).includes(net)) throw new Error(`${this.ref}.inputLeakage references unconnected net ${net}`);
+        if (!Number.isFinite(current)) throw new TypeError(`${this.ref}.inputLeakage.${net} must be finite`);
+        if (current) els.push({ type: 'I', a: net, b: g, value: current, ref: `${this.ref}~ileak:${net}` });
       }
     }
 

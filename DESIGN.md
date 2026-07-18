@@ -95,8 +95,11 @@ two extra parts, both on the **DOOR_DRV** gate:
   so the passive/unpowered latch is untouched (MODE-1 / SAFE-4).
 - **The break leads the make.** K4's LED is driven straight off DOOR_DRV (opens immediately), while K2's
   LED returns to ground through **Q3**, a logic-level N-FET whose gate (DELAY_GATE) ramps on
-  **R17 (100 kΩ) · C18 (1 µF) ≈ 38 ms** — so K2 closes after K4 (≥~14 ms at the fast
-  Vgs(th)/cap corner), well past the ~6 ms latch drop. The V4.1 emulated-bus bench test measured
+  **R17 (100 kΩ) · C18 (1 µF) ≈ 38 ms** — so K2 closes after K4. The fitted-part deterministic
+  corner gate includes resistor tolerance, the effective-capacitance bound, AO3400A threshold/leakage,
+  GPIO drive and the opposing PhotoMOS switching-time limits; it requires ≥12 ms break lead and a
+  K2 make by 75 ms (current extremes are ~13.1 ms lead and ~70.7 ms latest make), well past the ~6 ms
+  latch drop. The V4.1 emulated-bus bench test measured
   approximately **33–34 ms** from P4 falling (K5 released) to P3 rising (K2 made), with no premature
   P3 pulse; see the [scope capture](docs/scope/door-break-before-make.png). One gate (DOOR_DRV),
   hardware-timed break-before-make; the firmware just pulses the door line.
@@ -113,7 +116,12 @@ closed) ⇒ fail-safe (SAFE-6).
 
 **Door-open watchdog (DOOR-5).** Q4, R25, C20 and D11 form a hardware one-shot that releases K2 even
 if firmware leaves DOOR_DRV asserted. Its deliberately loose RC/FET threshold range starts after the
-normal 1.75 s pulse and bounds a stuck command to seconds rather than indefinitely; D11 quickly
+normal 1.75 s pulse and bounds a stuck command to seconds rather than indefinitely. The deterministic
+qualification window is 2.0–35 s; the fitted-part model currently resolves ~2.47 s fast, ~10.1 s
+nominal and ~32.4 s slow. The extremes include 1% R25, a 0.65–1.10 effective C20 scale, the complete
+AO3400A Vgs(th) and gate-leakage limits, and the SGM2212/GPIO drive model. The capacitance scale is a
+conservative engineering bound because the exact Samsung X5R part's public DC-bias/temperature curves
+are typical, not a production minimum. D11 quickly
 re-arms it when the command drops. K4 may remain open during such a fault, which only keeps the
 session latch released. Simulation covers the timing envelope, and the deployed V4.1 board released
 the opener after roughly 6–7 s when deliberately held on. After a 250 ms DOOR_DRV-low interval, a
@@ -537,13 +545,15 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
   cannot open K6 until K5 has physically pulled in, and K5 release immediately removes LED current.
   The physical LED/contact node is `K6_RET`: R35 = 10 kΩ biases it from +3V3 and preserves the
   auxiliary-contact wetting current. GPIO4/`K5_SENSE_N` reaches `K6_RET` only through R44 = 100 kΩ.
-  A GPIO hard-low therefore forms a weak R35/R44 divider rather than an alternate K6 return; at
-  nominal values it leaves only about 0.30 V and 30 µA across the LED, below K6's 25 °C guaranteed
-  0.5 V / 0.1 mA recovery limits. A hard-high GPIO while K5 is closed is likewise limited to about
-  33 µA. GPIO4 must remain input-only with both internal pulls disabled in normal firmware. The
-  structural and driven-pin fault cases are simulator regressions; resistor/leakage/temperature
-  corner sign-off remains a pre-order gate in `TODO.md`. JP2 is an open recovery jumper directly
-  across K6's output.
+  A GPIO hard-low therefore forms a weak R35/R44 divider rather than an alternate K6 return. At the
+  maximum-rail, opposing-1%-tolerance pin-fault corner it leaves about 0.305 V across the LED (the
+  divider carries ~30 µA; modeled LED current is negligible), below the qualification limits of
+  0.4 V / 0.08 mA. Those limits retain 20% engineering headroom below K6's 25 °C guaranteed
+  0.5 V / 0.1 mA recovery values because its temperature curve is typical-only. A hard-high GPIO
+  while K5 is closed is limited to ~34 µA. GPIO4 must remain input-only with both internal pulls
+  disabled in normal firmware. Structural, driven-pin, resistor, LDO, ESP leakage/threshold,
+  K5 timing/contact and K6 switching/recovery corners are permanent simulator regressions. JP2 is an
+  open recovery jumper directly across K6's output.
 - K2/K3 remain independent; K1's GPIO drive is independent but its LED return is mechanically gated
   by SW4. **K4 is ganged with K2 on DOOR_DRV** — the break-before-make door pair. Firmware holds
   **K3 de-energised whenever a ring should be heard**. V4.1 field operation
