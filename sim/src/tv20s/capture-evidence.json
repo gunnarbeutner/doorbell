@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "installation": "installed STR TV20/S bus captured with the stock WF26/V3 endpoint",
+  "captures": {
+    "own-ring-timeout": {
+      "run": "our-ring-no-door",
+      "topology": "IN_P4 bonded to P4; stock WF26 and V3 attached",
+      "channels": {
+        "1": { "net": "P4", "confidence": "inferred-and-cross-checked" },
+        "2": { "net": "P2", "confidence": "inferred-and-cross-checked" },
+        "3": { "net": "P3", "confidence": "inferred-and-cross-checked" }
+      },
+      "events_s": { "ring": 31.25, "gong_end": 35.1, "timeout": 89.794 },
+      "files": {
+        "ch1.csv.zst": "69e8ca494931349dc923dfe10476c465d30aba289a6b657ea67ebf32e8e9c152",
+        "ch2.csv.zst": "fbf463afd56d1520e4aa721bd8a78358b024d0d4846809635fc7969b1840de6c"
+      }
+    },
+    "door-idle": {
+      "run": "door-open-standalone",
+      "topology": "V3 direct P2-P3 bridge; no active call",
+      "channels": {
+        "1": { "net": "P4", "confidence": "confirmed" },
+        "2": { "net": "P2", "confidence": "confirmed" },
+        "3": { "net": "P3", "confidence": "confirmed" }
+      },
+      "events_s": { "door_make": 1.75, "door_break": 3.5 },
+      "files": {
+        "ch2.csv.zst": "fb8360c0ede8b3328b65bd763546d68545a9f54ed88e24dfd2f17595414dc3d9",
+        "ch3.csv.zst": "3eabfa0429489c2eb1a26d718a511d72d68d2f4daba4ccfdd4e020a876f91abf"
+      }
+    },
+    "door-held-neighbour": {
+      "run": "door-open-call-held",
+      "topology": "one neighbour WF26 session held; V3 direct P2-P3 bridge",
+      "channels": {
+        "1": { "net": "P4", "confidence": "confirmed" },
+        "2": { "net": "P2", "confidence": "confirmed" },
+        "3": { "net": "P3", "confidence": "confirmed" }
+      },
+      "events_s": { "ring": 5.62, "door_make": 15.891, "door_break": 17.65, "timeout": 69.671 },
+      "files": {
+        "ch2.csv.zst": "1703d2f97019d84887a5b9d107499faebb9a720048f922f9aea3fc2231cd0d04",
+        "ch3.csv.zst": "34ceafde05fef80d9fc57d74384b09ba147c0f1df666c3476e7766382b6ab086"
+      }
+    },
+    "neighbour-ring-door": {
+      "run": "neighbour-ring-door-open",
+      "topology": "one neighbour WF26 receives its private P4 ring and operates its door switch",
+      "channels": {
+        "1": { "net": "P4", "confidence": "confirmed" },
+        "2": { "net": "P2", "confidence": "confirmed" },
+        "3": { "net": "P3", "confidence": "confirmed" }
+      },
+      "events_s": { "ring": 3.5, "door_make": 9.5, "door_break": 10.5 },
+      "files": {
+        "ch1.csv.zst": "46a2fd112406f408ae0386029085b0c3d184d475046aeb1b250b73891e6352a9",
+        "ch2.csv.zst": "27b301cd5b75c51c5bc234a94abd389adceefe546ba1ce6f15b8c041e8cecff9",
+        "ch3.csv.zst": "24cfc2bdfc1d2c0867fb3391c69f8ddda6a646f151b6fb452d9aa3c0ed74d262"
+      }
+    },
+    "floor-call": {
+      "run": "floor-call-p5",
+      "topology": "stock WF26 and V3; no V4; external ET button drives P5",
+      "channels": {
+        "1": { "net": "P4", "confidence": "inferred" },
+        "2": { "net": "P2", "confidence": "inferred" },
+        "3": { "net": "P3", "confidence": "inferred" },
+        "4": { "net": "P5", "confidence": "confirmed" }
+      },
+      "files": {
+        "ch4.csv.zst": "057efae304ad8bdc9ad086257cc074da34b4b1ed34195315c442a436a106f0d2"
+      }
+    }
+  }
+}

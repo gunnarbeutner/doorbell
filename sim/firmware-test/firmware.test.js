@@ -9,6 +9,7 @@ import { before, test } from 'node:test';
 import { FirmwareCircuitRunner, HeadCircuitFixture } from './circuit-runner.js';
 import { OWN_RING_ONSET } from '../test-support/fixtures/captured-waveforms.js';
 import { createSimulatorServer, stopAllSessions } from '../server.js';
+import { TV20S_CALIBRATION } from '../src/tv20s/calibration.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
@@ -51,6 +52,7 @@ async function runScenario(name, {
   slowdownMs = 0,
   responseVersion,
   expectedExit = 0,
+  fixtureOptions = {},
 } = {}) {
   const temporary = await mkdtemp(join(tmpdir(), 'doorbell-fw-'));
   const socketPath = join(temporary, 'runner.sock');
@@ -59,7 +61,7 @@ async function runScenario(name, {
     { at: endAt, type: 'command', command: expectedExit === 90 ? 'CRASH' : 'EXIT' },
   ]);
   const runner = new FirmwareCircuitRunner({ socketPath, startMs, events: allEvents, slowdownMs,
-    responseVersion });
+    responseVersion, fixtureOptions });
   let stdout = '';
   let stderr = '';
   try {
@@ -419,6 +421,29 @@ test('ring-triggered auto-open with no greeting never asserts K1', async () => {
   assert.ok(door[0].at >= 1850);
 });
 
+test('TV20/S own-ring auto-open makes the direct P2-P3 door bridge during the gong', async () => {
+  const { timeline, fixture } = await runScenario('TV20/S own-ring auto-open', {
+    fixtureOptions: { environment: 'tv20s' },
+    events: [
+      { at: 20, type: 'command', command: 'SET:auto_open:1' },
+      { at: 100, type: 'environment', action: 'own-ring' },
+    ],
+    endAt: 2400,
+  });
+  const door = writes(timeline, 'DOOR_DRV', true);
+  assert.equal(door.length, 1);
+  assert.ok(door[0].at >= 1850, 'TV20/S auto-open must retain the 1.75 s ring minimum');
+  assert.equal(writes(timeline, 'PTT_DRV', true).length, 0);
+
+  const sample = fixture.snapshot();
+  assert.equal(sample.ssrs.K2, true);
+  assert.equal(sample.environment.phase, 'door');
+  assert.equal(sample.environment.callOwner, 'local');
+  assert.ok(Math.abs(sample.voltages['/P2'] - sample.voltages['/P3']) <=
+    TV20S_CALIBRATION.p3.terminal_classification.door_max_difference_v,
+  `auto-open did not bridge P2/P3: ${sample.voltages['/P2'].toFixed(3)} V/${sample.voltages['/P3'].toFixed(3)} V`);
+});
+
 test('physical Talk takes ownership: media, K1, K6 and K3 return passive', async () => {
   const { timeline } = await runScenario('physical PTT handoff', {
     events: [
@@ -715,10 +740,12 @@ test('interactive server has one firmware-backed HEAD mode with virtual pause/st
   let id;
   try {
     const createdResponse = await fetch(`${origin}/api/sessions`, { method: 'POST',
-      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ board: 'doorbell' }) });
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ board: 'doorbell', environment: 'lab' }) });
     assert.equal(createdResponse.status, 201);
     const created = await createdResponse.json();
     id = created.id;
+    assert.equal(created.environment, 'lab');
     assert.equal(created.capabilities.firmware, true);
     assert.equal(created.policy.haConnected, true, 'interactive HA link should default connected');
     assert.equal(created.config.sources.find((item) => item.net === '/P2').impedance, 90);
@@ -765,17 +792,56 @@ test('interactive server has one firmware-backed HEAD mode with virtual pause/st
       'the queued P2 edit must begin affecting TALK_BRIDGE on the explicit step');
 
     await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'command', command: 'PRESS:door' }) });
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'speed', value: 'max' }) });
+    await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.firmware.outputs.DOOR_DRV === true &&
+        message.sample.ssrs.K2 === true);
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'speed', value: 0 }) });
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'snapshot' }) });
+    const beforeFreeze = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.firmware.outputs.DOOR_DRV === true &&
+        message.sample.ssrs.K2 === true);
+
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
       headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'crash' }) });
-    const crashed = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
-      message.type === 'sample' && message.firmware.crashed);
-    assert.equal(crashed.sample.at, 2, 'crash must preserve virtual circuit time');
-    assert.ok(Object.values(crashed.firmware.outputs).every((value) => value === false));
+    const frozen = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.firmware.frozen);
+    assert.equal(frozen.sample.at, beforeFreeze.sample.at, 'freeze must preserve virtual circuit time');
+    assert.deepEqual(frozen.sample, beforeFreeze.sample,
+      'freezing execution must retain the complete driven physical state');
+    assert.equal(frozen.firmware.outputs.DOOR_DRV, true,
+      'a wedged MCU must retain its last GPIO output value');
+
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'speed', value: 'max' }) });
+    const watchdogReleased = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.firmware.frozen &&
+        message.firmware.outputs.DOOR_DRV === true && message.sample.ssrs.K2 === false);
+    assert.ok(watchdogReleased.sample.at > frozen.sample.at,
+      'the physical watchdog release must consume virtual time');
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'speed', value: 0 }) });
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'snapshot' }) });
+    const beforeReboot = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.firmware.frozen &&
+        message.firmware.outputs.DOOR_DRV === true && message.sample.ssrs.K2 === false &&
+        message.sample.at >= watchdogReleased.sample.at);
 
     await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
       headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'reboot' }) });
     const rebooted = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
-      message.type === 'sample' && message.firmware.connected && !message.firmware.crashed);
-    assert.equal(rebooted.sample.at, 2, 'reboot must preserve physical circuit time');
+      message.type === 'sample' && message.firmware.connected && !message.firmware.frozen);
+    assert.equal(rebooted.sample.at, beforeReboot.sample.at,
+      'reboot must preserve physical circuit time');
+    assert.ok(Object.values(rebooted.firmware.outputs).every((value) => value === false));
 
     const overvoltageConfig = { ...created.config, sources: created.config.sources.map((item) =>
       item.net === '/VBUS' ? { ...item, v1: 50 } : item) };
@@ -807,11 +873,117 @@ test('interactive server has one firmware-backed HEAD mode with virtual pause/st
     const wf = await wfResponse.json();
     id = wf.id;
     assert.equal(wf.capabilities.firmware, false, 'the reference handset must remain passive');
+    assert.equal(wf.environment, 'tv20s');
+    assert.deepEqual(wf.config.sources, [], 'the TV20/S environment must own the passive bus terminals');
     await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
       headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
     const wfStepped = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
       message.type === 'sample' && message.sample.at >= 1);
     assert.equal(wfStepped.board, 'wf26');
+    assert.equal(wfStepped.sample.environment.mode, 'tv20s');
+
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'environment', action: 'own-ring' }) });
+    const wfPending = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at === wfStepped.sample.at).catch((error) => {
+      error.message = `waiting for paused WF26 TV20/S sample: ${error.message}`;
+      throw error;
+    });
+    assert.deepEqual(wfPending.sample, wfStepped.sample,
+      'paused TV20/S stimulus must not mutate the passive WF26 circuit');
+
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'speed', value: 'max' }) });
+    const wfRinging = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.relays.WF26_K1 === true &&
+        message.sample.environment.phase === 'held').catch((error) => {
+      error.message = `waiting for WF26 K1 ring latch: ${error.message}`;
+      throw error;
+    });
+    assert.equal(wfRinging.sample.environment.callOwner, 'local');
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'speed', value: 0 }) });
+
+    const pttConfig = { ...wf.config, switches: { ...wf.config.switches, S2: true } };
+    const pttResponse = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'configure', config: pttConfig }) });
+    assert.equal(pttResponse.status, 202);
+    const pttStepResponse = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
+    assert.equal(pttStepResponse.status, 202);
+    const wfTalking = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at > wfRinging.sample.at && message.sample.environment.talk);
+    assert.equal(wfTalking.sample.environment.phase, 'talk');
+    assert.ok(wfTalking.sample.voltages['/P4'] > 8.5,
+      `stock Talk must retain the P4 session bias, got ${wfTalking.sample.voltages['/P4'].toFixed(2)} V`);
+    assert.ok(wfTalking.sample.voltages['/R1_BRIDGE'] > 0.7 &&
+      wfTalking.sample.voltages['/R1_BRIDGE'] < 1.3,
+    `stock R1_BRIDGE/P3 must be the low side of R1, got ${wfTalking.sample.voltages['/R1_BRIDGE'].toFixed(2)} V`);
+
+    const listenConfig = { ...wf.config, switches: { ...wf.config.switches, S2: false } };
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'configure', config: listenConfig }) });
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'environment', action: 'timeout-now' }) });
+    await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'speed', value: 'max' }) });
+    const wfTimedOut = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at > wfTalking.sample.at &&
+        message.sample.environment.phase === 'idle' && message.sample.relays.WF26_K1 === false);
+    assert.equal(wfTimedOut.sample.environment.callOwner, null,
+      'the TV20/S timeout must electrically release the passive WF26 latch');
+  } finally {
+    if (id) await fetch(`${origin}/api/sessions/${id}`, { method: 'DELETE' }).catch(() => {});
+    await stopAllSessions();
+    await new Promise((resolvePromise) => server.close(resolvePromise));
+  }
+});
+
+test('interactive TV20/S events are queued at the paused virtual-time boundary', async () => {
+  const server = createSimulatorServer();
+  await new Promise((resolvePromise, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolvePromise);
+  });
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  let id;
+  try {
+    const createdResponse = await fetch(`${origin}/api/sessions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ board: 'doorbell' }) });
+    assert.equal(createdResponse.status, 201);
+    const created = await createdResponse.json();
+    id = created.id;
+    assert.equal(created.environment, 'tv20s');
+    assert.deepEqual(created.config.sources.map((item) => item.net), ['/VBUS']);
+
+    let response = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
+    assert.equal(response.status, 202);
+    const before = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at === 1 && message.firmware.connected);
+    assert.equal(before.sample.environment.callOwner, null);
+
+    response = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'environment', action: 'own-ring' }) });
+    assert.equal(response.status, 202);
+    const pending = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at === 1);
+    assert.deepEqual(pending.sample, before.sample,
+      'a paused TV20/S event must preserve the complete circuit snapshot');
+
+    response = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'step' }) });
+    assert.equal(response.status, 202);
+    const after = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
+      message.type === 'sample' && message.sample.at >= 2 && message.sample.environment.callOwner === 'local');
+    assert.notEqual(after.sample.voltages['/P4'], before.sample.voltages['/P4']);
   } finally {
     if (id) await fetch(`${origin}/api/sessions/${id}`, { method: 'DELETE' }).catch(() => {});
     await stopAllSessions();

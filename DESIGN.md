@@ -535,10 +535,22 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
   doorbell execution path. Each browser session owns an isolated server worker, host process, Unix
   socket and preferences directory; the browser only submits circuit/policy controls and renders SSE
   samples. ESPHome sleep requests pace a server-controlled virtual horizon (pause, 1×, 10×, maximum or
-  1 ms step), so U1/U3 writes remain ordered with circuit transitions. A crash removes their program
-  drivers while preserving physical reactive/relay/SSR/fuse state; a reboot reconnects at that state,
-  while full reset starts over. The separately selectable WF26 reference remains passive and has no
-  firmware process.
+  1 ms step), so U1/U3 writes remain ordered with circuit transitions. **Freeze firmware** stops host
+  execution but retains the last U1/U3 drive state, modeling a wedged MCU; the circuit keeps evolving,
+  so the independent door watchdog can clear K2 despite a frozen-high `DOOR_DRV`. Reboot resets program
+  outputs while preserving physical reactive/relay/SSR/fuse state, and full reset starts over. The
+  separately selectable WF26 reference remains passive and has no
+  firmware process. Both endpoints default to a synthetic TV20/S terminal environment calibrated to
+  the repository captures. It composes a second live WF26 topology for the supported one-neighbour case
+  and derives ring, floor-call, door, session and timeout behavior from virtual time. The TV20/S core
+  drives and observes only P1–P5; it does not inspect DUT relay, switch, SSR or firmware state. The
+  manual circuit lab remains selectable for arbitrary sources. The field-proven 2.2 kΩ Talk handshake
+  is classified from the terminal impedance and exposed as a supported state; the unmeasured TV20/S
+  audio gain is not synthesized. The stock WF26's `R1_BRIDGE` is the P3/low side of R1 when S2 is
+  pressed and therefore falls near 1 V in the terminal-equivalent model; the main board's differently
+  placed `TALK_BRIDGE` stays on the P2/high side of R28 near the session bias. Other intermediate opener impedances, multiple neighbours and
+  overlapping events fail explicitly instead of being invented; `sim/src/tv20s/` records the supported
+  envelope and evidence hashes.
 
   **R36 (100 kΩ) + JP1
   (factory-bridged)** bleed `CHIME_POS` to GND while K3 is open, discharging C19's 22 µF

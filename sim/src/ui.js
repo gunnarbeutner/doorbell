@@ -6,6 +6,8 @@ import { buildTraceGraph, traceCurrents } from './traceflow.js';
 
 async function boot() {
 const BOARD = new URLSearchParams(location.search).get('board') || 'doorbell';
+const requestedEnvironment = new URLSearchParams(location.search).get('environment') ||
+  'tv20s';
 async function requestJson(url, options) {
   const response = await fetch(url, options);
   const value = await response.json();
@@ -15,7 +17,7 @@ async function requestJson(url, options) {
 const [NETLIST, SESSION] = await Promise.all([
   requestJson('/netlist.json?board=' + encodeURIComponent(BOARD)),
   requestJson('/api/sessions', { method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ board: BOARD }) }),
+    body: JSON.stringify({ board: BOARD, environment: requestedEnvironment }) }),
 ]);
 const PCB = NETLIST.pcb;
 if (PCB) PCB.segments.forEach((s, i) => (s.idx = i)); // segment index for per-segment flow lookup
@@ -76,12 +78,21 @@ let selectedNets = new Set(),
   evId = 0,
   lastEvCount = -1; // so the events panel only re-renders when the log changes
 let actionBarrier = Promise.resolve();
+let environmentState = { mode: SESSION.environment };
 const hideLayers = new Set(NETLIST.config?.hideLayers || []); // default-off layers, per the board's .sim
 const visLayers = new Set((PCB ? PCB.layers : []).filter((L) => !hideLayers.has(L)));
 $('#srcname').textContent = NETLIST.source;
 // board toggle: reload with the chosen project (the importer + whole UI re-init off the new netlist)
 $('#board').value = BOARD;
 $('#board').onchange = (e) => (location.search = '?board=' + encodeURIComponent(e.target.value));
+$('#environment').value = SESSION.environment;
+$('#environment').onchange = (event) => {
+  const params = new URLSearchParams({ board: BOARD, environment: event.target.value });
+  location.search = '?' + params.toString();
+};
+$('#talkBiasHint').textContent = BOARD === 'wf26'
+  ? 'WF26 R1_BRIDGE is the P3 side of R1: it falls near 1 V when Talk loads it. P4 remains at the session bias.'
+  : 'TALK_BRIDGE is the P2 side of R28 and remains near the session bias; TX_OUT/P3 is the low side.';
 function netOpts(sel, cur) {
   sel.innerHTML = '';
   for (const n of nets) {
@@ -1053,7 +1064,7 @@ function redraw() {
 
 function status(detail = '') {
   const pace = activeSpeed === 'max' ? 'max' : `${activeSpeed}×`;
-  const fw = BOARD === 'doorbell' ? ` · firmware ${firmwareState?.crashed ? 'crashed' : firmwareState?.connected ? 'connected' : 'starting'}` : '';
+  const fw = BOARD === 'doorbell' ? ` · firmware ${firmwareState?.frozen ? 'frozen' : firmwareState?.connected ? 'connected' : 'starting'}` : '';
   $('#status').textContent = `${running ? '▶ running ' + pace : '⏸ paused'} · t = ${(simT * 1e3).toFixed(1)} ms${fw}${detail ? ' · ' + detail : ''}`;
 }
 
@@ -1220,7 +1231,14 @@ function updateFirmware(state) {
   const outputs = Object.entries(state.outputs || {}).map(([name, value]) => `${name}=${value ? 1 : 0}`).join(' ');
   const entities = Object.entries(state.entities || {}).filter(([, value]) => value).map(([name]) => name).join(', ') || 'none';
   const media = state.media?.active ? `${state.media.name} (${state.media.duration} ms)` : 'idle';
-  $('#fwState').textContent = `${state.crashed ? 'CRASHED' : state.connected ? 'connected' : 'starting'} · ${outputs} · events: ${entities} · media: ${media}`;
+  $('#fwState').textContent = `${state.frozen ? 'FROZEN' : state.connected ? 'connected' : 'starting'} · ${outputs} · events: ${entities} · media: ${media}`;
+}
+
+function updateEnvironment(state) {
+  environmentState = state || { mode: SESSION.environment };
+  if (environmentState.mode !== 'tv20s') return;
+  const owner = environmentState.callOwner ? ` · ${environmentState.callOwner}` : '';
+  $('#tv20sState').textContent = `${environmentState.calibration || 'uncalibrated'} · ${environmentState.phase || 'starting'}${owner}`;
 }
 
 function loadConfig(next) {
@@ -1292,10 +1310,20 @@ $('#fwFault').onchange = (event) => {
   firmwareCommand(command);
 };
 
+const environmentAction = (action) => enqueueAction({ type: 'environment', action });
+$('#tvOwnRing').onclick = () => environmentAction('own-ring');
+$('#tvNeighbourRing').onclick = () => environmentAction('neighbour-ring');
+$('#tvFloorStart').onclick = () => environmentAction('floor-call-start');
+$('#tvFloorStop').onclick = () => environmentAction('floor-call-stop');
+$('#tvNeighbourDoor').onclick = () => environmentAction('neighbour-door');
+$('#tvTimeout').onclick = () => environmentAction('timeout-now');
+
 // Initialize from the worker's authoritative configuration, then subscribe before starting time.
 RES = { t: [], v: {}, floating: {} };
 loadConfig(SESSION.config);
 loadPolicyDefaults();
+$('#circuitLab').style.display = SESSION.environment === 'lab' ? '' : 'none';
+$('#tv20sControls').style.display = SESSION.environment === 'tv20s' ? '' : 'none';
 buildStack();
 if (BOARD !== 'doorbell') {
   $('#firmwareControls').style.display = 'none';
@@ -1313,6 +1341,7 @@ events.onmessage = ({ data }) => {
   const message = JSON.parse(data);
   if (message.type === 'sample') {
     updateFirmware(message.firmware);
+    updateEnvironment(message.sample.environment);
     appendSample(message.sample);
   } else if (message.type === 'firmware') updateFirmware(message.firmware);
   else if (message.type === 'fault') receiveFault(message.fault);

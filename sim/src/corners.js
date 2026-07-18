@@ -193,6 +193,7 @@ export const CORNERS = freeze({
       U2: { vreg: PART_LIMITS.sgm2212_3v3.output.max },
       K5: {
         coilResistanceScale: 1.10,
+        release: PART_LIMITS.g6k2fYDc12.mustReleaseVoltageMin.value,
         operateTime: PART_LIMITS.g6k2fYDc12.operateTimeMax.value,
         releaseTime: PART_LIMITS.g6k2fYDc12.releaseTimeMax.value,
         contactRon: PART_LIMITS.g6k2fYDc12.contactResistanceMax.value,
@@ -217,6 +218,7 @@ export const CORNERS = freeze({
       R44: { valueScale: 0.99 },
       K5: {
         coilResistanceScale: 1.10,
+        release: PART_LIMITS.g6k2fYDc12.mustReleaseVoltageMin.value,
         operateTime: PART_LIMITS.g6k2fYDc12.operateTimeMax.value,
         releaseTime: PART_LIMITS.g6k2fYDc12.releaseTimeMax.value,
         contactRon: PART_LIMITS.g6k2fYDc12.contactResistanceMax.value,

@@ -56,12 +56,13 @@
     <div class="row"><label>board <select id="board"><option value="doorbell">doorbell (main board)</option><option value="wf26">wf26 (handset)</option></select></label></div>
 
     <h2>Simulation</h2>
+    <div class="row"><label>environment <select id="environment"><option value="tv20s">TV20/S (captured model)</option><option value="lab">manual circuit lab</option></select></label></div>
     <div class="row"><label>window <input type="number" id="dur" value="200">ms</label>
       <label title="passive WF26 step; HEAD firmware mode uses adaptive electrical steps">dt <input type="number" id="dt" value="200">µs</label></div>
     <div class="row" id="timeControls"><button id="pause">⏸</button><button class="primary speed" data-speed="1">1×</button>
       <button class="speed" data-speed="10">10×</button><button class="speed" data-speed="max">max</button>
       <button id="step">+1 ms</button><button id="reset">⟲ Full reset</button></div>
-    <div class="row" id="lifecycle"><button id="crash">Crash firmware</button><button id="reboot">Reboot firmware</button></div>
+    <div class="row" id="lifecycle"><button id="crash">Freeze firmware</button><button id="reboot">Reboot firmware</button></div>
     <div class="row"><label>gnd <select id="gnd"></select></label>
       <label class="lt" title="auto-pause the instant a new abs-max / fuse fault occurs"><input type="checkbox" id="brk"> break on fault</label></div>
 
@@ -75,13 +76,25 @@
       <label><input type="checkbox" id="flow" checked> flow</label>
       <label><input type="checkbox" id="silk" checked> silk</label></div>
 
-    <h2>Sources <button id="addSrc">+</button></h2>
-    <div class="hint">net · source impedance Ω · wave · v1 amp/level · v2 offset/base · freq Hz · t1 ms</div>
-    <div id="sources"></div>
+    <section id="circuitLab">
+      <h2>Sources <button id="addSrc">+</button></h2>
+      <div class="hint">net · source impedance Ω · wave · v1 amp/level · v2 offset/base · freq Hz · t1 ms</div>
+      <div id="sources"></div>
 
-    <h2>Extra elements <button id="addEl">+</button></h2>
-    <div class="hint">kind · netA · netB · value · closed?</div>
-    <div id="elements"></div>
+      <h2>Extra elements <button id="addEl">+</button></h2>
+      <div class="hint">kind · netA · netB · value · closed?</div>
+      <div id="elements"></div>
+    </section>
+
+    <section id="tv20sControls">
+      <h2>TV20/S environment</h2>
+      <div class="row"><button id="tvOwnRing">Own ring</button><button id="tvNeighbourRing">Neighbour ring</button></div>
+      <div class="row"><button id="tvFloorStart">Floor call on</button><button id="tvFloorStop">Floor call off</button></div>
+      <div class="row"><button id="tvNeighbourDoor">Neighbour door</button><button id="tvTimeout">Timeout now</button></div>
+      <div id="tv20sState" class="hint">captured model starting…</div>
+      <div class="hint">The 2.2 kΩ Talk handshake is supported; audio gain is not synthesized. Overlapping bells and unknown opener impedances stop explicitly.</div>
+      <div id="talkBiasHint" class="hint"></div>
+    </section>
 
     <h2>Relays &amp; switches</h2>
     <div class="hint">Relays follow their coil (read-only); switches &amp; bridges toggle here.</div>

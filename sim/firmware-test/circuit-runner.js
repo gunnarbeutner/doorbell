@@ -4,6 +4,7 @@ import net from 'node:net';
 import { importNetlist } from '../src/import.js';
 import { buildElements, defaultSwitchState } from '../src/components/index.js';
 import { createStepper, gndOf, makeWave } from '../src/engine.js';
+import { Tv20sEnvironment } from '../src/tv20s/environment.js';
 
 export const PROTOCOL_VERSION = 1;
 
@@ -34,7 +35,8 @@ const EXPECTED_U1 = Object.freeze({
 const IMPORTANT_NETS = ['/P2', '/P3', '/P4', '/P5', '/K5_LATCH', '/K6_RET', '/CHIME_POS'];
 
 let cachedHeadNetlist;
-let cachedDefaultState;
+let cachedReferenceNetlist;
+const cachedDefaultStates = new Map();
 
 function liveHeadNetlist() {
   // Every suite invocation imports HEAD from KiCad. Reusing the immutable result within that
@@ -43,13 +45,19 @@ function liveHeadNetlist() {
   return cachedHeadNetlist;
 }
 
+function liveReferenceNetlist() {
+  cachedReferenceNetlist ??= importNetlist('wf26');
+  return cachedReferenceNetlist;
+}
+
 function source(value = 0) {
   if (value === null) return { kind: 'off', value: 0, offset: 0, amplitude: 0, frequency: 0 };
   return { kind: 'dc', value, offset: 0, amplitude: 0, frequency: 0 };
 }
 
 export class HeadCircuitFixture {
-  constructor({ startMs = 0, timeline = [], netlist, onSample = null } = {}) {
+  constructor({ startMs = 0, timeline = [], netlist, onSample = null, environment = 'lab',
+    referenceNetlist } = {}) {
     this.netlist = netlist || liveHeadNetlist();
     this.validateHeadMapping();
     this.timeline = timeline;
@@ -74,16 +82,25 @@ export class HeadCircuitFixture {
     this.indeterminateSince = {};
     this.lastElectrical = {};
     this.onSample = onSample;
+    if (!['lab', 'tv20s'].includes(environment)) throw new Error(`unknown circuit environment ${environment}`);
+    this.environmentMode = environment;
+    this.tv20s = environment === 'tv20s' ? new Tv20sEnvironment({
+      startMs, calibration: undefined, referenceNetlist: referenceNetlist || liveReferenceNetlist(),
+      ground: gndOf(this.netlist),
+    }) : null;
     this.interactiveSources = null;
     this.interactiveExtra = [];
     this.dcOperatingPoint = null;
+    const cacheKey = `${environment}:${this.netlist.source}`;
+    const cachedDefaultState = cachedDefaultStates.get(cacheKey);
     this.rebuild(0.0002, cachedDefaultState);
     if (cachedDefaultState === undefined) {
       // Fixture initialization represents a board whose standing rails have already reached their
       // DC operating point. Solve that point directly; do not confuse an arbitrary transient duration
       // with electrical settling. Every scenario receives its own copy of this immutable seed.
-      cachedDefaultState = this.stepper.operatingPoint(this.electricalSeconds).state;
-      this.rebuild(0.0002, cachedDefaultState);
+      const settled = this.stepper.operatingPoint(this.electricalSeconds).state;
+      cachedDefaultStates.set(cacheKey, settled);
+      this.rebuild(0.0002, settled);
     }
     this.fineUntilMs = this.nowMs;
     this.mediumUntilMs = this.nowMs;
@@ -172,6 +189,20 @@ export class HeadCircuitFixture {
 
   rebuild(dt, seed = this.stepper?.extractState()) {
     this.dt = dt;
+    if (this.tv20s) {
+      this.tv20s.syncTime(this.electricalMs);
+      const elements = buildElements(this.netlist, {
+        switchState: this.switches,
+        program: this.program(),
+        extra: this.tv20s.extraElements(),
+      });
+      const sources = [
+        { net: '/VBUS', vf: () => this.valueAt('VBUS') },
+        ...this.tv20s.sources(),
+      ];
+      this.stepper = createStepper(elements, sources, gndOf(this.netlist), dt, seed);
+      return;
+    }
     if (this.interactiveSources !== null) {
       const extra = [...this.interactiveExtra];
       const sources = [];
@@ -220,7 +251,7 @@ export class HeadCircuitFixture {
   }
 
   atOperatingPoint() {
-    if (this.externalToneActive || this.mediaActive) return false;
+    if (this.externalToneActive || this.mediaActive || this.tv20s?.hasDynamics(this.electricalMs)) return false;
     if (this.dcOperatingPoint == null) {
       try {
         this.dcOperatingPoint = this.stepper.operatingPoint(this.electricalSeconds);
@@ -242,7 +273,7 @@ export class HeadCircuitFixture {
     // numerical resolution only; they never declare the circuit settled.
     const wanted = this.electricalMs < this.fineUntilMs
       ? 0.00002
-      : this.externalToneActive ? this.externalStepSeconds
+      : this.externalToneActive || this.tv20s?.hasDynamics(this.electricalMs) ? 0.0001
         : this.electricalMs < this.mediumUntilMs ? 0.0005
           : 0.010;
     if (wanted !== this.dt) this.rebuild(wanted);
@@ -295,6 +326,20 @@ export class HeadCircuitFixture {
         throw convergenceError;
       }
       this.recordElectrical(false);
+      if (this.tv20s) {
+        const timedTopologyChanged = this.tv20s.syncTime(this.electricalMs);
+        const observedTopologyChanged = this.tv20s.observe({
+          nowMs: this.electricalMs,
+          voltage: (netName) => this.voltage(netName),
+        });
+        if (timedTopologyChanged || observedTopologyChanged) {
+          const carried = this.stepper.extractState();
+          this.invalidateOperatingPoint();
+          this.rebuild(this.dt, carried);
+          this.stepper.step(this.electricalSeconds);
+          this.recordElectrical(false);
+        }
+      }
       this.recordSample();
       if (detectInputs) {
         const { mask } = this.readInputs(false);
@@ -327,10 +372,23 @@ export class HeadCircuitFixture {
       ssrs: state.ssrs,
       fuses: state.fuses,
       injections: detailed ? this.stepper.padInjections() : [],
+      environment: this.tv20s?.snapshot(this.electricalMs) || { mode: 'lab' },
     };
   }
 
   configureCircuit({ sources, elements, switches }) {
+    if (this.tv20s) {
+      const unsupportedSources = sources.filter((item) => !item.off && item.net !== '/VBUS');
+      if (unsupportedSources.length || elements.length)
+        throw new Error('TV20/S mode owns P1-P5; switch to lab mode for manual sources or extra elements');
+      const vbus = sources.find((item) => item.net === '/VBUS' && !item.off);
+      if (vbus) this.sources.VBUS = source(Number(vbus.v1));
+      this.switches = { ...this.switches, ...switches };
+      this.invalidateOperatingPoint();
+      this.rebuild(0.00002);
+      this.recordSample();
+      return;
+    }
     this.interactiveSources = sources.map((item) => ({ ...item }));
     this.interactiveExtra = elements.map((item) => ({ ...item }));
     this.switches = { ...this.switches, ...switches };
@@ -403,7 +461,15 @@ export class HeadCircuitFixture {
   }
 
   applyEvent(event) {
-    if (event.type === 'source') {
+    if (event.type === 'environment') {
+      if (!this.tv20s) throw new Error('TV20/S events require the tv20s environment');
+      this.tv20s.apply(event.action, event.at);
+      this.tv20s.syncTime(event.at);
+      this.invalidateOperatingPoint();
+      this.rebuild(0.00002);
+      this.fineUntilMs = Math.max(this.fineUntilMs, event.at + 8);
+    } else if (event.type === 'source') {
+      if (this.tv20s) throw new Error('manual source events require the lab environment');
       this.sources[event.line] = source(event.value);
       this.refreshExternalWave();
       this.invalidateOperatingPoint();
@@ -483,16 +549,20 @@ export class HeadCircuitFixture {
   advanceTo(targetMs) {
     const target = Number(targetMs);
     if (target < this.nowMs) throw new Error(`time moved backwards: ${target} < ${this.nowMs}`);
-    const crossing = this.stepFor(target - this.electricalMs, true);
-    if (crossing !== null && crossing <= target) {
+    const environmentBoundary = this.tv20s?.nextEventAt(this.electricalMs, target) ?? null;
+    const electricalTarget = environmentBoundary == null ? target : Math.min(target, environmentBoundary);
+    const crossing = this.stepFor(electricalTarget - this.electricalMs, true);
+    if (crossing !== null && crossing <= electricalTarget) {
       // Multiple audio-rate GPIO crossings may occur inside one integer millisecond. Returning the
       // same protocol timestamp is valid because electrical state has advanced; artificially adding
       // 1 ms per crossing would let virtual time outrun the circuit and skip external events.
       this.nowMs = Math.max(this.nowMs, crossing);
       return { at: this.nowMs, reason: 'input' };
     }
-    this.nowMs = target;
-    return { at: target, reason: 'deadline' };
+    this.nowMs = electricalTarget;
+    if (environmentBoundary != null && electricalTarget === environmentBoundary)
+      return { at: electricalTarget, reason: 'environment' };
+    return { at: electricalTarget, reason: 'deadline' };
   }
 
   crash(settleMs = 100) {
@@ -540,6 +610,7 @@ export class FirmwareCircuitRunner extends EventEmitter {
     this.horizonMs = Number(startMs);
     this.paused = interactive;
     this.pendingCircuitConfig = null;
+    this.pendingEnvironmentActions = [];
     this.failure = null;
     this.connected = false;
   }
@@ -621,7 +692,10 @@ export class FirmwareCircuitRunner extends EventEmitter {
   setHorizon(targetMs) {
     if (!this.interactive) throw new Error('setHorizon is only available in interactive mode');
     this.horizonMs = Math.max(this.horizonMs, Math.trunc(Number(targetMs)));
-    if (this.horizonMs > this.fixture.nowMs) this.applyPendingCircuitConfig();
+    if (this.horizonMs > this.fixture.nowMs) {
+      this.applyPendingCircuitConfig();
+      this.applyPendingEnvironmentActions();
+    }
     this.drainInteractive();
   }
 
@@ -647,6 +721,27 @@ export class FirmwareCircuitRunner extends EventEmitter {
       this.pendingAdvance = null;
       this.sendAt('external');
     }
+  }
+
+  queueEnvironmentAction(action) {
+    if (!this.interactive) throw new Error('queueEnvironmentAction is only available in interactive mode');
+    if (!this.fixture.tv20s) throw new Error('TV20/S actions require the tv20s environment');
+    this.pendingEnvironmentActions.push(action);
+    this.emit('update', { reason: 'environment-pending', at: this.fixture.nowMs });
+    if (!this.paused && this.pendingAdvance && this.socket) {
+      this.applyPendingEnvironmentActions();
+      this.pendingAdvance = null;
+      this.sendAt('external');
+    }
+  }
+
+  applyPendingEnvironmentActions() {
+    if (!this.pendingEnvironmentActions.length) return false;
+    const actions = this.pendingEnvironmentActions.splice(0);
+    for (const action of actions)
+      this.fixture.applyEvent({ type: 'environment', action, at: this.fixture.nowMs });
+    this.emit('update', { reason: 'environment', at: this.fixture.nowMs });
+    return true;
   }
 
   cloneCircuitConfig(config) {
@@ -695,12 +790,22 @@ export class FirmwareCircuitRunner extends EventEmitter {
       this.sendAt('external');
       return;
     }
+    if (this.pendingEnvironmentActions.length && this.horizonMs > this.fixture.nowMs) {
+      this.applyPendingEnvironmentActions();
+      this.pendingAdvance = null;
+      this.sendAt('external');
+      return;
+    }
     const boundary = Math.min(deadline, this.nextEventAt(deadline), this.horizonMs);
     if (boundary <= this.fixture.nowMs) return;
     const result = this.fixture.advanceTo(boundary);
     this.pendingAdvance = null;
     if (result.reason === 'input') {
       this.sendAt('input');
+      return;
+    }
+    if (result.reason === 'environment') {
+      this.sendAt('external');
       return;
     }
     if (this.events.length && this.events[0].at <= boundary) {
@@ -767,6 +872,10 @@ export class FirmwareCircuitRunner extends EventEmitter {
       const result = this.fixture.advanceTo(boundary);
       if (result.reason === 'input') {
         this.sendAt('input');
+        return;
+      }
+      if (result.reason === 'environment') {
+        this.sendAt('external');
         return;
       }
       if (boundary < deadline || (this.events.length && this.events[0].at === boundary)) {

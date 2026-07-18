@@ -10,6 +10,7 @@
     "test:circuit": "node --test test/*.test.js",
     "test:firmware": "node --test firmware-test/firmware.test.js",
     "test:firmware:scenarios": "DOORBELL_SKIP_CONFIG=1 DOORBELL_SKIP_HOST_BUILD=1 node --test firmware-test/firmware.test.js",
+    "check:tv20s-calibration": "node diagnostics/check-tv20s-calibration.js",
     "test:monte-carlo": "node diagnostics/corner-monte-carlo.js"
   }
 }

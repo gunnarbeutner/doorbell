@@ -63,10 +63,11 @@ export async function buildHostFirmware() {
 }
 
 class Session {
-  constructor(board, object) {
+  constructor(board, object, environment) {
     this.id = randomUUID();
     this.board = board;
     this.netlist = object;
+    this.environment = environment;
     this.clients = new Set();
     this.latest = new Map();
     this.nextActionId = 0;
@@ -84,6 +85,7 @@ class Session {
     });
     const worker = new Worker(new URL('./src/session-worker.js', import.meta.url), { workerData: {
       board: this.board, netlist: this.netlist, binary: HOST_BINARY, repoRoot: REPO, sessionId: this.id,
+      environment: this.environment,
     } });
     this.worker = worker;
     worker.on('message', (message) => {
@@ -199,14 +201,18 @@ export function createSimulatorServer() {
     const path = decodeURIComponent(url.pathname);
     try {
       if (request.method === 'POST' && path === '/api/sessions') {
-        const { board = 'doorbell' } = await jsonBody(request);
+        const body = await jsonBody(request);
+        const board = body.board || 'doorbell';
         if (!PROJECTS[board]) return sendJson(response, 400, { error: `unknown board ${board}` });
-        const session = new Session(board, await netlistObject(board));
+        const environment = body.environment || 'tv20s';
+        if (!['tv20s', 'lab'].includes(environment))
+          return sendJson(response, 400, { error: `unsupported ${board} environment ${environment}` });
+        const session = new Session(board, await netlistObject(board), environment);
         sessions.set(session.id, session);
         try {
           const ready = await session.start();
-          return sendJson(response, 201, { id: session.id, board, capabilities: ready.capabilities,
-            config: ready.config, policy: ready.policy });
+          return sendJson(response, 201, { id: session.id, board, environment,
+            capabilities: ready.capabilities, config: ready.config, policy: ready.policy });
         } catch (error) {
           sessions.delete(session.id);
           await session.stop();

@@ -39,17 +39,28 @@ export default class Relay extends Component {
   }
 
   // Coil parameters from the part. The fitted G6K-2F-Y DC12 has a 1.315 kΩ coil, 9.6 V must-operate,
-  // 1.2 V must-release and 3 ms max operate time (Omron G6K datasheet). The operate time matters:
+  // 1.2 V guaranteed-release drive and 3 ms max operate/release time (Omron G6K datasheet). The
+  // installed TV20/S timeout capture shows the endpoint dropping out around the 2.8 V P2 plateau,
+  // so the nominal interactive model uses a 3 V dropout threshold. Worst-case qualification can
+  // still override `release` with the guaranteed value. The operate time matters:
   // a C1/K3 reclose pulse can exceed pickup briefly while the armature is still stationary.
   // HJR-4102 power codes are known; other relays retain the older threshold-only approximation.
   coil() {
     const s = '' + this.lib + ' ' + this.value;
     const m = s.match(/DC\s*(\d+\.?\d*)|(\d+\.?\d*)\s*V/i);
     const Vr = m ? parseFloat(m[1] || m[2]) : 5;
-    if (/g6k/i.test(s) && Vr === 12) return { R: 1315, nominal: 12, pickup: 9.6, release: 1.2, operate: 3e-3 };
+    if (/g6k/i.test(s) && Vr === 12)
+      return { R: 1315, nominal: 12, pickup: 9.6, release: 3, operate: 3e-3, releaseTime: 3e-3 };
     const pc = s.match(/HJR-?4102-?([NDL])/i);
     const P = pc ? { N: 0.45, D: 0.36, L: 0.2 }[pc[1].toUpperCase()] : 0.14;
-    return { R: (Vr * Vr) / P, nominal: Vr, pickup: 0.75 * Vr, release: 0.1 * Vr, operate: 0 };
+    if (pc)
+      return { R: (Vr * Vr) / P, nominal: Vr, pickup: 0.75 * Vr,
+        // The engine's pickup-force accumulator intentionally resets below must-operate, which is
+        // conservative for a decaying one-shot but wrong for the TV20/S gong riding on DC. Keep the
+        // HJR's field-proven pickup threshold behavior; its datasheet release time remains modeled.
+        release: Vr === 12 ? 3 : 0.1 * Vr, operate: 0, releaseTime: 5e-3 };
+    return { R: (Vr * Vr) / P, nominal: Vr, pickup: 0.75 * Vr,
+      release: 0.1 * Vr, operate: 0, releaseTime: 0 };
   }
 
   elements(ctx) {
@@ -61,7 +72,7 @@ export default class Relay extends Component {
       pickup: this.param(ctx, 'pickup', nominal.pickup),
       release: this.param(ctx, 'release', nominal.release),
       operate: this.param(ctx, 'operateTime', nominal.operate),
-      releaseTime: this.param(ctx, 'releaseTime', /g6k/i.test(`${this.lib} ${this.value}`) ? 3e-3 : 0),
+      releaseTime: this.param(ctx, 'releaseTime', nominal.releaseTime || 0),
       contactRon: this.param(ctx, 'contactRon', /g6k/i.test(`${this.lib} ${this.value}`) ? 0.1 : 0.05),
     };
     const N = (p) => this.pins[p];

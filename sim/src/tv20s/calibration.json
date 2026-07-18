@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "id": "tv20s-installed-2026-06",
+  "claim": "terminal-equivalent nominal model of the captured installation",
+  "evidence": {
+    "p2": ["own-ring-timeout", "door-idle", "door-held-neighbour", "neighbour-ring-door"],
+    "p3": ["door-idle", "door-held-neighbour", "neighbour-ring-door"],
+    "ring": ["own-ring-timeout", "neighbour-ring-door"],
+    "floor_call": ["floor-call"]
+  },
+  "p2": {
+    "idle_v": 12.09,
+    "idle_observed_v": [12.05, 12.133],
+    "source_resistance_ohm": 90,
+    "session_load_min_drop_v": 0.25,
+    "single_session_observed_v": [9.32, 9.586],
+    "timeout_after_ring_ms": 60000,
+    "timeout_observed_ms": [58500, 64000],
+    "timeout_terminal_start_v": 9.43,
+    "timeout_terminal_plateau_v": 2.8,
+    "timeout_source_resistance_ohm": 1,
+    "timeout_fall_ms": 25,
+    "timeout_fall_tau_ms": 7,
+    "timeout_plateau_ms": 18,
+    "timeout_sink_ms": 43,
+    "timeout_recovery_snap_ms": 3,
+    "timeout_recovery_snap_v": 11.4,
+    "timeout_recovery_tau_ms": 25,
+    "timeout_recovery_observed_ms": 69,
+    "door_recovery_tau_ms": 500,
+    "door_recovery_observed_ms": 1500
+  },
+  "p3": {
+    "door_idle_sink_ohm": 130,
+    "door_session_sink_ohm": 260,
+    "neighbour_session_end_after_door_ms": 2500,
+    "terminal_classification": {
+      "door_min_v": 3,
+      "door_max_difference_v": 0.25,
+      "intermediate_min_v": 0.25,
+      "talk_bridge_nominal_ohm": 2200,
+      "talk_bridge_range_ohm": [2000, 2400],
+      "talk_evidence": "STR service plan, reverse-engineered WF26 R1/S2 topology, installed line-3 TX operation, and a tolerance band around the documented 2.2 kΩ component (not an opener-threshold sweep)"
+    },
+    "door_idle_observed_v": [7.14, 7.18],
+    "door_session_observed_v": [7.2, 7.7]
+  },
+  "ring": {
+    "pedestal_rise_ms": 5.9,
+    "pedestal_drive_ms": 1000,
+    "gong_duration_ms": 3900,
+    "p2_gong_observed_rms_v": [0.69, 0.744],
+    "gong_source_scale_v": 6.75,
+    "strikes": [
+      { "at_ms": 12, "frequency_hz": 1010.2, "decay_ms": 1353 },
+      { "at_ms": 802, "frequency_hz": 840.5, "decay_ms": 1135 },
+      { "at_ms": 1564, "frequency_hz": 672.4, "decay_ms": 1502 }
+    ],
+    "harmonics": [
+      { "multiple": 1, "amplitude": 1.0 },
+      { "multiple": 3, "amplitude": 0.25 },
+      { "multiple": 5, "amplitude": 0.08 }
+    ]
+  },
+  "floor_call": {
+    "frequency_hz": 681,
+    "source_scale_v": 36,
+    "source_resistance_ohm": 90,
+    "terminal_robust_v": [-5, 7.8],
+    "terminal_raw_v": [-10.968, 7.8],
+    "harmonics": [
+      { "multiple": 1, "amplitude": 1.0 },
+      { "multiple": 2, "amplitude": 0.52 },
+      { "multiple": 3, "amplitude": 0.34 },
+      { "multiple": 4, "amplitude": 0.24 },
+      { "multiple": 5, "amplitude": 0.18 }
+    ]
+  },
+  "supported": [
+    "idle",
+    "own-ring",
+    "one-neighbour-ring",
+    "floor-call-alone",
+    "direct-door-idle",
+    "direct-door-during-own-gong",
+    "direct-door-after-gong",
+    "direct-door-held-neighbour",
+    "neighbour-handset-door",
+    "talk-handshake",
+    "timeout"
+  ],
+  "unsupported": [
+    "talk-audio-gain",
+    "intermediate-p2-p3-impedance",
+    "more-than-one-neighbour",
+    "overlapping-bell-types",
+    "neighbour-door-during-gong",
+    "foreign-door-during-gong",
+    "central-unit-faults",
+    "opener-terminals-8-9"
+  ]
+}

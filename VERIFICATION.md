@@ -48,31 +48,47 @@ Unix socket. The virtual clock can start immediately before 32-bit rollover and 
 the schematic runner returns a firmware deadline, external stimulus or GPIO threshold transition;
 wall-clock slowdown must not change the event trace.
 
-The fixture drives the connector through the measured nominal 90 Ω source impedance and validates
-U1/P1–P5 mapping from the live schematic rather than a generated netlist. Its bounded codec stimulus
-and connector sources verify the board/firmware contract, including K5-gated K6, physical-Talk
-ownership, the 30 s candidate passive-listen window and door pulse/re-arm serialization—not the
-complete TV20/S central unit. Treat all results as HEAD/V4.2 candidate evidence only and still perform
-§5.5/§6 on fabricated hardware.
+The lab fixture drives the connector through the measured nominal 90 Ω source impedance and validates
+U1/P1–P5 mapping from the live schematic rather than a generated netlist. The same fixture also has a
+capture-calibrated TV20/S environment used by circuit regressions: it composes either the HEAD or the
+reference WF26 endpoint with the live neighbour topology and reproduces only the explicitly supported
+terminal behavior recorded in its evidence manifest. The environment observes P1–P5 only, never DUT
+implementation state. Its bounded codec stimulus and connector/environment sources verify the board/firmware
+contract, including K5-gated K6, physical-Talk ownership, the 30 s candidate passive-listen window and
+door pulse/re-arm serialization—not unobserved TV20/S internals. Treat all results as HEAD/V4.2 candidate
+evidence only and still perform §5.5/§6 on fabricated hardware.
 
 ### 1.2 Interactive firmware/circuit smoke check
 
 Run `cd sim && npm run dev`; the server must incrementally compile the host target before printing its
-URL. Open the default `doorbell` board and confirm the firmware state becomes connected. There is no
-local-circuit mode: firmware policy controls U1/U3 for every doorbell session. Pause, single-step 1 ms,
-resume at 1× and select 10×/max; virtual time must remain stopped while paused and advance monotonically
-at each selection. Exercise a harmless HA-connected toggle and greeting selection, then confirm the
-ordered command/entity/write entries appear in the firmware timeline.
+URL. Open the default `doorbell` board and confirm the firmware state becomes connected in the TV20/S
+environment. There is no local-firmware bypass: firmware policy controls U1/U3 for every doorbell
+session. Pause, queue an own or neighbour ring, and confirm no voltage, relay or environment state
+changes; single-step 1 ms and confirm the event begins at that virtual-time boundary. Resume at 1× and
+select 10×/max; virtual time must remain stopped while paused and advance monotonically at each
+selection. Exercise a harmless HA-connected toggle and greeting selection, then confirm the ordered
+command/entity/write entries appear in the firmware timeline.
 
-Confirm P2 defaults to a 90 Ω source while VBUS is ideal. An attempted ideal source on a firmware-owned
-output must fail clearly. Crash the firmware and confirm the program drivers disappear without resetting
-the physical relay/capacitor/fuse state; reboot and confirm a new host reconnects at the preserved virtual
-time. Full reset must instead return circuit, firmware preferences and timelines to power-up state.
-Selecting `wf26` creates only the passive reference-handset simulation and hides firmware controls.
+Exercise own ring, one-neighbour ring, floor call, door and timeout separately. Press stock WF26 Talk
+and confirm the documented 2.2 kΩ bridge enters the `talk` phase without firing the opener; audio gain
+remains outside the synthetic model. On WF26, confirm P4 retains the session bias while
+`R1_BRIDGE`/P3 falls near 1 V; on the main board, confirm `TALK_BRIDGE` instead remains at the P2-side
+session bias while `TX_OUT`/P3 is low. These are opposite sides of the respective 2.2 kΩ resistor, not
+equivalent internal net names. An unsupported overlap or other intermediate P2–P3 impedance must
+stop with a missing-evidence error. Select the manual lab and confirm P2 defaults to a
+90 Ω source while VBUS is ideal. An attempted ideal source on a firmware-owned output must fail clearly.
+Freeze the firmware during an asserted output and confirm execution stops without changing the output
+or the physical relay/capacitor/fuse/environment state at the paused boundary. With `DOOR_DRV` frozen
+high, resume and confirm the independent watchdog releases K2 while the GPIO remains high. Reboot and
+confirm outputs reset and a new host reconnects at the preserved virtual time. Full reset must instead
+return circuit, firmware preferences and timelines to power-up state.
+Selecting `wf26` creates the passive reference-handset endpoint in the same TV20/S environment and
+hides firmware controls. Repeat the paused-ring boundary check and confirm its own `WF26_K1` latches;
+the manual lab remains selectable for arbitrary passive-circuit sources.
 
 This smoke check is an operator/UI check, not an additional qualification claim. It uses the same HEAD
-fixture and bounded codec stimulus as §1.1 and is still neither a full TV20/S model nor fabricated-board
-validation.
+fixture and bounded codec stimulus as §1.1; the synthetic environment claims only its capture-backed
+terminal behaviors and does not validate fabricated V4.2 hardware.
 
 ## 2. Independent schematic review (do it blind)
 

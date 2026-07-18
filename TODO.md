@@ -92,6 +92,18 @@ fabricated-board and production-enablement boundary visible.
 
 ## First-board commissioning (not fabrication gates)
 
+- [ ] **6/10 — Close the deliberately unsupported TV20/S simulator states only from new captures.**
+      The documented stock 2.2 kΩ Talk handshake is already a supported simulator state. Capture P2
+      and P3 with a known injected audio level to calibrate the TV20/S transfer gain, and sweep
+      intermediate P2–P3 impedance far enough to locate the no-opener/opener boundary without risking
+      the installation. The simulator composes the already-calibrated own-ring and direct-door
+      terminal equivalents for local auto-open; separately capture a neighbour/foreign door action
+      during its gong, simultaneous floor/front calls and more than one concurrent stock session. Add
+      each behavior to `sim/src/tv20s/capture-evidence.json` and its calibration only after channel
+      identity and topology are recorded; until then the simulator must continue to reject it rather
+      than extrapolate.
+      - **Worst case:** guessed central-unit behavior makes a firmware scenario look safe or functional when the installed TV20/S responds differently.
+
 - [ ] **8/10 — Validate SW4 physical-PTT sense and the K1 hardware interlock on fabricated V4.2 hardware.**
       Confirm the fitted switch orientation and actual housing actuator first. With logic power off,
       verify the passive pins 5↔4 Talk contact and R29 path still work. With local power on, measure

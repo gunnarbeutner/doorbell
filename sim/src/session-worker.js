@@ -7,8 +7,9 @@ import { parentPort, workerData } from 'node:worker_threads';
 import { FirmwareCircuitRunner } from '../firmware-test/circuit-runner.js';
 import { allComponents, buildElements, defaultSwitchState } from './components/index.js';
 import { createStepper, gndOf, makeWave, parseVal } from './engine.js';
+import { Tv20sEnvironment } from './tv20s/environment.js';
 
-const { board, netlist, binary, repoRoot } = workerData;
+const { board, netlist, binary, repoRoot, environment = 'tv20s' } = workerData;
 const components = allComponents(netlist);
 const knownNets = new Set(netlist.nets);
 const firmwareNets = new Set();
@@ -42,7 +43,7 @@ let config = initialConfig();
 let haConnected = true;
 const firmware = {
   connected: false,
-  crashed: false,
+  frozen: false,
   outputs: { PTT_DRV: false, DOOR_DRV: false, MUTE_DRV: false, P4_ISO: false },
   entities: {},
   media: { active: false, name: null, duration: 0 },
@@ -56,7 +57,10 @@ function post(type, payload = {}) {
 }
 
 function initialConfig() {
-  const sources = (netlist.config?.sources || []).map((item) => ({
+  const configured = environment === 'tv20s'
+    ? (netlist.config?.sources || []).filter((item) => item.net === '/VBUS')
+    : (netlist.config?.sources || []);
+  const sources = configured.map((item) => ({
     net: item.net,
     type: item.type || 'dc',
     v1: item.v1 ?? 0,
@@ -117,6 +121,9 @@ function validateConfig(next) {
   if (board === 'doorbell' && next.gnd !== gndOf(netlist))
     throw new Error(`doorbell firmware sessions require ${gndOf(netlist)} as circuit ground`);
   const gnd = knownNets.has(next.gnd) ? next.gnd : config.gnd;
+  const tv20sOwnedSources = sources.filter((item) => !item.off && !(board === 'doorbell' && item.net === '/VBUS'));
+  if (environment === 'tv20s' && (tv20sOwnedSources.length || elements.length))
+    throw new Error('TV20/S mode owns P1-P5; switch to lab mode for manual sources or extra elements');
   return { sources, elements, switches: { ...next.switches }, dtUs, gnd };
 }
 
@@ -188,12 +195,25 @@ class PassiveCircuit {
   constructor() {
     this.nowMs = 0;
     this.seconds = 0;
+    this.tv20s = environment === 'tv20s' ? new Tv20sEnvironment({
+      referenceNetlist: netlist,
+      ground: gndOf(netlist),
+    }) : null;
+    this.pendingEnvironmentActions = [];
+    this.pendingConfig = null;
     this.rebuild(null);
     this.stepper.step(0);
     this.capture();
   }
 
-  rebuild(seed = this.stepper?.extractState()) {
+  rebuild(seed = this.stepper?.extractState(), dtUs = config.dtUs) {
+    if (this.tv20s) {
+      const elements = buildElements(netlist, { switchState: config.switches,
+        extra: this.tv20s.extraElements() });
+      this.stepper = createStepper(elements, this.tv20s.sources(), config.gnd,
+        Math.min(dtUs, 100) / 1e6, seed);
+      return;
+    }
     const extra = rawElements(config.elements);
     const sources = [];
     for (let index = 0; index < config.sources.length; index++) {
@@ -208,7 +228,7 @@ class PassiveCircuit {
       } else sources.push({ net: item.net, vf: () => wave(this.seconds) });
     }
     const elements = buildElements(netlist, { switchState: config.switches, extra });
-    this.stepper = createStepper(elements, sources, config.gnd, config.dtUs / 1e6, seed);
+    this.stepper = createStepper(elements, sources, config.gnd, dtUs / 1e6, seed);
   }
 
   configure() {
@@ -217,21 +237,57 @@ class PassiveCircuit {
     this.capture();
   }
 
+  queueConfig(next) {
+    this.pendingConfig = next;
+  }
+
+  applyPendingConfig() {
+    if (this.pendingConfig == null) return;
+    config = this.pendingConfig;
+    this.pendingConfig = null;
+    this.rebuild();
+  }
+
+  queueEnvironmentAction(action) {
+    if (!this.tv20s) throw new Error('TV20/S actions require the tv20s environment');
+    this.pendingEnvironmentActions.push(action);
+  }
+
+  applyPendingEnvironmentActions() {
+    if (!this.pendingEnvironmentActions.length) return;
+    const actions = this.pendingEnvironmentActions.splice(0);
+    for (const action of actions) this.tv20s.apply(action, this.nowMs);
+    this.tv20s.syncTime(this.nowMs);
+    this.rebuild();
+  }
+
   advance(milliseconds) {
-    const dtMs = config.dtUs / 1000;
+    this.applyPendingConfig();
+    this.applyPendingEnvironmentActions();
+    const dtMs = (this.tv20s ? Math.min(config.dtUs, 100) : config.dtUs) / 1000;
     const target = this.nowMs + milliseconds;
     while (this.nowMs + 1e-9 < target) {
-      const stepMs = Math.min(dtMs, target - this.nowMs);
+      const environmentBoundary = this.tv20s?.nextEventAt(this.nowMs, target) ?? target;
+      const stepMs = Math.min(dtMs, target - this.nowMs, environmentBoundary - this.nowMs);
       if (Math.abs(stepMs - dtMs) > 1e-9) {
         const seed = this.stepper.extractState();
-        const originalDt = config.dtUs;
-        config.dtUs = stepMs * 1000;
-        this.rebuild(seed);
-        config.dtUs = originalDt;
+        this.rebuild(seed, stepMs * 1000);
       }
-      this.nowMs += stepMs;
+      const advancedMs = this.nowMs + stepMs;
+      this.nowMs = Math.abs(target - advancedMs) < 1e-9 ? target : advancedMs;
       this.seconds = this.nowMs / 1000;
       this.stepper.step(this.seconds);
+      if (this.tv20s) {
+        const timedTopologyChanged = this.tv20s.syncTime(this.nowMs);
+        const observedTopologyChanged = this.tv20s.observe({ nowMs: this.nowMs,
+          voltage: (netName) => netName === this.stepper.gnd ? 0
+            : this.stepper.vn[this.stepper.ni[netName]] });
+        if (timedTopologyChanged || observedTopologyChanged) {
+          const carried = this.stepper.extractState();
+          this.rebuild(carried);
+          this.stepper.step(this.seconds);
+        }
+      }
       this.capture();
       if (Math.abs(stepMs - dtMs) > 1e-9) this.rebuild(this.stepper.extractState());
     }
@@ -243,14 +299,15 @@ class PassiveCircuit {
     const state = this.stepper.extractState();
     receiveSample({ at: this.nowMs, voltages, floating: this.stepper.floatingMap(),
       relays: state.relays, ssrs: state.ssrs, fuses: state.fuses,
-      injections: this.stepper.padInjections() });
+      injections: this.stepper.padInjections(),
+      environment: this.tv20s?.snapshot(this.nowMs) || { mode: 'lab' } });
   }
 }
 
 async function spawnHost() {
   if (child) return;
   intentionalExit = false;
-  firmware.crashed = false;
+  firmware.frozen = false;
   // Mirror the setup-time environment immediately; subsequent SET commands are confirmed by EMIT.
   firmware.entities.ha_connected = haConnected;
   child = spawn(binary, [], {
@@ -270,10 +327,11 @@ async function spawnHost() {
     if (child === current) child = null;
     firmware.connected = false;
     if (!intentionalExit && !shuttingDown) {
-      firmware.crashed = true;
-      runner.fixture.crash(0);
+      // A stopped host represents a wedged MCU, not vanished silicon: GPIO/peripheral registers keep
+      // their last electrical drive. Reboot is the separate reset operation that clears outputs.
+      firmware.frozen = true;
       receiveSample(runner.fixture.snapshot());
-      post('status', { status: 'crashed', detail: `firmware exited (${signal || code})` });
+      post('status', { status: 'frozen', detail: `firmware stopped (${signal || code}); outputs retained` });
       emitSample(true);
     }
   });
@@ -284,7 +342,7 @@ async function initDoorbell() {
   temporary = await mkdtemp(join(tmpdir(), 'dbs-'));
   socketPath = join(temporary, 's');
   runner = new FirmwareCircuitRunner({ socketPath, interactive: true,
-    fixtureOptions: { netlist, onSample: receiveSample } });
+    fixtureOptions: { netlist, onSample: receiveSample, environment } });
   runner.on('failure', (error) => post('error', { message: error.message, stack: error.stack }));
   runner.on('update', () => {
     receiveSample(runner.fixture.snapshot());
@@ -300,7 +358,11 @@ async function initDoorbell() {
 
 async function advance(milliseconds) {
   if (!(milliseconds > 0)) return;
-  if (runner && firmware.crashed) {
+  if (runner && firmware.frozen) {
+    // A wedged MCU does not stop the physical bus. Apply queued changes only when virtual time is
+    // explicitly advanced, matching the live-firmware path's paused-boundary semantics.
+    runner.applyPendingCircuitConfig();
+    runner.applyPendingEnvironmentActions();
     const target = runner.fixture.nowMs + milliseconds;
     runner.fixture.stepFor(target - runner.fixture.electricalMs, false);
     runner.fixture.nowMs = target;
@@ -333,15 +395,20 @@ function reportError(error) {
 }
 
 async function configure(next) {
-  config = validateConfig(next);
-  const raw = rawElements(config.elements);
-  if (runner) runner.configureCircuit({ sources: config.sources, elements: raw, switches: config.switches });
-  else passive.configure();
+  const validated = validateConfig(next);
+  if (runner) {
+    config = validated;
+    runner.configureCircuit({ sources: config.sources, elements: rawElements(config.elements), switches: config.switches });
+  } else if (speed === 0) passive.queueConfig(validated);
+  else {
+    config = validated;
+    passive.configure();
+  }
   emitTimeline();
   emitSample(true);
 }
 
-async function crashFirmware() {
+async function freezeFirmware() {
   if (!runner) return;
   intentionalExit = true;
   if (child) {
@@ -349,19 +416,19 @@ async function crashFirmware() {
     current.kill('SIGKILL');
     await new Promise((resolve) => current.once('exit', resolve));
   }
-  runner.fixture.crash(0);
   receiveSample(runner.fixture.snapshot());
   firmware.connected = false;
-  firmware.crashed = true;
-  firmware.outputs = { PTT_DRV: false, DOOR_DRV: false, MUTE_DRV: false, P4_ISO: false };
-  post('status', { status: 'crashed', detail: 'firmware program drivers removed' });
+  firmware.frozen = true;
+  post('status', { status: 'frozen', detail: 'firmware execution stopped; output drivers retained' });
   emitSample(true);
 }
 
 async function rebootFirmware() {
   if (!runner) return;
-  await crashFirmware();
+  await freezeFirmware();
   runner.fixture.rebootProgram();
+  firmware.outputs = { PTT_DRV: false, DOOR_DRV: false, MUTE_DRV: false, P4_ISO: false };
+  firmware.media = { active: false, name: null, duration: 0 };
   receiveSample(runner.fixture.snapshot());
   await spawnHost();
   post('status', { status: 'rebooting', detail: 'physical circuit state preserved' });
@@ -382,13 +449,19 @@ async function handle(message) {
   } else if (message.type === 'configure') {
     await configure(message.config);
   } else if (message.type === 'command') {
-    if (!runner || firmware.crashed) throw new Error('firmware is not running');
+    if (!runner || firmware.frozen) throw new Error('firmware is not running');
     const haCommand = message.command.match(/^SET:ha:(0|1|off|on)$/);
     if (haCommand) haConnected = haCommand[1] === '1' || haCommand[1] === 'on';
     runner.queueCommand(message.command);
     emitTimeline();
+  } else if (message.type === 'environment') {
+    if (runner) runner.queueEnvironmentAction(message.action);
+    else if (passive?.tv20s) passive.queueEnvironmentAction(message.action);
+    else throw new Error('TV20/S actions require the tv20s environment');
+    emitTimeline();
+    emitSample(true);
   } else if (message.type === 'crash') {
-    await crashFirmware();
+    await freezeFirmware();
   } else if (message.type === 'reboot') {
     await rebootFirmware();
   } else if (message.type === 'snapshot') {
@@ -435,7 +508,9 @@ try {
     emitSample(true);
   }
   post('ready', { board, config, policy: { haConnected },
-    capabilities: { firmware: board === 'doorbell', speeds: [0, 1, 10, 'max'] } });
+    environment,
+    capabilities: { firmware: board === 'doorbell', speeds: [0, 1, 10, 'max'],
+      environments: ['tv20s', 'lab'] } });
   setInterval(tick, 16).unref();
   setInterval(() => emitSample(), 33).unref();
 } catch (error) {

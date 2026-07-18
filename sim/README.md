@@ -13,6 +13,7 @@ npm test         # all required circuit + firmware/HEAD tests
 npm run test:circuit  # circuit-only tests against the live schematic
 npm run test:firmware # deterministic ESPHome-host + live-HEAD circuit co-simulation
 npm run test:firmware:scenarios # fastest rerun after config/build; scenarios only
+npm run check:tv20s-calibration # verify evidence hashes and captured DC envelopes
 npm run test:monte-carlo -- 1592639710 250  # optional seeded watchdog sensitivity diagnostic
 ```
 
@@ -22,14 +23,19 @@ re-imports automatically when a `.kicad_sch` / `.kicad_pcb` changes — just rel
 
 There is deliberately no firmware/no-firmware mode. A `doorbell` browser session always gets its own
 server worker, host firmware process, virtual clock, preferences directory and live HEAD circuit.
-Selecting `wf26` resets into the passive reference-handset circuit, which has no MCU. Closing an idle
-browser session releases its worker and firmware process; abandoned sessions expire server-side.
+Both `doorbell` and `wf26` default to a synthetic, capture-calibrated TV20/S terminal model; select
+`manual circuit lab` when arbitrary sources and components are needed. The `wf26` board remains a
+passive reference-handset circuit with no MCU in either environment. Closing an idle browser session
+releases its worker and firmware process; abandoned sessions expire server-side.
 
 The page is a 3-column PCB view: `[controls + layer toggles + time cursor] | [selected copper layers,
-stacked] | [scopes]`. Add **Sources** (drive any net with DC/sine/square/step/pulse — each has an on/off
-toggle, off = the net floats, and an editable Thevenin source impedance), then use pause, 1×, 10×,
-maximum-speed or the 1 ms single-step. Ideal sources on the same net conflict, and a source attached to
-a firmware-owned U1/U3 output must have non-zero impedance. **Hover**
+stacked] | [scopes]`. In the default TV20/S environment, use the own-ring, neighbour-ring, floor-call,
+neighbour-door and timeout controls. The model owns P1–P5 and composes the selected endpoint with a
+second live-imported WF26 endpoint for the neighbour. In the manual lab, add **Sources** (drive any net with
+DC/sine/square/step/pulse — each has an on/off toggle, off = the net floats, and an editable Thevenin
+source impedance). Both environments use pause, 1×, 10×, maximum-speed or the 1 ms single-step. Ideal
+sources on the same net conflict, and a source attached to a firmware-owned U1/U3 output must have
+non-zero impedance. **Hover**
 a trace → its net's voltage; **click** a trace → a scope on the right; the time-cursor slider scrubs the
 instant shown on the board and the scope cursors. Colour is by voltage (fixed 0–Vmax scale) or by net.
 Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
@@ -44,7 +50,10 @@ Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
   never creates an electrical stepper or manually programs U1/U3.
 - `src/session-worker.js` — isolated per-browser circuit owner, virtual-time pacer, safety monitor and
   host-process lifecycle manager. Doorbell sessions reuse the deterministic firmware-test runner;
-  WF26 sessions run only its passive circuit.
+  WF26 sessions run the same TV20/S terminal environment around their passive circuit, or the manual
+  lab when selected.
+- `src/tv20s/` — captured-evidence manifest, terminal-equivalent calibration and the synthetic
+  TV20/S state machine. Unsupported compositions throw with the missing evidence they require.
 - `server.js` — HTTP/SSE session API, live KiCad import and static dev server (`npm run dev`).
 - `test/` — integration tests + model-coverage and deterministic-corner gates (`npm run test:circuit`).
 - `firmware-test/` — sequential host-firmware/circuit scenarios (`npm run test:firmware`).
@@ -141,7 +150,19 @@ diagnostic only: reproducible named extremes, not random coverage, are the relea
 ## Scope / limits
 
 Validates **design intent and the explicitly modeled fitted-part envelope** — loading/impedance, RC time
-constants, sense thresholds and switch topology. It still does not predict semiconductor analog behavior
+constants, sense thresholds and switch topology. The TV20/S environment additionally reproduces the
+captured idle/session/timeout terminal bias, own and one-neighbour ring/gong, floor call, direct door
+bridge and recovery. A direct door bridge during the local endpoint's own gong composes those same
+calibrated terminal equivalents, allowing the production auto-open timing to run without a special
+DUT assumption. The documented 2.2 kΩ Talk handshake is supported as a terminal state, but the
+TV20/S audio gain and remote acoustic path are not synthesized. It deliberately rejects other
+intermediate P2–P3 impedances, multiple neighbours, overlapping bell types, door actions during a
+neighbour/foreign gong and central-unit/opener-terminal faults; those need new evidence, not guessed
+behavior. During stock WF26
+Talk, `R1_BRIDGE` is connected to P3 on the low side of R1, so the terminal-equivalent model puts it
+near 1 V while P4 retains the approximately 9.4 V session bias. This is not the main board's
+`TALK_BRIDGE`: K1 holds that node directly at P2, with `TX_OUT`/P3 on the low side of R28. It still
+does not predict semiconductor analog behavior
 with SPICE precision, derive unguaranteed temperature/DC-bias distributions, model EMI, contact bounce,
 PCB parasitics or fabrication variation. Seeded sampling cannot turn an engineering bound into a vendor
 guarantee; first-board measurements remain required where `VERIFICATION.md` says so.
@@ -186,26 +207,31 @@ P2/P4/P5 DC, tone, pulse and captured-waveform sources use the measured nominal 
 impedance. It carries capacitor, relay, SSR,
 fuse and regulator state across adaptive timestep rebuilds, uses fine steps around topology/input
 edges, and retries a hard source/clamp transition on a bounded smaller-timestep ladder before reporting
-strict nonlinear non-convergence. It removes U1 program drivers after a simulated crash. The fake media player derives duration
+strict nonlinear non-convergence. A non-interactive host exit can remove U1 program drivers to model
+reset/power loss. The fake media player derives duration
 from each embedded WAV's actual metadata and drives U3 with a bounded representative tone while it is
 active. Failures print a compact ordered timeline; detailed exploratory traces are not committed.
 
-This fixture validates the electrical contract at the connector and firmware-observable HEAD nets.
-It is not a complete TV20/S model, a substitute for the real captured-bus checks, or validation of a
-fabricated V4.2 board.
+This fixture validates the electrical contract at the connector and firmware-observable HEAD nets. Its
+TV20/S terminal model is tied to the named capture files and their recorded channel confidence; it is
+not a model of unobserved central-unit internals, a substitute for the remaining real-bus checks, or
+validation of a fabricated V4.2 board.
 
 ### Interactive virtual time
 
 The interactive UI uses the same protocol and HEAD fixture. The server is the sole authority for
 circuit state and ordered firmware writes. At 1×/10× it advances a wall-time-derived virtual horizon;
 `max` advances bounded chunks as quickly as the solver and host scheduler permit. Pause leaves the
-host blocked in `ADVANCE`, and `+1 ms` advances exactly one virtual millisecond. Firmware commands and
-circuit/source edits made while paused are queued at the frozen boundary; repeated circuit edits collapse
-to the final configuration and are applied only by `+1 ms` or resume. Until then the complete published
-snapshot—including voltages, storage state and floating classification—remains unchanged. Full reset
-starts a clean circuit, host and preferences set.
-Crash removes the U1/U3 program drivers while keeping physical capacitor/relay/SSR/fuse state; reboot
-starts a new host process at that same circuit time and state.
+host blocked in `ADVANCE`, and `+1 ms` advances exactly one virtual millisecond. Firmware commands,
+TV20/S stimuli and circuit/source edits made while paused are queued at the frozen boundary; repeated
+lab-circuit edits collapse to the final configuration and are applied only by `+1 ms` or resume. Until
+then the complete published snapshot—including voltages, storage state, environment state and floating
+classification—remains unchanged. Full reset starts a clean circuit, host and preferences set.
+**Freeze firmware** stops host execution while retaining the last U1/U3 GPIO and peripheral drive,
+modeling a wedged MCU. The physical circuit continues in virtual time: in particular, a frozen-high
+`DOOR_DRV` remains high while the independent Q3/RC watchdog releases K2. Reboot resets the program
+outputs and starts a new host process at the same circuit time without resetting capacitor, relay, SSR
+or fuse state.
 
 Every source, extra element and switch edit is validated in the worker and rebuilt at its permitted
 virtual-time boundary while carrying physical state. HTTP action completion acknowledges worker
