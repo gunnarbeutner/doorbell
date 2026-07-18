@@ -272,6 +272,10 @@ J2's screws, and component pads. Use an **isolated** scope
   pulse decreases with wait time; a delayed pass is not a substitute for the zero-delay test.
 - **TX-out reach** — confirm the TV20/S forwards line-3 audio to the door station once it sees the
   schematic's talk-handshake resistance, at a usable level (AUDIO-2/AUDIO-6).
+- **Accepted shared-P2 TX coupling** — inject or capture a neighbour gong on P2, assert K1 and measure
+  what reaches P3. Record the coupling as the V4.2 party-line limitation; do not misattribute a clean
+  local-P4/K6 test to neighbour suppression. Repeat with neighbour activity beginning during TX and
+  require no false ring or door actuation even though audible contamination is accepted.
 - **TX-precharge transitions** — with JP3 bridged, scope P3 and `TALK_BRIDGE` across repeated K1
   make/break cycles using a zero-valued digital stream before repeating with the welcome sample.
   Check both a long-idle first assertion and rapid turnarounds; require the residual step to meet
@@ -285,7 +289,9 @@ J2's screws, and component pads. Use an **isolated** scope
 - **Hum / RX level** with the P1↔GND bond once RX is live; set the codec digital volume so TX
   doesn't overdrive the TV20/S amp.
 - **Session load** — measure the board's sealed current and bus voltage against the stock WF26,
-  then confirm session behaviour (gong, opener and timeout) across that difference.
+  then add one and two emulated stock ~320 Ω session loads on P2 and confirm K5 hold, gong, opener
+  and timeout behaviour across the combined sag. Do not claim this is field proof of truly parallel
+  sessions; it establishes only the board's electrical margin.
 
 ## 7. Datasheet sources to consult
 

@@ -94,15 +94,21 @@ shared party line across apartments.
   BUS-2 is deliberately **stricter than WF26-equivalence** (MODE-2): the board's bridges are
   electrically identical to the handset's switches, but firmware engages them in compositions a human
   never would (a talk bridge at t = 0 of every ring, when the gong is guaranteed live) — path
-  equivalence does not imply timing equivalence. *(Realised by K5-confirmed K6 isolation of raw P4
-  (a), the R28 = 2.2 kΩ handshake remaining distinct from a door short (b), and the K4↔K2
+  equivalence does not imply timing equivalence. *(The own-P4 case of (a) is realised by
+  K5-confirmed K6 isolation of raw P4; the R28 = 2.2 kΩ handshake remains distinct from a door
+  short (b), and the K4↔K2
   break-before-make (c). The retained I²S path and DAC soft-ramp suppress codec-start discontinuities;
   factory-bridged JP3 plus R38+R39 precharge C14's bus side to suppress the K1 make/break step (c).
   The latter is a V4.2 change and remains installed-bus gated — see DESIGN.md "Audio path"
   ("TX front-end", "Gong ↔ TX handshake") and "Door-open mirrors S1". The V4.2 candidate also
   opens K1's LED return mechanically whenever the physical Talk switch is pressed, preventing a
   sustained smart-plus-passive talk composition; its cross-pole transition timing remains a
-  first-board verification item.)*
+  first-board verification item.)* **Known V4.2 deviation:** K6 cannot remove audio that is already
+  present on shared P2. When K1 closes, the retained P2-derived handshake can therefore forward a
+  neighbour's gong or other party-line audio onto P3 without the 20 dB separation required above.
+  V4.2 deliberately does not add a filtered/DC-only handshake because that would introduce a new,
+  unqualified bus interface; this composed state remains an accepted limitation rather than a
+  claim of BUS-2(a) compliance.
 
 ## RING — Ring detection
 
@@ -169,7 +175,9 @@ shared party line across apartments.
   The complete V4.2 transition remains an installed-bus commissioning check.)*
 - **AUDIO-7 (MAY)** Privacy (optional, **firmware-gated**): the firmware MAY restrict bus-audio
   capture to active sessions / explicit user action and auto-time-out talk, so the board is not a
-  silently-always-on mic on the shared bus. Not a hardware requirement.
+  silently-always-on mic on the shared bus. Not a hardware requirement. The hardware cannot identify
+  which apartment owns activity on shared P2, and a local K5 session indication is not a bus-busy or
+  privacy boundary.
 - **AUDIO-8 (MUST)** The RX tap MUST present the bus to the codec mic input within the ES8311's input
   abs-max under the worst-case **normal** bus level — the line-2 Türruf gong (bench-measured ±8.8 V),
   not only under fault transients (which are SAFE-1) — **including with the board unpowered** (the
@@ -187,9 +195,13 @@ shared party line across apartments.
 - **AUDIO-10 (SHOULD)** Outbound TX (greetings, talk) SHOULD NOT re-inject the bus's own gong onto the
   talk line: the Türruf tone standing on line 2 during a latched session (or a neighbour's ring on the
   shared line 2) must not ride the talk handshake onto line 3 at an audible level, and the greeting
-  should not need to be delayed to avoid it. *(Met on V4.2 by opening K6 after K5 pull-in, separating
-  raw P4 from the latched P2 handshake source. The deployed V4.1 board meets the audibility half with
-  a firmware ring-to-audio guard, at the cost of the no-delay half.)*
+  should not need to be delayed to avoid it. **Partially met on V4.2:** opening K6 after K5 pull-in
+  separates this handset's raw P4 gong from `K5_LATCH`, but it cannot remove a neighbour's gong or
+  other audio already present on shared P2; K1's retained P2-derived handshake forwards that audio.
+  A filtered/DC-only pedestal is intentionally out of scope for V4.2 because it would add too many
+  unqualified bus-side changes. Firmware timing can avoid the expected initial own-ring interval but
+  cannot guarantee suppression when neighbour activity begins during TX. The deployed V4.1 board
+  retains its ring-to-audio guard; V4.2 may retire only the own-P4 portion after K6 validation.*
 
 ## DOOR — Door opener
 

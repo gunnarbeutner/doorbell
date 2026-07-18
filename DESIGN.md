@@ -121,7 +121,8 @@ retrigger reproduced the normal break-before-make sequence and held P3 at 12 V f
 5.7–5.8 s before the watchdog released it; see the
 [scope capture](docs/scope/door-watchdog-rearm-250ms.png). This proves functional re-arm of the
 external door path. A 500 ms repeat produced the same approximately 5.8 s interval, validating the
-firmware minimum with margin.
+required future firmware minimum with margin. The current production output button does not yet
+enforce that off-time; the coordinator work is tracked in `TODO.md`.
 
 > **Line 4 carries the Türruf** on raw PCB net **P4**. Normally-closed K6 passes it to **K5_LATCH**,
 > the internal junction of R29, the K5 coil and its NO contact. The ring's **DC energises the
@@ -179,6 +180,39 @@ From `docs/design/STR_TV20S_Schaltplan_Fehlersuchhilfe.pdf` (*Verdrahtungsplan* 
   up-audio on line 3 (S2's 2.2 kΩ talk bridge), down-audio on line 2 (via the relay). At the
   WF26 the transducer couples to line 4 via **C1 (P5↔P4)**. The door-opener also momentarily
   shorts **2↔3**, so that pair is shared between speech and the ÖT trigger — **not** opener-only.
+
+### Known shared-party-line limitations (accepted for V4.2)
+
+V4.2 deliberately retains the field-proven P2-derived 2.2 kΩ talk handshake. Deriving a filtered,
+DC-only pedestal would be electrically cleaner, but it would change the bus interface, TX injection
+point and transition behaviour together; that is too much unqualified change for this revision.
+Consequently:
+
+- **K6 isolates only this endpoint's raw P4.** It prevents the local P4 gong from reaching
+  `K5_LATCH`, but it cannot remove audio already present on shared P2. With K1 active, the path
+  `P2 → K1-ch1 → TALK_BRIDGE → R28 → K1-ch2 → P3` also forwards a neighbour's gong or
+  other P2 audio. A ring-start delay can avoid a known local interval; it cannot prevent a neighbour
+  from becoming active during TX.
+- **There is no bus-owner or neighbour-busy indication.** `K5_SENSE_N` confirms only this board's
+  relay, OC1 observes only this apartment's private P4, and the codec RX tap is AC-coupled. Firmware
+  therefore cannot distinguish a quiet neighbour session from an otherwise-idle shared bus, and it
+  cannot monitor RX while the half-duplex codec is transmitting.
+- **Concurrent sessions collide rather than arbitrate.** Another active handset can hear shared-bus
+  audio, smart TX may be audible there, two transmitters can mask one another, and any handset's
+  P2↔P3 door bridge interrupts the common speech pair. The codec RX tap likewise hears neighbour
+  gongs and speech whenever capture is enabled. Firmware may limit when it records or transmits, but
+  that is a privacy policy rather than electrical isolation.
+- **Concurrent latch loads reduce P2 voltage.** One measured stock neighbour session moves P2 from
+  about 12.05 V to 9.44 V. Additional simultaneous relay loads can reduce it further; V4.2 has no
+  load negotiation. K5 pull-in occurs from private P4, but its hold margin and the TV20/S response
+  under combined loads remain commissioning checks.
+- **Simultaneous bell types are not independently reportable by the binary taps.** A real Etagenruf
+  remains structurally audible, but OC2 also responds to loud shared transducer audio and is masked
+  during a Türruf or PTT. A genuine floor call in that interval can therefore be absent from HA even
+  though the physical gong is heard.
+
+These limitations do not change the replacement-only rule: the board remains one handset endpoint,
+not a second WF26 connected in parallel.
 
 ## WF26 internal circuit (reverse-engineered)
 
@@ -449,7 +483,11 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
   relative transition timing of the two poles. The first fabricated V4.2 board must therefore be
   scoped to prove K1 has opened before the passive 2.2 kΩ path makes on press, and firmware must keep
   K1 commanded off until a debounced release. The schematic/simulator proves steady states, not this
-  mechanical cross-pole timing.
+  mechanical cross-pole timing. The hardware interlock stops K1 only: it does not force normally
+  closed K3 or K6 back to their passive states while their LEDs are energised. Firmware must stop
+  playback, clear `P4_ISO` and release K3 on physical Talk before passive audio is expected. A stalled
+  powered MCU can delay or defeat that restoration; this is accepted because the mechanical K1
+  exclusion remains safe and removing logic power restores the complete passive path.
 - **Why TX drives line 3, not line 4.** A WF26 hangs **C1 (22 µF) + the 16 Ω speaker across line 4**
   = a ~20–30 Ω near-short to common across the voice band; injecting there would dump the drive into
   it. Line 3 is light (the TV20/S amp input ∥ the handshake leg's 2.2 kΩ), so the codec drives
@@ -495,9 +533,13 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
   (off DOOR_DRV, immediate) = open = K5 drops. With K2's make delayed ~38 ms (Q3 · R17·C18) the
   break leads the make — S1's transfer reproduced in hardware. See "Door-open mirrors S1".
 - **K6 — P4 isolator.** NC at rest and unpowered, so raw P4 reaches `K5_LATCH` and the passive handset
-  behaves normally. K5's auxiliary NO contact is the K6 LED return: even a stuck-high `P4_ISO`
+  behaves normally. K5's auxiliary NO contact is the K6 LED return, so a stuck-high `P4_ISO` alone
   cannot open K6 until K5 has physically pulled in, and K5 release immediately removes LED current.
-  JP2 is an open recovery jumper directly across K6's output.
+  In the current candidate, GPIO4 is connected directly to that same `K5_SENSE_N` return; the
+  interlock claim therefore assumes GPIO4 remains a high-impedance input. A GPIO configured or failed
+  low can provide K6 LED current before the auxiliary contact closes. Before ordering, split the
+  auxiliary/K6 return from the GPIO sense branch and current-limit or buffer the sense so no GPIO
+  state can operate K6; see `TODO.md`. JP2 is an open recovery jumper directly across K6's output.
 - K2/K3 remain independent; K1's GPIO drive is independent but its LED return is mechanically gated
   by SW4. **K4 is ganged with K2 on DOOR_DRV** — the break-before-make door pair. Firmware holds
   **K3 de-energised whenever a ring should be heard**. V4.1 field operation
@@ -669,10 +711,11 @@ K1:
 | active | open | listen → **capture (RX)** |
 | active | closed | talk → **send (TX)** — line 3 asserted via the K1 handshake |
 
-⇒ On validated V4.2 hardware, "can I send right now?" = **K5 confirmed AND K1 closed.** Production
-firmware remains on the V4.1-compatible OC1 + 1.45 s ring-to-audio guard, plus a separate 1.75 s
-minimum ring-to-open deadline, until the first fabricated V4.2 board passes passive bring-up and K6
-validation.
+⇒ On validated V4.2 hardware, "is our handset session established?" = **K5 confirmed**; K1 then
+selects TX. This does **not** mean the shared party line is idle or belongs exclusively to this
+endpoint. Production firmware remains on the V4.1-compatible OC1 + 1.45 s ring-to-audio guard, plus
+a separate 1.75 s minimum ring-to-open deadline, until the first fabricated V4.2 board passes passive
+bring-up and K6 validation.
 
 **Codec + front-end (committed to the netlist; analog values bench-gated for final trim):**
 
@@ -722,13 +765,14 @@ validation.
   wicks solder away, and the codec dissipates milliwatts. EP (and pin 10/AGND, tied to it) bonds to
   GND through adjacent copper.
 
-**Why P4 is isolated (BUS-2 a).** During a session K5 seals `K5_LATCH` from P2. If raw P4 remains
+**Why P4 is isolated (the own-P4 part of BUS-2 a).** During a session K5 seals `K5_LATCH` from P2. If raw P4 remains
 connected, its gong rides onto the P2-sourced talk handshake and can be forwarded to the door. Once
 K5's auxiliary contact proves pull-in, K6 opens raw P4↔`K5_LATCH`; K5 continues to hold from P2 while
-the gong remains on the raw side with OC1 and K3. The K5 contact is a hardware interlock, and K6 is
-normally closed so reset or power loss restores the passive topology. V4.1 firmware still delays
-ring-triggered greeting audio with `welcome_not_before_ms`; retire that workaround only after
-fabricated V4.2 validation.
+the local gong remains on the raw side with OC1 and K3. K6 does not filter shared P2, so neighbour
+audio can still follow the K1 path described under "Known shared-party-line limitations." The K5
+contact is a hardware interlock, and K6 is normally closed so reset or power loss restores the passive
+topology. V4.1 firmware still delays ring-triggered greeting audio with `welcome_not_before_ms`;
+retire only the own-P4 workaround after fabricated V4.2 validation.
 
 **Final bench calibration:**
 - **RX trim + TX level.** The MIC1P/N attenuating divider and VMID bias are committed (R30/R31 22 kΩ

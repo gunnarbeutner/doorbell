@@ -636,8 +636,10 @@ switch:
     output: front_door_buzzer_bin
     restore_mode: ALWAYS_OFF
   # Stage-2d only, after Stage-2a has proved unpowered P4 continuity and passive K5 seal-in. This
-  # requests K6 open; K5's auxiliary contact is the independent hardware LED-return interlock, so a
-  # premature/stuck request cannot open the fail-closed P4 path before K5 physically pulls in.
+  # requests K6 open; K5's auxiliary contact gates the hardware LED return, so P4_ISO alone cannot
+  # open the fail-closed P4 path before K5 physically pulls in. On the current candidate GPIO4 shares
+  # that return and must remain a high-impedance input; TODO.md tracks electrically decoupling sense
+  # from the K6 return before ordering.
   - platform: output
     name: "Debug P4 Isolation"
     icon: mdi:call-split
@@ -711,7 +713,8 @@ output:
   - platform: gpio
     pin: GPIO10              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
                              # drop the WF26 latch; K2's make is delayed ~38ms (Q3/RC) so the break
-                             # leads = S1 break-before-make in hardware (no firmware sequencing)
+                             # leads on a freshly armed assertion. TODO.md tracks production command
+                             # serialization, K1/K6 hand-off and the required 500ms low re-arm time.
     id: front_door_buzzer_bin
   - platform: gpio
     pin: GPIO48              # P4_ISO — K6 opens only when K5_SENSE_N also provides its LED return
@@ -741,6 +744,8 @@ select:
 button:
   - platform: restart
     name: "Restart"
+  # Kept aligned with production's current V4.1-compatible direct pulse. Before V4.2 isolation is
+  # enabled, both twins need the common coordinator; Debug Door Drive Hold remains deliberately raw.
   - platform: output
     name: "Front Door Buzzer"
     icon: mdi:lock-open-variant

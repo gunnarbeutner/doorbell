@@ -585,7 +585,8 @@ output:
   - platform: gpio
     pin: GPIO10              # DOOR_DRV — door pair: K2 bridges P2↔P3 (ÖT), K4 breaks the seal-in to
                              # drop the WF26 latch; K2's make is delayed ~38ms (Q3/RC) so the break
-                             # leads = S1 break-before-make in hardware (no firmware sequencing)
+                             # leads on a freshly armed assertion. TODO.md tracks production command
+                             # serialization, K1/K6 hand-off and the required 500ms low re-arm time.
     id: front_door_buzzer_bin
 
 # Which greeting the auto-open reflex plays on the NEXT ring — HA primes this ahead of an expected
@@ -607,6 +608,8 @@ select:
     initial_option: "None"
 
 button:
+  # Current V4.1-compatible direct pulse. Before V4.2 isolation is enabled, replace this and every
+  # other production caller with the common door coordinator tracked in TODO.md.
   - platform: output
     name: "Front Door Buzzer"
     icon: mdi:lock-open-variant
