@@ -660,7 +660,7 @@ Part values/footprints/LCSC numbers are maintained **directly in the authoritati
 **exports** the order files from them (`fab/doorbell-bom-jlcpcb.csv` + `doorbell-cpl.csv`). See
 `ORDERING.md` for the stock/eligibility checks at order time.
 
-> J1/J2 are through-hole but **assembled by JLCPCB** (THT assembly), not hand-soldered.
+> J1 is SMT and J2 is through-hole; both are **assembled by JLCPCB**, not hand-soldered.
 
 ### PCB — layout constraints & rationale
 
@@ -669,9 +669,9 @@ authoritative `kicad/doorbell.kicad_pcb`; this section keeps only the decisions 
 The board is **4-layer**, **64.2 × 59.2 mm**, all parts on the top side, and **100 % hand-routed in
 KiCad**; `./build.sh` verifies the inner copper-fill planes and fails if any net is unrouted.
 
-- **Why 4-layer.** J1 is a single-row SMD Type-C: D+/D−/CC/VBUS all escape from one
-  fine-pitch interleaved pad row, which needs the extra layers — a plane reference for the USB pair
-  and room to fan the rest out. A 2-layer board can't escape it cleanly.
+- **Why 4-layer.** Continuous ground/reference planes control the native-USB pair and mixed-signal
+  return paths, while the extra routing layer provides practical density around the ESP32, codec
+  and mixed bus/logic interfaces. J1's JST-SH D+/D− pair remains over a continuous reference.
 - **Bus↔logic coupling is a layout constraint** (see "Bus↔logic coupling"): there is no galvanic
   barrier — **P1 is bonded to board GND** — but keep bus-side nets to their own copper, crossing to
   logic only at the optos, the SSRs, and the deliberate codec/P1 taps, to contain fault energy and hum.

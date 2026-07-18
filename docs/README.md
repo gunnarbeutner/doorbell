@@ -37,6 +37,9 @@ Local sheets also cover the **SS14**, **SMF5.0A**, **1N4148W**, **SM04B-SRSS-TB 
 and **GAQW212GS/GAQY212GS** SSRs. Not every commodity resistor or MLCC sheet is archived; use the
 exact schematic BOM/LCSC entry rather than inferring an ordered part from this directory.
 
+`usb4105_datasheet.pdf` is retained only as historical backing for the V4.1 J1 USB-C receptacle; it
+does not describe a current V4.2 part and is not a BOM source.
+
 ## Fab capability (in `ordering/`)
 
 `PCB Manufacturing & Assembly Capabilities - JLCPCB.pdf` and `… - JLCPCB - PCBA.pdf` — JLCPCB's
