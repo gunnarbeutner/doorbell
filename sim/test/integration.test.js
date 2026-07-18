@@ -993,8 +993,7 @@ test('DOOR-4: a board door-open (DOOR_DRV) releases K5 like S1', () => {
   assert.ok(near(opened.vn['/P3'], 12), `door-open must fire the opener (P2→P3), got ${opened.vn['/P3']?.toFixed(2)} V`);
 });
 
-const doorDrivePhase = ({ drive, T, seed, observe = false }) => {
-  const step = 20e-6;
+const doorDrivePhase = ({ drive, T, seed, observe = false, step = 20e-6 }) => {
   const els = buildElements(netlist, {
     switchState: defaultSwitchState(netlist),
     program: { U1: { '/DOOR_DRV': drive ? 3.3 : 0 } },
@@ -1020,7 +1019,8 @@ const doorDrivePhase = ({ drive, T, seed, observe = false }) => {
 
 const retriggerDoorAfter = (gap) => {
   const first = doorDrivePhase({ drive: true, T: 0.1 });
-  const released = doorDrivePhase({ drive: false, T: gap, seed: first.state });
+  // Nothing switches during a long released gap; C18 only discharges on its slow RC timescale.
+  const released = doorDrivePhase({ drive: false, T: gap, seed: first.state, step: gap > 0.1 ? 1e-3 : 20e-6 });
   return {
     releaseGate: released.state.vn['/DELAY_GATE'],
     retriggered: doorDrivePhase({ drive: true, T: 0.08, seed: released.state, observe: true }),
@@ -1114,8 +1114,7 @@ test('composed K1 + door: the door bridge replaces the 2.2 k handshake signature
 test('composed rapid door repeat with a mid-gap ring: re-arm behaviour is unchanged by a fresh session', () => {
   // The pure retrigger tests above prove the C18/Q3 re-arm floor without a session. A ring can land
   // in the off-time and re-latch K5; the re-arm state and the second pulse's outcome must not change.
-  const dt = 20e-6;
-  const doorPhase = ({ drive, ring = false, T, seed, observe = false }) => {
+  const doorPhase = ({ drive, ring = false, T, seed, observe = false, dt = 20e-6 }) => {
     const els = buildElements(netlist, {
       switchState: defaultSwitchState(netlist),
       program: { U1: { '/DOOR_DRV': drive ? 3.3 : 0 } },
@@ -1141,7 +1140,11 @@ test('composed rapid door repeat with a mid-gap ring: re-arm behaviour is unchan
   for (const [gap, armed] of [[0.01, true], [0.5, false]]) {
     const first = doorPhase({ drive: true, T: 0.1 });
     assert.ok(!first.state.relays.K5, 'no session yet: the first pulse fires without K5');
-    const idleRing = doorPhase({ drive: false, ring: true, T: gap, seed: first.state });
+    // The long gap contains only an 8 ms ring plus slow C18 discharge. A 0.5 ms step still resolves
+    // the ring and K5's 3 ms operate time while avoiding 25,000 unchanged fine-grained solves.
+    const idleRing = doorPhase({
+      drive: false, ring: true, T: gap, seed: first.state, dt: gap > 0.1 ? 0.5e-3 : 20e-6,
+    });
     assert.ok(idleRing.state.relays.K5, `a ring in the ${gap * 1e3} ms gap must latch a fresh session`);
     const gate = idleRing.state.vn['/DELAY_GATE'];
     if (armed) {
