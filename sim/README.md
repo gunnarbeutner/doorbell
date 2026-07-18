@@ -9,7 +9,10 @@ the KiCad files on demand.
 ```sh
 cd sim
 npm run dev      # http://localhost:8080 — serves the UI; reads the KiCad files live for the netlist
-npm test         # integration tests against the live schematic (Node's test runner)
+npm test         # all required circuit + firmware/HEAD tests
+npm run test:circuit  # circuit-only tests against the live schematic
+npm run test:firmware # deterministic ESPHome-host + live-HEAD circuit co-simulation
+npm run test:firmware:scenarios # fastest rerun after config/build; scenarios only
 npm run test:monte-carlo -- 1592639710 250  # optional seeded watchdog sensitivity diagnostic
 ```
 
@@ -31,7 +34,8 @@ Inner planes (In1/In2) show vias/pads only — zone fills aren't extracted yet.
 - `src/corners.js` — fitted-part limits, explicit engineering assumptions and named deterministic corners.
 - `src/ui.js` + `index.html` — the browser front-end (imports `engine.js`, fetches `/netlist.json`).
 - `server.js` — dev server (`npm run dev`); serves the UI and the live netlist.
-- `test/` — integration tests + model-coverage and deterministic-corner gates (`npm test`).
+- `test/` — integration tests + model-coverage and deterministic-corner gates (`npm run test:circuit`).
+- `firmware-test/` — sequential host-firmware/circuit scenarios (`npm run test:firmware`).
 - `diagnostics/` — optional seeded sensitivity tools; these supplement rather than replace the
   deterministic safety gates.
 
@@ -128,3 +132,43 @@ constants, sense thresholds and switch topology. It still does not predict semic
 with SPICE precision, derive unguaranteed temperature/DC-bias distributions, model EMI, contact bounce,
 PCB parasitics or fabrication variation. Seeded sampling cannot turn an engineering bound into a vendor
 guarantee; first-board measurements remain required where `VERIFICATION.md` says so.
+
+## Firmware/HEAD co-simulation
+
+`./build.sh firmware-test` is the narrow firmware gate. It resolves the production and bench YAML,
+incrementally builds `firmware/doorbell-host.yaml`, then starts a fresh host process, Unix socket and
+preferences directory for every scenario. Production remains the installed V4.1 adapter; the host
+adapter enables the expected HEAD/V4.2 K5-confirmed P4 isolation, physical-Talk hand-off and serialized
+door-command/re-arm policy without claiming that those functions have passed fabricated-board tests.
+
+The live KiCad import and passive powered-state settling are cached only within one Node test process;
+every scenario still gets a fresh firmware process, socket, preferences directory and independent copy
+of the settled electrical state. The runner solves topology and waveform transients at fine/medium
+steps, then jumps electrically stable intervals directly to the next firmware or stimulus deadline.
+Long greetings and timeout tests therefore retain virtual-time coverage without repeatedly solving an
+unchanged nonlinear circuit.
+
+`npm run test:firmware` remains the self-contained direct gate: it resolves production/bench and
+incrementally builds the host target. After those inputs are already known-good, use
+`npm run test:firmware:scenarios` for the shortest edit/rerun loop; `./build.sh firmware-test` performs
+the validation/build itself and then uses that scenarios-only command, avoiding duplicate work.
+
+The host binary replaces the stock host wall-clock and wake HAL with a 64-bit simulator-controlled
+clock. `millis()` intentionally exposes its low 32 bits. Firmware and circuit exchange protocol-v1
+newline messages over the per-test socket: firmware sends `HELLO`, ordered `WRITE`, `MEDIA`, `EMIT`
+and `ADVANCE`; the runner replies with `AT` containing virtual time, raw input mask, ADC millivolts,
+stop reason and queued commands. A version/mapping error, nonlinear-solver failure or stable voltage
+in the ESP32 indeterminate region fails the scenario. Short analog transitions retain the previous
+Schmitt state for at most 20 ms; remaining in the undefined band after that fails with net and voltage.
+
+The runner imports `kicad/doorbell.kicad_sch` at runtime and checks U1 plus P1–P5 during handshake.
+P2/P4/P5 DC, tone, pulse and captured-waveform sources use the measured nominal 90 Ω source
+impedance. It carries capacitor, relay, SSR,
+fuse and regulator state across adaptive timestep rebuilds, uses fine steps around topology/input
+edges, and removes U1 program drivers after a simulated crash. The fake media player derives duration
+from each embedded WAV's actual metadata and drives U3 with a bounded representative tone while it is
+active. Failures print a compact ordered timeline; detailed exploratory traces are not committed.
+
+This fixture validates the electrical contract at the connector and firmware-observable HEAD nets.
+It is not a complete TV20/S model, a substitute for the real captured-bus checks, or validation of a
+fabricated V4.2 board.

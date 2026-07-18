@@ -10,6 +10,7 @@
 #   ./build.sh schematic   schematic ERC + PDF export
 #   ./build.sh pcb         placement constraints + planes/thieving/connectivity + DRC
 #   ./build.sh simulation  run the circuit-simulator unit tests
+#   ./build.sh firmware-test validate firmware targets + run deterministic HEAD co-simulation
 #   ./build.sh fabrication export Gerbers/drill/position + BOM to fab/
 #   ./build.sh step        export populated STEP model (omits STEP_Exclude parts)
 #   ./build.sh board-step  export bare-board STEP for a 3D-printed switch fit-test
@@ -102,7 +103,16 @@ pcb_drc() {
 }
 simulation() {
   echo "▶ sim unit tests"
-  ( cd sim && node --test )
+  ( cd sim && npm run test:circuit )
+}
+firmware_test() {
+  echo "▶ validate production + bench ESPHome configs"
+  esphome config firmware/doorbell.yaml >/dev/null
+  esphome config firmware/doorbell-bench.yaml >/dev/null
+  echo "▶ build deterministic host firmware"
+  esphome compile firmware/doorbell-host.yaml
+  echo "▶ firmware + HEAD circuit co-simulation"
+  ( cd sim && npm run test:firmware:scenarios )
 }
 fabrication() {
   echo "▶ fab outputs -> fab/"
@@ -175,6 +185,7 @@ verify() {
   check
   pcb_drc
   simulation
+  firmware_test
 }
 
 release() {
@@ -191,9 +202,10 @@ case "${1:-release}" in
   schematic)    schematic ;;
   pcb)          check; pcb_drc ;;
   simulation)   simulation ;;
+  firmware-test) firmware_test ;;
   fabrication)  fabrication ;;
   step)         step ;;
   board-step)   board_step ;;
-  *) echo "usage: $0 {verify|release|schematic|pcb|simulation|fabrication|step|board-step}"; exit 1 ;;
+  *) echo "usage: $0 {verify|release|schematic|pcb|simulation|firmware-test|fabrication|step|board-step}"; exit 1 ;;
 esac
 echo "✓ done"

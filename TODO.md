@@ -22,6 +22,11 @@ order—for example, some firmware work must wait for fabricated hardware regard
 
 ## Firmware (`firmware/doorbell.yaml`)
 
+The deterministic host adapter implements the expected versions of the V4.2 policies below so they
+can be exercised against the live HEAD circuit. These tasks remain open for production/bench enablement
+because the installed target is V4.1 and the changed GPIO4/GPIO47/GPIO48 hardware is not fabricated or
+qualified. `test.todo` entries keep that boundary visible in the host suite.
+
 - [ ] **9/10 — Implement K5-confirmed P4 isolation only after a fabricated V4.2 board passes passive bring-up.**
       Keep the deployed V4.1 safeguards meanwhile: OC1 remains its session/ring input, the 1.45 s
       ring-to-audio `welcome_not_before_ms` guard remains enabled, and ring-to-open remains at least

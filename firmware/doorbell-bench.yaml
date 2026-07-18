@@ -58,6 +58,9 @@
 # Local ESPHome 2026.7.0 component copies: `speaker` carries the announcement-pipeline state reset
 # described in https://github.com/esphome/esphome/issues/15692; `i2s_audio` carries the keep-alive
 # experiment from https://github.com/esphome/esphome/pull/15565. See each component's README.md.
+packages:
+  policy: !include packages/policy.yaml
+
 external_components:
   - source:
       type: local
@@ -310,44 +313,6 @@ media_player:
             - switch.turn_off: intercom_ptt
             - globals.set: { id: welcome_playing, value: "false" }
 
-globals:
-  # Ownership guard for the pop-free real-file sequence. While true, media-player state changes cannot
-  # race the scripted K1 timing; play_welcome owns K1 and welcome_playing explicitly.
-  - id: welcome_sequence_active
-    type: bool
-    restore_value: no
-    initial_value: "false"
-  - id: welcome_playing
-    type: bool
-    restore_value: no
-    initial_value: "false"
-  # The greeting to play — a pointer into the media_player's files: (the single embed spot). A caller
-  # stages it (`id(welcome_file) = id(<file>)`) before running play_welcome; nullptr = play nothing
-  # (the default). This is what lets file choice avoid any name-branching in the script.
-  - id: welcome_file
-    type: audio::AudioFile*
-    restore_value: no
-    initial_value: "nullptr"
-  # Greeting registry, populated in esphome: on_boot (see there). Index-aligned with the
-  # `next_greeting` select; the greet/greet_and_open api actions resolve a name to an index via the
-  # select (index_of). greetings[0] = nullptr (None).
-  - id: greetings
-    type: std::vector<audio::AudioFile*>
-    restore_value: no
-  # Earliest time a ring-triggered welcome may start. Keep the bench twin aligned with V4.1
-  # production timing: the door station suppresses initial TX until ~1.45 s after a Türruf. Manual/API
-  # greetings with no recent ring see an expired deadline and start immediately.
-  - id: welcome_not_before_ms
-    type: uint32_t
-    restore_value: no
-    initial_value: "0"
-  # Minimum ring→open deadline. A greeting always finishes and K1 settles first, so long greetings
-  # extend the actual delay rather than being truncated or overlapped with K2.
-  - id: ring_open_not_before_ms
-    type: uint32_t
-    restore_value: no
-    initial_value: "0"
-
 # Door-station playback: play the embedded file, blocking until it finishes. On the bench this script
 # owns K1 (off-hook handshake + TX route) and K3 gong-mute state so speaker-media state transitions
 # cannot interrupt the sequence. The I2S channel was primed at boot and is retained between plays by
@@ -388,9 +353,8 @@ script:
             # race the scripted route timing. I2S/ES8311 were primed once at boot with K1 open.
             - globals.set: { id: welcome_sequence_active, value: "true" }
             # Defer ring-triggered TX until the measured V4.1 door-station suppression has ended.
-            - delay: !lambda |-
-                uint32_t remaining = id(welcome_not_before_ms) - millis();
-                return remaining <= 5000 ? remaining : 0;
+            - script.execute: wait_welcome_deadline
+            - script.wait: wait_welcome_deadline
             # Connect the settled codec output, then give the AC-coupled output and K1 20 ms before
             # starting the file. Same-format playback reuses the retained channel instead of rebuilding it.
             - switch.turn_on: intercom_ptt
@@ -421,20 +385,9 @@ script:
       # Settle K1, then honour the 1.75 s minimum ring→open deadline. An expired/no-ring deadline adds
       # no delay; a long greeting still completes before the door bridge makes.
       - delay: 100ms
-      - delay: !lambda |-
-          uint32_t remaining = id(ring_open_not_before_ms) - millis();
-          return remaining <= 5000 ? remaining : 0;
+      - script.execute: wait_ring_open_deadline
+      - script.wait: wait_ring_open_deadline
       - button.press: front_door_buzzer
-
-  # Stage the HA-primed greeting (next_greeting select) into welcome_file. Single-lambda -> runs
-  # synchronously, so a caller can read welcome_file immediately after script.execute. Shared by the
-  # ring reflex and the "Welcome & Open Door" button. None / out-of-range -> nullptr (no door audio).
-  - id: stage_selected_greeting
-    then:
-      - lambda: |-
-          auto idx = id(next_greeting).active_index();
-          id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
-                               ? id(greetings)[idx.value()] : nullptr;
 
 # Bench DAC sources: "Debug DAC Warmup" continuously feeds digital zeros so I2S and the ES8311 can
 # settle while K1 remains open; "Debug Test Tone" instead feeds a phase-continuous ~1 kHz sine
@@ -489,6 +442,9 @@ binary_sensor:
     name: "Apartment Doorbell"
     icon: mdi:doorbell
     id: apartment_doorbell
+    # A call can already be present while ESPHome is starting. Treat the first filtered ON as a
+    # real edge; filtered idle never fires on_press, so this does not create a boot event.
+    trigger_on_initial_state: true
     pin:
       number: GPIO13           # OC2 collector — Etagenruf (P5) sense
       inverted: true           # opto pulls the pin LOW when the bell rings
@@ -517,6 +473,7 @@ binary_sensor:
     name: "House Doorbell"
     icon: mdi:doorbell
     id: house_doorbell
+    trigger_on_initial_state: true
     pin:
       number: GPIO12           # OC1 collector — Türruf (line 4 / P4) sense
       inverted: true
@@ -531,9 +488,7 @@ binary_sensor:
       then:
         # Stamp the same independent audio/open deadlines as production. The production HA events and
         # ring-triggered auto-open reflex stay stripped here; exercise greet/open via buttons or API.
-        - lambda: |-
-            id(welcome_not_before_ms) = millis() + 1450;
-            id(ring_open_not_before_ms) = millis() + 1750;
+        - script.execute: stamp_ring_deadlines
   # Bench-only observation of K5's physical auxiliary NO contact. R35 biases K6_RET externally and
   # reaches GPIO4 only through R44; do not add an internal pull that could hide an assembly fault.
   - platform: gpio
@@ -597,27 +552,6 @@ switch:
       - logger.log: { format: "PTT ENGAGED  (K1 on)",  level: INFO, tag: ptt }
     on_turn_off:
       - logger.log: { format: "PTT DISENGAGED (K1 off)", level: INFO, tag: ptt }
-  - platform: template
-    name: "Auto-open front door"
-    icon: mdi:gate
-    id: auto_open_front_door
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: template
-    name: "Force Chime"
-    icon: mdi:bell-ring
-    id: force_chime
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
-  # HA-driven chime-suppression REQUEST (the occupancy / quiet-hours policy lives in HA). Only honoured
-  # while the API is connected (see the chime_enabled lambda) — a dead HA can't leave the gong
-  # muted. Default off = don't suppress.
-  - platform: template
-    name: "Suppress Chime"
-    icon: mdi:bell-off
-    id: suppress_chime
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
   # Bench diagnostics (SAFE-6 / Stage-2c): direct drives for the two SSR outputs with no user-facing
   # switch of their own. Only this bench config carries them — the door-hold switch bypasses the
   # 1.75 s button pulse (the Q4 watchdog releases K2 after ~8.4 s nominal; K4 stays open while held).
@@ -719,27 +653,6 @@ output:
     pin: GPIO48              # P4_ISO — K6 opens only when K5's aux contact grounds K6_RET
     id: p4_isolation_req
 
-# Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the
-# expected delivery/guest. Options MUST stay in the same order as the greetings registry (esphome:
-# on_boot); the greet/greet_and_open api actions resolve these option NAMES via index_of. Order:
-# 0 = None (just open, no door audio), 1 = Chime, 2 = Silent (1.5 s inaudible — greet/open timing
-# test), 3 = Hello, 4 = Secret, 5 = Windows.
-select:
-  - platform: template
-    name: "Next-ring greeting"
-    id: next_greeting
-    icon: mdi:bullhorn
-    optimistic: true
-    restore_value: true
-    options:
-      - "None"
-      - "Chime"
-      - "Silent"
-      - "Hello"
-      - "Secret"
-      - "Windows"
-    initial_option: "None"
-
 button:
   - platform: restart
     name: "Restart"
@@ -751,25 +664,6 @@ button:
     id: front_door_buzzer
     output: front_door_buzzer_bin
     duration: 1750ms
-  - platform: template
-    name: "Play Welcome Sound"
-    icon: mdi:bullhorn
-    id: play_welcome_button
-    on_press:
-      then:
-        # Honor the HA-primed next_greeting select; None -> no playback.
-        - script.execute: stage_selected_greeting
-        - script.execute: play_welcome
-  - platform: template
-    name: "Welcome & Open Door"
-    icon: mdi:door-open
-    id: welcome_and_open_button
-    on_press:
-      then:
-        # Honor the HA-primed next_greeting select (same staging as the ring reflex); None -> just open.
-        - script.execute: stage_selected_greeting
-        - script.execute: welcome_and_open
-
 sensor:
   # R40/R41 divide the post-fuse +5 V rail by 11. C25 filters the ADC input. This
   # is useful for sag diagnostics, but cannot report a complete loss of board power.

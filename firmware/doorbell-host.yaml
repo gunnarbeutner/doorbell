@@ -1,0 +1,383 @@
+# Deterministic desktop target for the live HEAD/V4.2 KiCad design.
+#
+# This target is never flashed. It runs the shared doorbell policy against a Unix-socket circuit
+# runner using a simulator-controlled clock. Unlike the deployed V4.1 adapter, it consumes the
+# V4.2-only K5 sense, P4 isolation and physical-Talk signals and enables their expected firmware
+# coordination. Passing this target is evidence about the HEAD candidate, not fabricated hardware.
+
+packages:
+  policy: !include packages/policy.yaml
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components:
+      - firmware_test
+
+esphome:
+  name: doorbell-host
+  min_version: 2026.7.0
+  platformio_options:
+    build_src_filter:
+      - "+<*>"
+      - "-<esphome/components/host/hal.cpp>"
+      - "-<esphome/components/host/gpio.cpp>"
+      - "-<esphome/core/wake/wake_host.cpp>"
+  on_boot:
+    priority: -100
+    then:
+      - lambda: |-
+          id(greetings).push_back(nullptr);
+          id(greetings).push_back(id(welcome_chime));
+          id(greetings).push_back(id(welcome_silent));
+          id(greetings).push_back(id(welcome_hello));
+          id(greetings).push_back(id(welcome_secret));
+          id(greetings).push_back(id(welcome_windows));
+          if (id(greetings).size() != id(next_greeting).traits.get_options().size())
+            ESP_LOGE("greetings", "registry/select length mismatch");
+
+host:
+
+logger:
+  level: WARN
+
+media_player:
+  - platform: firmware_test
+    id: intercom_media
+    name: "Intercom"
+    files:
+      - id: welcome_chime
+        file: "sounds/chime.wav"
+      - id: welcome_silent
+        file: "sounds/silent.wav"
+      - id: welcome_hello
+        file: "sounds/weird_hello.wav"
+      - id: welcome_secret
+        file: "sounds/secret.wav"
+      - id: welcome_windows
+        file: "sounds/windows.wav"
+    on_announcement:
+      - if:
+          condition:
+            lambda: 'return !id(welcome_sequence_active) && !id(i2s_prime_active) && !id(manual_talk_active);'
+          then:
+            - script.execute: prepare_smart_tx
+            - script.wait: prepare_smart_tx
+            - if:
+                condition:
+                  lambda: 'return id(smart_tx_ready);'
+                then:
+                  - switch.turn_on: intercom_ptt
+                  - globals.set: { id: welcome_playing, value: "true" }
+    on_play:
+      - if:
+          condition:
+            lambda: 'return !id(welcome_sequence_active) && !id(i2s_prime_active) && !id(manual_talk_active);'
+          then:
+            - script.execute: prepare_smart_tx
+            - script.wait: prepare_smart_tx
+            - if:
+                condition:
+                  lambda: 'return id(smart_tx_ready);'
+                then:
+                  - switch.turn_on: intercom_ptt
+                  - globals.set: { id: welcome_playing, value: "true" }
+    on_idle:
+      - if:
+          condition:
+            lambda: 'return !id(welcome_sequence_active) && !id(i2s_prime_active);'
+          then:
+            - switch.turn_off: intercom_ptt
+            - output.turn_off: p4_isolation_req
+            - globals.set: { id: smart_tx_ready, value: "false" }
+            - globals.set: { id: welcome_playing, value: "false" }
+    on_pause:
+      - switch.turn_off: intercom_ptt
+      - output.turn_off: p4_isolation_req
+      - globals.set: { id: smart_tx_ready, value: "false" }
+      - globals.set: { id: welcome_playing, value: "false" }
+
+globals:
+  - id: i2s_prime_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: smart_tx_ready
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: tx_requires_k5
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: manual_talk_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+script:
+  # V4.2 smart-TX entry: isolate raw P4 only after K5 is stably confirmed. A manual/API greeting
+  # outside a latched session does not need K6 and may start immediately.
+  - id: prepare_smart_tx
+    mode: restart
+    then:
+      - globals.set: { id: smart_tx_ready, value: "false" }
+      - globals.set: { id: tx_requires_k5, value: "false" }
+      - if:
+          condition:
+            binary_sensor.is_on: physical_ptt
+          then:
+            - output.turn_off: p4_isolation_req
+          else:
+            - if:
+                condition:
+                  binary_sensor.is_on: k5_sense
+                then:
+                  - globals.set: { id: tx_requires_k5, value: "true" }
+                  - output.turn_on: p4_isolation_req
+                  - delay: 10ms
+                  - if:
+                      condition:
+                        and:
+                          - binary_sensor.is_on: k5_sense
+                          - binary_sensor.is_off: physical_ptt
+                      then:
+                        - globals.set: { id: smart_tx_ready, value: "true" }
+                      else:
+                        - output.turn_off: p4_isolation_req
+                        - globals.set: { id: tx_requires_k5, value: "false" }
+                else:
+                  - globals.set: { id: smart_tx_ready, value: "true" }
+
+  - id: play_welcome
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(welcome_file) != nullptr && !id(manual_talk_active);'
+          then:
+            - media_player.volume_set:
+                id: intercom_media
+                volume: 75%
+            - globals.set: { id: welcome_sequence_active, value: "true" }
+            - script.execute: wait_welcome_deadline
+            - script.wait: wait_welcome_deadline
+            - script.execute: prepare_smart_tx
+            - script.wait: prepare_smart_tx
+            - if:
+                condition:
+                  lambda: 'return id(smart_tx_ready) && !id(manual_talk_active);'
+                then:
+                  - switch.turn_on: intercom_ptt
+                  - globals.set: { id: welcome_playing, value: "true" }
+                  - delay: 20ms
+                  - lambda: 'id(intercom_media).play_file(id(welcome_file), true, false);'
+                  - delay: 400ms
+                  - wait_until:
+                      condition:
+                        or:
+                          - not:
+                              media_player.is_announcing: intercom_media
+                          - binary_sensor.is_on: physical_ptt
+                          - lambda: 'return id(tx_requires_k5) && !id(k5_sense).state;'
+                      timeout: 30s
+            - media_player.stop: intercom_media
+            - switch.turn_off: intercom_ptt
+            - output.turn_off: p4_isolation_req
+            - globals.set: { id: welcome_playing, value: "false" }
+            - globals.set: { id: smart_tx_ready, value: "false" }
+            - globals.set: { id: tx_requires_k5, value: "false" }
+            - globals.set: { id: welcome_sequence_active, value: "false" }
+
+  - id: welcome_and_open
+    mode: single
+    then:
+      - script.execute: play_welcome
+      - script.wait: play_welcome
+      - delay: 100ms
+      - script.execute: wait_ring_open_deadline
+      - script.wait: wait_ring_open_deadline
+      - button.press: front_door_buzzer
+
+  # Every host/V4.2 door request passes through this coordinator. It tears down TX and K6 first,
+  # holds DOOR_DRV for the required pulse, then enforces the fully-low watchdog re-arm interval.
+  - id: request_door_open
+    mode: single
+    then:
+      - script.stop: play_welcome
+      - media_player.stop: intercom_media
+      - switch.turn_off: intercom_ptt
+      - output.turn_off: p4_isolation_req
+      - globals.set: { id: welcome_playing, value: "false" }
+      - globals.set: { id: welcome_sequence_active, value: "false" }
+      - globals.set: { id: smart_tx_ready, value: "false" }
+      - globals.set: { id: tx_requires_k5, value: "false" }
+      - delay: 20ms
+      - output.turn_on: front_door_buzzer_bin
+      - delay: 1750ms
+      - output.turn_off: front_door_buzzer_bin
+      - wait_until:
+          condition:
+            binary_sensor.is_off: k5_sense
+          timeout: 100ms
+      - delay: 500ms
+
+binary_sensor:
+  - platform: gpio
+    name: "Apartment Doorbell"
+    id: apartment_doorbell
+    trigger_on_initial_state: true
+    pin:
+      number: GPIO13
+      inverted: true
+      mode: { input: true }
+    filters:
+      - lambda: |-
+          if (id(house_doorbell).state || id(intercom_ptt).state) return false;
+          return x;
+      - delayed_off: 50ms
+      - delayed_on: 150ms
+      - delayed_off: 2s
+
+  - platform: gpio
+    name: "House Doorbell"
+    id: house_doorbell
+    trigger_on_initial_state: true
+    pin:
+      number: GPIO12
+      inverted: true
+      mode: { input: true }
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 2s
+    on_press:
+      then:
+        - script.execute: stamp_ring_deadlines
+        - if:
+            condition:
+              switch.is_on: auto_open_front_door
+            then:
+              - script.execute: stage_selected_greeting
+              - script.execute: welcome_and_open
+
+  - platform: gpio
+    name: "K5 Session Confirmed"
+    id: k5_sense
+    pin:
+      number: GPIO4
+      inverted: true
+      mode: { input: true, pullup: false, pulldown: false }
+    filters:
+      - delayed_on: 5ms
+      - delayed_off: 5ms
+    on_release:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(smart_tx_ready);'
+            then:
+              - media_player.stop: intercom_media
+              - switch.turn_off: intercom_ptt
+              - output.turn_off: p4_isolation_req
+              - globals.set: { id: welcome_playing, value: "false" }
+              - globals.set: { id: smart_tx_ready, value: "false" }
+              - globals.set: { id: tx_requires_k5, value: "false" }
+
+  - platform: gpio
+    name: "Physical Talk"
+    id: physical_ptt
+    pin:
+      number: GPIO47
+      inverted: true
+      mode: { input: true, pullup: false, pulldown: false }
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      then:
+        - globals.set: { id: manual_talk_active, value: "true" }
+        - script.stop: play_welcome
+        - media_player.stop: intercom_media
+        - switch.turn_off: intercom_ptt
+        - output.turn_off: p4_isolation_req
+        - output.turn_off: suppress_chime_bin
+        - globals.set: { id: welcome_playing, value: "false" }
+        - globals.set: { id: welcome_sequence_active, value: "false" }
+        - globals.set: { id: smart_tx_ready, value: "false" }
+        - globals.set: { id: tx_requires_k5, value: "false" }
+        - delay: 10ms
+    on_release:
+      then:
+        - delay: 10ms
+        - globals.set: { id: manual_talk_active, value: "false" }
+
+  - platform: template
+    name: "Chime Enabled"
+    id: chime_enabled
+    lambda: |-
+      if (id(manual_talk_active)) return true;
+      if (id(welcome_playing)) return false;
+      return id(force_chime).state || !(id(suppress_chime).state && id(ha_connected).state);
+    on_press:
+      - output.turn_off: suppress_chime_bin
+    on_release:
+      - output.turn_on: suppress_chime_bin
+
+  - platform: template
+    name: "HA Connected"
+    id: ha_connected
+    entity_category: diagnostic
+
+switch:
+  - platform: output
+    id: intercom_ptt
+    output: ptt_relay_bin
+    restore_mode: ALWAYS_OFF
+
+output:
+  - platform: gpio
+    pin: GPIO9
+    id: ptt_relay_bin
+  - platform: gpio
+    pin: GPIO11
+    id: suppress_chime_bin
+  - platform: gpio
+    pin: GPIO10
+    id: front_door_buzzer_bin
+  - platform: gpio
+    pin: GPIO48
+    id: p4_isolation_req
+
+button:
+  - platform: template
+    name: "Front Door Buzzer"
+    id: front_door_buzzer
+    on_press:
+      - script.execute: request_door_open
+sensor:
+  - platform: template
+    name: "Post-Fuse 5 V Supply"
+    id: vbus_f_voltage
+    device_class: voltage
+    state_class: measurement
+    entity_category: diagnostic
+    update_interval: never
+    accuracy_decimals: 2
+
+firmware_test:
+  id: circuit_bridge
+  ha_connected: ha_connected
+  auto_open: auto_open_front_door
+  force_chime: force_chime
+  suppress_chime: suppress_chime
+  next_greeting: next_greeting
+  play_welcome: play_welcome_button
+  welcome_and_open: welcome_and_open_button
+  door_open: front_door_buzzer
+  vbus_sensor: vbus_f_voltage
+  house_ring: house_doorbell
+  apartment_ring: apartment_doorbell
+  chime_enabled: chime_enabled
+  k5_sense: k5_sense
+  physical_ptt: physical_ptt

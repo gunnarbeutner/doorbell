@@ -6,7 +6,10 @@
   "description": "Schematic-importing circuit simulator and PCB viewer for the doorbell controller.",
   "scripts": {
     "dev": "node server.js",
-    "test": "node --test",
+    "test": "npm run test:circuit && npm run test:firmware",
+    "test:circuit": "node --test test/*.test.js",
+    "test:firmware": "node --test firmware-test/firmware.test.js",
+    "test:firmware:scenarios": "DOORBELL_SKIP_CONFIG=1 DOORBELL_SKIP_HOST_BUILD=1 node --test firmware-test/firmware.test.js",
     "test:monte-carlo": "node diagnostics/corner-monte-carlo.js"
   }
 }

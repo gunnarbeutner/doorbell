@@ -28,13 +28,30 @@ own ERC/DRC can't express and exports the fab outputs from the authoritative fil
   parts inside the outline).
 - **`route.py`** — 0 unrouted nets; no over-limit copper-thieving float island wide enough to take a
   GND stitching via (too-narrow slivers are accepted).
-- **Firmware** — `esphome config firmware/doorbell.yaml` parses clean (needs a `secrets.yaml`
-  with `wifi_ssid`/`wifi_password` alongside). Confirm the GPIO assignments in the YAML match the
-  schematic.
+- **Firmware** — `./build.sh firmware-test` resolves production and bench, builds the deterministic
+  host target and executes the shared policy against the live HEAD/V4.2 schematic. It needs a
+  `secrets.yaml` with `wifi_ssid`/`wifi_password` alongside the production files. Production must
+  retain its installed V4.1 pin/audio profile; host-only GPIO4/GPIO47/GPIO48 behavior is not evidence
+  that fabricated V4.2 hardware has passed commissioning.
 
 Green gates verify the files without rewriting generated artifacts. The `fab/` outputs may lag the
 schematic — **run `./build.sh` before ordering** to repeat verification and export a matched release
 set so the Gerbers, BOM, CPL, PDF and STEP agree.
+
+### 1.1 Deterministic firmware fixture
+
+Use `cd sim && npm test` for every circuit and firmware test, `npm run test:circuit` for circuit-only
+iteration, or `./build.sh firmware-test` / `npm run test:firmware` for the firmware gate. Once config
+and host compilation are already green, `npm run test:firmware:scenarios` skips only those duplicate
+setup checks. Each scenario has an isolated process, preferences directory and
+Unix socket. The virtual clock can start immediately before 32-bit rollover and advances only when
+the schematic runner returns a firmware deadline, external stimulus or GPIO threshold transition;
+wall-clock slowdown must not change the event trace.
+
+The fixture drives the connector through the measured nominal 90 Ω source impedance and validates
+U1/P1–P5 mapping from the live schematic rather than a generated netlist. Its bounded codec stimulus
+and connector sources verify the board/firmware contract, not the complete TV20/S central unit. Treat
+all results as HEAD/V4.2 candidate evidence only and still perform §5.5/§6 on fabricated hardware.
 
 ## 2. Independent schematic review (do it blind)
 

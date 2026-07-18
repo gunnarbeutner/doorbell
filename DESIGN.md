@@ -523,6 +523,12 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
   firmware input and restoring deliberate manual-conversation behavior remain gated on first-board
   electrical and mechanical validation in `TODO.md`.
 
+  The desktop-only `firmware/doorbell-host.yaml` enables the expected V4.2 hand-off policy for
+  deterministic tests: physical Talk cancels smart media/K1, clears K6 and restores K3; K5-confirmed
+  smart TX isolates raw P4; and every simulated door request is serialized through the pulse/re-arm
+  coordinator. This does not enable those paths in installed V4.1 production firmware or satisfy the
+  fabricated-board gate.
+
   **R36 (100 kΩ) + JP1
   (factory-bridged)** bleed `CHIME_POS` to GND while K3 is open, discharging C19's 22 µF
   coupling capacitance (τ≈2.2 s). It is a passive robustness measure: on the V4.1 bench board,

@@ -1,0 +1,118 @@
+# Platform-independent state ownership and public request surface.
+#
+# Production/V4.1, bench and host/HEAD adapters provide the media player, ring GPIOs, actuator
+# scripts and API/event plumbing referenced here. Keep hardware pins and target diagnostics out of
+# this package.
+
+globals:
+  - id: welcome_sequence_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: welcome_playing
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: welcome_file
+    type: audio::AudioFile*
+    restore_value: no
+    initial_value: "nullptr"
+  - id: greetings
+    type: std::vector<audio::AudioFile*>
+    restore_value: no
+  - id: welcome_not_before_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+  - id: ring_open_not_before_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+  - id: welcome_deadline_valid
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: ring_open_deadline_valid
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+script:
+  # Synchronous pointer staging shared by ring, button and API requests.
+  - id: stage_selected_greeting
+    then:
+      - lambda: |-
+          auto idx = id(next_greeting).active_index();
+          id(welcome_file) = (idx.has_value() && idx.value() < id(greetings).size())
+                               ? id(greetings)[idx.value()] : nullptr;
+
+  # Unsigned subtraction deliberately preserves ESPHome's 32-bit millis rollover semantics.
+  - id: stamp_ring_deadlines
+    then:
+      - lambda: |-
+          id(welcome_not_before_ms) = millis() + 1450;
+          id(ring_open_not_before_ms) = millis() + 1750;
+          id(welcome_deadline_valid) = true;
+          id(ring_open_deadline_valid) = true;
+
+  - id: wait_welcome_deadline
+    then:
+      - delay: !lambda |-
+          if (!id(welcome_deadline_valid)) return 0;
+          uint32_t remaining = id(welcome_not_before_ms) - millis();
+          return remaining <= 5000 ? remaining : 0;
+      - globals.set: { id: welcome_deadline_valid, value: "false" }
+
+  - id: wait_ring_open_deadline
+    then:
+      - delay: !lambda |-
+          if (!id(ring_open_deadline_valid)) return 0;
+          uint32_t remaining = id(ring_open_not_before_ms) - millis();
+          return remaining <= 5000 ? remaining : 0;
+      - globals.set: { id: ring_open_deadline_valid, value: "false" }
+
+switch:
+  - platform: template
+    name: "Auto-open front door"
+    icon: mdi:gate
+    id: auto_open_front_door
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: template
+    name: "Force Chime"
+    icon: mdi:bell-ring
+    id: force_chime
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: template
+    name: "Suppress Chime"
+    icon: mdi:bell-off
+    id: suppress_chime
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+select:
+  - platform: template
+    name: "Next-ring greeting"
+    id: next_greeting
+    icon: mdi:bullhorn
+    optimistic: true
+    restore_value: true
+    options: ["None", "Chime", "Silent", "Hello", "Secret", "Windows"]
+    initial_option: "None"
+
+button:
+  - platform: template
+    name: "Play Welcome Sound"
+    icon: mdi:bullhorn
+    id: play_welcome_button
+    on_press:
+      - script.execute: stage_selected_greeting
+      - script.execute: play_welcome
+  - platform: template
+    name: "Welcome & Open Door"
+    icon: mdi:door-open
+    id: welcome_and_open_button
+    on_press:
+      - script.execute: stage_selected_greeting
+      - script.execute: welcome_and_open
