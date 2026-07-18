@@ -882,7 +882,9 @@ const softwareTxSwing = ({ mute, speakerTone, codecTone }) => {
   const speaker = speakerTone ? (t) => 0.4 * Math.sin(2 * Math.PI * 1000 * t) : undefined;
   const sources = { '/VBUS': 5, '/P1': 0, '/P2~bus': 12 };
   if (speaker) sources['/P5'] = speaker;
-  return run(sources, 0.6, latched, true).swing;
+  // Sixty periods of the 1 kHz stimulus are ample for a stable peak-to-peak ratio; observe the
+  // second half (30 complete periods) without spending 600 periods on an unchanged steady state.
+  return run(sources, 60e-3, latched, true).swing;
 };
 
 test('software TX isolation: the passive LS1 microphone stays small relative to codec TX', () => {
