@@ -646,7 +646,7 @@ test('codec clamps reference AVDD behind reverse blocking and a defined bleeder'
     'D17 must clamp MIC1P downward into GND');
   for (const ref of ['D13', 'D14', 'D16', 'D17', 'D18'])
     assert.equal(byRef[ref].value, 'LMBR01S30ST5G', `${ref} must use the specified low-Vf diode`);
-  assert.equal(byRef.D18.pins['2'], 'AVDD_PRE', 'D18 anode must face the LP5907 output');
+  assert.equal(byRef.D18.pins['2'], '/AVDD_PRE', 'D18 anode must face the LP5907 output');
   assert.equal(byRef.D18.pins['1'], '/AVDD', 'D18 cathode must face AVDD and block reverse current');
   assert.deepEqual(new Set(Object.values(byRef.R37.pins)), new Set(['/AVDD', 'GND']),
     'R37 must provide the explicit AVDD-to-ground sink');
