@@ -74,8 +74,11 @@ schematic, read them from it.
   relative timing of the two poles.
 - The on-board latch relay (K5) replicates the handset's seal-in: coil across **P1↔K5_LATCH**, with
   normally-closed K6 passing raw P4 at rest; the primary NO contact seals `K5_LATCH` from P2. Confirm
-  the auxiliary NO contact grounds `K5_SENSE_N`, gates K6's LED return and cannot open K6 before K5
-  physically pulls in. Confirm contact mapping and flyback-diode orientation.
+  the auxiliary NO contact directly grounds `K6_RET` and gates K6's LED return, R35 = 10 kΩ pulls up
+  that physical node, and R44 = 100 kΩ is the only connection from it to GPIO4/`K5_SENSE_N`. Check
+  the worst-case R35/R44 divider against K6's recovery limits and GPIO4's V_IH/V_IL/leakage limits;
+  no GPIO4 state may open K6 before K5 physically pulls in. Confirm contact mapping and flyback-diode
+  orientation.
 - Confirm the door pair reproduces S1's **break-before-make**: the NC seal-in-break opens before
   the door bridge closes (RC-delayed), and the max-on-time one-shot releases the bridge in bounded
   time (DOOR-4 / DOOR-5). Cross-check the timing in `sim/test`.
@@ -217,9 +220,10 @@ tolerance. A complete supply or fuse loss cannot be reported because it also pow
   hold the command asserted and measure that the watchdog releases K2 after the minimum normal
   firmware pulse but before the specified maximum fault-on time.
 - **2d K5-confirmed P4 isolation:** keep JP2 open and power the bench firmware. Before K5 pull-in,
-  confirm `Debug K5 Sense` is clear, turn on `Debug P4 Isolation` and verify GPIO48/`P4_ISO` goes
-  high but the hardware interlock keeps K6 closed; turn the request off. Ring K5 in and confirm
-  `Debug K5 Sense` asserts after its 5 ms debounce. Turn on `Debug P4 Isolation`, verify K6 opens,
+  confirm `K6_RET` and GPIO4/`K5_SENSE_N` are HIGH and `Debug K5 Sense` is clear. Turn on `Debug P4
+  Isolation` and verify GPIO48/`P4_ISO` goes high but the hardware interlock keeps K6 closed; turn
+  the request off. Ring K5 in, confirm `K6_RET` and `K5_SENSE_N` go LOW and `Debug K5 Sense` asserts
+  after its 5 ms debounce. Turn on `Debug P4 Isolation`, verify K6 opens,
   remove the raw-P4 drive and confirm K5 remains sealed from P2 while raw P4 is disconnected from
   `K5_LATCH`. Drop P2 and confirm K5 releases, the diagnostic clears and K6 immediately restores
   continuity even while the request remains high; then turn the request off. Finally bridge JP2

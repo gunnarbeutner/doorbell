@@ -24,7 +24,7 @@
 #   front_door_buzzer  (DOOR_DRV → K2+K4 door pair) : GPIO10
 #   suppress_chime_bin (K3 / chime suppress)       : GPIO11
 #   K1                 (PTT SSR, talk=energised)   : GPIO9
-#   K5_SENSE_N           (K5 auxiliary NO, active-low): GPIO4
+#   K5_SENSE_N        (K5 aux NO via R44, active-low) : GPIO4
 #   P4_ISO            (K6 request, active-high)   : GPIO48
 #   post-fuse +5 V monitor (VBUS_F_ADC / ADC1_CH4) : GPIO5
 #   status LED          (active-low D6)             : GPIO7
@@ -534,8 +534,8 @@ binary_sensor:
         - lambda: |-
             id(welcome_not_before_ms) = millis() + 1450;
             id(ring_open_not_before_ms) = millis() + 1750;
-  # Bench-only observation of K5's physical auxiliary NO contact. R35 is the external 10 kΩ pull-up;
-  # do not add an internal pull-up that could hide an assembly fault in that path.
+  # Bench-only observation of K5's physical auxiliary NO contact. R35 biases K6_RET externally and
+  # reaches GPIO4 only through R44; do not add an internal pull that could hide an assembly fault.
   - platform: gpio
     name: "Debug K5 Sense"
     icon: mdi:electric-switch
@@ -637,9 +637,8 @@ switch:
     restore_mode: ALWAYS_OFF
   # Stage-2d only, after Stage-2a has proved unpowered P4 continuity and passive K5 seal-in. This
   # requests K6 open; K5's auxiliary contact gates the hardware LED return, so P4_ISO alone cannot
-  # open the fail-closed P4 path before K5 physically pulls in. On the current candidate GPIO4 shares
-  # that return and must remain a high-impedance input; TODO.md tracks electrically decoupling sense
-  # from the K6 return before ordering.
+  # open the fail-closed P4 path before K5 physically pulls in. GPIO4 senses K6_RET only through
+  # R44 = 100 kΩ; even a driven-low sense pin cannot supply normal K6 operating current.
   - platform: output
     name: "Debug P4 Isolation"
     icon: mdi:call-split
@@ -717,7 +716,7 @@ output:
                              # serialization, K1/K6 hand-off and the required 500ms low re-arm time.
     id: front_door_buzzer_bin
   - platform: gpio
-    pin: GPIO48              # P4_ISO — K6 opens only when K5_SENSE_N also provides its LED return
+    pin: GPIO48              # P4_ISO — K6 opens only when K5's aux contact grounds K6_RET
     id: p4_isolation_req
 
 # Which greeting the autonomous auto-open reflex plays on the NEXT ring — HA primes this ahead of the

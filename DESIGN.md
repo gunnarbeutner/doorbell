@@ -535,11 +535,15 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
 - **K6 — P4 isolator.** NC at rest and unpowered, so raw P4 reaches `K5_LATCH` and the passive handset
   behaves normally. K5's auxiliary NO contact is the K6 LED return, so a stuck-high `P4_ISO` alone
   cannot open K6 until K5 has physically pulled in, and K5 release immediately removes LED current.
-  In the current candidate, GPIO4 is connected directly to that same `K5_SENSE_N` return; the
-  interlock claim therefore assumes GPIO4 remains a high-impedance input. A GPIO configured or failed
-  low can provide K6 LED current before the auxiliary contact closes. Before ordering, split the
-  auxiliary/K6 return from the GPIO sense branch and current-limit or buffer the sense so no GPIO
-  state can operate K6; see `TODO.md`. JP2 is an open recovery jumper directly across K6's output.
+  The physical LED/contact node is `K6_RET`: R35 = 10 kΩ biases it from +3V3 and preserves the
+  auxiliary-contact wetting current. GPIO4/`K5_SENSE_N` reaches `K6_RET` only through R44 = 100 kΩ.
+  A GPIO hard-low therefore forms a weak R35/R44 divider rather than an alternate K6 return; at
+  nominal values it leaves only about 0.30 V and 30 µA across the LED, below K6's 25 °C guaranteed
+  0.5 V / 0.1 mA recovery limits. A hard-high GPIO while K5 is closed is likewise limited to about
+  33 µA. GPIO4 must remain input-only with both internal pulls disabled in normal firmware. The
+  structural and driven-pin fault cases are simulator regressions; resistor/leakage/temperature
+  corner sign-off remains a pre-order gate in `TODO.md`. JP2 is an open recovery jumper directly
+  across K6's output.
 - K2/K3 remain independent; K1's GPIO drive is independent but its LED return is mechanically gated
   by SW4. **K4 is ganged with K2 on DOOR_DRV** — the break-before-make door pair. Firmware holds
   **K3 de-energised whenever a ring should be heard**. V4.1 field operation
@@ -559,7 +563,8 @@ output-high voltage. IO9 and IO10 each drive two LEDs, so firmware must retain t
 drive strength. V4.1 field operation proves the same direct-drive topology with higher 300 Ω LED
 resistors; V4.2's 220 Ω values increase PhotoMOS operate-current margin, so no buffer stage is needed.
 SW4's NC contact is in series only with K1's common LED return; K5's auxiliary contact similarly
-gates K6. The 10 kΩ drive pull-downs hold every smart actuator inactive while GPIOs float at boot:
+gates K6 directly on `K6_RET`, with GPIO4 isolated by R44. The 10 kΩ drive pull-downs hold every
+smart actuator inactive while GPIOs float at boot:
 talk and door remain open, while the normally-closed chime, seal-in and P4 paths remain intact.
 PhotoMOS contacts need no flyback; D1 exists only for the passive electromechanical latch.
 
@@ -699,9 +704,12 @@ Consequences:
 - **Sequencing, not mixing:** assert direction → settle → stream → release → stream the other
   (walkie-talkie cadence).
 
-**"Can we send?" — session sense.** V4.2 adds `K5_SENSE_N`, pulled low by K5's auxiliary NO contact,
-so firmware can distinguish raw P4 activity from a relay that has actually pulled in and sealed.
-OC1 remains on raw P4 for ring detection and diagnostics. K3 control remains independent: it may mute
+**"Can we send?" — session sense.** V4.2 adds `K5_SENSE_N`. K5's auxiliary NO contact pulls the
+physical `K6_RET` node low; GPIO4 observes that active-low state only through R44 = 100 kΩ, while
+R35 = 10 kΩ biases `K6_RET` high when K5 is released. Firmware must configure GPIO4 as input-only with
+both internal pulls disabled. This lets firmware distinguish raw P4 activity from a relay that has
+actually pulled in and sealed without letting the sense pin bypass K6's physical interlock. OC1
+remains on raw P4 for ring detection and diagnostics. K3 control remains independent: it may mute
 the local gong while K6 controls only the raw-P4-to-latch connection. Audio direction is selected by
 K1:
 
@@ -770,9 +778,10 @@ connected, its gong rides onto the P2-sourced talk handshake and can be forwarde
 K5's auxiliary contact proves pull-in, K6 opens raw P4↔`K5_LATCH`; K5 continues to hold from P2 while
 the local gong remains on the raw side with OC1 and K3. K6 does not filter shared P2, so neighbour
 audio can still follow the K1 path described under "Known shared-party-line limitations." The K5
-contact is a hardware interlock, and K6 is normally closed so reset or power loss restores the passive
-topology. V4.1 firmware still delays ring-triggered greeting audio with `welcome_not_before_ms`;
-retire only the own-P4 workaround after fabricated V4.2 validation.
+contact is the direct hardware interlock; R44 keeps GPIO4 from becoming an alternate LED return, and
+K6 is normally closed so reset or power loss restores the passive topology. V4.1 firmware still
+delays ring-triggered greeting audio with `welcome_not_before_ms`; retire only the own-P4 workaround
+after fabricated V4.2 validation.
 
 **Final bench calibration:**
 - **RX trim + TX level.** The MIC1P/N attenuating divider and VMID bias are committed (R30/R31 22 kΩ

@@ -7,7 +7,9 @@
 //    (door opener); K3 (NC) bridges /P4↔/CHIME_POS (chime); K4 (NC) breaks K5's seal-in for a
 //    board-driven door release.
 //  - K6 (NC) bridges raw /P4 to /K5_LATCH at rest. Its LED return passes through K5's spare NO pole,
-//    so /P4_ISO cannot open K6 until K5 has physically pulled in. JP2 is an open recovery bypass.
+//    so /P4_ISO cannot open K6 until K5 has physically pulled in. GPIO4 senses that return only
+//    through R44 (100 k) against R35's pull-up, so no GPIO state can operate K6. JP2 is an open
+//    recovery bypass.
 //  - The embedded WF26 core (K5 latch + S1/S2 + C1) remains passive and works unpowered (SAFE-4).
 //  - Audio is transformer-less: RX taps /P2 through C16 to the ES8311 ADC (MICP/MICN); TX runs the
 //    codec DAC (OUTP) through R26 → C14 → /TALK_BRIDGE → R28 → /TX_OUT. Factory-bridged JP3 plus
@@ -97,6 +99,8 @@ test('SW4 dry pole provides named active-low PTT sense without a bus-line connec
   assert.equal(byRef.U1.pins['24'], '/PTT_SENSE_N', 'GPIO47 must receive the protected PTT sense');
   assert.deepEqual(new Set(Object.values(byRef.R43.pins)), new Set(['/PTT_SENSE_N', '/PTT_SW_N']),
     'R43 must be the only series connection between GPIO47 and SW4 NO1');
+  assert.deepEqual(new Set(Object.values(byRef.R42.pins)), new Set(['+3V3', '/PTT_SENSE_N']),
+    'R42 must pull up the GPIO-side sense node (holds GPIO47 high through the switch transition)');
 
   const power = { '/VBUS': 5, '/P1': 0 };
   const released = runDC(netlist, { sources: power, switches: { SW4: false } }).V;
@@ -438,6 +442,94 @@ test('JP2 recovery bypass is open by default and directly spans K6 output', () =
   const k6 = netlist.components.find((c) => c.ref === 'K6');
   assert.equal(k6.pins['3'], '/K5_LATCH');
   assert.equal(k6.pins['4'], '/P4');
+});
+
+// ── K5 sense decoupling (R44): GPIO4 observes the K6 LED return but can never power it. R35 biases
+// /K6_RET (the LED-cathode / K5-aux node); GPIO4 hangs alone behind R44, so a low GPIO forms only the
+// weak R35:R44 divider — the LED stays under its guaranteed-recovery corner (< 0.5 V / < 0.1 mA). ──
+
+test('K5 sense decoupling: R44 alone links GPIO4 to the K6 LED return, R35 biases the return side', () => {
+  const byRef = Object.fromEntries(netlist.components.map((c) => [c.ref, c]));
+  assert.equal(byRef.U1.pins['4'], '/K5_SENSE_N', 'GPIO4 must receive the decoupled K5 sense');
+  assert.equal(byRef.R44.value, '100k', 'R44 must stay 100 kΩ — the ratio against R35 sets the fault-case LED voltage');
+  assert.deepEqual(new Set(Object.values(byRef.R44.pins)), new Set(['/K5_SENSE_N', '/K6_RET']),
+    'R44 must be the only series connection between GPIO4 and the K6 LED return');
+  assert.deepEqual(new Set(Object.values(byRef.R35.pins)), new Set(['+3V3', '/K6_RET']),
+    'R35 must pull up K6_RET (the LED-return node), NOT the GPIO-side sense net');
+  assert.equal(byRef.K6.pins['2'], '/K6_RET', 'K6 LED cathode must return through the aux-contact node');
+  assert.equal(byRef.K5.pins['5'], '/K6_RET', 'K5 auxiliary NO must gate the LED return directly');
+
+  // sense function across relay states: released reads above VIH, sealed reads below VIL through R44
+  const released = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12 }, T: 0.05 }).V;
+  assert.ok(released['/K5_SENSE_N'] > 2.475,
+    `released K5 must read above GPIO4 VIH, got ${released['/K5_SENSE_N']?.toFixed(3)} V`);
+  const sealed = runDC(netlist, {
+    sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': (t) => (t >= 5e-3 && t < 17e-3 ? 12 : 0) },
+    T: 0.05,
+  }).V;
+  assert.ok(sealed['/K5_SENSE_N'] < 0.825,
+    `sealed K5 must read below GPIO4 VIL through R44, got ${sealed['/K5_SENSE_N']?.toFixed(3)} V`);
+});
+
+test('K5 sense fault: a stuck-low GPIO4 cannot operate K6 or block the next ring', () => {
+  // Double fault: firmware asserts P4_ISO while GPIO4 is misconfigured/damaged hard-low and K5 is
+  // released. The model alone can't prove this (its operate threshold is the 3 mA guaranteed-operate
+  // corner), so assert the LED bias directly against the datasheet recovery limits: < 0.5 V forward
+  // and < 0.1 mA. Then let a Türruf arrive mid-fault and require the still-closed K6 to pass it.
+  const els = buildElements(netlist, {
+    switchState: { ...defaultSwitchState(netlist), JP2: false },
+    program: { U1: { '/P4_ISO': 3.3, '/K5_SENSE_N': 0 } },
+  });
+  const dt = 20e-6;
+  const sim = createStepper(els, [
+    { net: '/VBUS', vf: () => 5 },
+    { net: '/P1', vf: () => 0 },
+    { net: '/P2', vf: () => 12 },
+    { net: '/P4', vf: (t) => (t >= 25e-3 ? 12 : 0) }, // the ring arrives while the fault persists
+  ], gndOf(netlist), dt);
+
+  let faulted; let iLed; let rang = false;
+  for (let t = 0; t < 50e-3; t += dt) {
+    sim.step(t);
+    const state = sim.extractState();
+    if (t >= 20e-3 && !faulted) {
+      faulted = state; // settled fault, ring not yet arrived
+      iLed = Math.abs(sim.padInjections().find((p) => p.ref === 'R34' && p.pin === '1')?.I || 0);
+    }
+    rang ||= Boolean(state.relays.K5);
+  }
+
+  assert.equal(faulted.ssrs.K6, false, 'K6 must stay closed (NC) under the GPIO4-low fault');
+  const vLed = faulted.vn['/K6_A'] - faulted.vn['/K6_RET'];
+  assert.ok(vLed < 0.5,
+    `K6 LED must stay under its 0.5 V guaranteed-recovery voltage, got ${vLed.toFixed(3)} V`);
+  assert.ok(iLed < 1e-4,
+    `K6 LED current must stay under the 0.1 mA guaranteed-recovery floor, got ${(iLed * 1e6).toFixed(1)} µA`);
+  assert.ok(rang, 'a Türruf during the fault must still reach K5 through closed K6 and pull it in');
+});
+
+test('K5 sense fault: a stuck-high GPIO4 cannot defeat isolation or stress the aux contact', () => {
+  // Opposite fault: GPIO4 driving 3.3 V while a real session isolates. The aux contact still returns
+  // the LED (K6 operates normally); the GPIO can only source ~33 µA through R44 into the contact.
+  const els = buildElements(netlist, {
+    switchState: { ...defaultSwitchState(netlist), JP2: false },
+    program: { U1: { '/P4_ISO': 3.3, '/K5_SENSE_N': 3.3 } },
+  });
+  const dt = 20e-6;
+  const sim = createStepper(els, [
+    { net: '/VBUS', vf: () => 5 },
+    { net: '/P1', vf: () => 0 },
+    { net: '/P2', vf: () => 12 },
+    { net: '/P4', vf: (t) => (t >= 5e-3 && t < 17e-3 ? 12 : 0) },
+  ], gndOf(netlist), dt);
+  for (let t = 0; t < 40e-3; t += dt) sim.step(t);
+
+  const state = sim.extractState();
+  assert.ok(state.relays.K5, 'K5 must still latch and seal from P2');
+  assert.ok(state.ssrs.K6, 'a confirmed K5 must still let P4_ISO operate K6 despite the sense fault');
+  const iGpio = Math.abs(sim.padInjections().find((p) => p.ref === 'R44' && p.pin === '2')?.I || 0);
+  assert.ok(iGpio < 5e-5,
+    `a driven-high GPIO4 must source under 50 µA into the closed aux contact, got ${(iGpio * 1e6).toFixed(1)} µA`);
 });
 
 // ── audio (transformer-less codec front-end). Exact gains are bench-gated; here we assert the path

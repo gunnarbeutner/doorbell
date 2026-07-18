@@ -294,7 +294,12 @@ provides them.
   that feed MUST degrade gracefully to the passive behaviour of SAFE-4.
 - **SAFE-6 (MUST)** All actuators default to their inactive/safe state at power-on and while the MCU
   is unprogrammed/booting/floating: relays off (gate pull-downs) so the door opener cannot pulse and
-  the gong cannot be silenced by a booting or dead board.
+  the gong cannot be silenced by a booting or dead board. Any smart raw-P4 isolator MUST remain in
+  its passive/closed state until K5 has physically pulled in; no state or single-pin fault of its
+  session-sense GPIO may provide enough actuator current to bypass that physical interlock. *(The
+  V4.2 candidate keeps K6's LED return on K5's auxiliary contact and senses it only through R44;
+  the changed circuit remains subject to the pre-order and first-board gates in TODO.md and
+  VERIFICATION.md.)*
 - **SAFE-7 (MUST)** **Fault containment — the board is sacrificial.** Under a fault beyond the
   SAFE-1/SAFE-2 envelope (severe bus surge, mis-wire, internal short, ESD), the board itself **may be
   destroyed**, but the damage MUST stay contained:

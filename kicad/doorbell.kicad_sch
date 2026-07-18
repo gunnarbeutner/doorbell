@@ -20204,6 +20204,12 @@
 		(uuid "11b98c99-2b72-4a7d-82ce-dd157cd43fdd")
 	)
 	(junction
+		(at 307.34 194.31)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "15f95b62-2b2f-4f8b-b4c4-c2d57eacef88")
+	)
+	(junction
 		(at 320.04 87.63)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -21513,16 +21519,6 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 229.87) (xy 87.63 232.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "51fb784b-c5ea-4c47-9ff2-4677867a3324")
-	)
-	(wire
-		(pts
 			(xy 130.81 64.77) (xy 123.19 64.77)
 		)
 		(stroke
@@ -21630,16 +21626,6 @@
 			(type default)
 		)
 		(uuid "59e94608-4acb-449e-9e52-464ebf67594e")
-	)
-	(wire
-		(pts
-			(xy 87.63 219.71) (xy 87.63 222.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "59fae943-2212-42b7-b5b6-05f30a29975f")
 	)
 	(wire
 		(pts
@@ -23951,6 +23937,16 @@
 		)
 		(uuid "2552d066-ecba-43b0-9d2c-ac395528ed55")
 	)
+	(label "K5_SENSE_N"
+		(at 297.18 194.31 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "25a02259-2a56-438e-9385-747f61220e78")
+	)
 	(label "K5_LATCH"
 		(at 377.19 228.6 0)
 		(effects
@@ -24316,7 +24312,7 @@
 		)
 		(uuid "4e9688b5-32a9-4902-bdf0-f989554427a3")
 	)
-	(label "K5_SENSE_N"
+	(label "K6_RET"
 		(at 142.24 215.9 0)
 		(effects
 			(font
@@ -24375,13 +24371,13 @@
 		)
 		(uuid "640965a1-d454-418a-98d3-d9b8fc3d4462")
 	)
-	(label "K5_SENSE_N"
-		(at 304.8 194.31 180)
+	(label "K6_RET"
+		(at 306.07 194.31 90)
 		(effects
 			(font
 				(size 1 1)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "6539756a-ce35-4356-be59-c63163b5bf9d")
 	)
@@ -24589,16 +24585,6 @@
 			(justify left bottom)
 		)
 		(uuid "800c8760-0e65-4bc5-8d6a-970da230f497")
-	)
-	(label "K5_SENSE_N"
-		(at 87.63 232.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left top)
-		)
-		(uuid "80d88ca8-9d2e-4a06-893e-08847de1eb7c")
 	)
 	(label "USB_DN"
 		(at 43.18 52.07 0)
@@ -25304,7 +25290,7 @@
 				)
 			)
 		)
-		(property "Description" "P4 isolation PhotoMOS (1-Form-B NC): bridges raw P4 to K5_LATCH at rest and without board power. Once K5's auxiliary contact proves the relay has pulled in, P4_ISO energises K6 to open that bridge, preventing this apartment's P4 gong from feeding back onto P2 while K5 remains sealed from P2. Loss of K5 immediately interrupts the LED return and restores the normally-closed P4 path."
+		(property "Description" "P4 isolation PhotoMOS (1-Form-B NC): bridges raw P4 to K5_LATCH at rest and without board power. Once K5's auxiliary contact proves the relay has pulled in, P4_ISO energises K6 through the direct K6_RET-to-K5 auxiliary-contact return, opening that bridge while K5 remains sealed from P2. Loss of K5 interrupts the operating return and restores the normally-closed P4 path; R35 and R44 keep GPIO4 sensing from becoming an alternate operating return."
 			(at 321.31 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -28067,7 +28053,7 @@
 				)
 			)
 		)
-		(property "Description" "Omron G6K-2F-Y DC12 SMD DPDT latch relay, 12V coil ~1.315k. Coil pin1=K5_LATCH (+), pin8=P1/GND; primary pole COM3=K5_COM, NO4=K5_LATCH, NC2 unused; auxiliary pole COM6=GND, NO5=K5_SENSE_N, NC7 unused. Raw P4 reaches K5_LATCH through normally-closed K6; after a Türruf pulse the primary pole seals the coil from P2. D1 is the coil flyback clamp."
+		(property "Description" "Omron G6K-2F-Y DC12 SMD DPDT latch relay, 12V coil ~1.315k. Coil pin1=K5_LATCH (+), pin8=P1/GND; primary pole COM3=K5_COM, NO4=K5_LATCH, NC2 unused; auxiliary pole COM6=GND, NO5=K6_RET, NC7 unused. Raw P4 reaches K5_LATCH through normally-closed K6; after a Türruf pulse the primary pole seals the coil from P2. The auxiliary NO contact directly gates K6's LED return, while GPIO4 senses it only through R44. D1 is the coil flyback clamp."
 			(at 129.54 228.6 0)
 			(hide yes)
 			(show_name no)
@@ -29400,6 +29386,96 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_JLCPCB-Resistors:0603,100kΩ")
+		(at 300.99 194.31 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "4b349e0e-3c91-43f0-aff0-3017b4c3696c")
+		(property "Reference" "R44"
+			(at 300.99 197.866 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 300.99 194.31 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+		(property "Footprint" "PCM_JLCPCB:R_0603"
+			(at 299.212 194.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1003T5E_C25803.pdf"
+			(at 300.99 194.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "GPIO4 session-sense isolation resistor: 100 kΩ between the physical K6_RET node and active-low K5_SENSE_N. R35 remains on K6_RET, so a low or faulted GPIO forms a weak divider that keeps K6's LED below its recovery voltage/current limits while preserving active-low K5 auxiliary-contact sensing."
+			(at 300.99 194.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25803"
+			(at 300.99 194.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "41d95053-1c5e-4549-9106-34a38ce021a5")
+		)
+		(pin "2"
+			(uuid "1052e03d-5fd7-4afb-9cba-47c5423e05ec")
+		)
+		(instances
+			(project "doorbell"
+				(path "/959c5810-086a-4a51-98b0-f68b22907a4f"
+					(reference "R44")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_name "0402,10kΩ_1")
 		(lib_id "PCM_JLCPCB-Resistors:0402,10kΩ")
 		(at 292.1 186.69 0)
@@ -29410,10 +29486,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "4c897d64-7eaf-447d-b167-e101a615fce9")
 		(property "Reference" "R12"
-			(at 294.64 186.6899 0)
+			(at 286.512 186.69 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29771,7 +29846,7 @@
 	)
 	(symbol
 		(lib_id "PCM_JLCPCB-Resistors:0402,10kΩ")
-		(at 87.63 226.06 0)
+		(at 307.34 190.5 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -29782,7 +29857,7 @@
 		(fields_autoplaced yes)
 		(uuid "4dfc44e9-70ab-4881-a720-e40a89c92922")
 		(property "Reference" "R35"
-			(at 90.17 226.0599 0)
+			(at 309.88 190.4999 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29793,7 +29868,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 87.63 226.06 90)
+			(at 307.34 190.5 90)
 			(show_name no)
 			(do_not_autoplace yes)
 			(effects
@@ -29803,7 +29878,7 @@
 			)
 		)
 		(property "Footprint" "PCM_JLCPCB:R_0402"
-			(at 85.852 226.06 90)
+			(at 305.562 190.5 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29814,7 +29889,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2411221126_UNI-ROYAL-Uniroyal-Elec-0402WGF1002TCE_C25744.pdf"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29824,8 +29899,8 @@
 				)
 			)
 		)
-		(property "Description" "K5 auxiliary-contact sense pull-up: holds K5_SENSE_N high while K5 is released. After armature pull-in, K5 auxiliary NO pin5 connects through COM pin6 to GND, providing the active-low session/latch signal and the hardware-gated return for K6's LED."
-			(at 87.63 226.06 0)
+		(property "Description" "K6-return bias and K5 auxiliary-contact wetting pull-up: holds K6_RET at +3V3 while K5 is released. After armature pull-in, auxiliary NO pin5 connects through COM pin6 to GND, providing K6's direct hardware-gated LED return and, through R44, the active-low K5_SENSE_N signal. Together with R44, prevents a low GPIO4 from operating K6."
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29836,7 +29911,7 @@
 			)
 		)
 		(property "LCSC" "C25744"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29847,7 +29922,7 @@
 			)
 		)
 		(property "Stock" "24372091"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29858,7 +29933,7 @@
 			)
 		)
 		(property "Price" "0.004USD"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29869,7 +29944,7 @@
 			)
 		)
 		(property "Process" "SMT"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29880,7 +29955,7 @@
 			)
 		)
 		(property "Minimum Qty" "20"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29891,7 +29966,7 @@
 			)
 		)
 		(property "Attrition Qty" "10"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29902,7 +29977,7 @@
 			)
 		)
 		(property "Class" "Basic Component"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29913,7 +29988,7 @@
 			)
 		)
 		(property "Category" "Resistors,Chip Resistor - Surface Mount"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29924,7 +29999,7 @@
 			)
 		)
 		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29935,7 +30010,7 @@
 			)
 		)
 		(property "Part" "0402WGF1002TCE"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29946,7 +30021,7 @@
 			)
 		)
 		(property "Resistance" "10kΩ"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29957,7 +30032,7 @@
 			)
 		)
 		(property "Power(Watts)" "62.5mW"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29968,7 +30043,7 @@
 			)
 		)
 		(property "Type" "Thick Film Resistors"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29979,7 +30054,7 @@
 			)
 		)
 		(property "Overload Voltage (Max)" "50V"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29990,7 +30065,7 @@
 			)
 		)
 		(property "Operating Temperature Range" "-55°C~+155°C"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30001,7 +30076,7 @@
 			)
 		)
 		(property "Tolerance" "±1%"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30012,7 +30087,7 @@
 			)
 		)
 		(property "Temperature Coefficient" "±100ppm/°C"
-			(at 87.63 226.06 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33038,7 +33113,7 @@
 				)
 			)
 		)
-		(property "Description" "K6 P4-isolator LED series resistor: P4_ISO -> R34 -> K6 LED -> K5_SENSE_N -> K5 auxiliary NO -> GND. Approximately 9.5mA flows only when K5 has physically pulled in and firmware asserts P4_ISO."
+		(property "Description" "K6 P4-isolator LED series resistor: P4_ISO -> R34 -> K6 LED -> K6_RET -> K5 auxiliary NO -> GND. Approximately 9.5mA flows only when K5 has physically pulled in and firmware asserts P4_ISO; GPIO4 senses K6_RET only through R44 and cannot provide normal operating current."
 			(at 300.99 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -41751,7 +41826,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 87.63 219.71 0)
+		(at 307.34 186.69 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -41762,7 +41837,7 @@
 		(fields_autoplaced yes)
 		(uuid "eb2e9901-31f4-467a-a20a-42668dac6536")
 		(property "Reference" "#PWR065"
-			(at 87.63 223.52 0)
+			(at 307.34 190.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41773,7 +41848,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 87.63 214.63 0)
+			(at 307.34 181.61 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -41783,7 +41858,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 87.63 219.71 0)
+			(at 307.34 186.69 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41794,7 +41869,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 87.63 219.71 0)
+			(at 307.34 186.69 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41805,7 +41880,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 87.63 219.71 0)
+			(at 307.34 186.69 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

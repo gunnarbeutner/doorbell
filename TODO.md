@@ -20,21 +20,18 @@ order—for example, some firmware work must wait for fabricated hardware regard
       the current HEAD.
       - **Worst case:** the assembled V4.2 board or service cable obstructs the Talk/door actuator or prevents the enclosure from closing, forcing a respin.
 
-- [ ] **9/10 — Decouple GPIO4 sensing from the K6 LED return before ordering V4.2.**
-      The current candidate connects K5's auxiliary NO contact, the K6 LED cathode and GPIO4 on
-      `K5_SENSE_N`. A GPIO configured or failed low can therefore sink K6 LED current before K5 has
-      pulled in, defeating the intended physical interlock when `P4_ISO` is requested. Keep the K5
-      auxiliary contact directly in K6's return and isolate GPIO4 with a gate buffer rather than a
-      passive divider: the earlier 4.7 kΩ/47 kΩ starting point could still pass about 0.4 mA,
-      above K6's 0.1 mA guaranteed recovery current at 25 °C, while values large enough to approach
-      the cold-temperature curve leave poor contact-wetting and input-impedance margins. The proposed
-      implementation reuses an AO3400A: retain R35 = 10 kΩ from +3V3 to the renamed physical
-      `K5_AUX_N` node and connect that node only to K5 auxiliary NO, K6 LED cathode and Q5 gate; Q5
-      source goes to GND, while its drain reaches the separate active-high `K5_SENSE`/GPIO4 net through
-      R44 = 1 kΩ and R45 = 10 kΩ pulls that GPIO net up to +3V3. Name the Q5-drain intermediate
-      net `K5_SENSE_D`. Corner-check K6 LED reverse voltage, Q5 leakage and transitions, GPIO levels
-      and output-contention current, then add simulator regressions that drive GPIO4 both low and high
-      with K5 released and prove K6 stays closed.
+- [ ] **9/10 — Close the remaining GPIO4/K6-return corner qualification before ordering V4.2.**
+      The current candidate now keeps K5 auxiliary NO pin 5, K6's LED cathode and R35 = 10 kΩ on the
+      physical `K6_RET` net. R44 = 100 kΩ is the only connection from that node to active-low
+      `K5_SENSE_N`/GPIO4. Thus K5 still grounds K6's LED directly, R35 retains the auxiliary-contact
+      wetting current, and a low or faulted GPIO forms a weak R35/R44 divider instead of bypassing the
+      contact. Permanent simulator regressions now assert the two net memberships, normal active-low
+      sensing, continued ring pickup with GPIO4 hard-low, normal K6 operation with GPIO4 hard-high,
+      and the nominal 0.5 V / 0.1 mA recovery limits. Before ordering, complete and record the corner
+      calculation for maximum +3V3, 1% resistor tolerances, ESP32 input leakage and V_IH/V_IL, and
+      review K6's temperature-characterization trend because its tabulated recovery guarantees are at
+      25 °C. Extend the regression if the simulator can represent those corners cleanly, then rerun
+      schematic/PCB parity and the full simulator gate.
       - **Worst case:** one GPIO configuration or pin fault suppresses the raw-P4 ring path, so K5 never pulls in and the passive handset misses a call while locally powered.
 
 ## Firmware (`firmware/doorbell.yaml`)
@@ -43,10 +40,10 @@ order—for example, some firmware work must wait for fabricated hardware regard
       Keep the deployed V4.1 safeguards meanwhile: OC1 remains its session/ring input, the 1.45 s
       ring-to-audio `welcome_not_before_ms` guard remains enabled, and ring-to-open remains at least
       1.75 s. After confirming unpowered P4↔
-      `K5_LATCH` continuity, K5 seal-in and JP2-open operation on V4.2, add GPIO4 `K5_SENSE` (active
-      high through the proposed Q5 buffer; follow the final schematic) and GPIO48 `P4_ISO` (active
-      high, forced low at boot). Configure GPIO4 strictly as an external-pull-up input with no
-      internal pull or output mode. Debounce `K5_SENSE` for 5–10 ms,
+      `K5_LATCH` continuity, K5 seal-in and JP2-open operation on V4.2, add GPIO4 `K5_SENSE_N`
+      (active low through R44) and GPIO48 `P4_ISO` (active high, forced low at boot). Configure GPIO4
+      strictly as an input with both internal pulls disabled; its released-state bias comes through
+      R44 from R35 on `K6_RET`, not from a GPIO-side pull-up. Debounce `K5_SENSE_N` for 5–10 ms,
       request isolation, wait K6's maximum opening time, reconfirm K5, then allow K1/playback. Loss of
       K5 must stop playback, release K1 and clear `P4_ISO`; keep raw OC1 for ring diagnostics. K6
       removes only this endpoint's raw-P4 contribution: do not treat K5 sense or isolation as a
