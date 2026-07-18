@@ -115,7 +115,7 @@ test('SW4 pressed hardware-inhibits smart K1 even if PTT_DRV remains high', () =
   const scenario = {
     sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 },
     program: { U1: { '/PTT_DRV': 3.3 } },
-    T: 0.1,
+    T: 5e-3, // static PhotoMOS/contact state; no delayed RC or mechanical transition is under test
   };
   const released = runDC(netlist, { ...scenario, switches: { SW4: false } }).V;
   const pressed = runDC(netlist, { ...scenario, switches: { SW4: true } }).V;
@@ -214,7 +214,7 @@ test('FW-3: V4.2 PhotoMOS drives retain 220 Ω fanout, operate-current margin an
     }
   }
 
-  const settle = ({ program, sources = {}, T = 0.1 }) => {
+  const settle = ({ program, sources = {}, T = 5e-3 }) => {
     const els = buildElements(netlist, { switchState: defaultSwitchState(netlist), program: { U1: program } });
     const sim = createStepper(els, Object.entries({ '/VBUS': 5, '/P1': 0, ...sources }).map(([net, v]) => ({
       net,
@@ -243,7 +243,7 @@ test('FW-3: V4.2 PhotoMOS drives retain 220 Ω fanout, operate-current margin an
   assert.ok(gpioLoad(ptt, '/PTT_DRV') <= 18e-3,
     `PTT_DRV must stay within its ~18 mA design load, got ${(gpioLoad(ptt, '/PTT_DRV') * 1e3).toFixed(2)} mA`);
 
-  const door = settle({ program: { '/DOOR_DRV': 3.3 } });
+  const door = settle({ program: { '/DOOR_DRV': 3.3 }, T: 0.1 }); // includes K2's deliberate RC delay
   assertOperateMargin(door, ['R5', 'R21']);
   assert.ok(door.extractState().ssrs.K2 && door.extractState().ssrs.K4,
     'DOOR_DRV must operate both the delayed K2 make and immediate K4 break');
@@ -906,7 +906,11 @@ test('software TX isolation: the passive LS1 microphone stays small relative to 
 // energised at all times — not from line 4, so K1 energised drives line 3 with line 4 cold. Policy for
 // *when* to talk lives in firmware, not this hardware gate.
 test('TX is session-independent: K1 energised drives line 3 from P2 with line 4 cold (no Türruf)', () => {
-  const { V } = runDC(netlist, { sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 }, program: { U1: { '/PTT_DRV': 3.3 } }, T: 0.4 });
+  const { V } = runDC(netlist, {
+    sources: { '/VBUS': 5, '/P1': 0, '/P2': 12, '/P4': 0 },
+    program: { U1: { '/PTT_DRV': 3.3 } },
+    T: 5e-3, // static K1 handshake; session timing is deliberately absent from this requirement
+  });
   assert.ok(V['/P3'] > 10, `P2-sourced handshake should reach line 3 with no session, got ${V['/P3']?.toFixed(2)} V`);
 });
 
