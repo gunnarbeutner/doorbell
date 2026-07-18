@@ -179,7 +179,7 @@ export function createSimulatorServer() {
         try {
           const ready = await session.start();
           return sendJson(response, 201, { id: session.id, board, capabilities: ready.capabilities,
-            config: ready.config });
+            config: ready.config, policy: ready.policy });
         } catch (error) {
           sessions.delete(session.id);
           await session.stop();

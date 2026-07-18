@@ -81,15 +81,19 @@ void FirmwareTestBridge::setup() {
     this->mark_failed();
     std::exit(70);
   }
-  this->ha_connected_->publish_state(false);
+  this->attach_trace_callbacks_();
+  const char *ha_connected = std::getenv("DOORBELL_FIRMWARE_TEST_HA_CONNECTED");
+  this->ha_connected_->publish_state(ha_connected != nullptr &&
+                                     (std::strcmp(ha_connected, "1") == 0 ||
+                                      std::strcmp(ha_connected, "on") == 0));
   if (this->published_adc_mv_ == UINT32_MAX) {
     this->vbus_sensor_->publish_state(this->adc_mv_ * 0.011f);
     this->published_adc_mv_ = this->adc_mv_;
   }
-  this->attach_trace_callbacks_();
 }
 
 void FirmwareTestBridge::attach_trace_callbacks_() {
+  this->ha_connected_->add_on_state_callback([this](bool state) { this->emit("ha_connected", state); });
   this->house_ring_->add_on_state_callback([this](bool state) { this->emit("house_ring", state); });
   this->apartment_ring_->add_on_state_callback([this](bool state) { this->emit("apartment_ring", state); });
   this->chime_enabled_->add_on_state_callback([this](bool state) { this->emit("chime_enabled", state); });

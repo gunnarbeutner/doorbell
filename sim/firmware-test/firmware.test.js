@@ -258,6 +258,8 @@ test('chime truth table is fail-safe across HA state, suppression and force over
   });
   const muteHigh = writes(timeline, 'MUTE_DRV', true);
   const muteLow = writes(timeline, 'MUTE_DRV', false);
+  assert.deepEqual(entities(timeline, 'ha_connected').map((item) => item.value), [true]);
+  assert.ok(entities(timeline, 'ha_connected', false).some((item) => item.at >= 450));
   assert.ok(muteHigh.some((item) => item.at >= 150 && item.at < 250), 'suppression should open K3');
   assert.ok(muteLow.some((item) => item.at >= 250 && item.at < 350), 'force override should close K3');
   assert.ok(muteHigh.some((item) => item.at >= 350 && item.at < 450), 'clearing force should restore suppression');
@@ -648,6 +650,7 @@ test('interactive server has one firmware-backed HEAD mode with virtual pause/st
     const created = await createdResponse.json();
     id = created.id;
     assert.equal(created.capabilities.firmware, true);
+    assert.equal(created.policy.haConnected, true, 'interactive HA link should default connected');
     assert.equal(created.config.sources.find((item) => item.net === '/P2').impedance, 90);
 
     const stepResponse = await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
@@ -656,6 +659,8 @@ test('interactive server has one firmware-backed HEAD mode with virtual pause/st
     const stepped = await waitForSse(`${origin}/api/sessions/${id}/events`, (message) =>
       message.type === 'sample' && message.sample.at >= 1 && message.firmware.connected);
     assert.equal(stepped.sample.at, 1);
+    assert.equal(stepped.firmware.entities.ha_connected, true,
+      'the checked default must be applied to the host firmware');
 
     await fetch(`${origin}/api/sessions/${id}/actions`, { method: 'POST',
       headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'crash' }) });

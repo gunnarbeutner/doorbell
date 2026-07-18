@@ -1103,15 +1103,20 @@ function clearRun() {
   buildScopes();
 }
 
+function loadPolicyDefaults(policy = SESSION.policy) {
+  $('#fwHa').checked = policy?.haConnected ?? true;
+  for (const id of ['fwAuto', 'fwSuppress', 'fwForce']) $('#' + id).checked = false;
+  $('#fwGreeting').value = 'None';
+  $('#fwFault').value = 'normal';
+}
+
 async function reset() {
   running = false;
   activeSpeed = 0;
   paintSpeed();
   clearRun();
   loadConfig(SESSION.config);
-  for (const id of ['fwHa', 'fwAuto', 'fwSuppress', 'fwForce']) $('#' + id).checked = false;
-  $('#fwGreeting').value = 'None';
-  $('#fwFault').value = 'normal';
+  loadPolicyDefaults();
   status('full reset in progress');
   await action({ type: 'reset' });
 }
@@ -1283,6 +1288,7 @@ $('#fwFault').onchange = (event) => {
 // Initialize from the worker's authoritative configuration, then subscribe before starting time.
 RES = { t: [], v: {}, floating: {} };
 loadConfig(SESSION.config);
+loadPolicyDefaults();
 buildStack();
 if (BOARD !== 'doorbell') {
   $('#firmwareControls').style.display = 'none';
@@ -1304,7 +1310,10 @@ events.onmessage = ({ data }) => {
   } else if (message.type === 'firmware') updateFirmware(message.firmware);
   else if (message.type === 'fault') receiveFault(message.fault);
   else if (message.type === 'timeline') receiveTimeline(message.item);
-  else if (message.type === 'ready' && message.config && !RES.t.length) loadConfig(message.config);
+  else if (message.type === 'ready' && message.config && !RES.t.length) {
+    loadConfig(message.config);
+    loadPolicyDefaults(message.policy);
+  }
   else if (message.type === 'status') status(message.detail || message.status);
   else if (message.type === 'error') {
     running = false;

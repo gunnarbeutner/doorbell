@@ -39,6 +39,7 @@ let child = null;
 let intentionalExit = false;
 let shuttingDown = false;
 let config = initialConfig();
+let haConnected = true;
 const firmware = {
   connected: false,
   crashed: false,
@@ -250,10 +251,13 @@ async function spawnHost() {
   if (child) return;
   intentionalExit = false;
   firmware.crashed = false;
+  // Mirror the setup-time environment immediately; subsequent SET commands are confirmed by EMIT.
+  firmware.entities.ha_connected = haConnected;
   child = spawn(binary, [], {
     cwd: repoRoot,
     env: { ...process.env, DOORBELL_FIRMWARE_TEST_SOCKET: socketPath,
       DOORBELL_FIRMWARE_TEST_START_MS: String(Math.trunc(runner.fixture.nowMs)),
+      DOORBELL_FIRMWARE_TEST_HA_CONNECTED: haConnected ? '1' : '0',
       ESPHOME_PREFDIR: join(temporary, 'preferences') },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -376,6 +380,8 @@ async function handle(message) {
     await configure(message.config);
   } else if (message.type === 'command') {
     if (!runner || firmware.crashed) throw new Error('firmware is not running');
+    const haCommand = message.command.match(/^SET:ha:(0|1|off|on)$/);
+    if (haCommand) haConnected = haCommand[1] === '1' || haCommand[1] === 'on';
     runner.queueCommand(message.command);
     emitTimeline();
   } else if (message.type === 'crash') {
@@ -410,7 +416,8 @@ try {
     passive = new PassiveCircuit();
     emitSample(true);
   }
-  post('ready', { board, config, capabilities: { firmware: board === 'doorbell', speeds: [0, 1, 10, 'max'] } });
+  post('ready', { board, config, policy: { haConnected },
+    capabilities: { firmware: board === 'doorbell', speeds: [0, 1, 10, 'max'] } });
   setInterval(tick, 16).unref();
   setInterval(() => emitSample(), 33).unref();
 } catch (error) {
