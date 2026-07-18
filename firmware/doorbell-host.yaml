@@ -115,6 +115,10 @@ globals:
     type: bool
     restore_value: no
     initial_value: "false"
+  - id: manual_listen_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
 
 script:
   # V4.2 smart-TX entry: isolate raw P4 only after K5 is stably confirmed. A manual/API greeting
@@ -122,6 +126,8 @@ script:
   - id: prepare_smart_tx
     mode: restart
     then:
+      - script.stop: hold_manual_listen
+      - globals.set: { id: manual_listen_active, value: "false" }
       - globals.set: { id: smart_tx_ready, value: "false" }
       - globals.set: { id: tx_requires_k5, value: "false" }
       - if:
@@ -190,6 +196,18 @@ script:
             - globals.set: { id: tx_requires_k5, value: "false" }
             - globals.set: { id: welcome_sequence_active, value: "false" }
 
+  # After a physical-Talk release, retain the passive LS1 listening path for a bounded window while
+  # the local K5 session is still confirmed. Smart TX, a door request or K5 loss cancels it sooner.
+  - id: hold_manual_listen
+    mode: restart
+    then:
+      - globals.set: { id: manual_listen_active, value: "true" }
+      - wait_until:
+          condition:
+            binary_sensor.is_off: k5_sense
+          timeout: 30s
+      - globals.set: { id: manual_listen_active, value: "false" }
+
   - id: welcome_and_open
     mode: single
     then:
@@ -206,22 +224,26 @@ script:
     mode: single
     then:
       - script.stop: play_welcome
+      - script.stop: hold_manual_listen
       - media_player.stop: intercom_media
       - switch.turn_off: intercom_ptt
       - output.turn_off: p4_isolation_req
+      - globals.set: { id: manual_listen_active, value: "false" }
       - globals.set: { id: welcome_playing, value: "false" }
       - globals.set: { id: welcome_sequence_active, value: "false" }
       - globals.set: { id: smart_tx_ready, value: "false" }
       - globals.set: { id: tx_requires_k5, value: "false" }
-      - delay: 20ms
+      # K1 must be open and K6 back in its passive state before K4 breaks the K5 seal-in.
+      - delay: 100ms
       - output.turn_on: front_door_buzzer_bin
       - delay: 1750ms
       - output.turn_off: front_door_buzzer_bin
+      # C18/Q3 requires 500 ms continuously low before another door pulse. If a new K5 session
+      # latches during that interval, retain ownership and reject repeats until it releases.
+      - delay: 500ms
       - wait_until:
           condition:
             binary_sensor.is_off: k5_sense
-          timeout: 100ms
-      - delay: 500ms
 
 binary_sensor:
   - platform: gpio
@@ -271,8 +293,14 @@ binary_sensor:
     filters:
       - delayed_on: 5ms
       - delayed_off: 5ms
+    on_press:
+      then:
+        # A newly confirmed session does not itself grant smart-TX ownership or reopen K6.
+        - output.turn_off: p4_isolation_req
     on_release:
       then:
+        - script.stop: hold_manual_listen
+        - globals.set: { id: manual_listen_active, value: "false" }
         - if:
             condition:
               lambda: 'return id(smart_tx_ready);'
@@ -297,6 +325,9 @@ binary_sensor:
     on_press:
       then:
         - globals.set: { id: manual_talk_active, value: "true" }
+        - globals.set: { id: manual_listen_active, value: "true" }
+        - script.stop: hold_manual_listen
+        - script.stop: welcome_and_open
         - script.stop: play_welcome
         - media_player.stop: intercom_media
         - switch.turn_off: intercom_ptt
@@ -311,12 +342,25 @@ binary_sensor:
       then:
         - delay: 10ms
         - globals.set: { id: manual_talk_active, value: "false" }
+        - if:
+            condition:
+              binary_sensor.is_on: k5_sense
+            then:
+              - script.execute: hold_manual_listen
+            else:
+              - globals.set: { id: manual_listen_active, value: "false" }
+
+  - platform: template
+    name: "Manual Passive Listen"
+    id: manual_passive_listen
+    entity_category: diagnostic
+    lambda: 'return id(manual_talk_active) || id(manual_listen_active);'
 
   - platform: template
     name: "Chime Enabled"
     id: chime_enabled
     lambda: |-
-      if (id(manual_talk_active)) return true;
+      if (id(manual_talk_active) || id(manual_listen_active)) return true;
       if (id(welcome_playing)) return false;
       return id(force_chime).state || !(id(suppress_chime).state && id(ha_connected).state);
     on_press:
@@ -381,3 +425,4 @@ firmware_test:
   chime_enabled: chime_enabled
   k5_sense: k5_sense
   physical_ptt: physical_ptt
+  manual_passive_listen: manual_passive_listen

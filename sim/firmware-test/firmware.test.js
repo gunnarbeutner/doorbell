@@ -311,12 +311,15 @@ test('ring greeting uses K5-confirmed P4 isolation before K1 and opens only afte
     endAt: 5500,
   });
   const isolate = writes(timeline, 'P4_ISO', true)[0];
+  const confirmed = entities(timeline, 'k5_sense')[0];
   const ptt = writes(timeline, 'PTT_DRV', true)[0];
   const start = media(timeline, 'START')[0];
   const stop = media(timeline, 'IDLE').find((item) => item.duration > 0);
   const pttOff = writes(timeline, 'PTT_DRV', false).find((item) => item.at >= stop.at);
   const door = writes(timeline, 'DOOR_DRV', true)[0];
-  assert.ok(isolate && ptt && start && stop && door, 'expected isolation, TX, media and door transitions');
+  assert.ok(confirmed && isolate && ptt && start && stop && door,
+    'expected K5 confirmation, isolation, TX, media and door transitions');
+  assert.ok(confirmed.at <= isolate.at, 'K6 must remain passive until debounced K5 confirmation');
   assert.ok(isolate.at < ptt.at, 'K6 request must precede K1');
   assert.ok(ptt.at >= 1550, 'ring-triggered TX must retain the conservative 1.45 s guard');
   assert.ok(door.at >= stop.at + 100 && door.at >= pttOff.at + 100,
@@ -347,19 +350,72 @@ test('ring-triggered auto-open with no greeting never asserts K1', async () => {
 test('physical Talk takes ownership: media, K1, K6 and K3 return passive', async () => {
   const { timeline } = await runScenario('physical PTT handoff', {
     events: [
-      { at: 100, type: 'command', command: 'SELECT:Windows' },
-      { at: 150, type: 'command', command: 'PRESS:play' },
+      { at: 20, type: 'command', command: 'SET:ha:1' },
+      { at: 30, type: 'command', command: 'SET:suppress_chime:1' },
+      { at: 100, type: 'source', line: 'P4', value: 12 },
+      { at: 200, type: 'command', command: 'SELECT:Windows' },
+      { at: 250, type: 'command', command: 'PRESS:play' },
       { at: 700, type: 'switch', ref: 'SW4', closed: true },
-      { at: 1100, type: 'switch', ref: 'SW4', closed: false },
+      { at: 1100, type: 'source', line: 'P4', value: null },
+      { at: 1200, type: 'switch', ref: 'SW4', closed: false },
+      { at: 1800, type: 'source', line: 'P2', value: 0 },
     ],
-    endAt: 1500,
+    endAt: 2200,
   });
   assert.equal(entities(timeline, 'physical_ptt').length, 1);
   const takeover = entities(timeline, 'physical_ptt')[0].at;
+  const listenOn = entities(timeline, 'manual_passive_listen')[0];
+  const sessionLoss = entities(timeline, 'k5_sense', false).at(-1);
+  const listenOff = entities(timeline, 'manual_passive_listen', false).at(-1);
+  assert.ok(listenOn.at >= takeover, 'manual passive-listen ownership must follow debounced Talk');
   assert.ok(writes(timeline, 'PTT_DRV', false).some((item) => item.at >= takeover));
   assert.ok(writes(timeline, 'P4_ISO', false).some((item) => item.at >= takeover));
   assert.ok(writes(timeline, 'MUTE_DRV', false).some((item) => item.at >= takeover));
   assert.ok(media(timeline, 'IDLE').some((item) => item.at >= takeover));
+  assert.ok(listenOff.at >= sessionLoss.at, 'K5 loss must end the retained passive-listen window');
+  assert.ok(writes(timeline, 'MUTE_DRV', true).some((item) => item.at >= listenOff.at),
+    'effective suppression may resume only after manual ownership ends');
+  assertNoUnsafeDoorWrites(timeline);
+});
+
+test('physical Talk cancels a pending greet-and-open request', async () => {
+  const { timeline } = await runScenario('physical PTT cancels welcome/open', {
+    events: [
+      { at: 100, type: 'command', command: 'SELECT:Windows' },
+      { at: 150, type: 'command', command: 'PRESS:welcome_open' },
+      { at: 700, type: 'switch', ref: 'SW4', closed: true },
+      { at: 1100, type: 'switch', ref: 'SW4', closed: false },
+    ],
+    endAt: 3000,
+  });
+  assert.ok(media(timeline, 'IDLE').some((item) => item.at >= 710));
+  assertNoUnsafeDoorWrites(timeline);
+});
+
+test('manual passive listening is bounded to 30 s after physical-Talk release', async () => {
+  const { timeline } = await runScenario('bounded manual passive listen', {
+    events: [
+      { at: 20, type: 'command', command: 'SET:ha:1' },
+      { at: 30, type: 'command', command: 'SET:suppress_chime:1' },
+      { at: 100, type: 'source', line: 'P4', value: 12 },
+      { at: 1100, type: 'source', line: 'P4', value: null },
+      { at: 1200, type: 'switch', ref: 'SW4', closed: true },
+      { at: 1300, type: 'switch', ref: 'SW4', closed: false },
+    ],
+    endAt: 31600,
+  });
+  const released = entities(timeline, 'physical_ptt', false)[0];
+  const listenOff = entities(timeline, 'manual_passive_listen', false).at(-1);
+  assert.ok(released && listenOff, 'expected physical release and bounded-listen completion');
+  assert.ok(listenOff.at - released.at >= 30000,
+    `manual listen ended after only ${listenOff.at - released.at} ms`);
+  // ESPHome's template sensor publishes the changed global on its next scheduler pass.
+  assert.ok(listenOff.at - released.at <= 30050,
+    `manual listen exceeded its bounded window: ${listenOff.at - released.at} ms`);
+  assert.equal(writes(timeline, 'MUTE_DRV', true)
+    .filter((item) => item.at > released.at && item.at < listenOff.at).length, 0,
+    'K3 must retain the passive path throughout manual-listen ownership');
+  assert.ok(writes(timeline, 'MUTE_DRV', true).some((item) => item.at >= listenOff.at));
   assertNoUnsafeDoorWrites(timeline);
 });
 
@@ -420,6 +476,29 @@ test('door coordinator tears down TX and rejects a rapid repeat during pulse/re-
   const pttOff = writes(timeline, 'PTT_DRV', false).find((item) => item.at >= 500);
   assert.ok(pttOff.at < doorOn[0].at, 'K1 must release before DOOR_DRV rises');
   assert.ok(doorOn[1].at - doorOn[0].at >= 2250, 'door pulses need 1.75 s high plus 500 ms low');
+});
+
+test('door coordinator rejects repeats while a new K5 session latches during re-arm', async () => {
+  const { timeline } = await runScenario('door re-arm with new K5 session', {
+    events: [
+      { at: 100, type: 'command', command: 'PRESS:door' },
+      { at: 2000, type: 'source', line: 'P4', value: 12 },
+      { at: 2200, type: 'command', command: 'PRESS:door' },
+      { at: 2600, type: 'command', command: 'PRESS:door' },
+      { at: 3000, type: 'source', line: 'P4', value: null },
+      { at: 3100, type: 'source', line: 'P2', value: 0 },
+      { at: 3200, type: 'command', command: 'PRESS:door' },
+    ],
+    endAt: 5300,
+  });
+  const doorOn = writes(timeline, 'DOOR_DRV', true);
+  const sessionOn = entities(timeline, 'k5_sense')[0];
+  const sessionOff = entities(timeline, 'k5_sense', false).at(-1);
+  assert.ok(sessionOn && sessionOff, 'the re-arm stimulus must latch and release K5');
+  assert.equal(doorOn.length, 2, 'both repeat commands during re-arm/session ownership must be rejected');
+  assert.ok(doorOn[1].at >= sessionOff.at + 90, 'a later door pulse needs K5 release and the K1/K6 margin');
+  assert.ok(doorOn[1].at - (doorOn[0].at + 1750) >= 500,
+    'the second pulse must follow at least 500 ms continuously low');
 });
 
 test('32-bit millis rollover does not delay a manual greeting or ring/open deadlines', async () => {
@@ -632,8 +711,3 @@ test('interactive server has one firmware-backed HEAD mode with virtual pause/st
     await new Promise((resolvePromise) => server.close(resolvePromise));
   }
 });
-
-test.todo('production K5-confirmed P4 isolation awaits fabricated V4.2 validation (TODO.md)');
-test.todo('production GPIO47 physical-Talk handoff awaits fabricated V4.2 validation (TODO.md)');
-test.todo('production universal door-command coordination/re-arm remains gated in TODO.md');
-test.todo('longer-lived passive-listening/K3 policy remains a post-fabrication decision (TODO.md)');

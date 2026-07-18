@@ -525,9 +525,11 @@ Other LED drive: MUTE_DRV → R6; DOOR_DRV → R5→K2 LED (via Q3 delay) + R21�
 
   The desktop-only `firmware/doorbell-host.yaml` enables the expected V4.2 hand-off policy for
   deterministic tests: physical Talk cancels smart media/K1, clears K6 and restores K3; K5-confirmed
-  smart TX isolates raw P4; and every simulated door request is serialized through the pulse/re-arm
-  coordinator. This does not enable those paths in installed V4.1 production firmware or satisfy the
-  fabricated-board gate.
+  smart TX isolates raw P4; every simulated door request is serialized through the pulse/re-arm
+  coordinator; and passive listening remains owned for at most 30 s after physical-Talk release while
+  K5 stays confirmed. K5 loss, smart TX or a door request ends that window sooner. This candidate rule
+  does not enable those paths in installed V4.1 production firmware or satisfy the fabricated-board
+  gate.
 
   The interactive simulator uses that same host target and deterministic circuit runner as its only
   doorbell execution path. Each browser session owns an isolated server worker, host process, Unix

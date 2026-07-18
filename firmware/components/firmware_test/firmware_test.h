@@ -42,6 +42,7 @@ class FirmwareTestBridge final : public Component {
   void set_chime_enabled(binary_sensor::BinarySensor *v) { chime_enabled_ = v; }
   void set_k5_sense(binary_sensor::BinarySensor *v) { k5_sense_ = v; }
   void set_physical_ptt(binary_sensor::BinarySensor *v) { physical_ptt_ = v; }
+  void set_manual_passive_listen(binary_sensor::BinarySensor *v) { manual_passive_listen_ = v; }
 
   bool connect_runner();
   void advance(uint32_t ms);
@@ -83,6 +84,7 @@ class FirmwareTestBridge final : public Component {
   binary_sensor::BinarySensor *chime_enabled_{nullptr};
   binary_sensor::BinarySensor *k5_sense_{nullptr};
   binary_sensor::BinarySensor *physical_ptt_{nullptr};
+  binary_sensor::BinarySensor *manual_passive_listen_{nullptr};
   FakeMediaPlayer *media_player_{nullptr};
 };
 

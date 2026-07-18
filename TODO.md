@@ -25,7 +25,8 @@ order—for example, some firmware work must wait for fabricated hardware regard
 The deterministic host adapter implements the expected versions of the V4.2 policies below so they
 can be exercised against the live HEAD circuit. These tasks remain open for production/bench enablement
 because the installed target is V4.1 and the changed GPIO4/GPIO47/GPIO48 hardware is not fabricated or
-qualified. `test.todo` entries keep that boundary visible in the host suite.
+qualified. Gating host scenarios cover those candidate policies; the open checkboxes keep the separate
+fabricated-board and production-enablement boundary visible.
 
 - [ ] **9/10 — Implement K5-confirmed P4 isolation only after a fabricated V4.2 board passes passive bring-up.**
       Keep the deployed V4.1 safeguards meanwhile: OC1 remains its session/ring input, the 1.45 s
@@ -83,6 +84,10 @@ qualified. `test.todo` entries keep that boundary visible in the host suite.
       forwarding a gong. The PTT task above defines the minimum press/release hand-off; this task owns
       the longer-lived listening policy. Keep K1 commanded off across the entire physical-Talk window
       and release debounce even though SW4 also inhibits it in hardware.
+      The desktop-only HEAD adapter uses a testable candidate rule meanwhile: restore K3 immediately
+      for physical Talk, retain passive listening for at most 30 s after stable release while K5 remains
+      confirmed, and end that ownership sooner on K5 loss, smart TX or a door request. This is not a
+      production decision until the fabricated-board checks qualify the transition and gong exposure.
       - **Worst case:** restoring passive audio recreates the neighbour-gong leak or a transition presents an unqualified ~1.1 kΩ P2↔P3 bridge.
 
 ## First-board commissioning (not fabrication gates)

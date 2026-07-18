@@ -50,8 +50,10 @@ wall-clock slowdown must not change the event trace.
 
 The fixture drives the connector through the measured nominal 90 Ω source impedance and validates
 U1/P1–P5 mapping from the live schematic rather than a generated netlist. Its bounded codec stimulus
-and connector sources verify the board/firmware contract, not the complete TV20/S central unit. Treat
-all results as HEAD/V4.2 candidate evidence only and still perform §5.5/§6 on fabricated hardware.
+and connector sources verify the board/firmware contract, including K5-gated K6, physical-Talk
+ownership, the 30 s candidate passive-listen window and door pulse/re-arm serialization—not the
+complete TV20/S central unit. Treat all results as HEAD/V4.2 candidate evidence only and still perform
+§5.5/§6 on fabricated hardware.
 
 ### 1.2 Interactive firmware/circuit smoke check
 

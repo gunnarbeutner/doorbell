@@ -152,7 +152,10 @@ guarantee; first-board measurements remain required where `VERIFICATION.md` says
 incrementally builds `firmware/doorbell-host.yaml`, then starts a fresh host process, Unix socket and
 preferences directory for every scenario. Production remains the installed V4.1 adapter; the host
 adapter enables the expected HEAD/V4.2 K5-confirmed P4 isolation, physical-Talk hand-off and serialized
-door-command/re-arm policy without claiming that those functions have passed fabricated-board tests.
+door-command/re-arm policy. Its candidate manual-conversation policy keeps K3 passive for up to 30 s
+after physical-Talk release while K5 remains confirmed; K5 loss, smart TX or a door request ends that
+window sooner. These behaviors are gating host scenarios without claiming that the changed functions
+have passed fabricated-board tests.
 
 The live KiCad import and passive powered-state settling are cached only within one Node test process;
 every scenario still gets a fresh firmware process, socket, preferences directory and independent copy

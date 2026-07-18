@@ -26,6 +26,7 @@ CONF_APARTMENT_RING = "apartment_ring"
 CONF_CHIME_ENABLED = "chime_enabled"
 CONF_K5_SENSE = "k5_sense"
 CONF_PHYSICAL_PTT = "physical_ptt"
+CONF_MANUAL_PASSIVE_LISTEN = "manual_passive_listen"
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -44,6 +45,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Required(CONF_CHIME_ENABLED): cv.use_id(binary_sensor.BinarySensor),
         cv.Required(CONF_K5_SENSE): cv.use_id(binary_sensor.BinarySensor),
         cv.Required(CONF_PHYSICAL_PTT): cv.use_id(binary_sensor.BinarySensor),
+        cv.Required(CONF_MANUAL_PASSIVE_LISTEN): cv.use_id(binary_sensor.BinarySensor),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -66,6 +68,7 @@ async def to_code(config):
         (CONF_CHIME_ENABLED, "set_chime_enabled"),
         (CONF_K5_SENSE, "set_k5_sense"),
         (CONF_PHYSICAL_PTT, "set_physical_ptt"),
+        (CONF_MANUAL_PASSIVE_LISTEN, "set_manual_passive_listen"),
     ):
         target = await cg.get_variable(config[key])
         cg.add(getattr(var, setter)(target))

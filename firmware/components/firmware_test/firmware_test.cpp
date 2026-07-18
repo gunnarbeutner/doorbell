@@ -95,6 +95,8 @@ void FirmwareTestBridge::attach_trace_callbacks_() {
   this->chime_enabled_->add_on_state_callback([this](bool state) { this->emit("chime_enabled", state); });
   this->k5_sense_->add_on_state_callback([this](bool state) { this->emit("k5_sense", state); });
   this->physical_ptt_->add_on_state_callback([this](bool state) { this->emit("physical_ptt", state); });
+  this->manual_passive_listen_->add_on_state_callback(
+      [this](bool state) { this->emit("manual_passive_listen", state); });
 }
 
 void FirmwareTestBridge::parse_command_(const std::string &token) {
